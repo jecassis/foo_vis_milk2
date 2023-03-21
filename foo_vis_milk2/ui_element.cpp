@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "../vis_milk2/plugin.h"
+#include "DeviceResources.h"
 
 CPlugin g_plugin;
 
@@ -11,7 +12,7 @@ namespace
 {
 static const GUID guid_milk2 = {0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}};
 
-class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl<milk2_ui_element_instance>
+class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl<milk2_ui_element_instance> //,public DX::IDeviceNotify
 {
   public:
     DECLARE_WND_CLASS_EX(TEXT("MilkDrop2"), CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));
@@ -51,10 +52,6 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point) { ToggleFullScreen(); }
 
-    HRESULT CreateDeviceIndependentResources();
-    HRESULT CreateDeviceResources();
-    void DiscardDeviceResources();
-
     void ToggleFullScreen() { static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window()); }
     HRESULT Render();
     HRESULT RenderChunk(const audio_chunk& chunk);
@@ -78,15 +75,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     bool m_IsInitialized = false;
     unsigned char waves[2][576];
 
-    //CComPtr<ID2D1Factory> m_pDirect2dFactory;
-    //CComPtr<ID2D1HwndRenderTarget> m_pRenderTarget;
-    //CComPtr<ID2D1SolidColorBrush> m_pStrokeBrush;
-    //ID3D11Device* pD3DDevice = nullptr;
-    ID3D11DeviceContext* pImmediateContext = nullptr;
-    //IDXGISwapChain* pSwapChain = nullptr;
-    //ID3D11RenderTargetView* pRenderTargetView = nullptr;
-    //ID3D11DepthStencilView* pDepthStencilView = nullptr;
-    //D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
+    std::unique_ptr<DX::DeviceResources> m_deviceResources;
 
     enum
     {
@@ -102,6 +91,8 @@ milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr conf
     m_config(config)
 {
     //set_configuration(config);
+    m_deviceResources = std::make_unique<DX::DeviceResources>(DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_D24_UNORM_S8_UINT, 2, D3D_FEATURE_LEVEL_11_0);
+    //m_deviceResources->RegisterDeviceNotify(this);
 }
 
 ui_element_config::ptr milk2_ui_element_instance::g_get_default_configuration()
@@ -140,16 +131,29 @@ void milk2_ui_element_instance::notify(const GUID& p_what, t_size p_param1, cons
 
 LRESULT milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 {
+    console::formatter() << "MilkDrop 2: OnCreate " << cs->x << ", " << cs->y;
+
     HRESULT hr = S_OK;
 
-    //hr = CreateDeviceIndependentResources();
+    m_deviceResources->SetWindow(get_wnd(), 0, 0);
+
+    m_deviceResources->CreateDeviceResources();
+    //CreateDeviceDependentResources();
+
+    m_deviceResources->CreateWindowSizeDependentResources();
+    //CreateWindowSizeDependentResources();
 
     //if (FAILED(hr))
     //{
     //    console::formatter() << core_api::get_my_file_name() << ": could not create DirectX 11 factory";
     //}
 
-    //TODO set plugins path: swprintf(g_plugin.m_szPluginsDirPath, L"%hs\\resources\\", kodi::addon::GetAddonPath().c_str());
+    std::string base_path = core_api::get_my_full_path();
+    std::string::size_type t = base_path.rfind('\\');
+    if (t != std::string::npos)
+        base_path.erase(t + 1);
+    std::string data_zip = base_path + "data.zip";
+    swprintf_s(g_plugin.m_szPluginsDirPath, L"%hs" /* L"%hs\\resources\\" */, const_cast<char*>(data_zip.c_str()));
 
     //if (FALSE == g_plugin.PluginPreInitialize(0, 0))
     //    hr = S_FALSE;
@@ -164,33 +168,35 @@ LRESULT milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     //    console::formatter() << core_api::get_my_file_name() << ": could not initialize plugin";
     //}
 
-    //try
-    //{
-    //    static_api_ptr_t<visualisation_manager> vis_manager;
+    try
+    {
+        static_api_ptr_t<visualisation_manager> vis_manager;
 
-    //    vis_manager->create_stream(m_vis_stream, 0);
+        vis_manager->create_stream(m_vis_stream, 0);
 
-    //    m_vis_stream->request_backlog(0.8);
-    //    UpdateChannelMode();
-    //}
-    //catch (std::exception& exc)
-    //{
-    //    console::formatter() << core_api::get_my_file_name() << ": exception while creating visualization stream: " << exc;
-    //}
+        m_vis_stream->request_backlog(0.8);
+        UpdateChannelMode();
+    }
+    catch (std::exception& exc)
+    {
+        console::formatter() << core_api::get_my_file_name() << ": exception while creating visualization stream: " << exc;
+    }
 
-    //m_IsInitialized = true;
+    m_IsInitialized = true;
     return 0;
 }
 
 void milk2_ui_element_instance::OnDestroy()
 {
-    //m_vis_stream.release();
+    console::formatter() << "MilkDrop 2: OnDestroy";
+    m_vis_stream.release();
 
     //m_pDirect2dFactory.Release();
     //m_pRenderTarget.Release();
     //m_pStrokeBrush.Release();
-    //if (m_IsInitialized)
-    //{
+    
+    if (m_IsInitialized)
+    {
     //    g_plugin.PluginQuit();
 
     //    //pImmediateContext->Flush();
@@ -202,18 +208,20 @@ void milk2_ui_element_instance::OnDestroy()
     //    //pImmediateContext->Release();
     //    //pD3DDevice->Release();
 
-    //    m_IsInitialized = false;
-    //}
+        m_IsInitialized = false;
+    }
 }
 
 void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 {
+    console::formatter() << "MilkDrop 2: OnTimer";
     //KillTimer(ID_REFRESH_TIMER);
     //Invalidate();
 }
 
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
+    //console::formatter() << "MilkDrop 2: OnPaint";
     //Render();
     //ValidateRect(nullptr);
 
@@ -233,13 +241,32 @@ void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 {
-    //if (m_pRenderTarget) {
-    //	m_pRenderTarget->Resize(D2D1::SizeU(size.cx, size.cy));
-    //}
+    console::formatter() << "MilkDrop 2: OnSize " << size.cx << ", " << size.cy;
+
+    RECT r;
+    GetClientRect(&r);
+
+    int width = r.right - r.left;
+    int height = r.bottom - r.top;
+
+    if (!width || !height)
+        return;
+
+    if (width < 128)
+        width = 128;
+
+    if (height < 128)
+        height = 128;
+
+    if (!m_deviceResources->WindowSizeChanged(width, height))
+        return;
+
+    //CreateWindowSizeDependentResources();
 }
 
 void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
 {
+    console::formatter() << "MilkDrop 2: OnContextMenu " << point.x << ", " << point.y;
     if (m_callback->is_edit_mode_enabled())
     {
         SetMsgHandled(FALSE);
@@ -426,216 +453,11 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
     }
 }
 
-HRESULT milk2_ui_element_instance::CreateDeviceIndependentResources()
-{
-    HRESULT hr = S_OK;
-
-    //hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
-
-    return hr;
-}
-
-HRESULT milk2_ui_element_instance::CreateDeviceResources()
-{
-    HRESULT hr = S_OK;
-
-    //if (m_pDirect2dFactory) {
-    //    if (!m_pRenderTarget) {
-    //        CRect rcClient;
-    //        GetClientRect(rcClient);
-
-    //        D2D1_SIZE_U size = D2D1::SizeU(rcClient.Width(), rcClient.Height());
-
-    //        D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties = D2D1::RenderTargetProperties(m_config.m_hw_rendering_enabled ? D2D1_RENDER_TARGET_TYPE_DEFAULT : D2D1_RENDER_TARGET_TYPE_SOFTWARE);
-
-    //        D2D1_HWND_RENDER_TARGET_PROPERTIES hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(m_hWnd, size);
-
-    //        hr = m_pDirect2dFactory->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_pRenderTarget);
-    //    }
-
-    //    if (SUCCEEDED(hr) && !m_pStrokeBrush) {
-    //        t_ui_color colorText = m_callback->query_std_color(ui_color_text);
-
-    //        hr = m_pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(colorText) / 255.0f, GetGValue(colorText) / 255.0f, GetBValue(colorText) / 255.0f), &m_pStrokeBrush);
-    //    }
-    //} else {
-    //    hr = S_FALSE;
-    //}
-
-    //    UINT createDeviceFlags = 0;
-    //#ifdef _DEBUG
-    //    createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-    //#endif
-    //    D3D_FEATURE_LEVEL featureLevels[] = {
-    //        D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
-    //        D3D_FEATURE_LEVEL_9_3,  D3D_FEATURE_LEVEL_9_2,  D3D_FEATURE_LEVEL_9_1,
-    //    };
-    //
-    //    hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevels,
-    //                           ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &pD3DDevice, &featureLevel, &pImmediateContext);
-    //
-    //    if (hr == E_INVALIDARG)
-    //    {
-    //        // DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
-    //        hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, &featureLevels[1],
-    //                               ARRAYSIZE(featureLevels) - 1, D3D11_SDK_VERSION, &pD3DDevice, &featureLevel,
-    //                               &pImmediateContext);
-    //    }
-    //
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    // Obtain DXGI factory from device (since we used nullptr for pAdapter above)
-    //    IDXGIFactory1* dxgiFactory = nullptr;
-    //    {
-    //        IDXGIDevice* dxgiDevice = nullptr;
-    //        hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
-    //        if (SUCCEEDED(hr))
-    //        {
-    //            IDXGIAdapter* adapter = nullptr;
-    //            hr = dxgiDevice->GetAdapter(&adapter);
-    //            if (SUCCEEDED(hr))
-    //            {
-    //                hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
-    //                adapter->Release();
-    //            }
-    //            dxgiDevice->Release();
-    //        }
-    //    }
-    //
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    // Create swap chain
-    //    IDXGIFactory2* dxgiFactory2 = nullptr;
-    //    hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&dxgiFactory2));
-    //    if (dxgiFactory2)
-    //    {
-    //        // DirectX 11.1 or later
-    //        DXGI_SWAP_CHAIN_DESC1 sd;
-    //        ZeroMemory(&sd, sizeof(sd));
-    //        sd.Width = iWidth;
-    //        sd.Height = iHeight;
-    //        sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    //        sd.SampleDesc.Count = 1;
-    //        sd.SampleDesc.Quality = 0;
-    //        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    //        sd.BufferCount = 2;
-    //        sd.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
-    //
-    //        IDXGISwapChain1* pSwapChain1 = nullptr;
-    //        hr = dxgiFactory2->CreateSwapChainForHwnd(pD3DDevice, gHWND, &sd, nullptr, nullptr, &pSwapChain1);
-    //        if (SUCCEEDED(hr))
-    //        {
-    //            hr = pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&pSwapChain));
-    //            pSwapChain1->Release();
-    //        }
-    //
-    //        dxgiFactory2->Release();
-    //    }
-    //    else
-    //    {
-    //        // DirectX 11.0 systems
-    //        DXGI_SWAP_CHAIN_DESC sd;
-    //        ZeroMemory(&sd, sizeof(sd));
-    //        sd.BufferCount = 2;
-    //        sd.BufferDesc.Width = iWidth;
-    //        sd.BufferDesc.Height = iHeight;
-    //        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    //        sd.BufferDesc.RefreshRate.Numerator = 60;
-    //        sd.BufferDesc.RefreshRate.Denominator = 1;
-    //        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    //        sd.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
-    //        sd.OutputWindow = gHWND;
-    //        sd.SampleDesc.Count = 1;
-    //        sd.SampleDesc.Quality = 0;
-    //        sd.Windowed = TRUE;
-    //
-    //        hr = dxgiFactory->CreateSwapChain(pD3DDevice, &sd, &pSwapChain);
-    //    }
-    //
-    //    dxgiFactory->MakeWindowAssociation(gHWND, DXGI_MWA_NO_ALT_ENTER);
-    //    dxgiFactory->Release();
-    //
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    // Create a render target view
-    //    ID3D11Texture2D* pBackBuffer = nullptr;
-    //    hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView);
-    //    pBackBuffer->Release();
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    // Create depth stencil texture
-    //    D3D11_TEXTURE2D_DESC descDepth;
-    //    ZeroMemory(&descDepth, sizeof(descDepth));
-    //    descDepth.Width = iWidth;
-    //    descDepth.Height = iHeight;
-    //    descDepth.MipLevels = 1;
-    //    descDepth.ArraySize = 1;
-    //    descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    //    descDepth.SampleDesc.Count = 1;
-    //    descDepth.SampleDesc.Quality = 0;
-    //    descDepth.Usage = D3D11_USAGE_DEFAULT;
-    //    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    //    descDepth.CPUAccessFlags = 0;
-    //    descDepth.MiscFlags = 0;
-    //
-    //    ID3D11Texture2D* pDepthStencil;
-    //    hr = pD3DDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil);
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    // Create the depth stencil view
-    //    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-    //    ZeroMemory(&descDSV, sizeof(descDSV));
-    //    descDSV.Format = descDepth.Format;
-    //    descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    //    descDSV.Texture2D.MipSlice = 0;
-    //    hr = pD3DDevice->CreateDepthStencilView(pDepthStencil, &descDSV, &pDepthStencilView);
-    //
-    //    pDepthStencil->Release();
-    //
-    //    if (FAILED(hr))
-    //        return hr;
-    //
-    //    pImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthStencilView);
-    //
-    //    // Setup the viewport
-    //    CD3D11_VIEWPORT vp(0.0f, 0.0f, (float)iWidth, (float)iHeight);
-    //    pImmediateContext->RSSetViewports(1, &vp);
-
-    return hr;
-}
-
-void milk2_ui_element_instance::DiscardDeviceResources()
-{
-    //m_pRenderTarget.Release();
-    //m_pStrokeBrush.Release();
-}
-
 HRESULT milk2_ui_element_instance::Render()
 {
     //g_plugin.PluginRender(waves[0], waves[1]);
 
     HRESULT hr = S_OK;
-
-    //hr = CreateDeviceResources();
-
-    //if (SUCCEEDED(hr)) {
-    //    m_pRenderTarget->BeginDraw();
-    //    m_pRenderTarget->SetAntialiasMode(m_config.m_low_quality_enabled ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-
-    //    m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
-
-    //    t_ui_color colorBackground = m_callback->query_std_color(ui_color_background);
-
-    //    m_pRenderTarget->Clear(D2D1::ColorF(GetRValue(colorBackground) / 255.0f, GetGValue(colorBackground) / 255.0f, GetBValue(colorBackground) / 255.0f));
 
     //    if (m_vis_stream.is_valid()) {
     //        double time;
@@ -648,14 +470,6 @@ HRESULT milk2_ui_element_instance::Render()
     //        }
     //    }
 
-    //    hr = m_pRenderTarget->EndDraw();
-
-    //    if (hr == D2DERR_RECREATE_TARGET)
-    //    {
-    //        hr = S_OK;
-    //        DiscardDeviceResources();
-    //    }
-    //}
 
     return hr;
 }
@@ -664,151 +478,126 @@ HRESULT milk2_ui_element_instance::RenderChunk(const audio_chunk& chunk)
 {
     HRESULT hr = S_OK;
 
+    RECT rt = m_deviceResources->GetOutputSize();
     struct MD2_SIZE_F
     {
         FLOAT width;
         FLOAT height;
-    } rtSize = {1280.0f, 720.0f}; //D2D1_SIZE_F rtSize = m_pRenderTarget->GetSize();
-    
-    //CComPtr<ID2D1PathGeometry> pPath;
+    } rtSize = {static_cast<float>(rt.right - rt.left), static_cast<float>(rt.bottom - rt.top)};
 
-    //hr = m_pDirect2dFactory->CreatePathGeometry(&pPath);
+    audio_chunk_impl chunk2;
+    chunk2.copy(chunk);
 
-    if (SUCCEEDED(hr))
+    if (false) //m_config.m_resample_enabled)
     {
-        //CComPtr<ID2D1GeometrySink> pSink;
-
-        //hr = pPath->Open(&pSink);
-
-        audio_chunk_impl chunk2;
-        chunk2.copy(chunk);
-
-        if (false) //m_config.m_resample_enabled)
+        unsigned int display_sample_rate = (unsigned)(rtSize.width / 0.1 /* m_config.get_window_duration() */);
+        unsigned int target_sample_rate = chunk.get_sample_rate();
+        while (target_sample_rate >= 2 && target_sample_rate > display_sample_rate)
         {
-            unsigned int display_sample_rate = (unsigned)(rtSize.width / 0.1 /* m_config.get_window_duration() */);
-            unsigned int target_sample_rate = chunk.get_sample_rate();
-            while (target_sample_rate >= 2 && target_sample_rate > display_sample_rate)
+            target_sample_rate /= 2;
+        }
+        if (target_sample_rate != chunk.get_sample_rate())
+        {
+            dsp::ptr resampler;
+            metadb_handle::ptr track;
+            if (static_api_ptr_t<playback_control>()->get_now_playing(track) &&
+                resampler_entry::g_create(resampler, chunk.get_sample_rate(), target_sample_rate, 1.0f))
             {
-                target_sample_rate /= 2;
-            }
-            if (target_sample_rate != chunk.get_sample_rate())
-            {
-                dsp::ptr resampler;
-                metadb_handle::ptr track;
-                if (static_api_ptr_t<playback_control>()->get_now_playing(track) &&
-                    resampler_entry::g_create(resampler, chunk.get_sample_rate(), target_sample_rate, 1.0f))
-                {
-                    dsp_chunk_list_impl chunk_list;
-                    chunk_list.add_chunk(&chunk);
-                    resampler->run(&chunk_list, track, dsp::FLUSH);
-                    resampler->flush();
+                dsp_chunk_list_impl chunk_list;
+                chunk_list.add_chunk(&chunk);
+                resampler->run(&chunk_list, track, dsp::FLUSH);
+                resampler->flush();
 
-                    bool consistent_format = true;
-                    unsigned total_sample_count = 0;
+                bool consistent_format = true;
+                unsigned total_sample_count = 0;
+                for (t_size chunk_index = 0; chunk_index < chunk_list.get_count(); ++chunk_index)
+                {
+                    if ((chunk_list.get_item(chunk_index)->get_sample_rate() ==
+                         chunk_list.get_item(0)->get_sample_rate()) &&
+                        (chunk_list.get_item(chunk_index)->get_channel_count() ==
+                         chunk_list.get_item(0)->get_channel_count()))
+                    {
+                        total_sample_count += chunk_list.get_item(chunk_index)->get_sample_count();
+                    }
+                    else
+                    {
+                        consistent_format = false;
+                        break;
+                    }
+                }
+                if (consistent_format && chunk_list.get_count() > 0)
+                {
+                    unsigned channel_count = chunk_list.get_item(0)->get_channels();
+                    unsigned sample_rate = chunk_list.get_item(0)->get_sample_rate();
+
+                    pfc::array_t<audio_sample> buffer;
+                    buffer.prealloc(channel_count * total_sample_count);
                     for (t_size chunk_index = 0; chunk_index < chunk_list.get_count(); ++chunk_index)
                     {
-                        if ((chunk_list.get_item(chunk_index)->get_sample_rate() ==
-                             chunk_list.get_item(0)->get_sample_rate()) &&
-                            (chunk_list.get_item(chunk_index)->get_channel_count() ==
-                             chunk_list.get_item(0)->get_channel_count()))
-                        {
-                            total_sample_count += chunk_list.get_item(chunk_index)->get_sample_count();
-                        }
-                        else
-                        {
-                            consistent_format = false;
-                            break;
-                        }
+                        audio_chunk* c = chunk_list.get_item(chunk_index);
+                        buffer.append_fromptr(c->get_data(), c->get_channel_count() * c->get_sample_count());
                     }
-                    if (consistent_format && chunk_list.get_count() > 0)
-                    {
-                        unsigned channel_count = chunk_list.get_item(0)->get_channels();
-                        unsigned sample_rate = chunk_list.get_item(0)->get_sample_rate();
 
-                        pfc::array_t<audio_sample> buffer;
-                        buffer.prealloc(channel_count * total_sample_count);
-                        for (t_size chunk_index = 0; chunk_index < chunk_list.get_count(); ++chunk_index)
-                        {
-                            audio_chunk* c = chunk_list.get_item(chunk_index);
-                            buffer.append_fromptr(c->get_data(), c->get_channel_count() * c->get_sample_count());
-                        }
-
-                        chunk2.set_data(buffer.get_ptr(), total_sample_count, channel_count, sample_rate);
-                    }
+                    chunk2.set_data(buffer.get_ptr(), total_sample_count, channel_count, sample_rate);
                 }
             }
         }
+    }
 
-        t_uint32 channel_count = chunk2.get_channel_count();
-        t_uint32 sample_count_total = chunk2.get_sample_count();
-        t_uint32 sample_count = false /* m_config.m_trigger_enabled */ ? sample_count_total / 2 : sample_count_total;
-        const audio_sample* samples = chunk2.get_data();
+    t_uint32 channel_count = chunk2.get_channel_count();
+    t_uint32 sample_count_total = chunk2.get_sample_count();
+    t_uint32 sample_count = false /* m_config.m_trigger_enabled */ ? sample_count_total / 2 : sample_count_total;
+    const audio_sample* samples = chunk2.get_data();
 
-        if (false) //m_config.m_trigger_enabled)
-        {
-            t_uint32 cross_min = sample_count;
-            t_uint32 cross_max = 0;
-
-            for (t_uint32 channel_index = 0; channel_index < channel_count; ++channel_index)
-            {
-                audio_sample sample0 = samples[channel_index];
-                audio_sample sample1 = samples[1 * channel_count + channel_index];
-                audio_sample sample2;
-                for (t_uint32 sample_index = 2; sample_index < sample_count; ++sample_index)
-                {
-                    sample2 = samples[sample_index * channel_count + channel_index];
-                    if ((sample0 < 0.0) && (sample1 >= 0.0) && (sample2 >= 0.0))
-                    {
-                        if (cross_min > sample_index - 1)
-                            cross_min = sample_index - 1;
-                        if (cross_max < sample_index - 1)
-                            cross_max = sample_index - 1;
-                    }
-                    sample0 = sample1;
-                    sample1 = sample2;
-                }
-            }
-
-            samples += cross_min * channel_count;
-        }
+    if (false) //m_config.m_trigger_enabled)
+    {
+        t_uint32 cross_min = sample_count;
+        t_uint32 cross_max = 0;
 
         for (t_uint32 channel_index = 0; channel_index < channel_count; ++channel_index)
         {
-            float zoom = 1.0; //(float)m_config.get_zoom_factor();
-            float channel_baseline = (float)(channel_index + 0.5) / (float)channel_count * rtSize.height;
-            for (t_uint32 sample_index = 0; sample_index < sample_count; ++sample_index)
+            audio_sample sample0 = samples[channel_index];
+            audio_sample sample1 = samples[1 * channel_count + channel_index];
+            audio_sample sample2;
+            for (t_uint32 sample_index = 2; sample_index < sample_count; ++sample_index)
             {
-                audio_sample sample = samples[sample_index * channel_count + channel_index];
-                float x = (float)sample_index / (float)(sample_count - 1) * rtSize.width;
-                float y = channel_baseline - sample * zoom * rtSize.height / 2 / channel_count + 0.5f;
-                //if (sample_index == 0)
-                //{
-                //    pSink->BeginFigure(D2D1::Point2F(x, y), D2D1_FIGURE_BEGIN_HOLLOW);
-                //}
-                //else
-                //{
-                //    pSink->AddLine(D2D1::Point2F(x, y));
-                //}
+                sample2 = samples[sample_index * channel_count + channel_index];
+                if ((sample0 < 0.0) && (sample1 >= 0.0) && (sample2 >= 0.0))
+                {
+                    if (cross_min > sample_index - 1)
+                        cross_min = sample_index - 1;
+                    if (cross_max < sample_index - 1)
+                        cross_max = sample_index - 1;
+                }
+                sample0 = sample1;
+                sample1 = sample2;
             }
-            //if (channel_count > 0 && sample_count > 0)
-            //{
-            //    pSink->EndFigure(D2D1_FIGURE_END_OPEN);
-            //}
         }
 
-        //if (SUCCEEDED(hr))
+        samples += cross_min * channel_count;
+    }
+
+    for (t_uint32 channel_index = 0; channel_index < channel_count; ++channel_index)
+    {
+        float zoom = 1.0; //(float)m_config.get_zoom_factor();
+        float channel_baseline = (float)(channel_index + 0.5) / (float)channel_count * rtSize.height;
+        for (t_uint32 sample_index = 0; sample_index < sample_count; ++sample_index)
+        {
+            audio_sample sample = samples[sample_index * channel_count + channel_index];
+            float x = (float)sample_index / (float)(sample_count - 1) * rtSize.width;
+            float y = channel_baseline - sample * zoom * rtSize.height / 2 / channel_count + 0.5f;
+            //if (sample_index == 0)
+            //{
+            //    pSink->BeginFigure(D2D1::Point2F(x, y), D2D1_FIGURE_BEGIN_HOLLOW);
+            //}
+            //else
+            //{
+            //    pSink->AddLine(D2D1::Point2F(x, y));
+            //}
+        }
+        //if (channel_count > 0 && sample_count > 0)
         //{
-        //    hr = pSink->Close();
-        //}
-
-        //if (SUCCEEDED(hr))
-        //{
-        //    D2D1_STROKE_STYLE_PROPERTIES strokeStyleProperties = D2D1::StrokeStyleProperties(D2D1_CAP_STYLE_FLAT, D2D1_CAP_STYLE_FLAT, D2D1_CAP_STYLE_FLAT, D2D1_LINE_JOIN_BEVEL);
-
-        //    CComPtr<ID2D1StrokeStyle> pStrokeStyle;
-        //    m_pDirect2dFactory->CreateStrokeStyle(strokeStyleProperties, nullptr, 0, &pStrokeStyle);
-
-        //    m_pRenderTarget->DrawGeometry(pPath, m_pStrokeBrush, (FLOAT)m_config.get_line_stroke_width(), pStrokeStyle);
+        //    pSink->EndFigure(D2D1_FIGURE_END_OPEN);
         //}
     }
 
@@ -905,10 +694,10 @@ void milk2_ui_element_instance::AudioData(const float* pAudioData, size_t iAudio
 
 void milk2_ui_element_instance::UpdateChannelMode()
 {
-    //if (m_vis_stream.is_valid())
-    //{
-    //    m_vis_stream->set_channel_mode(false /* m_config.m_downmix_enabled */ ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
-    //}
+    if (m_vis_stream.is_valid())
+    {
+        m_vis_stream->set_channel_mode(false /* m_config.m_downmix_enabled */ ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
+    }
 }
 
 class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element_instance> {};

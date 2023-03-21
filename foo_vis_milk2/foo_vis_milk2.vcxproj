@@ -249,7 +249,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>..\depends\foobar2000\shared\shared-$(Platform).lib</AdditionalDependencies>
+      <AdditionalDependencies>..\depends\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -337,6 +337,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DeviceResources.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -352,6 +353,7 @@
     <ClCompile Include="ui_element.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DeviceResources.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
