@@ -78,11 +78,11 @@
     <ClInclude Include="..\depends\ns-eel2\ns-eel-addfuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\depends\dx11\WICTextureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="vis_milk2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -143,6 +143,12 @@
     <ClCompile Include="..\depends\ns-eel2\nseel-yylex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\depends\dx11\WICTextureLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\depends\ns-eel2\nseel-ram.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\depends\dx11\ColorPixelShader.hlsl">
@@ -160,5 +166,10 @@
     <FxCompile Include="..\depends\dx11\TexturePixelShader.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\depends\ns-eel2\asm-nseel-x64.asm">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

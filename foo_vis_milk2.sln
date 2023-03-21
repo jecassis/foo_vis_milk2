@@ -3,22 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33513.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foo_vis_milk2", "foo_vis_milk2.vcxproj", "{85FBFD09-0099-4FE9-9DB6-78DB6F60F817}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B} = {7EE6F699-4EA5-4409-B212-DCFD192C811B}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foo_vis_milk2", "foo_vis_milk2\foo_vis_milk2.vcxproj", "{85FBFD09-0099-4FE9-9DB6-78DB6F60F817}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_SDK", "depends\foobar2000\sdk\foobar2000_SDK.vcxproj", "{E8091321-D79D-4575-86EF-064EA1A4A20D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vis_milk2", "vis_milk2\vis_milk2.vcxproj", "{7EE6F699-4EA5-4409-B212-DCFD192C811B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pfc", "depends\pfc\pfc.vcxproj", "{EBFFFB4E-261D-44D3-B89C-957B31A0BF9C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_SDK", "depends\foobar2000\sdk\foobar2000_sdk.vcxproj", "{E8091321-D79D-4575-86EF-064EA1A4A20D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_sdk_helpers", "depends\foobar2000\helpers\foobar2000_sdk_helpers.vcxproj", "{EE47764E-A202-4F85-A767-ABDAB4AFF35F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PFC", "depends\pfc\pfc.vcxproj", "{EBFFFB4E-261D-44D3-B89C-957B31A0BF9C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_SDK_helpers", "depends\foobar2000\helpers\foobar2000_sdk_helpers.vcxproj", "{EE47764E-A202-4F85-A767-ABDAB4AFF35F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_component_client", "depends\foobar2000\foobar2000_component_client\foobar2000_component_client.vcxproj", "{71AD2674-065B-48F5-B8B0-E1F9D3892081}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libPPUI", "depends\libppui\libPPUI.vcxproj", "{7729EB82-4069-4414-964B-AD399091A03F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vis_milk2", "vis_milk2\vis_milk2.vcxproj", "{7EE6F699-4EA5-4409-B212-DCFD192C811B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +33,14 @@ Global
 		{85FBFD09-0099-4FE9-9DB6-78DB6F60F817}.Release|x64.Build.0 = Release|x64
 		{85FBFD09-0099-4FE9-9DB6-78DB6F60F817}.Release|x86.ActiveCfg = Release|Win32
 		{85FBFD09-0099-4FE9-9DB6-78DB6F60F817}.Release|x86.Build.0 = Release|Win32
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x64.ActiveCfg = Debug|x64
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x64.Build.0 = Debug|x64
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x86.ActiveCfg = Debug|Win32
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x86.Build.0 = Debug|Win32
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x64.ActiveCfg = Release|x64
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x64.Build.0 = Release|x64
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x86.ActiveCfg = Release|Win32
+		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x86.Build.0 = Release|Win32
 		{E8091321-D79D-4575-86EF-064EA1A4A20D}.Debug|x64.ActiveCfg = Debug|x64
 		{E8091321-D79D-4575-86EF-064EA1A4A20D}.Debug|x64.Build.0 = Debug|x64
 		{E8091321-D79D-4575-86EF-064EA1A4A20D}.Debug|x86.ActiveCfg = Debug|Win32
@@ -76,14 +81,6 @@ Global
 		{7729EB82-4069-4414-964B-AD399091A03F}.Release|x64.Build.0 = Release|x64
 		{7729EB82-4069-4414-964B-AD399091A03F}.Release|x86.ActiveCfg = Release|Win32
 		{7729EB82-4069-4414-964B-AD399091A03F}.Release|x86.Build.0 = Release|Win32
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x64.ActiveCfg = Debug|x64
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x64.Build.0 = Debug|x64
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x86.ActiveCfg = Debug|Win32
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Debug|x86.Build.0 = Debug|Win32
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x64.ActiveCfg = Release|x64
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x64.Build.0 = Release|x64
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x86.ActiveCfg = Release|Win32
-		{7EE6F699-4EA5-4409-B212-DCFD192C811B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

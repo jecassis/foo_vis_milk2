@@ -109,22 +109,38 @@ ClientBin/
 ## Windows detritus
 #############
 
-# Windows image file caches
+# Windows image caches
 Thumbs.db
 ehthumbs.db
 
-# Folder config file
+# Folder configurations
 Desktop.ini
 
-# Recycle Bin used on file shares
+# Recycle Bin
 $RECYCLE.BIN/
 
-# Mac crap
+# MacOS
 .DS_Store
+
+# CMake
+CMakeLists.txt
 
 #############
 ## MilkDrop
 #############
 
-# Prevent with fxc generated files to add
+# FXC-generated files
 /vis_milk2/*.inc
+
+#############
+## Dependencies
+#############
+/depends/milkdrop2/
+/depends/foobar2000/
+/depends/pfc/
+/depends/libppui/
+/depends/wtl/
+/depends/windows*/
+/depends/ns-eel2/asm-nseel-x86-gcc.c
+/depends/ns-eel2/asm-nseel-ppc-gcc.c
+/depends/ns-eel2/asm-nseel-x64-macho.o

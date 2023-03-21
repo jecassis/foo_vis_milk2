@@ -1,0 +1,24 @@
+---
+BasedOnStyle: Microsoft
+#AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Left
+#AlignConsecutiveAssignments: true
+#  Enabled: true
+#  AcrossComments: true
+#  AcrossEmptyLines: false
+AlignTrailingComments: false
+#AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+#AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AlwaysBreakTemplateDeclarations: Yes
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterExternBlock: false
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
+ColumnLimit: 120
+IndentCaseLabels: true
+IndentCaseBlocks: true
+PointerAlignment: Left
+ReflowComments: false
+ShortNamespaceLines: 15
