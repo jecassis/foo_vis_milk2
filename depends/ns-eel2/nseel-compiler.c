@@ -689,7 +689,7 @@ static void *__newBlock(llBlock **start, int size)
   if ((int)size > LLB_DSIZE) alloc_size += size - LLB_DSIZE;
  
 #ifdef _WIN32
-#ifdef WINAPI_FAMILY && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
+#if WINAPI_FAMILY && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
   DWORD ov;
   UINT_PTR offs, eoffs;
 

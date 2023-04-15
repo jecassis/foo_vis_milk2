@@ -1,30 +1,30 @@
 /*
   LICENSE
   -------
-Copyright 2005-2013 Nullsoft, Inc.
-All rights reserved.
+  Copyright 2005-2013 Nullsoft, Inc.
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, 
-are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without modification,
+  are permitted provided that the following conditions are met:
 
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer. 
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
 
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution. 
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
 
-  * Neither the name of Nullsoft nor the names of its contributors may be used to 
-    endorse or promote products derived from this software without specific prior written permission. 
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Neither the name of Nullsoft nor the names of its contributors may be used to
+      endorse or promote products derived from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "pch.h"
@@ -369,8 +369,8 @@ void CPlugin::RunPerFrameEquations(int code)
             *pState->var_pv_q[vi] = *pState->var_pf_q[vi];
 
         // (a few range checks:)
-        *pState->var_pf_gamma     = max(0    , min(    8, *pState->var_pf_gamma    ));
-        *pState->var_pf_echo_zoom = max(0.001, min( 1000, *pState->var_pf_echo_zoom));
+        *pState->var_pf_gamma = std::max(0.0, std::min(double(8), *pState->var_pf_gamma));
+        *pState->var_pf_echo_zoom = std::max(0.001, std::min(double(1000), *pState->var_pf_echo_zoom));
 
 		/*
         if (m_pState->m_bRedBlueStereo || m_bAlways3D)
@@ -881,7 +881,7 @@ void CPlugin::RenderFrame(int bRedraw)
 	if (m_supertext.fStartTime >= 0 &&
 		!m_supertext.bRedrawSuperText)
 	{
-		ShowSongTitleAnim(GetWidth(), GetHeight(), min(fProgress, 0.9999f));
+		ShowSongTitleAnim(GetWidth(), GetHeight(), std::min(fProgress, 0.9999f));
         if (fProgress >= 1.0f)
             m_supertext.fStartTime = -1.0f;	// 'off' state
 	}
@@ -1127,15 +1127,15 @@ void CPlugin::GetSafeBlurMinMax(CState* pState, float* blur_min, float* blur_max
         blur_min[0] = avg - fMinDist*0.5f;
         blur_max[0] = avg - fMinDist*0.5f;
     }
-    blur_max[1] = min(blur_max[0], blur_max[1]);
-    blur_min[1] = max(blur_min[0], blur_min[1]);
+    blur_max[1] = std::min(blur_max[0], blur_max[1]);
+    blur_min[1] = std::max(blur_min[0], blur_min[1]);
     if (blur_max[1] - blur_min[1] < fMinDist) {
         float avg = (blur_min[1] + blur_max[1])*0.5f;
         blur_min[1] = avg - fMinDist*0.5f;
         blur_max[1] = avg - fMinDist*0.5f;
     }
-    blur_max[2] = min(blur_max[1], blur_max[2]);
-    blur_min[2] = max(blur_min[1], blur_min[2]);
+    blur_max[2] = std::min(blur_max[1], blur_max[2]);
+    blur_min[2] = std::max(blur_min[1], blur_min[2]);
     if (blur_max[2] - blur_min[2] < fMinDist) {
         float avg = (blur_min[2] + blur_max[2])*0.5f;
         blur_min[2] = avg - fMinDist*0.5f;
@@ -1159,7 +1159,7 @@ void CPlugin::BlurPasses()
         if (!lpDevice)
             return;
 
-        int passes = min(NUM_BLUR_TEX, m_nHighestBlurTexUsedThisFrame*2);
+        int passes = std::min(NUM_BLUR_TEX, m_nHighestBlurTexUsedThisFrame * 2);
         if (passes==0)
             return;
 
@@ -1505,7 +1505,7 @@ void CPlugin::ComputeGridAlphaValues()
 				{
                     // blend to UV's for m_pOldState
                     float mix2 = m_vertinfo[n].a*fBlend + m_vertinfo[n].c;//fCosineBlend2;
-                    mix2 = max(0,min(1,mix2));   
+                    mix2 = std::max(0.0f, std::min(1.0f, mix2));
                     //     if fBlend un-flipped, then mix2 is 0 at the beginning of a blend, 1 at the end...
                     //                           and alphas are 0 at the beginning, 1 at the end.
 					m_verts[n].tu = m_verts[n].tu*(mix2) + u*(1-mix2);
@@ -1631,7 +1631,7 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
     // If we're blending, we'll skip any polygon that is all alpha-blended out.
     // This also respects the MaxPrimCount limit of the video card.
     MYVERTEX tempv[1024 * 3];
-    int max_prims_per_batch = min( lpDevice->GetMaxPrimitiveCount(), (sizeof(tempv) / sizeof(tempv[0]))) / 3 - 4;
+    int max_prims_per_batch = std::min(lpDevice->GetMaxPrimitiveCount(), (sizeof(tempv) / sizeof(tempv[0]))) / 3 - 4;
     int primCount = m_nGridX*m_nGridY*2;  
     int src_idx = 0;
     int prims_sent = 0;
@@ -1848,7 +1848,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
         // If we're blending, we'll skip any polygon that is all alpha-blended out.
         // This also respects the MaxPrimCount limit of the video card.
         MYVERTEX tempv[1024 * 3];
-        int max_prims_per_batch = min( lpDevice->GetMaxPrimitiveCount(), (sizeof(tempv) / sizeof(tempv[0])) / 3) - 4;
+        int max_prims_per_batch = std::min(lpDevice->GetMaxPrimitiveCount(), (sizeof(tempv) / sizeof(tempv[0])) / 3) - 4;
         for (int half=0; half<2; half++)
         {
             // hack / restore the ang values along the angle-wrap [0 <-> 2pi] seam...
@@ -2180,7 +2180,7 @@ int SmoothWave(WFVERTEX* vi, int nVertsIn, WFVERTEX* vo)
     for (int i=0; i<nVertsIn-1; i++)
     {
         i_above = i_above2;
-        i_above2 = min(nVertsIn-1,i+2);
+        i_above2 = std::min(nVertsIn - 1, i + 2);
         vo[j] = vi[i];
         vo[j+1].x = (c1*vi[i_below].x + c2*vi[i].x + c3*vi[i_above].x + c4*vi[i_above2].x)*inv_sum;
         vo[j+1].y = (c1*vi[i_below].y + c2*vi[i].y + c3*vi[i_above].y + c4*vi[i_above2].y)*inv_sum;
@@ -2249,7 +2249,7 @@ void CPlugin::DrawCustomWaves()
                     *pState->m_wave[i].var_pp_t[vi] = *pState->m_wave[i].var_pf_t[vi];
 
                 nSamples = (int)*pState->m_wave[i].var_pf_samples;
-                nSamples = min(512, nSamples);
+                nSamples = std::min(512, nSamples);
 
                 if ((nSamples >= 2) || (pState->m_wave[i].bUseDots && nSamples >= 1))
                 {
@@ -3264,21 +3264,21 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
                 pRT->Release();
             }*/
 
-			float x   = min(1000.0f, max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_x) * 2.0f - 1.0f ));
-			float y   = min(1000.0f, max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_y) * 2.0f - 1.0f ));
-			float sx  = min(1000.0f, max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_sx) ));
-			float sy  = min(1000.0f, max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_sy) ));
+			float x  = std::min(1000.0f, std::max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_x) * 2.0f - 1.0f));
+            float y  = std::min(1000.0f, std::max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_y) * 2.0f - 1.0f));
+            float sx = std::min(1000.0f, std::max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_sx)));
+            float sy = std::min(1000.0f, std::max(-1000.0f, (float)(*m_texmgr.m_tex[iSlot].var_sy)));
 			float rot = (float)(*m_texmgr.m_tex[iSlot].var_rot);
 			int flipx = (*m_texmgr.m_tex[iSlot].var_flipx == 0.0) ? 0 : 1;
 			int flipy = (*m_texmgr.m_tex[iSlot].var_flipy == 0.0) ? 0 : 1;
-			float repeatx = min(100.0f, max(0.01f, (float)(*m_texmgr.m_tex[iSlot].var_repeatx) ));
-			float repeaty = min(100.0f, max(0.01f, (float)(*m_texmgr.m_tex[iSlot].var_repeaty) ));
+            float repeatx = std::min(100.0f, std::max(0.01f, (float)(*m_texmgr.m_tex[iSlot].var_repeatx)));
+            float repeaty = std::min(100.0f, std::max(0.01f, (float)(*m_texmgr.m_tex[iSlot].var_repeaty)));
 
-			int blendmode = min(4, max(0, ((int)(*m_texmgr.m_tex[iSlot].var_blendmode))));
-			float r = min(1.0f, max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_r))));
-			float g = min(1.0f, max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_g))));
-			float b = min(1.0f, max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_b))));
-			float a = min(1.0f, max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_a))));
+			int blendmode = std::min(4, std::max(0, ((int)(*m_texmgr.m_tex[iSlot].var_blendmode))));
+			float r = std::min(1.0f, std::max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_r))));
+			float g = std::min(1.0f, std::max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_g))));
+			float b = std::min(1.0f, std::max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_b))));
+			float a = std::min(1.0f, std::max(0.0f, ((float)(*m_texmgr.m_tex[iSlot].var_a))));
 
 			// set x,y coords
 			v3[0+flipx].x = -sx;
@@ -3619,7 +3619,7 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
 
         // finally, if it was a blur texture, note that
         if (p->m_texcode[i] >= TEX_BLUR1 && p->m_texcode[i] <= TEX_BLUR_LAST)
-            m_nHighestBlurTexUsedThisFrame = max(m_nHighestBlurTexUsedThisFrame, ((int)p->m_texcode[i] - (int)TEX_BLUR1) + 1);
+            m_nHighestBlurTexUsedThisFrame = std::max(m_nHighestBlurTexUsedThisFrame, ((int)p->m_texcode[i] - (int)TEX_BLUR1) + 1);
     }
 
     // bind "texsize_XYZ" params
@@ -3641,9 +3641,9 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
     float aspect_x = 1;
     float aspect_y = 1;
     if (GetWidth() > GetHeight())
-        aspect_y = GetHeight()/(float)GetWidth();
+        aspect_y = GetHeight() / (float)GetWidth();
     else
-        aspect_x = GetWidth()/(float)GetHeight();
+        aspect_x = GetWidth() / (float)GetHeight();
     
     float blur_min[3], blur_max[3];
     GetSafeBlurMinMax(pState, blur_min, blur_max);
@@ -3759,8 +3759,8 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 	// extend the poly we draw by 1 pixel around the viewable image area, 
 	//  in case the video card wraps u/v coords with a +0.5-texel offset 
 	//  (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
-	float fOnePlusInvWidth  = 1.0f + 1.0f/(float)GetWidth();
-	float fOnePlusInvHeight = 1.0f + 1.0f/(float)GetHeight();
+    float fOnePlusInvWidth = 1.0f + 1.0f / static_cast<float>(std::max(1, GetWidth()));
+    float fOnePlusInvHeight = 1.0f + 1.0f / static_cast<float>(std::max(1, GetHeight()));
 	v3[0].x = -fOnePlusInvWidth;
 	v3[1].x =  fOnePlusInvWidth;
 	v3[2].x = -fOnePlusInvWidth;
@@ -3966,8 +3966,8 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 
 		SPRITEVERTEX v3[4];
 		ZeroMemory(v3, sizeof(SPRITEVERTEX)*4);
-		float fOnePlusInvWidth  = 1.0f + 1.0f/(float)GetWidth();
-		float fOnePlusInvHeight = 1.0f + 1.0f/(float)GetHeight();
+        float fOnePlusInvWidth = 1.0f + 1.0f / static_cast<float>(std::max(1, GetWidth()));
+        float fOnePlusInvHeight = 1.0f + 1.0f / static_cast<float>(std::max(1, GetHeight()));
 		v3[0].x = -fOnePlusInvWidth;
 		v3[1].x =  fOnePlusInvWidth;
 		v3[2].x = -fOnePlusInvWidth;
@@ -4161,8 +4161,8 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
                 {
                     x *= (m_nGridX + 1);
                     y *= (m_nGridY + 1);
-                    x = max(min(x,m_nGridX-1),0);
-                    y = max(min(y,m_nGridY-1),0);
+                    x = std::max(std::min(x, static_cast<float>(m_nGridX) - 1), 0.0f);
+                    y = std::max(std::min(y, static_cast<float>(m_nGridY) - 1), 0.0f);
                     int nx = (int)x;
                     int ny = (int)y;
                     double dx = x - nx;
@@ -4238,7 +4238,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
         // This also respects the MaxPrimCount limit of the video card.
         MYVERTEX tempv[1024 * 3];
         int primCount = (FCGSX-2)*(FCGSY-2)*2;  // although, some might not be drawn!
-        int max_prims_per_batch = min( lpDevice->GetMaxPrimitiveCount(), (sizeof(tempv)/sizeof(tempv[0]))/3) - 4;
+        int max_prims_per_batch = std::min(lpDevice->GetMaxPrimitiveCount(), (sizeof(tempv) / sizeof(tempv[0])) / 3) - 4;
         int src_idx = 0;
         while (src_idx < primCount*3)
         {
@@ -4351,7 +4351,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 		}
 
 		// warping
-		float ramped_progress = max(0.0f, 1-fProgress*1.5f);
+        float ramped_progress = std::max(0.0f, 1 - fProgress * 1.5f);
 		float t2 = powf(ramped_progress, 1.8f)*1.3f;
 		for (y=0; y<8; y++)
 		{
@@ -4470,7 +4470,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 			if (m_supertext.bIsSongTitle)
 				t = powf(fProgress, 0.3f)*1.0f;
 			else
-				t = CosineInterp(min(1.0f, (fProgress/m_supertext.fFadeTime)));
+				t = CosineInterp(std::min(1.0f, (fProgress/m_supertext.fFadeTime)));
 			
 			if (it==0)
 				//v3[0].Diffuse = D3DCOLOR_RGBA_01(t,t,t,t);

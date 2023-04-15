@@ -1,22 +1,18 @@
 #pragma once
 
 #include <WinSDKVer.h>
-//#define _WIN32_WINNT 0x0602 // Ensure we are using XAudio 2.8!
+#define _WIN32_WINNT 0x0602
 #include <SDKDDKVer.h>
 
-
 // Use the C++ standard templated min/max
-//#define NOMINMAX
+#define NOMINMAX
 
-// DirectX apps don't need GDI
+// DirectX apps do not need GDI
 //#define NODRAWTEXT
 //#define NOGDI
 #define NOBITMAP
 
-// Include <mcx.h> if you need this
 #define NOMCX
-
-// Include <winsvc.h> if you need this
 #define NOSERVICE
 
 // WinHelp is deprecated
@@ -28,12 +24,7 @@
 #include <wrl/client.h>
 
 #include <d3d11_1.h>
-
-#if defined(NTDDI_WIN10_RS2)
 #include <dxgi1_6.h>
-#else
-#include <dxgi1_5.h>
-#endif
 
 #include <DirectXColors.h>
 #include <DirectXMath.h>
@@ -53,24 +44,21 @@
 #include <helpers/BumpableElem.h>
 #include <libppui/win32_op.h>
 
-//#include "Audio.h"
-//#include "CommonStates.h"
-//#include "DDSTextureLoader.h"
-//#include "Effects.h"
-//#include "GamePad.h"
-//#include "GeometricPrimitive.h"
-//#include "Keyboard.h"
-//#include "Model.h"
-//#include "Mouse.h"
-//#include "PrimitiveBatch.h"
-//#include "SimpleMath.h"
-//#include "SpriteBatch.h"
-//#include "SpriteFont.h"
-//#include "VertexTypes.h"
+#include "CommonStates.h"
+#include "DDSTextureLoader.h"
+#include "DirectXHelpers.h"
+#include "Effects.h"
+#include "GeometricPrimitive.h"
+#include "Model.h"
+#include "PrimitiveBatch.h"
+#include "SimpleMath.h"
+#include "SpriteBatch.h"
+#include "SpriteFont.h"
+#include "VertexTypes.h"
 
 namespace DX
 {
-// Helper class for COM exceptions
+// Helper class for COM exceptions.
 class com_exception : public std::exception
 {
   public:

@@ -1,30 +1,30 @@
 /*
   LICENSE
   -------
-Copyright 2005-2013 Nullsoft, Inc.
-All rights reserved.
+  Copyright 2005-2013 Nullsoft, Inc.
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, 
-are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without modification,
+  are permitted provided that the following conditions are met:
 
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer. 
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
 
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution. 
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
 
-  * Neither the name of Nullsoft nor the names of its contributors may be used to 
-    endorse or promote products derived from this software without specific prior written permission. 
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Neither the name of Nullsoft nor the names of its contributors may be used to
+      endorse or promote products derived from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*
   ##########################################################################################
@@ -504,7 +504,7 @@ Order of Function Calls
 #include <process.h>  // for beginthread, etc.
 #include <shellapi.h>
 #include <strsafe.h>
-//#include "../nu/AutoCharFn.h"
+//#include "nu/AutoCharFn.h"
 #include "nu/AutoWide.h"
 
 #include <d3dcompiler.h>
@@ -1336,7 +1336,7 @@ float SquishToCenter(float x, float fExp)
 
 int GetNearestPow2Size(int w, int h)
 {
-	float fExp = logf( max(w,h)*0.75f + 0.25f*min(w,h) ) / logf(2.0f);
+    float fExp = logf(std::max(w, h) * 0.75f + 0.25f * std::min(w, h)) / logf(2.0f);
     float bias = 0.55f;
     if (fExp + bias >= 11.0f)   // ..don't jump to 2048x2048 quite as readily
         bias = 0.5f;
@@ -1856,8 +1856,8 @@ int CPlugin::AllocateMyDX9Stuff()
                 // blur5 =  64  <-  user sees this as "blur3"
                 if (!(i&1) || (i<2))     
                 {
-                    w = max(16, w/2);
-                    h = max(16, h/2);
+                    w = std::max(16, w / 2);
+                    h = std::max(16, h / 2);
                 }
                 int w2 = ((w+3)/16)*16;
                 int h2 = ((h+3)/4)*4;
@@ -1904,8 +1904,8 @@ int CPlugin::AllocateMyDX9Stuff()
 	ZeroMemory(m_comp_verts, sizeof(MYVERTEX)*FCGSX*FCGSY);
 	//float fOnePlusInvWidth  = 1.0f + 1.0f/(float)GetWidth();
 	//float fOnePlusInvHeight = 1.0f + 1.0f/(float)GetHeight();
-    float fHalfTexelW =  0.5f / (float)GetWidth();   // 2.5: 2 pixels bad @ bottom right
-    float fHalfTexelH =  0.5f / (float)GetHeight();
+    float fHalfTexelW = 0.5f / static_cast<float>(std::max(1, GetWidth())); // 2.5: 2 pixels bad @ bottom right
+    float fHalfTexelH = 0.5f / static_cast<float>(std::max(1, GetHeight()));
     float fDivX = 1.0f / (float)(FCGSX-2);
     float fDivY = 1.0f / (float)(FCGSY-2);
     for (int j=0; j<FCGSY; j++) 
@@ -2039,7 +2039,7 @@ int CPlugin::AllocateMyDX9Stuff()
 
 	// reallocate the texture for font titles + custom msgs (m_lpDDSTitle)
 	{
-		m_nTitleTexSizeX = max(m_nTexSizeX, m_nTexSizeY);
+        m_nTitleTexSizeX = std::max(m_nTexSizeX, m_nTexSizeY);
 		m_nTitleTexSizeY = m_nTitleTexSizeX/4;
 
 		//dumpmsg("Init: [re]allocating title surface");
@@ -2672,8 +2672,8 @@ bool CPlugin::EvictSomeTexture()
     for (i=0; i<N; i++)                                                            
         if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes>0 && m_textures[i].nAge < m_nPresetsLoadedTotal-1) // note: -1 here keeps images around for the blend-from preset, too...
         {
-            newest = min(newest, m_textures[i].nAge);
-            oldest = max(oldest, m_textures[i].nAge);
+            newest = std::min(newest, m_textures[i].nAge);
+            oldest = std::max(oldest, m_textures[i].nAge);
             bAtLeastOneFound = true;
         }
     if (!bAtLeastOneFound)
@@ -3091,7 +3091,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
                                 x.d = texDesc.Depth;
                                 x.bEvictable = true;
                                 x.nAge = g_plugin.m_nPresetsLoadedTotal;
-                                int nPixels = texDesc.Width*texDesc.Height*max(1, texDesc.Depth);
+                                int nPixels = texDesc.Width * texDesc.Height * std::max(static_cast<UINT>(1), texDesc.Depth);
                                 int BitsPerPixel = GetDX11TexFormatBitsPerPixel(texDesc.Format);
                                 x.nSizeInBytes = nPixels*BitsPerPixel / 8 + 16384;  //plus some overhead
                               }
@@ -4632,7 +4632,7 @@ retry:
 
                     if (!bRatingKnown)
 		                fRating = GetPrivateProfileFloatW(L"preset00", L"fRating", 3.0f, szFullPath);
-                    fRating = max(0.0f, min(5.0f, fRating));
+                    fRating = std::max(0.0f, std::min(5.0f, fRating));
                 }
             }
 		}

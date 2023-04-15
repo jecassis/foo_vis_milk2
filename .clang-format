@@ -22,3 +22,4 @@ IndentCaseBlocks: true
 PointerAlignment: Left
 ReflowComments: false
 ShortNamespaceLines: 15
+SortIncludes: false
