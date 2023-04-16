@@ -57,16 +57,10 @@
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\depends\dx11\CommonStates.h">
+    <ClInclude Include="..\depends\dx11\constanttable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\depends\dx11\ConstantTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\depends\dx11\DDSTextureLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\depends\dx11\DX11Context.h">
+    <ClInclude Include="..\depends\dx11\d3d11shim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\depends\ns-eel2\ns-eel-int.h">
@@ -76,9 +70,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\depends\ns-eel2\ns-eel-addfuncs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\depends\dx11\WICTextureLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,16 +104,10 @@
     <ClCompile Include="utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\depends\dx11\CommonStates.cpp">
+    <ClCompile Include="..\depends\dx11\constanttable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\depends\dx11\ConstantTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\depends\dx11\DDSTextureLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\depends\dx11\DX11Context.cpp">
+    <ClCompile Include="..\depends\dx11\d3d11shim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\depends\ns-eel2\nseel-caltab.c">
@@ -141,9 +126,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\depends\ns-eel2\nseel-yylex.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\depends\dx11\WICTextureLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\depends\ns-eel2\nseel-ram.c">

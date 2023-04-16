@@ -1,10 +1,8 @@
 #include "pch.h"
 
-//#include "../vis_milk2/plugin.h"
 #include "DeviceResources.h"
-#include "Game.h"
+#include "vis.h"
 
-//CPlugin g_plugin;
 using namespace DirectX;
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default
@@ -25,7 +23,7 @@ static const GUID guid_milk2 = {
 static float sin1 = 0;
 static float sin2 = 0;
 
-std::unique_ptr<Game> g_game;
+std::unique_ptr<Vis> g_vis;
 
 class milk2_ui_element_instance :
     public ui_element_instance,
@@ -82,17 +80,6 @@ class milk2_ui_element_instance :
     void OnLButtonDblClk(UINT nFlags, CPoint point) { ToggleFullScreen(); }
 
     void ToggleFullScreen() { static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window()); }
-    HRESULT Render();
-    HRESULT RenderChunk(const audio_chunk& chunk);
-    bool PrevPreset();
-    bool NextPreset();
-    bool LoadPreset(int select);
-    bool RandomPreset();
-    bool LockPreset(bool lockUnlock);
-    bool IsLocked() { return g_plugin.m_bPresetLockedByUser; }
-    bool GetPresets(std::vector<std::string>& presets);
-    int GetActivePreset();
-    char* WideToUTF8(const wchar_t* WFilename);
     void AudioData(const float* pAudioData, size_t iAudioDataLength);
     void AddPCM();
     void UpdateChannelMode();
@@ -104,10 +91,8 @@ class milk2_ui_element_instance :
     DWORD m_refresh_interval = 33;
     double m_last_time = 0.0;
     bool m_IsInitialized = false;
-    unsigned char waves[2][576];
 
-    std::unique_ptr<DX::DeviceResources> m_deviceResources;
-    Game* game;
+    Vis* vis;
     bool s_in_sizemove;
     bool s_in_suspend;
     bool s_minimized;
@@ -161,8 +146,7 @@ milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr conf
     s_minimized = false;
 
     //set_configuration(config);
-    g_game = std::make_unique<Game>();
-    //m_deviceResources->RegisterDeviceNotify(this);
+    g_vis = std::make_unique<Vis>();
 }
 
 ui_element_config::ptr milk2_ui_element_instance::g_get_default_configuration()
@@ -206,33 +190,19 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     std::string::size_type t = base_path.rfind('\\');
     if (t != std::string::npos)
         base_path.erase(t + 1);
-    g_game->SetPwd(base_path);
-    //swprintf_s(g_plugin.m_szPluginsDirPath, L"%hs" /* L"%hs\\resources\\" */, const_cast<char*>(base_path.c_str()));
+    g_vis->SetPwd(base_path);
 
-    SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
+    SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_vis.get()));
 
     HRESULT hr = S_OK;
     int w, h;
-    g_game->GetDefaultSize(w, h);
+    g_vis->GetDefaultSize(w, h);
 
     CRect r = {0, 0, static_cast<LONG>(w), static_cast<LONG>(h)};
     WIN32_OP_D(GetClientRect(&r))
-    g_game->Initialize(get_wnd(), r.right - r.left, r.bottom - r.top);
+    g_vis->Initialize(get_wnd(), r.right - r.left, r.bottom - r.top);
+    //console::formatter() << core_api::get_my_file_name() << ": Could not initialize MilkDrop";
     console::formatter() << core_api::get_my_file_name() << ": OnCreate2 " << r.right << ", " << r.left << ", " << r.top << ", " << r.bottom;
-
-    //m_deviceResources->SetWindow(get_wnd(), 0, 0);
-
-    //m_deviceResources->CreateDeviceIndependentResources();
-    //m_deviceResources->CreateDeviceResources();
-    //CreateDeviceDependentResources();
-
-    //m_deviceResources->SetDpi(96.0f);
-    //m_deviceResources->CreateWindowSizeDependentResources();
-    //CreateWindowSizeDependentResources();
-
-    //if (FALSE == g_plugin.PluginPreInitialize(0, 0))
-    //    hr = E_FAIL;
-
     try
     {
         static_api_ptr_t<visualisation_manager> vis_manager;
@@ -257,8 +227,8 @@ void milk2_ui_element_instance::OnDestroy()
 
     if (m_IsInitialized)
     {
-        //g_plugin.PluginQuit();
-        g_game.reset();
+        g_vis->OnDeviceLost();
+        g_vis.reset();
         m_IsInitialized = false;
     }
 }
@@ -273,13 +243,10 @@ void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
     //console::formatter() << core_api::get_my_file_name() << ": OnPaint";
-    //g_plugin.PluginRender(waves[0], waves[1]); //Render();
-    //m_deviceResources->Present();
-
-    auto game = reinterpret_cast<Game*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (game) //s_in_sizemove && game
+    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (vis) //s_in_sizemove && vis
     {
-        game->Tick(); //g_game->Tick();
+        vis->Tick(); //g_vis->Tick();
     }
     else
     {
@@ -306,35 +273,35 @@ void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 
 void milk2_ui_element_instance::OnMove(CPoint ptPos)
 {
-    auto game = reinterpret_cast<Game*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (game)
+    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (vis)
     {
-        game->OnWindowMoved();
+        vis->OnWindowMoved();
     }
 }
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 {
-    auto game = reinterpret_cast<Game*>(GetWindowLongPtr(GWLP_USERDATA));
+    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
     if (nType == SIZE_MINIMIZED)
     {
         if (!s_minimized)
         {
             s_minimized = true;
-            if (!s_in_suspend && game)
-                game->OnSuspending();
+            if (!s_in_suspend && vis)
+                vis->OnSuspending();
             s_in_suspend = true;
         }
     }
     else if (s_minimized)
     {
         s_minimized = false;
-        if (s_in_suspend && game)
-            game->OnResuming();
+        if (s_in_suspend && vis)
+            vis->OnResuming();
         s_in_suspend = false;
     }
-    else if (!s_in_sizemove && game)
+    else if (!s_in_sizemove && vis)
     {
         //HRESULT hr = S_OK;
         //RECT r;
@@ -348,7 +315,7 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
             width = 128;
         if (height < 128)
             height = 128;
-        game->OnWindowSizeChanged(size.cx, size.cy);
+        vis->OnWindowSizeChanged(size.cx, size.cy);
     }
 }
 
@@ -365,27 +332,27 @@ void milk2_ui_element_instance::OnEnterSizeMove()
 void milk2_ui_element_instance::OnExitSizeMove()
 {
     s_in_sizemove = false;
-    auto game = reinterpret_cast<Game*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (game)
+    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (vis)
     {
         CRect r;
         WIN32_OP_D(GetClientRect(&r));
-        game->OnWindowSizeChanged(r.right - r.left, r.bottom - r.top);
+        vis->OnWindowSizeChanged(r.right - r.left, r.bottom - r.top);
     }
 }
 
 void milk2_ui_element_instance::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 {
-    auto game = reinterpret_cast<Game*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (game)
+    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (vis)
     {
         if (bActive)
         {
-            game->OnActivated();
+            vis->OnActivated();
         }
         else
         {
-            game->OnDeactivated();
+            vis->OnDeactivated();
         }
     }
 }
@@ -491,98 +458,20 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
     }
 }
 
-HRESULT milk2_ui_element_instance::Render()
-{
-    //g_plugin.PluginRender(waves[0], waves[1]);
-    return S_OK;
-}
-
-bool milk2_ui_element_instance::NextPreset()
-{
-    //g_plugin.NextPreset(1.0f);
-    return true;
-}
-
-bool milk2_ui_element_instance::PrevPreset()
-{
-    //g_plugin.PrevPreset(1.0f);
-    return true;
-}
-
-bool milk2_ui_element_instance::LoadPreset(int select)
-{
-    g_plugin.m_nCurrentPreset = select + g_plugin.m_nDirs;
-
-    wchar_t szFile[MAX_PATH] = {0};
-    wcscpy_s(szFile, g_plugin.m_szPresetDir); // Note: m_szPresetDir always ends with '\'
-    wcscat_s(szFile, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str());
-
-    g_plugin.LoadPreset(szFile, 1.0f);
-    return true;
-}
-
-bool milk2_ui_element_instance::LockPreset(bool lockUnlock)
-{
-    //g_plugin.m_bPresetLockedByUser = lockUnlock;
-    return true;
-}
-
-bool milk2_ui_element_instance::RandomPreset()
-{
-    //g_plugin.LoadRandomPreset(1.0f);
-    return true;
-}
-
-bool milk2_ui_element_instance::GetPresets(std::vector<std::string>& presets)
-{
-    if (!m_IsInitialized)
-        return false;
-
-    while (!g_plugin.m_bPresetListReady) {}
-
-    for (int i = 0; i < g_plugin.m_nPresets - g_plugin.m_nDirs; ++i)
-    {
-        PresetInfo& Info = g_plugin.m_presets[i + g_plugin.m_nDirs];
-        presets.push_back(WideToUTF8(Info.szFilename.c_str()));
-    }
-
-    return true;
-}
-
-int milk2_ui_element_instance::GetActivePreset()
-{
-    if (m_IsInitialized)
-    {
-        int CurrentPreset = g_plugin.m_nCurrentPreset;
-        CurrentPreset -= g_plugin.m_nDirs;
-        return CurrentPreset;
-    }
-
-    return -1;
-}
-
-char* milk2_ui_element_instance::WideToUTF8(const wchar_t* WFilename)
-{
-    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
-    char* utf8Name = new char[SizeNeeded];
-    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
-    return utf8Name;
-}
-
 void milk2_ui_element_instance::AudioData(const float* pAudioData, size_t iAudioDataLength)
 {
-    //int ipos = 0;
-    //while (ipos < 576)
-    //{
-    //    for (int i = 0; static_cast<unsigned int>(i) < iAudioDataLength; i += 2)
-    //    {
-    //        waves[0][ipos] = static_cast<unsigned char>(pAudioData[i] * 255.0f);
-    //        waves[1][ipos] = static_cast<unsigned char>(pAudioData[i + 1] * 255.0f);
-    //        ipos++;
-    //        if (ipos >= 576)
-    //            break;
-    //    }
-    //}
+    int ipos = 0;
+    while (ipos < 576)
+    {
+        for (int i = 0; static_cast<unsigned int>(i) < iAudioDataLength; i += 2)
+        {
+            g_vis->waves[0][ipos] = static_cast<unsigned char>(pAudioData[i] * 255.0f);
+            g_vis->waves[1][ipos] = static_cast<unsigned char>(pAudioData[i + 1] * 255.0f);
+            ipos++;
+            if (ipos >= 576)
+                break;
+        }
+    }
 }
 
 void milk2_ui_element_instance::AddPCM()
@@ -644,8 +533,8 @@ void milk2_ui_element_instance::AddPCM()
         //Current += sinf(sin2);
         sin1 += sin1add;
         sin2 += sin2add;
-        waves[0][i] = static_cast<unsigned char>(Current * 0.2f);
-        waves[1][i] = static_cast<unsigned char>(Current * 0.2f);
+        g_vis->waves[0][i] = static_cast<unsigned char>(Current * 0.2f);
+        g_vis->waves[1][i] = static_cast<unsigned char>(Current * 0.2f);
         //waves[0][i] = (rand() % 128 ) / 128.0f;//iCurrent;
         //waves[1][i] = (rand() % 128 ) / 128.0f;//iCurrent;
     }
@@ -665,5 +554,10 @@ class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element_i
 
 // Service factory publishes the class.
 static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
+
+void ExitVis() noexcept
+{
+    //PostQuitMessage(0);
+}
 
 } // namespace

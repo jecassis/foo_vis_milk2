@@ -1,35 +1,46 @@
 //
-// Game.h
+// Vis.h
 //
 
 #pragma once
 
-#include "DeviceResources.h"
+//#include "DeviceResources.h"
 #include "StepTimer.h"
 
-// A basic game implementation that creates a D3D11 device and
-// provides a game loop.
-class Game final : public DX::IDeviceNotify
+// Creates a D3D11 device and provides a visualization loop.
+class Vis final // : public DX::IDeviceNotify
 {
   public:
-    Game() noexcept(false);
-    ~Game();
+    Vis() noexcept(false);
+    ~Vis();
 
-    Game(Game&&) = default;
-    Game& operator=(Game&&) = default;
+    Vis(Vis&&) = default;
+    Vis& operator=(Vis&&) = default;
 
-    Game(Game const&) = delete;
-    Game& operator=(Game const&) = delete;
+    Vis(Vis const&) = delete;
+    Vis& operator=(Vis const&) = delete;
 
     // Initialization and management
     void Initialize(HWND window, int width, int height);
 
-    // Basic game loop
+    // Basic visualization loop
     void Tick();
 
     // IDeviceNotify
-    void OnDeviceLost() override;
-    void OnDeviceRestored() override;
+    void OnDeviceLost();//override;
+    void OnDeviceRestored();//override;
+
+    //HRESULT Render();
+    HRESULT RenderChunk(const audio_chunk& chunk);
+    bool PrevPreset();
+    bool NextPreset();
+    bool LoadPreset(int select);
+    bool RandomPreset();
+    bool LockPreset(bool lockUnlock);
+    //bool IsLocked() { return g_plugin.m_bPresetLockedByUser; }
+    bool GetPresets(std::vector<std::string>& presets);
+    int GetActivePreset();
+    char* WideToUTF8(const wchar_t* WFilename);
 
     // Messages
     void OnActivated();
@@ -43,6 +54,8 @@ class Game final : public DX::IDeviceNotify
     // Properties
     void GetDefaultSize(int& width, int& height) const noexcept;
     void SetPwd(std::string pwd) noexcept;
+    
+    unsigned char waves[2][576];
 
   private:
     void Update(DX::StepTimer const& timer);
@@ -56,16 +69,16 @@ class Game final : public DX::IDeviceNotify
     void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin,
                               size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
 
-    // Device resources.
-    std::unique_ptr<DX::DeviceResources> m_deviceResources;
+    // Device resources
+    //std::unique_ptr<DX::DeviceResources> m_deviceResources;
 
-    // Rendering loop timer.
+    // Rendering loop timer
     DX::StepTimer m_timer;
 
-    // Component paths.
+    // Component paths
     std::string m_pwd;
 
-    // DirectXTK objects.
+    // DirectXTK objects
     std::unique_ptr<DirectX::CommonStates> m_states;
     std::unique_ptr<DirectX::BasicEffect> m_batchEffect;
     std::unique_ptr<DirectX::EffectFactory> m_fxFactory;

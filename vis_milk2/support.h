@@ -1,36 +1,36 @@
 /*
   LICENSE
   -------
-Copyright 2005-2013 Nullsoft, Inc.
-All rights reserved.
+  Copyright 2005-2013 Nullsoft, Inc.
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, 
-are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without modification,
+  are permitted provided that the following conditions are met:
 
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer. 
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
 
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution. 
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
 
-  * Neither the name of Nullsoft nor the names of its contributors may be used to 
-    endorse or promote products derived from this software without specific prior written permission. 
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Neither the name of Nullsoft nor the names of its contributors may be used to
+      endorse or promote products derived from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #ifndef __NULLSOFT_DX9_EXAMPLE_PLUGIN_SUPPORT_H__
 #define __NULLSOFT_DX9_EXAMPLE_PLUGIN_SUPPORT_H__ 1
 
-#include "dx11/DX11Context.h"
+#include "dx11/d3d11shim.h"
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 
@@ -46,7 +46,7 @@ void MakeProjectionMatrix( XMMATRIX* pOut,
                            const float fov_horiz,  // Horizontal field of view angle, in radians
                            const float fov_vert);   // Vertical field of view angle, in radians
 void PrepareFor3DDrawing(
-        DX11Context *pDevice, 
+        D3D11Shim *pDevice, 
         int viewport_width,
         int viewport_height,
         float fov_in_degrees, 
@@ -56,7 +56,7 @@ void PrepareFor3DDrawing(
         XMVECTOR* pvLookat,
         XMVECTOR* pvUp
     );
-void PrepareFor2DDrawing(DX11Context *pDevice);
+void PrepareFor2DDrawing(D3D11Shim *pDevice);
 
 // Define vertex formats you'll be using here:
 // note: layout must match the vertex declaration in plugin.cpp!

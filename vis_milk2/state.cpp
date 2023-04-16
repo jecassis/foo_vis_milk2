@@ -40,7 +40,7 @@ extern CPlugin g_plugin;		// declared in main.cpp
 
 #define FRAND ((rand() % 7381)/7380.0f)
 
-FILE* XBMC_WOpen( const wchar_t* WFilename, const wchar_t* WMode );
+FILE* WOpen( const wchar_t* WFilename, const wchar_t* WMode );
 
 
 // These are intended to replace GetPrivateProfileInt/FloatString, which are very slow
@@ -887,7 +887,7 @@ void WriteCode(FILE* fOut, int i, char* pStr, const char* prefix, bool bPrependA
 
 bool CState::Export(const wchar_t *szIniFile)
 {
-	FILE *fOut = XBMC_WOpen(szIniFile, L"w");
+	FILE *fOut = WOpen(szIniFile, L"w");
 	if (!fOut) return false;
 
     // IMPORTANT: THESE MUST BE THE FIRST TWO LINES.  Otherwise it is assumed to be a MilkDrop 1-era preset.
@@ -1003,7 +1003,7 @@ int  CWave::Export(FILE* fOut, const wchar_t *szFile, int i)
     FILE* f2 = fOut;
     if (!fOut)
     {
-	    f2 = XBMC_WOpen(szFile, L"w");
+	    f2 = WOpen(szFile, L"w");
         if (!f2) return 0;
     }
 
@@ -1038,7 +1038,7 @@ int  CShape::Export(FILE* fOut, const wchar_t *szFile, int i)
     FILE* f2 = fOut;
     if (!fOut)
     {
-	    f2 = XBMC_WOpen(szFile, L"w");
+	    f2 = WOpen(szFile, L"w");
         if (!f2) return 0;
 	    //fprintf(f2, "[%s]\n", szSection);
     }
@@ -1192,7 +1192,7 @@ int CWave::Import(FILE* f, const wchar_t* szFile, int i)
     FILE* f2 = f;
     if (!f)
     {
-	    f2 = XBMC_WOpen(szFile, L"rb");
+	    f2 = WOpen(szFile, L"rb");
         if (!f2) return 0;
         GetFast_CLEAR();
     }
@@ -1229,7 +1229,7 @@ int  CShape::Import(FILE* f, const wchar_t* szFile, int i)
     FILE* f2 = f;
     if (!f)
     {
-	    f2 = XBMC_WOpen(szFile, L"rb");
+	    f2 = WOpen(szFile, L"rb");
         if (!f2) return 0;
         GetFast_CLEAR();
     }
@@ -1313,7 +1313,7 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
 	    }
     }
     
-    FILE* f = XBMC_WOpen(szIniFile, L"rb");
+    FILE* f = WOpen(szIniFile, L"rb");
     if (!f)
         return false;
 

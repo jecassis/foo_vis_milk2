@@ -34,8 +34,8 @@
 #include "utility.h"
 #include <assert.h>
 #include <math.h>
-#include "dx11/DX11Context.h"
-#include "dx11/DirectXHelpers.h"
+#include "dx11/d3d11shim.h"
+#include "DirectXHelpers.h"
 
 #define COLOR_NORM(x) (((int)(x*255)&0xFF) / 255.0f)
 #define COPY_COLOR(x, y) {x.a = y.a; x.r = y.r; x.g = y.g; x.b = y.b;}
@@ -652,7 +652,7 @@ void CPlugin::RenderFrame(int bRedraw)
 	// restore any lost surfaces
 	//m_lpDD->RestoreAllSurfaces();
 
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -917,7 +917,7 @@ void CPlugin::DrawMotionVectors()
 	if ((float)*m_pState->var_pf_mv_a >= 0.001f)
 	{
         //-------------------------------------------------------
-        DX11Context* lpDevice = GetDevice();
+        D3D11Shim* lpDevice = GetDevice();
         if (!lpDevice)
             return;
 
@@ -1063,7 +1063,7 @@ void CPlugin::DrawMotionVectors()
 					}
 
 					// draw it
-					lpDevice->DrawPrimitive(D3DPT_LINELIST, n/2, v, sizeof(WFVERTEX));
+					lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINELIST, n/2, v, sizeof(WFVERTEX));
 				}
 			}
 
@@ -1155,7 +1155,7 @@ void CPlugin::BlurPasses()
         //         they are one frame old.  This isn't too big a deal.  Getting them to match
         //         up for the composite pass is probably more important.
 
-        DX11Context* lpDevice = GetDevice();
+        D3D11Shim* lpDevice = GetDevice();
         if (!lpDevice)
             return;
 
@@ -1314,7 +1314,7 @@ void CPlugin::BlurPasses()
             lpDevice->SetPixelShader(m_BlurShaders[i % 2].ps.ptr, m_BlurShaders[i % 2].ps.CT);
 
             // draw fullscreen quad
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, v, sizeof(MYVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, v, sizeof(MYVERTEX));
 
             // clear texture bindings
             lpDevice->SetTexture(0, nullptr);
@@ -1529,7 +1529,7 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
 {
 	MungeFPCW(NULL);	// puts us in single-precision mode & disables exceptions
 
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -1674,7 +1674,7 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
                 prims_queued++;
         }
         if (prims_queued > 0) 
-            lpDevice->DrawPrimitive( D3DPT_TRIANGLELIST, prims_queued, tempv, sizeof(MYVERTEX) );
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, prims_queued, tempv, sizeof(MYVERTEX));
     }
 
     /*
@@ -1700,7 +1700,7 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
 		        //m_verts_temp[poly].Diffuse = cDecay;      this is done just once - see jsut above
 			    index++;
 		    }
-            lpDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, m_nGridX, (void*)m_verts_temp, sizeof(MYVERTEX));
+            lpDevice->DrawPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_nGridX, (void*)m_verts_temp, sizeof(MYVERTEX));
 	    }
     }
     else
@@ -1762,7 +1762,7 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
                 nVert++;
                 ref_vert++;
             }           
-            lpDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, (m_nGridX+1)*2, count/3, (void*)idx, D3DFMT_INDEX32, (void*)m_verts_temp, sizeof(MYVERTEX));
+            lpDevice->DrawIndexedPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, (m_nGridX+1)*2, count/3, (void*)idx, D3DFMT_INDEX32, (void*)m_verts_temp, sizeof(MYVERTEX));
 	    }
     }/**/
 
@@ -1777,7 +1777,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
 	MungeFPCW(NULL);	// puts us in single-precision mode & disables exceptions
 
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -1893,7 +1893,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
                         prims_queued++;
                 }
                 if (prims_queued > 0) 
-                    lpDevice->DrawPrimitive( D3DPT_TRIANGLELIST, prims_queued, tempv, sizeof(MYVERTEX) );
+                    lpDevice->DrawPrimitive( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, prims_queued, tempv, sizeof(MYVERTEX) );
             }
         }
     }
@@ -1906,7 +1906,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
 void CPlugin::DrawCustomShapes()
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -2024,7 +2024,7 @@ void CPlugin::DrawCustomShapes()
                         lpDevice->SetTexture(0, m_lpVS[0]);
                         lpDevice->SetVertexShader( NULL, NULL );
                         //lpDevice->SetFVF( SPRITEVERTEX_FORMAT );
-                        lpDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, sides, (void*)v, sizeof(SPRITEVERTEX));
+                        lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1, sides, (void*)v, sizeof(SPRITEVERTEX));
                     }
                     else
                     {
@@ -2041,7 +2041,7 @@ void CPlugin::DrawCustomShapes()
                         lpDevice->SetVertexShader( NULL, NULL );
                         lpDevice->SetVertexColor(true);
 					    //lpDevice->SetFVF( WFVERTEX_FORMAT );
-                        lpDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, sides, (void*)v2, sizeof(WFVERTEX));
+                        lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1, sides, (void*)v2, sizeof(WFVERTEX));
                     }
 
                     // DRAW BORDER
@@ -2079,7 +2079,7 @@ void CPlugin::DrawCustomShapes()
 			                case 2: for (j=0; j<sides+2; j++) v2[j].y += y_inc; break;		// draw fat dots
 			                case 3: for (j=0; j<sides+2; j++) v2[j].x -= x_inc; break;		// draw fat dots
 			                }
-                            lpDevice->DrawPrimitive(D3DPT_LINESTRIP, sides, (void*)&v2[1], sizeof(WFVERTEX));
+                            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, sides, (void*)&v2[1], sizeof(WFVERTEX));
                         }
                     }
 
@@ -2197,7 +2197,7 @@ int SmoothWave(WFVERTEX* vi, int nVertsIn, WFVERTEX* vo)
 
 void CPlugin::DrawCustomWaves()
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -2372,7 +2372,7 @@ void CPlugin::DrawCustomWaves()
                         v2[k + 5] = v[j]; v2[k + 5].x -= dx; v2[k + 5].y += dy;
                         ++j;
                       }
-                      lpDevice->DrawPrimitive(D3DPT_TRIANGLELIST, nSamples * 2, (void*)v2, sizeof(WFVERTEX));
+                      lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, nSamples * 2, (void*)v2, sizeof(WFVERTEX));
                       delete[] v2;
                     }
                     else
@@ -2390,7 +2390,7 @@ void CPlugin::DrawCustomWaves()
                         case 2: for (j = 0; j < nSamples; j++) pVerts[j].y += y_inc; break;		// draw fat dots
                         case 3: for (j = 0; j < nSamples; j++) pVerts[j].x -= x_inc; break;		// draw fat dots
                         }
-                        lpDevice->DrawPrimitive(pState->m_wave[i].bUseDots ? D3DPT_POINTLIST : D3DPT_LINESTRIP, nSamples - (pState->m_wave[i].bUseDots ? 0 : 1), (void*)pVerts, sizeof(WFVERTEX));
+                        lpDevice->DrawPrimitive(pState->m_wave[i].bUseDots ? D3D_PRIMITIVE_TOPOLOGY_POINTLIST : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nSamples - (pState->m_wave[i].bUseDots ? 0 : 1), (void*)pVerts, sizeof(WFVERTEX));
                       }
                     }
                     ptsize = 1.0f;
@@ -2409,7 +2409,7 @@ void CPlugin::DrawCustomWaves()
 
 void CPlugin::DrawWave(float *fL, float *fR)
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -2873,7 +2873,7 @@ void CPlugin::DrawWave(float *fL, float *fR)
 						//v[i].Diffuse = color;
 					}
 
-					//D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3DPT_POINTLIST : D3DPT_LINESTRIP;
+					//D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3D_PRIMITIVE_TOPOLOGY_POINTLIST : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
 					//m_lpD3DDev->DrawPrimitive(primtype, D3DFVF_LVERTEX, (LPVOID)v, nVerts, NULL);
 
 					for (i=0; i<nVerts; i++)
@@ -2988,7 +2988,7 @@ void CPlugin::DrawWave(float *fL, float *fR)
 
 	// draw primitives
 	{
-		//D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3DPT_POINTLIST : D3DPT_LINESTRIP;
+		//D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3D_PRIMITIVE_TOPOLOGY_POINTLIST : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
 		float x_inc = 2.0f / (float)m_nTexSizeX;
 		float y_inc = 2.0f / (float)m_nTexSizeY;
 		int drawing_its = ((*m_pState->var_pf_wave_thick || *m_pState->var_pf_wave_usedots) && (m_nTexSizeX >= 512)) ? 4 : 1;
@@ -3008,21 +3008,21 @@ void CPlugin::DrawWave(float *fL, float *fR)
 			if (nBreak1 == -1)
 			{
                 if (*m_pState->var_pf_wave_usedots)
-                    lpDevice->DrawPrimitive(D3DPT_POINTLIST, nVerts1, (void*)pVerts, sizeof(WFVERTEX));
+                    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, nVerts1, (void*)pVerts, sizeof(WFVERTEX));
                 else
-                    lpDevice->DrawPrimitive(D3DPT_LINESTRIP, nVerts1-1, (void*)pVerts, sizeof(WFVERTEX));
+                    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nVerts1-1, (void*)pVerts, sizeof(WFVERTEX));
 			}
 			else
 			{
                 if (*m_pState->var_pf_wave_usedots)
                 {
-                    lpDevice->DrawPrimitive(D3DPT_POINTLIST, nBreak1, (void*)pVerts, sizeof(WFVERTEX));
-                    lpDevice->DrawPrimitive(D3DPT_POINTLIST, nVerts1-nBreak1, (void*)&pVerts[nBreak1], sizeof(WFVERTEX));
+                    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, nBreak1, (void*)pVerts, sizeof(WFVERTEX));
+                    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, nVerts1-nBreak1, (void*)&pVerts[nBreak1], sizeof(WFVERTEX));
                 }
                 else
                 {
-                    lpDevice->DrawPrimitive(D3DPT_LINESTRIP, nBreak1-1, (void*)pVerts, sizeof(WFVERTEX));
-                    lpDevice->DrawPrimitive(D3DPT_LINESTRIP, nVerts1-nBreak1-1, (void*)&pVerts[nBreak1], sizeof(WFVERTEX));
+                    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nBreak1-1, (void*)pVerts, sizeof(WFVERTEX));
+                    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nVerts1-nBreak1-1, (void*)&pVerts[nBreak1], sizeof(WFVERTEX));
                 }
 			}
 		}
@@ -3035,7 +3035,7 @@ SKIP_DRAW_WAVE:
 
 void CPlugin::DrawSprites()
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -3085,7 +3085,7 @@ void CPlugin::DrawSprites()
 		//v3[0].tu = 0;	v3[1].tu = 1;	v3[2].tu = 0;	v3[3].tu = 1;
 		//v3[0].tv = 1;	v3[1].tv = 1;	v3[2].tv = 0;	v3[3].tv = 0;
 
-		lpDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 4, (LPVOID)v3, sizeof(WFVERTEX));
+		lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1, 4, (LPVOID)v3, sizeof(WFVERTEX));
 
     lpDevice->SetBlendState(false);
 		//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -3139,7 +3139,7 @@ void CPlugin::DrawSprites()
 
 				for (int rot=0; rot<4; rot++)
 				{
-		            lpDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 2, (LPVOID)v3, sizeof(WFVERTEX));
+		            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1, 2, (LPVOID)v3, sizeof(WFVERTEX));
 
 					// rotate by 90 degrees
 					for (int v=0; v<4; v++)
@@ -3160,7 +3160,7 @@ void CPlugin::DrawSprites()
 
 void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -3493,7 +3493,7 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
         break;
 			}
 
-			lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (LPVOID)v3, sizeof(SPRITEVERTEX));
+			lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (LPVOID)v3, sizeof(SPRITEVERTEX));
 
 			if (/*bKillSprite &&*/ bBurnIn)	// final render-to-VS1
 			{
@@ -3512,7 +3512,7 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
 						for (k=0; k<4; k++) v3[k].y *= aspect;
 				}
 
-			    lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (LPVOID)v3, sizeof(SPRITEVERTEX));
+			    lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (LPVOID)v3, sizeof(SPRITEVERTEX));
 			}
 
             SafeRelease(pBackBuffer);
@@ -3564,7 +3564,7 @@ void CPlugin::UvToMathSpace(float u, float v, float* rad, float* ang)
 
 void CPlugin::RestoreShaderParams()
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     for (int i=0; i<2; i++) 
     {
       lpDevice->SetSamplerState(i, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
@@ -3587,7 +3587,7 @@ void CPlugin::RestoreShaderParams()
 
 void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* pState)
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
 
     //if (p->texbind_vs      >= 0) lpDevice->SetTexture( p->texbind_vs   , m_lpVS[0]   );
     //if (p->texbind_noise   >= 0) lpDevice->SetTexture( p->texbind_noise, m_pTexNoise );        
@@ -3722,7 +3722,7 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 {
     // note: this one has to draw the whole screen!  (one big quad)
 
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -3887,7 +3887,7 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
           v3[k].a = 1.0f;
         }
 
-                lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+                lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
 				if (i==0)
 				{
@@ -3917,7 +3917,7 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
               v3[k].b = COLOR_NORM(gamma*mix*shade[k][2]);
               v3[k].a = 1.0f;
             }
-                        lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+                        lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 					}
 				}
 			}
@@ -3952,7 +3952,7 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
           v3[k].b = COLOR_NORM(gamma*shade[k][2]);
           v3[k].a = 1.0f;
         }
-                lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+                lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
 				if (nPass==0)
 				{
@@ -3997,19 +3997,19 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
       lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_INVDESTCOLOR);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
 			// then modulate by self (square it)
       lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_DEST_COLOR);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTCOLOR);
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
 			// then another perfect invert
       lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_INVDESTCOLOR);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 		}
 
 		if (*m_pState->var_pf_darken /*&& 
@@ -4028,11 +4028,11 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
       lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_DEST_COLOR);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTCOLOR);
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_DESTCOLOR);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-			//lpDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+			//lpDevice->DrawPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
 		}
 		
@@ -4050,12 +4050,12 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
       lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_INV_DEST_COLOR);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVDESTCOLOR);
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
       lpDevice->SetBlendState(true, D3D11_BLEND_DEST_COLOR, D3D11_BLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_DESTCOLOR);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 		}
 
 		if (*m_pState->var_pf_invert /*&& 
@@ -4072,7 +4072,7 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_INVDESTCOLOR);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 			
-            lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 		}
 
     lpDevice->SetBlendState(false);
@@ -4082,7 +4082,7 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 
 void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, bool bCullTiles, bool bFlipCulling)//int bRedraw, int nPassOverride, bool bFlipAlpha)
 {
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -4268,7 +4268,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
                     prims_queued++;
             }
             if (prims_queued > 0)
-                lpDevice->DrawPrimitive( D3DPT_TRIANGLELIST, prims_queued, tempv, sizeof(MYVERTEX) );
+                lpDevice->DrawPrimitive( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, prims_queued, tempv, sizeof(MYVERTEX) );
         }
     }
 
@@ -4285,7 +4285,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
     if (!m_lpDDSTitle)  // this *can* be NULL, if not much video mem!
         return;
 
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
@@ -4522,7 +4522,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 		}
 		
-		lpDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 128, 15*7*6/3, indices, v3, sizeof(SPRITEVERTEX));
+		lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15*7*6/3, indices, v3, sizeof(SPRITEVERTEX));
 	}
   lpDevice->SetBlendState(false);
 	//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);

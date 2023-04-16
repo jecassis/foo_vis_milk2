@@ -1,26 +1,7 @@
-/*
-*      Copyright (C) 2005-2015 Team Kodi
-*      http://kodi.tv
-*
-*  This Program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2, or (at your option)
-*  any later version.
-*
-*  This Program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with XBMC; see the file COPYING.  If not, see
-*  <http://www.gnu.org/licenses/>.
-*
-*/
 #pragma once
 
+#include "constanttable.h"
 #include "CommonStates.h"
-#include "ConstantTable.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <memory>
@@ -28,11 +9,11 @@
 #define MAX_NUM_SHADERS    (4)
 #define MAX_VERTICES_COUNT (3072U)
 
-class DX11Context
+class D3D11Shim
 {
 public:
-  DX11Context(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-  ~DX11Context();
+  D3D11Shim(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+  ~D3D11Shim();
 
   void Initialize();
 

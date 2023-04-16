@@ -1,30 +1,30 @@
 /*
   LICENSE
   -------
-Copyright 2005-2013 Nullsoft, Inc.
-All rights reserved.
+  Copyright 2005-2013 Nullsoft, Inc.
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, 
-are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without modification,
+  are permitted provided that the following conditions are met:
 
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer. 
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
 
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution. 
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
 
-  * Neither the name of Nullsoft nor the names of its contributors may be used to 
-    endorse or promote products derived from this software without specific prior written permission. 
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Neither the name of Nullsoft nor the names of its contributors may be used to
+      endorse or promote products derived from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #ifndef __NULLSOFT_DX9_PLUGIN_SHELL_H__
@@ -38,7 +38,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //#include "icon_t.h"
 #include "nu/Vector.h"
-#include "dx11/DX11Context.h"
+#include "dx11/d3d11shim.h"
 
 #define TIME_HIST_SLOTS 128     // # of slots used if fps > 60.  half this many if fps==30.
 #define MAX_SONGS_PER_PAGE 40
@@ -89,7 +89,7 @@ protected:
     int          GetWidth();             // returns width of plugin window interior, in pixels.  Note: in windowed mode, this is a fudged, larger, aligned value, and on final display, it gets cropped.
     int          GetHeight();            // returns height of plugin window interior, in pixels. Note: in windowed mode, this is a fudged, larger, aligned value, and on final display, it gets cropped.
     int          GetBitDepth();          // returns 8, 16, 24 (rare), or 32
-    DX11Context* GetDevice();            // returns a pointer to the DirectX 8 Device.  NOT persistent; can change!
+    D3D11Shim* GetDevice();            // returns a pointer to the DirectX 8 Device.  NOT persistent; can change!
     //D3DCAPS9*    GetCaps();              // returns a pointer to the D3DCAPS9 structer for the device.  NOT persistent; can change.
     //D3DFORMAT    GetBackBufFormat();     // returns the pixelformat of the back buffer (probably D3DFMT_R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A4R4G4B4, D3DFMT_R3G3B2, D3DFMT_A8R3G3B2, D3DFMT_X4R4G4B4, or D3DFMT_UNKNOWN)
     //D3DFORMAT    GetBackBufZFormat();    // returns the pixelformat of the back buffer's Z buffer (probably D3DFMT_D16_LOCKABLE, D3DFMT_D32, D3DFMT_D15S1, D3DFMT_D24S8, D3DFMT_D16, D3DFMT_D24X8, D3DFMT_D24X4S4, or D3DFMT_UNKNOWN)
@@ -133,7 +133,7 @@ protected:
     int          m_skin;                    // 0 or 1
     int          m_fix_slow_text;           // 0 or 1
     td_fontinfo  m_fontinfo[NUM_BASIC_FONTS + NUM_EXTRA_FONTS];
-    //D3DDISPLAYMODE m_disp_mode_fs;          // a D3DDISPLAYMODE struct that specifies the width, height, refresh rate, and color format to use when the plugin goes fullscreen.
+    DXGI_MODE_DESC1 m_disp_mode_fs; // a D3DDISPLAYMODE struct that specifies the width, height, refresh rate, and color format to use when the plugin goes fullscreen.
 
     // PURE VIRTUAL FUNCTIONS (...must be implemented by derived classes)
     // ------------------------------------------------------------
@@ -159,13 +159,14 @@ public:
     int          m_frame;           // current frame #, starting at zero
     float        m_time;            // current animation time in seconds; starts at zero.
     float        m_fps;             // current estimate of frames per second
+    HWND m_hWndWinamp; // handle to Winamp window
     HINSTANCE    m_hInstance;       // handle to application instance
-    DXContext*   m_lpDX;            // pointer to DXContext object
+    std::unique_ptr<DXContext> m_lpDX; // pointer to DXContext object
     wchar_t      m_szPluginsDirPath[MAX_PATH];  // usually 'c:\\program files\\winamp\\plugins\\'
     wchar_t      m_szConfigIniFile[MAX_PATH];   // usually 'c:\\program files\\winamp\\plugins\\something.ini' - filename is determined from identifiers in 'defines.h'
 	char         m_szConfigIniFileA[MAX_PATH];   // usually 'c:\\program files\\winamp\\plugins\\something.ini' - filename is determined from identifiers in 'defines.h'
-	ID3D11Device* m_device;
-  ID3D11DeviceContext* m_context;
+	//ID3D11Device* m_device;
+ // ID3D11DeviceContext* m_context;
 
 	// FONTS
     IUnknown*    m_lpDDSText;
@@ -232,7 +233,7 @@ public:
     // called by vis.cpp, on behalf of Winamp:
     int  PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance);    
     //int  PluginInitialize();                                                
-	int PluginInitialize( ID3D11DeviceContext* context, int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio );
+	int PluginInitialize( /*ID3D11DeviceContext* context, */int iPosX, int iPosY, int iWidth, int iHeight/*, float pixelRatio */);
     int  PluginRender(unsigned char *pWaveL, unsigned char *pWaveR);
     void PluginQuit();
 
@@ -299,7 +300,7 @@ protected:
 	  int		m_nTextWndHeight;
 	  bool		m_bTextWindowClassRegistered;
       //LPDIRECT3D9 m_vjd3d9;
-      DX11Context* m_vjd3d9_device;
+      D3D11Shim* m_vjd3d9_device;
 	  //HDC		m_memDC;		// memory device context
 	  //HBITMAP m_memBM, m_oldBM;
 	  //HBRUSH  m_hBlackBrush;
@@ -327,7 +328,7 @@ protected:
     void    SaveAdapter(int screenmode);
     void    SaveMaxFps(int screenmode);
     void    OnTabChanged(int nNewTab);
-    DX11Context* GetTextDevice() { return (m_vjd3d9_device) ? m_vjd3d9_device : m_lpDX->m_lpDevice; }
+    D3D11Shim* GetTextDevice() { return (m_vjd3d9_device) ? m_vjd3d9_device : m_lpDX->m_lpDevice.get(); }
 
     // CHANGES:
     friend class CShaderParams;

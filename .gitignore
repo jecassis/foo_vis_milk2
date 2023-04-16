@@ -144,3 +144,7 @@ CMakeLists.txt
 /depends/ns-eel2/asm-nseel-x86-gcc.c
 /depends/ns-eel2/asm-nseel-ppc-gcc.c
 /depends/ns-eel2/asm-nseel-x64-macho.o
+*.wav
+*.dds
+*.spritefont
+*.sdkmesh

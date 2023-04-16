@@ -1,137 +1,30 @@
 /*
   LICENSE
   -------
-Copyright 2005-2013 Nullsoft, Inc.
-All rights reserved.
+  Copyright 2005-2013 Nullsoft, Inc.
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without modification,
+  are permitted provided that the following conditions are met:
 
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
 
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
 
-  * Neither the name of Nullsoft nor the names of its contributors may be used to
-    endorse or promote products derived from this software without specific prior written permission.
+    * Neither the name of Nullsoft nor the names of its contributors may be used to
+      endorse or promote products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/*
-    TO DO
-    -----
-    -done/v1.06:
-        -(nothing yet)
-        -
-        -
-    -to do/v1.06:
-        -FFT: high freq. data kinda sucks because of the 8-bit samples we get in;
-            look for justin to put 16-bit vis data into wa5.
-        -make an 'advanced view' button on config panel; hide complicated stuff
-            til they click that.
-        -put an asterisk(*) next to the 'max framerate' values that
-            are ideal (given the current windows display mode or selected FS dispmode).
-        -or add checkbox: "smart sync"
-            -> matches FPS limit to nearest integer divisor of refresh rate.
-        -debug.txt/logging support!
-        -audio: make it a DSP plugin? then we could get the complete, continuous waveform
-            and overlap our waveform windows, so we'd never miss a brief high note.
-        -bugs:
-            -vms plugins sometimes freeze after a several-minute pause; I've seen it
-                with most of them.  hard to repro, though.
-            -running FS on monitor 2, hit ALT-TAB -> minimizes!!!
-                -but only if you let go of TAB first.  Let go of ALT first and it's fine!
-                -> means it's related to the keyup...
-            -fix delayloadhelper leak; one for each launch to config panel/plugin.
-            -also, delayload(d3d9.dll) still leaks, if plugin has error initializing and
-                quits by returning false from PluginInitialize().
-        -add config panel option to ignore fake-fullscreen tips
-            -"tip" boxes in dxcontext.cpp
-            -"notice" box on WM_ACTIVATEAPP?
-        -desktop mode:
-            -icon context menus: 'send to', 'cut', and 'copy' links do nothing.
-                -http://netez.com/2xExplorer/shellFAQ/bas_context.html
-            -create a 2nd texture to render all icon text labels into
-                (they're the sole reason that desktop mode is slow)
-            -in UpdateIconBitmaps, don't read the whole bitmap and THEN
-                realize it's a dupe; try to compare icon filename+index or somethign?
-            -DRAG AND DROP.  COMPLICATED; MANY DETAILS.
-                -http://netez.com/2xExplorer/shellFAQ/adv_drag.html
-                -http://www.codeproject.com/shell/explorerdragdrop.asp
-                -hmm... you can't drag icons between the 2 desktops (ugh)
-            -multiple delete/open/props/etc
-            -delete + enter + arrow keys.
-            -try to solve mysteries w/ShellExecuteEx() and desktop *shortcuts* (*.lnk).
-            -(notice that when icons are selected, they get modulated by the
-                highlight color, when they should be blended 50% with that color.)
-
-    ---------------------------
-    final touches:
-        -Tests:
-            -make sure desktop still functions/responds properly when winamp paused
-            -desktop mode + multimon:
-                -try desktop mode on all monitors
-                -try moving taskbar around; make sure icons are in the
-                    right place, that context menus (general & for
-                    specific icons) pop up in the right place, and that
-                    text-off-left-edge is ok.
-                -try setting the 2 monitors to different/same resolutions
-        -check tab order of config panel controls!
-        -Clean All
-        -build in release mode to include in the ZIP
-        -leave only one file open in workspace: README.TXT.
-        -TEMPORARILY "ATTRIB -R" ALL FILES BEFORE ZIPPING THEM!
-
-    ---------------------------
-    KEEP IN VIEW:
-        -EMBEDWND:
-            -kiv: on resize of embedwnd, it's out of our control; winamp
-                resizes the child every time the mouse position changes,
-                and we have to cleanup & reallocate everything, b/c we
-                can't tell when the resize begins & ends.
-                [justin said he'd fix in wa5, though]
-            -kiv: with embedded windows of any type (plugin, playlist, etc.)
-                you can't place the winamp main wnd over them.
-            -kiv: embedded windows are child windows and don't get the
-                WM_SETFOCUS or WM_KILLFOCUS messages when they get or lose
-                the focus.  (For a workaround, see milkdrop & scroll lock key.)
-            -kiv: tiny bug (IGNORE): when switching between embedwnd &
-                no-embedding, the window gets scooted a tiny tiny bit.
-        -kiv: fake fullscreen mode w/multiple monitors: there is no way
-            to keep the taskbar from popping up [potentially overtop of
-            the plugin] when you click on something besides the plugin.
-            To get around this, use true fullscreen mode.
-        -kiv: max_fps implementation assumptions:
-            -that most computers support high-precision timer
-            -that no computers [regularly] sleep for more than 1-2 ms
-                when you call Sleep(1) after timeBeginPeriod(1).
-        -reminder: if vms_desktop.dll's interface needs changed,
-            it will have to be renamed!  (version # upgrades are ok
-            as long as it won't break on an old version; if the
-            new functionality is essential, rename the DLL.)
-
-    ---------------------------
-    REMEMBER:
-        -GF2MX + GF4 have icon scooting probs in desktop mode
-            (when taskbar is on upper or left edge of screen)
-        -Radeon is the one w/super slow text probs @ 1280x1024.
-            (it goes unstable after you show playlist AND helpscr; -> ~1 fps)
-        -Mark's win98 machine has hidden cursor (in all modes),
-            but no one else seems to have this problem.
-        -links:
-            -win2k-only-style desktop mode: (uses VirtualAllocEx, vs. DLL Injection)
-                http://www.digiwar.com/scripts/renderpage.php?section=2&subsection=2
-            -http://www.experts-exchange.com/Programming/Programming_Platforms/Win_Prog/Q_20096218.html
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "pch.h"
@@ -146,7 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "../Winamp/wa_ipc.h"
 //#include "../nu/AutoCharFn.h"
 #include <mmsystem.h>
-#include "dx11/DirectXHelpers.h"
+#include "DirectXHelpers.h"
 #pragma comment(lib,"winmm.lib")    // for timeGetTime
 
 // STATE VALUES & VERTEX FORMATS FOR HELP SCREEN TEXTURE:
@@ -244,9 +137,9 @@ int       CPluginShell::GetBitDepth()
 {
 	return m_lpDX->GetBitDepth();
 };
-DX11Context* CPluginShell::GetDevice()
+D3D11Shim* CPluginShell::GetDevice()
 {
-	if (m_lpDX) return m_lpDX->m_lpDevice; else return NULL;
+	return m_lpDX->m_lpDevice.get();
 };
 #if 0
 D3DCAPS9* CPluginShell::GetCaps()
@@ -327,12 +220,13 @@ void CPluginShell::CleanUpDX9Stuff(int final_cleanup)
 
 void CPluginShell::StuffParams(DXCONTEXT_PARAMS *pParams)
 {
-	pParams->screenmode   = m_screenmode;
-	//pParams->display_mode = m_disp_mode_fs;
-	pParams->nbackbuf     = 1;
-	pParams->m_dualhead_horz = m_dualhead_horz;
-	pParams->m_dualhead_vert = m_dualhead_vert;
-	pParams->m_skin = (m_screenmode==WINDOWED) ? m_skin : 0;
+    pParams->screenmode = m_screenmode;
+    pParams->display_mode = m_disp_mode_fs;
+    pParams->nbackbuf = 2;
+    pParams->m_dualhead_horz = m_dualhead_horz;
+    pParams->m_dualhead_vert = m_dualhead_vert;
+    pParams->m_skin = (m_screenmode == WINDOWED) ? m_skin : 0;
+    pParams->enable_hdr = 0;
 	switch (m_screenmode)
 	{
 	case WINDOWED:
@@ -360,7 +254,12 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS *pParams)
 
 int CPluginShell::InitDirectX()
 {
-	m_lpDX = new DXContext(m_device, m_context, m_szConfigIniFile);
+    // initialize graphics
+    DXCONTEXT_PARAMS params;
+    StuffParams(&params);
+
+    //m_lpDX = new DXContext(m_hWndWinamp, m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp, m_szConfigIniFile);
+    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp/*, m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp, m_szConfigIniFile*/);
 
 	if (!m_lpDX)
 	{
@@ -375,13 +274,9 @@ int CPluginShell::InitDirectX()
 	if (m_lpDX->m_lastErr != S_OK)
 	{
 		// warning messagebox will have already been given
-		delete m_lpDX;
+        m_lpDX.reset(); //delete m_lpDX; m_lpDX = NULL;
 		return FALSE;
 	}
-
-	// initialize graphics
-	DXCONTEXT_PARAMS params;
-	StuffParams(&params);
 
 	if (!m_lpDX->StartOrRestartDevice(&params))
 	{
@@ -393,8 +288,7 @@ int CPluginShell::InitDirectX()
 			SuggestHowToFreeSomeMem();
 		}*/
 
-		delete m_lpDX;
-		m_lpDX = NULL;
+        m_lpDX.reset(); //delete m_lpDX; m_lpDX = NULL;
 		return FALSE;
 	}
 
@@ -404,8 +298,8 @@ int CPluginShell::InitDirectX()
 
 void CPluginShell::CleanUpDirectX()
 {
-	SafeDelete(m_lpDX);
-  SafeRelease(m_device);
+    m_lpDX.reset(); //SafeDelete(m_lpDX);
+  //SafeRelease(m_device);
 }
 
 int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance)
@@ -490,23 +384,11 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	m_fontinfo[NUM_BASIC_FONTS + 4].bAntiAliased = EXTRA_FONT_5_DEFAULT_AA;
 #endif
 
-#if 0
 	m_disp_mode_fs.Width = DEFAULT_FULLSCREEN_WIDTH;
 	m_disp_mode_fs.Height = DEFAULT_FULLSCREEN_HEIGHT;
-	m_disp_mode_fs.Format = D3DFMT_UNKNOWN;
-	m_disp_mode_fs.RefreshRate = 60;
-	// better yet - in case there is no config INI file saved yet, use the current display mode (if detectable) as the default fullscreen res:
-	DEVMODE dm;
-	dm.dmSize = sizeof(dm);
-	dm.dmDriverExtra = 0;
-	if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm))
-	{
-		m_disp_mode_fs.Width  = dm.dmPelsWidth;
-		m_disp_mode_fs.Height = dm.dmPelsHeight;
-		m_disp_mode_fs.RefreshRate = dm.dmDisplayFrequency;
-		m_disp_mode_fs.Format = (dm.dmBitsPerPel==16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
-	}
-#endif
+    m_disp_mode_fs.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    m_disp_mode_fs.RefreshRate = {60 * 1000, 1000};
+	
 	// PROTECTED STRUCTURES/POINTERS
 	int i;
 	for (i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
@@ -525,14 +407,15 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	m_frame = 0;
 	m_time = 0;
 	m_fps = 30;
+    m_hWndWinamp = hWinampWnd;
 	m_hInstance = hWinampInstance;
 	m_lpDX = NULL;
 //	m_szPluginsDirPath[0] = 0;  // will be set further down
 	m_szConfigIniFile[0] = 0;  // will be set further down
 	// m_szPluginsDirPath:
 
+    /*
 	wchar_t *p;
-	/*
 	if (hWinampWnd
 	    && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETPLUGINDIRECTORYW))
 	    && p != (wchar_t *)1)
@@ -671,19 +554,15 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	return TRUE;
 }
 
-int CPluginShell::PluginInitialize( ID3D11DeviceContext* context, int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio )
+int CPluginShell::PluginInitialize(/* ID3D11DeviceContext* context, */ int iPosX, int iPosY, int iWidth, int iHeight /*, float pixelRatio*/)
 {
-	// note: initialize GDI before DirectX.  Also separate them because
-	// when we change windowed<->fullscreen, or lose the device and restore it,
-	// we don't want to mess with any (persistent) GDI stuff.
-
-  m_context = context;
-  context->GetDevice(&m_device);
+    m_disp_mode_fs.Width = iWidth;
+    m_disp_mode_fs.Height = iHeight;
 
 	if (!InitDirectX())        return FALSE;  // gives its own error messages
-	m_lpDX->m_client_width = iWidth;
-	m_lpDX->m_client_height = iHeight;
-//	m_posX = iPosX;
+    m_lpDX->m_client_width = iWidth;
+    m_lpDX->m_client_height = iHeight;
+    //	m_posX = iPosX;
 //	m_posY = iPosY;
 //	m_pixelRatio = pixelRatio;
 
@@ -1313,7 +1192,7 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
 		verts[i].Diffuse = (m_screenmode==DESKTOP) ? 0xE0000000 : 0xD0000000;
 	}
 
-	m_lpDX->m_lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
+	m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
 
 	// undo unusual state changes:
   m_lpDX->m_lpDevice->SetDepth(true);

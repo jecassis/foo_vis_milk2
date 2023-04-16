@@ -26,469 +26,49 @@
   IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-/*
-  ##########################################################################################
-
-  NOTE: 
-  
-  The DX9 SDK include & lib files for building MilkDrop 2 are right here, in the subdirectory:
-    .\dx9sdk_summer04\
-
-  The summer 2004 SDK statically links you to d3dx9.lib (5,820 kb).  It bloats vis_milk2.dll 
-  a bit, but we (Ben Allison / Ryan Geiss) decided it's worth the stability.  We tinkered 
-  with using the February 2005 sdk, which lets you dynamically link to d3dx9_31.dll (?), 
-  but decided to skip it because it would cause too much hassle/confusion among users.
-
-  Summer 2004 sdk: http://www.microsoft.com/downloads/details.aspx?FamilyID=fd044a42-9912-42a3-9a9e-d857199f888e&DisplayLang=en
-  Feb 2005 sdk:    http://www.microsoft.com/downloads/details.aspx?FamilyId=77960733-06E9-47BA-914A-844575031B81&displaylang=en
-
-  ##########################################################################################
-*/
 
 /*
-Order of Function Calls
------------------------
-    The only code that will be called by the plugin framework are the
-    12 virtual functions in plugin.h.  But in what order are they called?  
-    A breakdown follows.  A function name in { } means that it is only 
-    called under certain conditions.
+  Order of Function Calls
+  -----------------------
+      The only code that will be called by the plugin framework are the
+      12 virtual functions in "plugin.h". But in what order are they called?
+      A breakdown follows. A function name in { } means that it is only
+      called under certain conditions.
 
-    Order of function calls...
-    
-    When the PLUGIN launches
-    ------------------------
-        INITIALIZATION
-            OverrideDefaults
-            MyPreInitialize
-            MyReadConfig
-            << DirectX gets initialized at this point >>
-            AllocateMyNonDx9Stuff
-            AllocateMyDX9Stuff
-        RUNNING
-            +--> { CleanUpMyDX9Stuff + AllocateMyDX9Stuff }  // called together when user resizes window or toggles fullscreen<->windowed.
-            |    MyRenderFn
-            |    MyRenderUI
-            |    { MyWindowProc }                            // called, between frames, on mouse/keyboard/system events.  100% threadsafe.
-            +----<< repeat >>
-        CLEANUP        
-            CleanUpMyDX9Stuff
-            CleanUpMyNonDx9Stuff
-            << DirectX gets uninitialized at this point >>
+      Order of function calls...
 
-    When the CONFIG PANEL launches
-    ------------------------------
-        INITIALIZATION
-            OverrideDefaults
-            MyPreInitialize
-            MyReadConfig
-            << DirectX gets initialized at this point >>
-        RUNNING
-            { MyConfigTabProc }                  // called on startup & on keyboard events
-        CLEANUP
-            [ MyWriteConfig ]                    // only called if user clicked 'OK' to exit
-            << DirectX gets uninitialized at this point >>
-*/
+      When the PLUGIN launches
+      ------------------------
+          INITIALIZATION
+              OverrideDefaults
+              MilkDropPreInitialize
+              MilkDropReadConfig
+              << DirectX gets initialized at this point >>
+              AllocateMilkDropNonDX11
+              AllocateMilkDropDX11
+          RUNNING
+              +--> { CleanUpMilkDropDX11 + AllocateMilkDropDX11 }  // called together when user resizes window or toggles fullscreen<->windowed.
+              |    MilkDropRenderFn
+              |    MilkDropRenderUI
+              |    { MilkDropWindowProc } // called, between frames, on mouse/keyboard/system events. 100% thread safe.
+              +----<< repeat >>
+          CLEANUP
+              CleanUpMilkDropDX11
+              CleanUpMilkDropNonDX11
+              << DirectX gets uninitialized at this point >>
 
-/*
-  NOTES
-  -----
-  
-
-
-  To do
-  -----
-    -VMS VERSION:
-        -based on vms 1.05, but the 'fix slow text' option has been added.
-            that includes m_lpDDSText, CTextManager (m_text), changes to 
-            DrawDarkTranslucentBox, the replacement of all DrawText calls
-            (now routed through m_text), and adding the 'fix slow text' cb
-            to the config panel.
-
-    -KILLED FEATURES:
-        -vj mode
-    
-    -NEW FEATURES FOR 1.04:
-            -added the following variables for per-frame scripting: (all booleans, except 'gamma')
-	            wave_usedots, wave_thick, wave_additive, wave_brighten
-                gamma, darken_center, wrap, invert, brighten, darken, solarize
-                (also, note that echo_zoom, echo_alpha, and echo_orient were already in there,
-                 but weren't covered in the documentation!)
-        d   -fixed: spectrum w/512 samples + 256 separation -> infinite spike
-        d   -reverted dumb changes to aspect ratio stuff
-        d   -reverted wave_y fix; now it's backwards, just like it's always been
-                (i.e. for wave's y position, 0=bottom and 1=top, which is opposite
-                to the convention in the rest of milkdrop.  decided to keep the
-                'bug' so presets don't need modified.)
-        d   -fixed: Krash: Inconsistency bug - pressing Escape while in the code windows 
-                for custom waves completely takes you out of the editing menus, 
-                rather than back to the custom wave menu 
-        d   -when editing code: fix display of '&' character 
-        d   -internal texture size now has a little more bias toward a finer texture, 
-                based on the window size, when set to 'Auto'.  (Before, for example,
-                to reach 1024x1024, the window had to be 768x768 or greater; now, it
-                only has to be 640x640 (25% of the way there).  I adjusted it because
-                before, at in-between resolutions like 767x767, it looked very grainy;
-                now it will always look nice and crisp, at any window size, but still
-                won't cause too much aliasing (due to downsampling for display).
-        d   -fixed: rova:
-                When creating presets have commented code // in the per_pixel section when cause error in preset.
-                Example nothing in per_frame and just comments in the per_pixel. EXamples on repuest I have a few.
-        d   -added kill keys:
-                -CTRL+K kills all running sprites
-                -CTRL+T kills current song title anim
-                -CTRL+Y kills current custom message
-        d   -notice to sprite users:
-                -in milk_img.ini, color key can't be a range anymore; it's
-                    now limited to just a single color.  'colorkey_lo' and 
-                    'colorkey_hi' have been replaced with just one setting, 
-                    'colorkey'.
-        d   -song titles + custom messages are working again
-        ?   -fixed?: crashes on window resize [out of mem]
-                -Rova: BTW the same bug as krash with the window resizing.
-                -NOT due to the 'integrate w/winamp' option.
-                -> might be fixed now (had forgotten to release m_lpDDSText)
-        <AFTER BETA 3..>
-        d   -added checkbox to config screen to automatically turn SCROLL LOCK on @ startup
-        d   -added alphanumeric seeking to the playlist; while playlist is up,
-                you can now press A-Z and 0-9 to seek to the next song in the playlist
-                that starts with that character.
-        d   -<fixed major bug w/illegal mem access on song title launches;
-                could have been causing crashing madness @ startup on many systems>
-        d   -<fixed bug w/saving 64x48 mesh size>
-        d   -<fixed squashed shapes>
-        d   -<fixed 'invert' variable>
-        d   -<fixed squashed song titles + custom msgs>
-        ?   -<might have fixed scroll lock stuff>  
-        ?   -<might have fixed crashing; could have been due to null ptr for failed creation of song title texture.>
-        ?   -<also might have solved any remaining resize or exit bugs by callign SetTexture(NULL)
-                in DX8 cleanup.>
-        d   -<fixed sizing issues with songtitle font.>
-        d   -<fixed a potentially bogus call to deallocate memory on exit, when it was cleaning up the menus.>
-        d   -<fixed more scroll lock issues>
-        d   -<fixed broken Noughts & Crosses presets; max # of per-frame vars was one too few, after the additions of the new built-in variables.>
-        d   -<hopefully fixed waveforms>
-        <AFTER BETA 4>
-            -now when playlist is up, SHIFT+A-Z seeks upward (while lowercase/regular a-z seeks downward).
-            -custom shapes:
-                -OH MY GOD
-                -increased max. # of custom shapes (and waves) from 3 to 4
-                -added 'texture' option, which allows you to use the last frame as a texture on the shape
-                    -added "tex_ang" and "tex_zoom" params to control the texture coords
-                -each frame, custom shapes now draw BEFORE regular waveform + custom waves
-                -added init + per-frame vars: "texture", "additive", "thick", "tex_ang", "tex_zoom"
-            -fixed valid characters for filenames when importing/exporting custom shapes/waves;
-                also, it now gives error messages on error in import/export.
-            -cranked max. meshsize up to 96x72
-            -Krash, Rova: now the 'q' variables, as modified by the preset per-frame equations, are again 
-                readable by the custom waves + custom shapes.  Sorry about that.  Should be the end of the 
-                'q' confusion.
-            -added 'meshx' and 'meshy' [read-only] variables to the preset init, per-frame, and per-pixel 
-                equations (...and inc'd the size of the global variable pool by 2).
-            -removed t1-t8 vars for Custom Shapes; they were unnecessary (since there's no per-point code there).
-            -protected custom waves from trying to draw when # of sample minus the separation is < 2
-                (or 1 if drawing with dots)
-            -fixed some [minor] preset-blending bugs in the custom wave code 
-            -created a visual map for the flow of values for the q1-q8 and t1-t8 variables:
-                q_and_t_vars.gif (or something).
-            -fixed clipping of onscreen text in low-video-memory situations.  Now, if there isn't enough
-                video memory to create an offscreen texture that is at least 75% of the size of the 
-                screen (or to create at least a 256x256 one), it won't bother using one, and will instead draw text directly to the screen.
-                Otherwise, if the texture is from 75%-99% of the screen size, text will now at least
-                appear in the correct position on the screen so that it will be visible; this will mean
-                that the right- and bottom-aligned text will no longer be fully right/bottom-aligned 
-                to the edge of the screen.                
-            -fixed blurry text 
-            -VJ mode is partially restored; the rest will come with beta 7 or the final release.  At the time of beta 6, VJ mode still has some glitches in it, but I'm working on them.  Most notably, it doesn't resize the text image when you resize the window; that's next on my list.
-        <AFTER BETA 6:>            
-            -now sprites can burn-in on any frame, not just on the last frame.
-                set 'burn' to one (in the sprite code) on any frame to make it burn in.
-                this will break some older sprites, but it's super easy to fix, and 
-                I think it's worth it. =)  thanks to papaw00dy for the suggestion!
-            -fixed the asymptotic-value bug with custom waves using spectral data & having < 512 samples (thanks to telek's example!)
-            -fixed motion vectors' reversed Y positioning.
-            -fixed truncation ("...") of long custom messages
-            -fixed that pesky bug w/the last line of code on a page
-            -fixed the x-positioning of custom waves & shapes.  Before, if you were 
-                saving some coordinates from the preset's per-frame equations (say in q1 and q2)
-                and then you set "x = q1; y = q2;" in a custom shape's per-frame code
-                (or in a custom wave's per-point code), the x position wouldn't really be
-                in the right place, because of aspect ratio multiplications.  Before, you had
-                to actually write "x = (q1-0.5)*0.75 + 0.5; y = q2;" to get it to line up; 
-                now it's fixed, though, and you can just write "x = q1; y = q2;".
-            -fixed some bugs where the plugin start up, in windowed mode, on the wrong window
-                (and hence run super slow).
-            -fixed some bugs w/a munged window frame when the "integrate with winamp" option
-                was checked.
-        <AFTER BETA 7:>
-            -preset ratings are no longer read in all at once; instead, they are scanned in
-                1 per frame until they're all in.  This fixes the long pauses when you switch
-                to a directory that has many hundreds of presets.  If you want to switch
-                back to the old way (read them all in at once), there is an option for it
-                in the config panel.
-            -cranked max. mesh size up to 128x96
-            -fixed bug in custom shape per-frame code, where t1-t8 vars were not 
-                resetting, at the beginning of each frame, to the values that they had 
-                @ the end of the custom shape init code's execution.
-            -
-            -
-            -
-
-
-        beta 2 thread: http://forums.winamp.com/showthread.php?threadid=142635
-        beta 3 thread: http://forums.winamp.com/showthread.php?threadid=142760
-        beta 4 thread: http://forums.winamp.com/showthread.php?threadid=143500
-        beta 6 thread: http://forums.winamp.com/showthread.php?threadid=143974
-        (+read about beat det: http://forums.winamp.com/showthread.php?threadid=102205)
-
-@       -code editing: when cursor is on 1st posn. in line, wrong line is highlighted!?
-        -requests:
-            -random sprites (...they can just write a prog for this, tho)
-            -Text-entry mode.
-                -Like your favorite online game, hit T or something to enter 'text entry' mode. Type a message, then either hit ESC to clear and cancel text-entry mode, or ENTER to display the text on top of the vis. Easier for custom messages than editing the INI file (and probably stopping or minimizing milkdrop to do it) and reloading.
-                -OR SKIP IT; EASY TO JUST EDIT, RELOAD, AND HIT 00.
-            -add 'AA' parameter to custom message text file?
-        -when mem is low, fonts get kicked out -> white boxes
-            -probably happening b/c ID3DXFont can't create a 
-             temp surface to use to draw text, since all the
-             video memory is gobbled up.
-*       -add to installer: q_and_t_vars.gif
-*       -presets:
-            1. pick final set
-                    a. OK-do a pass weeding out slow presets (crank mesh size up)
-                    b. OK-do 2nd pass; rate them & delete crappies
-                    c. OK-merge w/set from 1.03; check for dupes; delete more suckies
-            2. OK-check for cpu-guzzlers
-            3. OK-check for big ones (>= 8kb)
-            4. check for ultra-spastic-when-audio-quiet ones
-            5. update all ratings
-            6. zip 'em up for safekeeping
-*       -docs: 
-                -link to milkdrop.co.uk
-                -preset authoring:
-                    -there are 11 variable pools:
-                        preset:
-                            a) preset init & per-frame code
-                            b) preset per-pixel code
-                        custom wave 1:
-                            c) init & per-frame code
-                            d) per-point code
-                        custom wave 2:
-                            e) init & per-frame code
-                            f) per-point code
-                        custom wave 3:
-                            g) init & per-frame code
-                            h) per-point code
-                        i) custom shape 1: init & per-frame code
-                        j) custom shape 2: init & per-frame code
-                        k) custom shape 3: init & per-frame code
-
-                    -all of these have predefined variables, the values of many of which 
-                        trickle down from init code, to per-frame code, to per-pixel code, 
-                        when the same variable is defined for each of these.
-                    -however, variables that you define ("my_var = 5;") do NOT trickle down.
-                        To allow you to pass custom values from, say, your per-frame code
-                        to your per-pixel code, the variables q1 through q8 were created.
-                        For custom waves and custom shapes, t1 through t8 work similarly.
-                    -q1-q8:
-                        -purpose: to allow [custom] values to carry from {the preset init
-                            and/or per-frame equations}, TO: {the per-pixel equations},
-                            {custom waves}, and {custom shapes}.
-                        -are first set in preset init code.
-                        -are reset, at the beginning of each frame, to the values that 
-                            they had at the end of the preset init code. 
-                        -can be modified in per-frame code...
-                            -changes WILL be passed on to the per-pixel code 
-                            -changes WILL pass on to the q1-q8 vars in the custom waves
-                                & custom shapes code
-                            -changes will NOT pass on to the next frame, though;
-                                use your own (custom) variables for that.
-                        -can be modified in per-pixel code...
-                            -changes will pass on to the next *pixel*, but no further
-                            -changes will NOT pass on to the q1-q8 vars in the custom
-                                waves or custom shapes code.
-                            -changes will NOT pass on to the next frame, after the
-                                last pixel, though.
-                        -CUSTOM SHAPES: q1-q8...
-                            -are readable in both the custom shape init & per-frame code
-                            -start with the same values as q1-q8 had at the end of the *preset*
-                                per-frame code, this frame
-                            -can be modified in the init code, but only for a one-time
-                                pass-on to the per-frame code.  For all subsequent frames
-                                (after the first), the per-frame code will get the q1-q8
-                                values as described above.
-                            -can be modified in the custom shape per-frame code, but only 
-                                as temporary variables; the changes will not pass on anywhere.
-                        -CUSTOM WAVES: q1-q8...
-                            -are readable in the custom wave init, per-frame, and per-point code
-                            -start with the same values as q1-q8 had at the end of the *preset*
-                                per-frame code, this frame
-                            -can be modified in the init code, but only for a one-time
-                                pass-on to the per-frame code.  For all subsequent frames
-                                (after the first), the per-frame code will get the q1-q8
-                                values as described above.
-                            -can be modified in the custom wave per-frame code; changes will
-                                pass on to the per-point code, but that's it.
-                            -can be modified in the per-point code, and the modified values
-                                will pass on from point to point, but won't carry beyond that.
-                        -CUSTOM WAVES: t1-t8...
-                            -allow you to generate & save values in the custom wave init code,
-                                that can pass on to the per-frame and, more sigificantly,
-                                per-point code (since it's in a different variable pool).
-                            -...                                
-                        
-
-
-                        !-whatever the values of q1-q8 were at the end of the per-frame and per-pixel
-                            code, these are copied to the q1-q8 variables in the custom wave & custom 
-                            shape code, for that frame.  However, those values are separate.
-                            For example, if you modify q1-q8 in the custom wave #1 code, those changes 
-                            will not be visible anywhere else; if you modify q1-q8 in the custom shape
-                            #2 code, same thing.  However, if you modify q1-q8 in the per-frame custom
-                            wave code, those modified values WILL be visible to the per-point custom
-                            wave code, and can be modified within it; but after the last point,
-                            the values q1-q8 will be discarded; on the next frame, in custom wave #1
-                            per-frame code, the values will be freshly copied from the values of the 
-                            main q1-q8 after the preset's per-frame and per-point code have both been
-                            executed.                          
-                    -monitor: 
-                        -can be read/written in preset init code & preset per-frame code.
-                        -not accessible from per-pixel code.
-                        -if you write it on one frame, then that value persists to the next frame.
-                    -t1-t8:
-                        -
-                        -
-                        -
-                -regular docs:
-                    -put in the stuff recommended by VMS (vidcap, etc.)
-                    -add to troubleshooting:
-                        1) desktop mode icons not appearing?  or
-                           onscreen text looking like colored boxes?
-                             -> try freeing up some video memory.  lower your res; drop to 16 bit;
-                                etc.  TURN OFF AUTO SONGTITLES.
-                        1) slow desktop/fullscr mode?  -> try disabling auto songtitles + desktop icons.
-                            also try reducing texsize to 256x256, since that eats memory that the text surface could claim.
-                        2) 
-                        3) 
-        *   -presets:
-                -add new 
-                -fix 3d presets (bring gammas back down to ~1.0)
-                -check old ones, make sure they're ok
-                    -"Rovastar - Bytes"
-                    -check wave_y
-        *   -document custom waves & shapes
-        *   -slow text is mostly fixed... =(
-                -desktop icons + playlist both have begin/end around them now, but in desktop mode,
-                 if you bring up playlist or Load menu, fps drops in half; press Esc, and fps doesn't go back up.
-            -
-            -
-            -
-        -DONE / v1.04:
-            -updated to VMS 1.05
-                -[list benefits...]
-                -
-                -
-            -3d mode: 
-                a) SWAPPED DEFAULT L/R LENS COLORS!  All images on the web are left=red, right=blue!                    
-                b) fixed image display when viewing a 3D preset in a non-4:3 aspect ratio window
-                c) gamma now works for 3d presets!  (note: you might have to update your old presets.
-                        if they were 3D presets, the gamma was ignored and 1.0 was used; now,
-                        if gamma was >1.0 in the old preset, it will probably appear extremely bright.)
-                d) added SHIFT+F9 and CTRL+C9 to inc/dec stereo separation
-                e) added default stereo separation to config panel
-            -cranked up the max. mesh size (was 48x36, now 64x48) and the default mesh size
-                (was 24x18, now 32x24)
-            -fixed aspect ratio for final display
-            -auto-texsize is now computed slightly differently; for vertically or horizontally-stretched
-                windows, the texsize is now biased more toward the larger dimension (vs. just the
-                average).
-            -added anisotropic filtering (for machines that support it)
-            -fixed bug where the values of many variables in the preset init code were not set prior 
-                to execution of the init code (e.g. time, bass, etc. were all broken!)
-            -added various preset blend effects.  In addition to the old uniform fade, there is
-                now a directional wipe, radial wipe, and plasma fade.
-            -FIXED SLOW TEXT for DX8 (at least, on the geforce 4).  
-                Not using DT_RIGHT or DT_BOTTOM was the key.
-
-        
-        -why does text kill it in desktop mode?
-        -text is SLOOW
-        -to do: add (and use) song title font + tooltip font
-        -re-test: menus, text, boxes, etc.
-        -re-test: TIME        
-        -testing:
-            -make sure sound works perfectly.  (had to repro old pre-vms sound analysis!)
-            -autogamma: currently assumes/requires that GetFrame() resets to 0 on a mode change
-                (i.e. windowed -> fullscreen)... is that the case?
-            -restore motion vectors
-            -
-            -
-        -restore lost surfaces
-        -test bRedraw flag (desktop mode/paused)
-        -search for //? in milkdropfs.cpp and fix things
-            
-        problem: no good soln for VJ mode
-        problem: D3DX won't give you solid background for your text.
-            soln: (for later-) create wrapper fn that draws w/solid bkg.
-
-        SOLN?: use D3DX to draw all text (plugin.cpp stuff AND playlist); 
-        then, for VJ mode, create a 2nd DxContext 
-        w/its own window + windowproc + fonts.  (YUCK)
-    1) config panel: test, and add WM_HELP's (copy from tooltips)
-    2) keyboard input: test; and...
-        -need to reset UI_MODE when playlist is turned on, and
-        -need to reset m_show_playlist when UI_MODE is changed.  (?)
-        -(otherwise they can both show @ same time and will fight 
-            for keys and draw over each other)
-    3) comment out most of D3D stuff in milkdropfs.cpp, and then 
-        get it running w/o any milkdrop, but with text, etc.
-    4) sound
-
-  Issues / To Do Later
-  --------------------
-    1) sprites: color keying stuff probably won't work any more...
-    2) scroll lock: pull code from Monkey
-    3) m_nGridY should not always be m_nGridX*3/4!
-    4) get solid backgrounds for menus, waitstring code, etc.
-        (make a wrapper function!)
-
-    99) at end: update help screen
-
-  Things that will be different
-  -----------------------------
-    1) font sizes are no longer relative to size of window; they are absolute.
-    2) 'don't clear screen at startup' option is gone
-    3) 'always on top' option is gone
-    4) text will not be black-on-white when an inverted-color preset is showing
-
-                -VJ mode:
-                    -notes
-                        1. (remember window size/pos, and save it from session to session?  nah.)
-                        2. (kiv: scroll lock)
-                        3. (VJ window + desktop mode:)
-                                -ok w/o VJ mode
-                                -w/VJ mode, regardless of 'fix slow text' option, probs w/focus;
-                                    click on vj window, and plugin window flashes to top of Z order!
-                                -goes away if you comment out 1st call to PushWindowToJustBeforeDesktop()...
-                                -when you disable PushWindowToJustBeforeDesktop:
-                                    -..and click on EITHER window, milkdrop jumps in front of the taskbar.
-                                    -..and click on a non-MD window, nothing happens.
-                                d-FIXED somehow, magically, while fixing bugs w/true fullscreen mode!
-                        4. (VJ window + true fullscreen mode:)
-                                d-make sure VJ window gets placed on the right monitor, at startup,
-                                    and respects taskbar posn.
-                                d-bug - start in windowed mode, then dbl-clk to go [true] fullscreen 
-                                    on 2nd monitor, all with VJ mode on, and it excepts somewhere 
-                                    in m_text.DrawNow() in a call to DrawPrimitive()!
-                                    FIXED - had to check m_vjd3d8_device->TestCooperativeLevel
-                                    each frame, and destroy/reinit if device needed reset.
-                                d-can't resize VJ window when grfx window is running true fullscreen!
-                                    -FIXED, by dropping the Sleep(30)/return when m_lost_focus
-                                        was true, and by not consuming WM_NCACTIVATE in true fullscreen
-                                        mode when m_hTextWnd was present, since DX8 doesn't do its
-                                        auto-minimize thing in that case.
-
-
-
+      When the CONFIG PANEL launches
+      ------------------------------
+          INITIALIZATION
+              OverrideDefaults
+              MilkDropPreInitialize
+              MilkDropReadConfig
+              << DirectX gets initialized at this point >>
+          RUNNING
+              { MilkDropConfigTabProc }                  // called on startup & on keyboard events
+          CLEANUP
+              [ MilkDropWriteConfig ]                    // only called if user clicked 'OK' to exit
+              << DirectX gets uninitialized at this point >>
 */
 
 #include "pch.h"
@@ -513,22 +93,22 @@ Order of Function Calls
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib,"dxguid.lib")
 
-FILE* XBMC_WOpen( const wchar_t* WFilename, const wchar_t* WMode )
+FILE* WOpen(const wchar_t* WFilename, const wchar_t* WMode)
 {
-	int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
-	char* utf8Name = new char[ SizeNeeded ];
-	WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
+    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
+    char* utf8Name = new char[SizeNeeded];
+    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
 
-	SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WMode[0], -1, NULL, 0, NULL, NULL);
-	char* utf8Mode = new char[ SizeNeeded ];
-	WideCharToMultiByte(CP_UTF8, 0, &WMode[0], -1, &utf8Mode[0], SizeNeeded, NULL, NULL);
+    SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WMode[0], -1, NULL, 0, NULL, NULL);
+    char* utf8Mode = new char[SizeNeeded];
+    WideCharToMultiByte(CP_UTF8, 0, &WMode[0], -1, &utf8Mode[0], SizeNeeded, NULL, NULL);
 
-	FILE* f = fopen(utf8Name, utf8Mode);
+    FILE* f = fopen(utf8Name, utf8Mode);
 
-	delete[] utf8Mode;
-	delete[] utf8Name;
+    delete[] utf8Mode;
+    delete[] utf8Name;
 
-	return f;
+    return f;
 }
 
 int warand()
@@ -709,7 +289,7 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
     
     // read in all chars.  Replace char combos:  { 13;  13+10;  10 } with LINEFEED_CONTROL_CHAR, if bConvertLFsToSpecialChar is true.
 //    FILE* f = _wfopen(szFile, L"rb");
-	FILE* f = XBMC_WOpen( szFile, L"rb");
+	FILE* f = WOpen( szFile, L"rb");
     if (!f)
     {
 /*        wchar_t buf[1024], title[64];
@@ -1580,7 +1160,7 @@ int CPlugin::AllocateMyDX9Stuff()
     //-------------------------------------
     if (m_nMaxPSVersion > MD2_PS_NONE)
     {
-        /* DX11: vertex declarations not required. DX11Context uses needed layout
+        /* DX11: vertex declarations not required. D3D11Shim uses needed layout
         // Create vertex declarations (since we're not using FVF anymore)
         if (D3D_OK != GetDevice()->CreateVertexDeclaration( g_MyVertDecl, &m_pMyVertDecl )) 
         {
@@ -2268,7 +1848,7 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     //           4/8/16... = cubic interp.
 
     wchar_t buf[2048], title[64];
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
 
     // Synthesize noise texture(s)
     ID3D11Texture2D *pNoiseTex = NULL, *pStaging = NULL;
@@ -2419,7 +1999,7 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
     //           4/8/16... = cubic interp.
 
     wchar_t buf[2048], title[64];
-    DX11Context* lpDevice = GetDevice();
+    D3D11Shim* lpDevice = GetDevice();
     // Synthesize noise texture(s)
     ID3D11Texture3D* pNoiseTex = NULL, *pStaging = NULL;
     // try twice - once with mips, once without.
@@ -4562,7 +4142,7 @@ retry:
                 //   If missing, assume it is 2.
                 wchar_t szFullPath[MAX_PATH];
                 swprintf(szFullPath, L"%s%s", szPresetDir, fd.cFileName);
-                FILE* f = XBMC_WOpen(szFullPath, L"r");
+                FILE* f = WOpen(szFullPath, L"r");
                 if (!f)
                     bSkip = true;
                 else {
