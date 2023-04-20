@@ -16,7 +16,7 @@ BraceWrapping:
   AfterExternBlock: false
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
-ColumnLimit: 120
+ColumnLimit: 140
 IndentCaseLabels: true
 IndentCaseBlocks: true
 PointerAlignment: Left

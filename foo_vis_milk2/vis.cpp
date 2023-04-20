@@ -6,6 +6,7 @@
 #include "vis.h"
 
 #include "../vis_milk2/plugin.h"
+#include "../vis_milk2/defines.h"
 
 CPlugin g_plugin;
 
@@ -39,8 +40,9 @@ void Vis::Initialize(HWND window, int width, int height)
     //m_deviceResources->CreateWindowSizeDependentResources();
     //CreateWindowSizeDependentResources();
  
-    g_plugin.PluginPreInitialize(window, NULL);
     swprintf_s(g_plugin.m_szPluginsDirPath, L"%hs" /* L"%hs\\resources\\" */, const_cast<char*>(m_pwd.c_str()));
+    swprintf_s(g_plugin.m_szConfigIniFile, L"%hs%ls", const_cast<char*>(m_pwd.c_str()), INIFILE);
+    g_plugin.PluginPreInitialize(window, NULL);
     g_plugin.PluginInitialize(0, 0, width, height);
 }
 

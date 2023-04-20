@@ -245,8 +245,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
     // Determine the render target size in pixels.
     const UINT backBufferWidth = std::max<UINT>(static_cast<UINT>(m_outputSize.right - m_outputSize.left), 1u);
     const UINT backBufferHeight = std::max<UINT>(static_cast<UINT>(m_outputSize.bottom - m_outputSize.top), 1u);
-    const DXGI_FORMAT backBufferFormat =
-        (m_options & (c_FlipPresent | c_AllowTearing | c_EnableHDR)) ? NoSRGB(m_backBufferFormat) : m_backBufferFormat;
+    const DXGI_FORMAT backBufferFormat = (m_options & (c_FlipPresent | c_AllowTearing | c_EnableHDR)) ? NoSRGB(m_backBufferFormat) : m_backBufferFormat;
 
     if (m_swapChain)
     {
@@ -322,11 +321,9 @@ void DeviceResources::CreateWindowSizeDependentResources()
                                                1, // Use a single mipmap level.
                                                D3D11_BIND_DEPTH_STENCIL);
 
-        ThrowIfFailed(
-            m_d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, m_depthStencil.ReleaseAndGetAddressOf()));
+        ThrowIfFailed(m_d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, m_depthStencil.ReleaseAndGetAddressOf()));
 
-        ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(m_depthStencil.Get(), nullptr,
-                                                          m_d3dDepthStencilView.ReleaseAndGetAddressOf()));
+        ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(m_depthStencil.Get(), nullptr, m_d3dDepthStencilView.ReleaseAndGetAddressOf()));
     }
 
     // Set the 3D rendering viewport to target the entire window.
@@ -472,7 +469,7 @@ void DeviceResources::CreateFactory()
             dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
 
             DXGI_INFO_QUEUE_MESSAGE_ID hide[] = {
-                80 /* IDXGISwapChain::GetContainingOutput: The swapchain's adapter does not control the output on which the swapchain's window resides. */
+                80 /* IDXGISwapChain::GetContainingOutput: The swap chain's adapter does not control the output on which the swap chain's window resides. */
                 ,
             };
             DXGI_INFO_QUEUE_FILTER filter = {};
@@ -500,9 +497,7 @@ void DeviceResources::GetHardwareAdapter(IDXGIAdapter1** ppAdapter)
     HRESULT hr = m_dxgiFactory.As(&factory6);
     if (SUCCEEDED(hr))
     {
-        for (UINT adapterIndex = 0; SUCCEEDED(factory6->EnumAdapterByGpuPreference(
-                 adapterIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(adapter.ReleaseAndGetAddressOf())));
-             adapterIndex++)
+        for (UINT adapterIndex = 0; SUCCEEDED(factory6->EnumAdapterByGpuPreference(adapterIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(adapter.ReleaseAndGetAddressOf()))); adapterIndex++)
         {
             DXGI_ADAPTER_DESC1 desc;
             ThrowIfFailed(adapter->GetDesc1(&desc));
@@ -515,8 +510,7 @@ void DeviceResources::GetHardwareAdapter(IDXGIAdapter1** ppAdapter)
 
 #ifdef _DEBUG
             wchar_t buff[256] = {};
-            swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId,
-                       desc.DeviceId, desc.Description);
+            swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId, desc.DeviceId, desc.Description);
             OutputDebugStringW(buff);
 #endif
 
@@ -526,8 +520,7 @@ void DeviceResources::GetHardwareAdapter(IDXGIAdapter1** ppAdapter)
 
     if (!adapter)
     {
-        for (UINT adapterIndex = 0;
-             SUCCEEDED(m_dxgiFactory->EnumAdapters1(adapterIndex, adapter.ReleaseAndGetAddressOf())); adapterIndex++)
+        for (UINT adapterIndex = 0; SUCCEEDED(m_dxgiFactory->EnumAdapters1(adapterIndex, adapter.ReleaseAndGetAddressOf())); adapterIndex++)
         {
             DXGI_ADAPTER_DESC1 desc;
             ThrowIfFailed(adapter->GetDesc1(&desc));
@@ -540,8 +533,7 @@ void DeviceResources::GetHardwareAdapter(IDXGIAdapter1** ppAdapter)
 
 #ifdef _DEBUG
             wchar_t buff[256] = {};
-            swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId,
-                       desc.DeviceId, desc.Description);
+            swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId, desc.DeviceId, desc.Description);
             OutputDebugStringW(buff);
 #endif
 
@@ -577,8 +569,7 @@ void DeviceResources::UpdateColorSpace()
         // Get the rectangle bounds of the app window.
         RECT windowBounds;
         if (!GetWindowRect(m_window, &windowBounds))
-            throw std::system_error(std::error_code(static_cast<int>(GetLastError()), std::system_category()),
-                                    "GetWindowRect");
+            throw std::system_error(std::error_code(static_cast<int>(GetLastError()), std::system_category()), "GetWindowRect");
 
         const long ax1 = windowBounds.left;
         const long ay1 = windowBounds.top;
@@ -589,8 +580,7 @@ void DeviceResources::UpdateColorSpace()
         long bestIntersectArea = -1;
 
         ComPtr<IDXGIAdapter> adapter;
-        for (UINT adapterIndex = 0;
-             SUCCEEDED(m_dxgiFactory->EnumAdapters(adapterIndex, adapter.ReleaseAndGetAddressOf())); ++adapterIndex)
+        for (UINT adapterIndex = 0; SUCCEEDED(m_dxgiFactory->EnumAdapters(adapterIndex, adapter.ReleaseAndGetAddressOf())); ++adapterIndex)
         {
             ComPtr<IDXGIOutput> output;
             for (UINT outputIndex = 0; SUCCEEDED(adapter->EnumOutputs(outputIndex, output.ReleaseAndGetAddressOf()));

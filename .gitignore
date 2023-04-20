@@ -105,9 +105,9 @@ ClientBin/
 /*.patch
 *.diff
 
-#############
+####################
 ## Windows detritus
-#############
+####################
 
 # Windows image caches
 Thumbs.db
@@ -125,25 +125,27 @@ $RECYCLE.BIN/
 # CMake
 CMakeLists.txt
 
-#############
+############
 ## MilkDrop
-#############
+############
 
 # FXC-generated files
 /vis_milk2/*.inc
 
-#############
+################
 ## Dependencies
-#############
-/depends/milkdrop2/
-/depends/foobar2000/
-/depends/pfc/
-/depends/libppui/
-/depends/wtl/
-/depends/windows*/
-/depends/ns-eel2/asm-nseel-x86-gcc.c
-/depends/ns-eel2/asm-nseel-ppc-gcc.c
-/depends/ns-eel2/asm-nseel-x64-macho.o
+################
+/external/milkdrop2/
+/external/foobar2000/
+/external/pfc/
+/external/libppui/
+/external/directxtk*/
+/external/Microsoft.XAudio2.*/
+/external/wtl*/
+/external/windows*/
+/external/ns-eel2/asm-nseel-x86-gcc.c
+/external/ns-eel2/asm-nseel-ppc-gcc.c
+/external/ns-eel2/asm-nseel-x64-macho.o
 *.wav
 *.dds
 *.spritefont

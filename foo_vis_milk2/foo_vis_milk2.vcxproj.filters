@@ -55,6 +55,7 @@
     <None Include="..\README.md" />
     <None Include="..\.gitignore" />
     <None Include="..\.clang-format" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="foo_vis_milk2.rc">
