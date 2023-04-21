@@ -1,3 +1,7 @@
+//
+// d3d11shim.h - Direct3D 9 to Direct3D 11 conversion functions.
+//
+
 #pragma once
 
 #include <memory>

@@ -1,3 +1,7 @@
+//
+// constanttable.cpp - Direct3D 11 constant table.
+//
+
 #include "pch.h"
 #include "constanttable.h"
 

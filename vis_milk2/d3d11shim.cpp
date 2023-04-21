@@ -1,3 +1,7 @@
+//
+// d3d11shim.cpp - Direct3D 9 to Direct3D 11 conversion functions.
+//
+
 #include "pch.h"
 #include "d3d11shim.h"
 
@@ -73,7 +77,7 @@ void D3D11Shim::Initialize()
     m_pDevice->CreatePixelShader(colorpsCode, sizeof(colorpsCode), NULL, &m_pPShader[2]);
     m_pDevice->CreatePixelShader(texture1psCode, sizeof(texture1psCode), NULL, &m_pPShader[3]);
 
-    CD3D11_BUFFER_DESC bDesc(sizeof(MYVERTEX) * MAX_VERTICES_COUNT, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+    CD3D11_BUFFER_DESC bDesc(sizeof(MDVERTEX) * MAX_VERTICES_COUNT, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
     m_pDevice->CreateBuffer(&bDesc, NULL, &m_pVBuffer);
 
     bDesc.ByteWidth = sizeof(uint16_t) * MAX_VERTICES_COUNT / 6;

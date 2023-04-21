@@ -22,7 +22,7 @@ std::unique_ptr<Vis> g_vis;
 
 class milk2_ui_element_instance :
     public ui_element_instance,
-    public CWindowImpl<milk2_ui_element_instance> //,public DX::IDeviceNotify
+    public CWindowImpl<milk2_ui_element_instance>
 {
   public:
     DECLARE_WND_CLASS_EX(TEXT("MilkDrop2"), CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));

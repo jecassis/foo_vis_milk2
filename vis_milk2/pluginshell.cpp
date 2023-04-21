@@ -43,23 +43,25 @@
 #pragma comment(lib,"winmm.lib")    // for timeGetTime
 
 // STATE VALUES & VERTEX FORMATS FOR HELP SCREEN TEXTURE:
-#define TEXT_SURFACE_NOT_READY  0
-#define TEXT_SURFACE_REQUESTED  1
-#define TEXT_SURFACE_READY      2
-#define TEXT_SURFACE_ERROR      3
+#define TEXT_SURFACE_NOT_READY 0
+#define TEXT_SURFACE_REQUESTED 1
+#define TEXT_SURFACE_READY     2
+#define TEXT_SURFACE_ERROR     3
+
 typedef struct _HELPVERTEX
 {
-	float x, y;      // screen position
-	float z;         // Z-buffer depth
-	DWORD Diffuse;   // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
-	float tu, tv;    // texture coordinates for texture #0
+    float x, y;    // screen position
+    float z;       // Z-buffer depth
+    DWORD Diffuse; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
+    float tu, tv;  // texture coordinates for texture #0
 } HELPVERTEX, *LPHELPVERTEX;
 #define HELP_VERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
+
 typedef struct _SIMPLEVERTEX
 {
-	float x, y;      // screen position
-	float z;         // Z-buffer depth
-	DWORD Diffuse;   // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
+    float x, y;    // screen position
+    float z;       // Z-buffer depth
+    DWORD Diffuse; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
 } SIMPLEVERTEX, *LPSIMPLEVERTEX;
 #define SIMPLE_VERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
@@ -67,172 +69,112 @@ extern wchar_t* g_szHelp;
 extern int g_szHelp_W;
 //extern winampVisModule mod1;
 
-// resides in vms_desktop.dll/lib:
+// Resides in `vms_desktop.dll/lib`.
 void getItemData(int x);
-
 
 CPluginShell::CPluginShell()
 {
-	// this should remain empty!
+    // this should remain empty!
 }
 
 CPluginShell::~CPluginShell()
 {
-	// this should remain empty!
+    // this should remain empty!
 }
 
-eScrMode  CPluginShell::GetScreenMode()
-{
-	return m_screenmode;
-};
-int       CPluginShell::GetFrame()
-{
-	return m_frame;
-};
-float     CPluginShell::GetTime()
-{
-	return m_time;
-};
-float     CPluginShell::GetFps()
-{
-	return m_fps;
-};
-int       CPluginShell::GetWidth()
-{
-	if (m_lpDX) return m_lpDX->m_client_width;  else return 0;
-};
-int       CPluginShell::GetHeight()
-{
-	if (m_lpDX) return m_lpDX->m_client_height; else return 0;
-};
-int       CPluginShell::GetCanvasMarginX()
-{
-	if (m_lpDX && m_screenmode==WINDOWED) return (m_lpDX->m_client_width  - m_lpDX->m_REAL_client_width)/2; else return 0;
-};
-int       CPluginShell::GetCanvasMarginY()
-{
-	if (m_lpDX && m_screenmode==WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height)/2; else return 0;
-};
-HINSTANCE CPluginShell::GetInstance()
-{
-	return m_hInstance;
-};
-wchar_t* CPluginShell::GetPluginsDirPath()
-{
-	return m_szPluginsDirPath;
-};
-wchar_t* CPluginShell::GetConfigIniFile()
-{
-	return m_szConfigIniFile;
-};
-char* CPluginShell::GetConfigIniFileA()
-{
-	return m_szConfigIniFileA;
-}
-int       CPluginShell::GetFontHeight(eFontIndex idx)
-{
-	if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_fontinfo[idx].nSize; else return 0;
-};
-int       CPluginShell::GetBitDepth()
-{
-	return m_lpDX->GetBitDepth();
-};
-D3D11Shim* CPluginShell::GetDevice()
-{
-	return m_lpDX->m_lpDevice.get();
-};
+eScrMode CPluginShell::GetScreenMode() { return m_screenmode; };
+int CPluginShell::GetFrame() { return m_frame; };
+float CPluginShell::GetTime() { return m_time; };
+float CPluginShell::GetFps() { return m_fps; };
+int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else return 0; };
+int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; };
+int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; };
+int CPluginShell::GetCanvasMarginY() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height) / 2; else return 0; };
+HINSTANCE CPluginShell::GetInstance() { return m_hInstance; };
+wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; };
+wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; };
+char* CPluginShell::GetConfigIniFileA() { return m_szConfigIniFileA; }
+int CPluginShell::GetFontHeight(eFontIndex idx) { if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_fontinfo[idx].nSize; else return 0; };
+int CPluginShell::GetBitDepth() { return m_lpDX->GetBitDepth(); };
+D3D11Shim* CPluginShell::GetDevice() { return m_lpDX->m_lpDevice.get(); };
 #if 0
-D3DCAPS9* CPluginShell::GetCaps()
-{
-	if (m_lpDX) return &(m_lpDX->m_caps);  else return NULL;
-};
-D3DFORMAT CPluginShell::GetBackBufFormat()
-{
-	if (m_lpDX) return m_lpDX->m_current_mode.display_mode.Format; else return D3DFMT_UNKNOWN;
-};
-D3DFORMAT CPluginShell::GetBackBufZFormat()
-{
-	if (m_lpDX) return m_lpDX->GetZFormat(); else return D3DFMT_UNKNOWN;
-};
+D3DCAPS9* CPluginShell::GetCaps() { if (m_lpDX) return &(m_lpDX->m_caps); else return NULL; };
+D3DFORMAT CPluginShell::GetBackBufFormat() { if (m_lpDX) return m_lpDX->m_current_mode.display_mode.Format; else return D3DFMT_UNKNOWN; };
+D3DFORMAT CPluginShell::GetBackBufZFormat() { if (m_lpDX) return m_lpDX->GetZFormat(); else return D3DFMT_UNKNOWN; };
 #endif
-IUnknown* CPluginShell::GetFont(eFontIndex idx)
-{
-	if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_d3dx_font[idx]; else return NULL;
-};
-char* CPluginShell::GetDriverFilename()
-{
-	static char fake[1] = { 0 };
-	return fake;
-};
-char* CPluginShell::GetDriverDescription()
-{
-	static char fake[1] = { 0 };
-	return fake;
-};
+IUnknown* CPluginShell::GetFont(eFontIndex idx) { if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_d3dx_font[idx]; else return NULL; };
+char* CPluginShell::GetDriverFilename() { static char fake[1] = {0}; return fake; };
+char* CPluginShell::GetDriverDescription() { static char fake[1] = {0}; return fake; };
 
-int CPluginShell::InitNondx9Stuff()
+int CPluginShell::InitNonDX11()
 {
 #ifdef TARGET_WINDOWS_DESKTOP
 	timeBeginPeriod(1);
 #endif
-	m_fftobj.Init(576, NUM_FREQUENCIES);
-	return AllocateMyNonDx9Stuff();
+    m_fftobj.Init(576, NUM_FREQUENCIES);
+    return AllocateMilkDropNonDX11();
 }
 
-void CPluginShell::CleanUpNondx9Stuff()
+void CPluginShell::CleanUpNonDX11()
 {
 #ifdef TARGET_WINDOWS_DESKTOP
-  timeEndPeriod(1);
+    timeEndPeriod(1);
 #endif
-	CleanUpMyNonDx9Stuff();
-	m_fftobj.CleanUp();
+    CleanUpMilkDropNonDX11();
+    m_fftobj.CleanUp();
 }
 
-int CPluginShell::AllocateDX9Stuff()
+int CPluginShell::AllocateDX11()
 {
-	int ret = AllocateMyDX9Stuff();
+    int ret = AllocateMilkDropDX11();
 
-	// invalidate various 'caches' here:
-	m_playlist_top_idx = -1;    // invalidating playlist cache forces recompute of playlist width
+    // Invalidate various 'caches' here.
+    m_playlist_top_idx = -1; // Invalidating playlist cache forces recompute of playlist width
 
 	return ret;
 }
 
-void CPluginShell::CleanUpDX9Stuff(int final_cleanup)
+void CPluginShell::CleanUpDX11(int final_cleanup)
 {
-	// ALWAYS unbind the textures before releasing textures,
-	// otherwise they might still have a hanging reference!
-	if (m_lpDX && m_lpDX->m_lpDevice)
-	{
-		for (int i=0; i<16; i++)
-			m_lpDX->m_lpDevice->SetTexture(i, NULL);
-	}
+    // Always unbind the textures before releasing textures,
+    // otherwise they might still have a hanging reference!
+    if (m_lpDX && m_lpDX->m_lpDevice)
+    {
+        for (int i = 0; i < 16; i++)
+            m_lpDX->m_lpDevice->SetTexture(i, NULL);
+    }
 
-	if (!m_vj_mode)
-	{
+    if (!m_vj_mode)
+    {
 		for (int i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
 			SafeRelease(m_d3dx_font[i]);
-		SafeRelease(m_lpDDSText);
-	}
+        SafeRelease(m_lpDDSText);
+    }
 
-	CleanUpMyDX9Stuff(final_cleanup);
+    CleanUpMilkDropDX11(final_cleanup);
 }
 
 void CPluginShell::OnUserResizeWindow()
 {
     // Update window properties
-    RECT w, c;
+    RECT c{};
     GetClientRect(m_lpDX->GetHwnd(), &c);
 
-
-
-            if (!m_lpDX->OnUserResizeWindow(&c))
-            {
-                return;
-            }
+    if (!m_lpDX->OnUserResizeWindow(&c))
+    {
+        // Note: a basic warning message box will have already been given.
+        // Suggest specific advice on how to regain more video memory.
+        //SuggestHowToFreeSomeMem();
+        return;
+    }
+    //if (!AllocateDX11())
+    //{
+    //    m_lpDX->m_ready = false; // flag to exit
+    //    return;
+    //}
 }
 
-void CPluginShell::StuffParams(DXCONTEXT_PARAMS *pParams)
+void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
 {
     pParams->screenmode = m_screenmode;
     pParams->display_mode = m_disp_mode_fs;
@@ -241,78 +183,76 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS *pParams)
     pParams->m_dualhead_vert = m_dualhead_vert;
     pParams->m_skin = (m_screenmode == WINDOWED) ? m_skin : 0;
     pParams->enable_hdr = 0;
-	switch (m_screenmode)
-	{
-	case WINDOWED:
-		pParams->allow_page_tearing = m_allow_page_tearing_w;
-		pParams->adapter_guid = m_adapter_guid_windowed;
-		//pParams->multisamp = m_multisample_windowed;
-		strcpy(pParams->adapter_devicename, m_adapter_devicename_windowed);
-		break;
-	case FULLSCREEN:
+    switch (m_screenmode)
+    {
+        case WINDOWED:
+            pParams->allow_page_tearing = m_allow_page_tearing_w;
+            pParams->adapter_guid = m_adapter_guid_windowed;
+            //pParams->multisamp = m_multisample_windowed;
+            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_windowed);
+            break;
+        case FULLSCREEN:
 	case FAKE_FULLSCREEN:
-		pParams->allow_page_tearing = m_allow_page_tearing_fs;
-		pParams->adapter_guid = m_adapter_guid_fullscreen;
-		//pParams->multisamp = m_multisample_fullscreen;
-		strcpy(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
-		break;
-	case DESKTOP:
-		pParams->allow_page_tearing = m_allow_page_tearing_dm;
-		pParams->adapter_guid = m_adapter_guid_desktop;
-		//pParams->multisamp = m_multisample_desktop;
-		strcpy(pParams->adapter_devicename, m_adapter_devicename_desktop);
-		break;
-	}
+            pParams->allow_page_tearing = m_allow_page_tearing_fs;
+            pParams->adapter_guid = m_adapter_guid_fullscreen;
+            //pParams->multisamp = m_multisample_fullscreen;
+            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
+            break;
+        case DESKTOP:
+            pParams->allow_page_tearing = m_allow_page_tearing_dm;
+            pParams->adapter_guid = m_adapter_guid_desktop;
+            //pParams->multisamp = m_multisample_desktop;
+            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_desktop);
+            break;
+    }
 	//pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
 }
 
 int CPluginShell::InitDirectX()
 {
-    // initialize graphics
-    DXCONTEXT_PARAMS params;
+    DXCONTEXT_PARAMS params{};
     StuffParams(&params);
 
-    //m_lpDX = new DXContext(m_hWndWinamp, m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp, m_szConfigIniFile);
-    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp, &params, m_szConfigIniFile);
+    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp, &params, m_szConfigIniFile); // m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp
 
-	if (!m_lpDX)
-	{
-/*		wchar_t title[64];
+    if (!m_lpDX)
+    {
+        /* wchar_t title[64];
 		MessageBoxW(NULL, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_INIT_DXCONTEXT),
 				    WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64),
-				    MB_OK|MB_SETFOREGROUND|MB_TOPMOST);
-					*/
-		return FALSE;
-	}
+				    MB_OK|MB_SETFOREGROUND|MB_TOPMOST); */
+        return FALSE;
+    }
 
-	if (m_lpDX->m_lastErr != S_OK)
-	{
-		// warning messagebox will have already been given
-        m_lpDX.reset(); //delete m_lpDX; m_lpDX = NULL;
-		return FALSE;
-	}
+    if (m_lpDX->m_lastErr != S_OK)
+    {
+        // Warning message box will have already been given.
+        m_lpDX.reset(); //delete m_lpDX;
+        return FALSE;
+    }
 
+    // Initialize graphics.
 	if (!m_lpDX->StartOrRestartDevice())
-	{
-		// note: a basic warning messagebox will have already been given.
-
-		/*if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
+    {
+        // Note: A basic warning message box will have already been given.
+		/* if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
 		{
-			// suggest specific advice on how to regain more video memory:
-			SuggestHowToFreeSomeMem();
-		}*/
+            // Make specific suggestions on how to regain more video memory.
+            SuggestHowToFreeSomeMem();
+		} */
 
-        m_lpDX.reset(); //delete m_lpDX; m_lpDX = NULL;
-		return FALSE;
-	}
+        m_lpDX.reset();
 
-	return TRUE;
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 void CPluginShell::CleanUpDirectX()
 {
-    m_lpDX.reset(); //SafeDelete(m_lpDX);
-    //SafeRelease(m_device);
+    if (m_lpDX) m_lpDX.reset();
+    //if (m_device) m_device->Release();
 }
 
 int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance)
@@ -339,58 +279,58 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_skin = 1;
     m_fix_slow_text = 0;
 
-    // initialize font settings:
-    wcscpy(m_fontinfo[SIMPLE_FONT].szFace, SIMPLE_FONT_DEFAULT_FACE);
+    // Initialize font settings.
+    wcscpy_s(m_fontinfo[SIMPLE_FONT].szFace, SIMPLE_FONT_DEFAULT_FACE);
     m_fontinfo[SIMPLE_FONT].nSize = SIMPLE_FONT_DEFAULT_SIZE;
     m_fontinfo[SIMPLE_FONT].bBold = SIMPLE_FONT_DEFAULT_BOLD;
     m_fontinfo[SIMPLE_FONT].bItalic = SIMPLE_FONT_DEFAULT_ITAL;
     m_fontinfo[SIMPLE_FONT].bAntiAliased = SIMPLE_FONT_DEFAULT_AA;
-    wcscpy(m_fontinfo[DECORATIVE_FONT].szFace, DECORATIVE_FONT_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[DECORATIVE_FONT].szFace, DECORATIVE_FONT_DEFAULT_FACE);
     m_fontinfo[DECORATIVE_FONT].nSize = DECORATIVE_FONT_DEFAULT_SIZE;
     m_fontinfo[DECORATIVE_FONT].bBold = DECORATIVE_FONT_DEFAULT_BOLD;
     m_fontinfo[DECORATIVE_FONT].bItalic = DECORATIVE_FONT_DEFAULT_ITAL;
     m_fontinfo[DECORATIVE_FONT].bAntiAliased = DECORATIVE_FONT_DEFAULT_AA;
-    wcscpy(m_fontinfo[HELPSCREEN_FONT].szFace, HELPSCREEN_FONT_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[HELPSCREEN_FONT].szFace, HELPSCREEN_FONT_DEFAULT_FACE);
     m_fontinfo[HELPSCREEN_FONT].nSize = HELPSCREEN_FONT_DEFAULT_SIZE;
     m_fontinfo[HELPSCREEN_FONT].bBold = HELPSCREEN_FONT_DEFAULT_BOLD;
     m_fontinfo[HELPSCREEN_FONT].bItalic = HELPSCREEN_FONT_DEFAULT_ITAL;
     m_fontinfo[HELPSCREEN_FONT].bAntiAliased = HELPSCREEN_FONT_DEFAULT_AA;
-    wcscpy(m_fontinfo[PLAYLIST_FONT].szFace, PLAYLIST_FONT_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[PLAYLIST_FONT].szFace, PLAYLIST_FONT_DEFAULT_FACE);
     m_fontinfo[PLAYLIST_FONT].nSize = PLAYLIST_FONT_DEFAULT_SIZE;
     m_fontinfo[PLAYLIST_FONT].bBold = PLAYLIST_FONT_DEFAULT_BOLD;
     m_fontinfo[PLAYLIST_FONT].bItalic = PLAYLIST_FONT_DEFAULT_ITAL;
     m_fontinfo[PLAYLIST_FONT].bAntiAliased = PLAYLIST_FONT_DEFAULT_AA;
 
 #if (NUM_EXTRA_FONTS >= 1)
-    wcscpy(m_fontinfo[NUM_BASIC_FONTS + 0].szFace, EXTRA_FONT_1_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[NUM_BASIC_FONTS + 0].szFace, EXTRA_FONT_1_DEFAULT_FACE);
     m_fontinfo[NUM_BASIC_FONTS + 0].nSize = EXTRA_FONT_1_DEFAULT_SIZE;
     m_fontinfo[NUM_BASIC_FONTS + 0].bBold = EXTRA_FONT_1_DEFAULT_BOLD;
     m_fontinfo[NUM_BASIC_FONTS + 0].bItalic = EXTRA_FONT_1_DEFAULT_ITAL;
     m_fontinfo[NUM_BASIC_FONTS + 0].bAntiAliased = EXTRA_FONT_1_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 2)
-    wcscpy(m_fontinfo[NUM_BASIC_FONTS + 1].szFace, EXTRA_FONT_2_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[NUM_BASIC_FONTS + 1].szFace, EXTRA_FONT_2_DEFAULT_FACE);
     m_fontinfo[NUM_BASIC_FONTS + 1].nSize = EXTRA_FONT_2_DEFAULT_SIZE;
     m_fontinfo[NUM_BASIC_FONTS + 1].bBold = EXTRA_FONT_2_DEFAULT_BOLD;
     m_fontinfo[NUM_BASIC_FONTS + 1].bItalic = EXTRA_FONT_2_DEFAULT_ITAL;
     m_fontinfo[NUM_BASIC_FONTS + 1].bAntiAliased = EXTRA_FONT_2_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 3)
-    strcpy(m_fontinfo[NUM_BASIC_FONTS + 2].szFace, EXTRA_FONT_3_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[NUM_BASIC_FONTS + 2].szFace, EXTRA_FONT_3_DEFAULT_FACE);
     m_fontinfo[NUM_BASIC_FONTS + 2].nSize = EXTRA_FONT_3_DEFAULT_SIZE;
     m_fontinfo[NUM_BASIC_FONTS + 2].bBold = EXTRA_FONT_3_DEFAULT_BOLD;
     m_fontinfo[NUM_BASIC_FONTS + 2].bItalic = EXTRA_FONT_3_DEFAULT_ITAL;
     m_fontinfo[NUM_BASIC_FONTS + 2].bAntiAliased = EXTRA_FONT_3_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 4)
-    strcpy(m_fontinfo[NUM_BASIC_FONTS + 3].szFace, EXTRA_FONT_4_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[NUM_BASIC_FONTS + 3].szFace, EXTRA_FONT_4_DEFAULT_FACE);
     m_fontinfo[NUM_BASIC_FONTS + 3].nSize = EXTRA_FONT_4_DEFAULT_SIZE;
     m_fontinfo[NUM_BASIC_FONTS + 3].bBold = EXTRA_FONT_4_DEFAULT_BOLD;
     m_fontinfo[NUM_BASIC_FONTS + 3].bItalic = EXTRA_FONT_4_DEFAULT_ITAL;
     m_fontinfo[NUM_BASIC_FONTS + 3].bAntiAliased = EXTRA_FONT_4_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 5)
-    strcpy(m_fontinfo[NUM_BASIC_FONTS + 4].szFace, EXTRA_FONT_5_DEFAULT_FACE);
+    wcscpy_s(m_fontinfo[NUM_BASIC_FONTS + 4].szFace, EXTRA_FONT_5_DEFAULT_FACE);
     m_fontinfo[NUM_BASIC_FONTS + 4].nSize = EXTRA_FONT_5_DEFAULT_SIZE;
     m_fontinfo[NUM_BASIC_FONTS + 4].bBold = EXTRA_FONT_5_DEFAULT_BOLD;
     m_fontinfo[NUM_BASIC_FONTS + 4].bItalic = EXTRA_FONT_5_DEFAULT_ITAL;
@@ -399,20 +339,19 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 
     m_disp_mode_fs.Width = DEFAULT_FULLSCREEN_WIDTH;
     m_disp_mode_fs.Height = DEFAULT_FULLSCREEN_HEIGHT;
-    m_disp_mode_fs.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    m_disp_mode_fs.Format = DXGI_FORMAT_UNKNOWN;
     m_disp_mode_fs.RefreshRate = {60 * 1000, 1000};
 
     // PROTECTED STRUCTURES/POINTERS
-    int i;
-    for (i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+    for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
         m_d3dx_font[i] = NULL;
-    m_d3dx_desktop_font = NULL;
-    m_lpDDSText = NULL;
+    m_d3dx_desktop_font = nullptr;
+    m_lpDDSText = nullptr;
     ZeroMemory(&m_sound, sizeof(td_soundinfo));
     for (int ch = 0; ch < 2; ch++)
         for (int i = 0; i < 3; i++)
         {
-        m_sound.infinite_avg[ch][i] = m_sound.avg[ch][i] = m_sound.med_avg[ch][i] = m_sound.long_avg[ch][i] = 1.0f;
+            m_sound.infinite_avg[ch][i] = m_sound.avg[ch][i] = m_sound.med_avg[ch][i] = m_sound.long_avg[ch][i] = 1.0f;
         }
 
     // GENERAL PRIVATE STUFF
@@ -437,7 +376,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	}
 	else
 	{
-		// get path to INI file & read in prefs/settings right away, so DumpMsg works!
+        // Get path to INI file & read in prefs/settings right away, so DumpMsg works!
 		GetModuleFileNameW(m_hInstance, m_szPluginsDirPath, MAX_PATH);
 		wchar_t *p = m_szPluginsDirPath + wcslen(m_szPluginsDirPath);
 		while (p >= m_szPluginsDirPath && *p != L'\\') p--;
@@ -451,7 +390,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	    && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))
 	    && p != (wchar_t *)1)
 	{
-		// load settings as well as coping with moving old settings to a contained folder
+        // load settings as well as coping with moving old settings to a contained folder
 		wchar_t m_szOldConfigIniFile[MAX_PATH] = {0}, temp[MAX_PATH] = {0}, temp2[MAX_PATH] = {0};
 		swprintf(m_szOldConfigIniFile, L"%s\\Plugins\\%s", p, INIFILE);
 		swprintf(m_szConfigIniFile, L"%s\\Plugins\\%s%s", p, SUBDIR, INIFILE);
@@ -484,7 +423,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	}
 	lstrcpyn(m_szConfigIniFileA,AutoCharFn(m_szConfigIniFile),MAX_PATH);
 
-	// PRIVATE CONFIG PANEL SETTINGS
+    // PRIVATE CONFIG PANEL SETTINGS
 	m_multisample_fullscreen = D3DMULTISAMPLE_NONE;
 	m_multisample_desktop = D3DMULTISAMPLE_NONE;
 	m_multisample_windowed = D3DMULTISAMPLE_NONE;
@@ -506,8 +445,8 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_playlist_pageups = 0;
     m_playlist_top_idx = -1;
     m_playlist_btm_idx = -1;
-    //m_playlist_width_pixels will be considered invalid whenever 'm_playlist_top_idx' is -1.
-    //m_playlist[256][256] will be considered invalid whenever 'm_playlist_top_idx' is -1.
+    // `m_playlist_width_pixels` will be considered invalid whenever `m_playlist_top_idx` is -1.
+    // `m_playlist[256][256]` will be considered invalid whenever `m_playlist_top_idx` is -1.
     m_exiting = 0;
     m_upper_left_corner_y = 0;
     m_lower_left_corner_y = 0;
@@ -520,7 +459,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     // PRIVATE - GDI STUFF
     m_main_menu = NULL;
     m_context_menu = NULL;
-    for (i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+    for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
         m_font[i] = NULL;
     m_font_desktop = NULL;
 
@@ -529,7 +468,9 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     memset(m_time_hist, 0, sizeof(m_time_hist));
     m_time_hist_pos = 0;
     if (!QueryPerformanceFrequency(&m_high_perf_timer_freq))
-        m_high_perf_timer_freq.QuadPart = 0;
+    {
+        throw std::exception(); //m_high_perf_timer_freq.QuadPart = 0;
+    }
     m_prev_end_of_frame.QuadPart = 0;
 
     // PRIVATE AUDIO PROCESSING DATA
@@ -557,11 +498,11 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 
     OverrideDefaults();
     ReadConfig();
-    m_screenmode = FULLSCREEN;
-    MyPreInitialize();
-    MyReadConfig();
 
-    //-----
+    m_screenmode = FULLSCREEN;
+
+    MilkDropPreInitialize();
+    MilkDropReadConfig();
 
     return TRUE;
 }
@@ -574,20 +515,21 @@ int CPluginShell::PluginInitialize(int iPosX, int iPosY, int iWidth, int iHeight
     //m_posY = iPosY;
     //m_pixelRatio = pixelRatio;
 
-    if (!InitDirectX()) return FALSE; // gives its own error 
+    if (!InitDirectX()) return FALSE;
     m_lpDX->m_client_width = iWidth;
     m_lpDX->m_client_height = iHeight;
-    if (!InitNondx9Stuff()) return FALSE; // gives its own error messages
-    if (!AllocateDX9Stuff()) return FALSE; // gives its own error messages
-    //if (!InitVJStuff()) return FALSE;
+    if (!InitNonDX11()) return FALSE;
+    if (!AllocateDX11()) return FALSE;
+    //if (!InitVJ()) return FALSE;
+
     return TRUE;
 }
 
 void CPluginShell::PluginQuit()
 {
-    //CleanUpVJStuff();
-    CleanUpDX9Stuff(1);
-    CleanUpNondx9Stuff();
+    //CleanUpVJ();
+    CleanUpDX11(1);
+    CleanUpNonDX11();
     CleanUpDirectX();
 }
 
@@ -598,7 +540,7 @@ wchar_t* BuildSettingName(wchar_t* name, int number)
     return temp;
 }
 
-void CPluginShell::READ_FONT(int n){
+void CPluginShell::ReadFont(int n){
 #if 0
 	GetPrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_fontinfo[n].szFace,sizeof(m_fontinfo[n].szFace), m_szConfigIniFile);
 	m_fontinfo[n].nSize   = GetPrivateProfileIntW(L"settings",BuildSettingName(L"nFontSize",n),m_fontinfo[n].nSize  ,m_szConfigIniFile);
@@ -696,7 +638,7 @@ void CPluginShell::ReadConfig()
 #endif
 }
 
-void CPluginShell::WRITE_FONT(int n)
+void CPluginShell::WriteFont(int n)
 {
 #if 0
 	WritePrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_szConfigIniFile);
@@ -750,7 +692,7 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
 		{
 			// note: a basic warning messagebox will have already been given.
 			// now suggest specific advice on how to regain more video memory:
-/ *
+    / *
 			if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
 				SuggestHowToFreeSomeMem();* /
 			return false;  // EXIT THE PLUGIN
@@ -764,7 +706,7 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
 		Sleep(30);
 		return true;
 	}
-*/
+    */
 
     DoTime();
     AnalyzeNewSound(pWaveL, pWaveR);
@@ -790,7 +732,7 @@ void CPluginShell::DrawAndDisplay(int redraw)
     m_left_edge = TEXT_MARGIN + GetCanvasMarginX();
     m_right_edge = cx - TEXT_MARGIN - GetCanvasMarginX();
 
-    MyRenderFn(redraw);
+    MilkDropRenderFrame(redraw);
 
     m_lpDX->Show();
 }

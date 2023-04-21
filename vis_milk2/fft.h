@@ -28,7 +28,7 @@
 */
 
 #ifndef __NULLSOFT_DX_PLUGIN_SHELL_FFT_H__
-#define __NULLSOFT_DX_PLUGIN_SHELL_FFT_H__ 1
+#define __NULLSOFT_DX_PLUGIN_SHELL_FFT_H__
 
 class FFT
 {

@@ -30,18 +30,14 @@
 #include "pch.h"
 #include "state.h"
 #include "support.h"
-#include "ns-eel2/ns-eel.h"
 #include "plugin.h"
 #include "utility.h"
 #include <windows.h>
 #include <locale.h>
 
-extern CPlugin g_plugin;		// declared in main.cpp
+extern CPlugin g_plugin; // declared in "main.cpp"
 
 #define FRAND ((rand() % 7381)/7380.0f)
-
-FILE* WOpen( const wchar_t* WFilename, const wchar_t* WMode );
-
 
 // These are intended to replace GetPrivateProfileInt/FloatString, which are very slow
 //  for large files (they always start from the top).  (really slow - some preset loads 
@@ -54,8 +50,7 @@ FILE* WOpen( const wchar_t* WFilename, const wchar_t* WMode );
 #include "gstring.h"
 
 typedef Vector<GStringA> VarNameList;
-typedef Vector<int    > IntList;
-
+typedef Vector<int> IntList;
 
 FILE* fLastFilePtr = NULL;
 void GetFast_CLEAR() { fLastFilePtr = NULL; }
@@ -221,46 +216,44 @@ void GetFastString(const char* szVarName, const char* szDef, char* szRetLine, in
 
 CState::CState()
 {
-	//Default();
+    //Default();
 
-	// this is the list of variables that can be used for a PER-FRAME calculation;
-	// it is a SUBSET of the per-vertex calculation variable list.
-	m_pf_codehandle = NULL;
-	m_pp_codehandle = NULL;
-	m_pf_eel = NSEEL_VM_alloc();
-	m_pv_eel = NSEEL_VM_alloc();
-	int i;
-    for (i=0; i<MAX_CUSTOM_WAVES; i++)
+    // List of variables that can be used for a PER-FRAME calculation;
+    //   it is a SUBSET of the per-vertex calculation variable list.
+    m_pf_codehandle = NULL;
+    m_pp_codehandle = NULL;
+    m_pf_eel = NSEEL_VM_alloc();
+    m_pv_eel = NSEEL_VM_alloc();
+    for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
     {
         m_wave[i].m_pf_codehandle = NULL;
         m_wave[i].m_pp_codehandle = NULL;
-				m_wave[i].m_pf_eel=NSEEL_VM_alloc();
-				m_wave[i].m_pp_eel=NSEEL_VM_alloc();
+        m_wave[i].m_pf_eel = NSEEL_VM_alloc();
+        m_wave[i].m_pp_eel = NSEEL_VM_alloc();
     }
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
+    for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
     {
         m_shape[i].m_pf_codehandle = NULL;
-				m_shape[i].m_pf_eel=NSEEL_VM_alloc();
+        m_shape[i].m_pf_eel = NSEEL_VM_alloc();
         //m_shape[i].m_pp_codehandle = NULL;
     }
-	//RegisterBuiltInVariables();
+    //RegisterBuiltInVariables();
 }
 
 CState::~CState()
 {
-	FreeVarsAndCode();
-	NSEEL_VM_free(m_pf_eel);
-	NSEEL_VM_free(m_pv_eel);
-	int i;
-	for (i=0; i<MAX_CUSTOM_WAVES; i++)
-	{
-		NSEEL_VM_free(m_wave[i].m_pf_eel);
-		NSEEL_VM_free(m_wave[i].m_pp_eel);
-	}
-	for (i=0; i<MAX_CUSTOM_SHAPES; i++)
-	{
-		NSEEL_VM_free(m_shape[i].m_pf_eel);
-	}
+    FreeVarsAndCode();
+    NSEEL_VM_free(m_pf_eel);
+    NSEEL_VM_free(m_pv_eel);
+    for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
+    {
+        NSEEL_VM_free(m_wave[i].m_pf_eel);
+        NSEEL_VM_free(m_wave[i].m_pp_eel);
+    }
+    for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
+    {
+        NSEEL_VM_free(m_shape[i].m_pf_eel);
+    }
 }
 
 //--------------------------------------------------------------------------------
@@ -269,126 +262,123 @@ void CState::RegisterBuiltInVariables(int flags)
 {
     if (flags & RECOMPILE_PRESET_CODE)
     {
-	    NSEEL_VM_resetvars(m_pf_eel);
-        var_pf_zoom		= NSEEL_VM_regvar(m_pf_eel, "zoom");		// i/o
-	    var_pf_zoomexp  = NSEEL_VM_regvar(m_pf_eel, "zoomexp");	// i/o
-	    var_pf_rot		= NSEEL_VM_regvar(m_pf_eel, "rot");		// i/o
-	    var_pf_warp		= NSEEL_VM_regvar(m_pf_eel, "warp");		// i/o
-	    var_pf_cx		= NSEEL_VM_regvar(m_pf_eel, "cx");		// i/o
-	    var_pf_cy		= NSEEL_VM_regvar(m_pf_eel, "cy");		// i/o
-	    var_pf_dx		= NSEEL_VM_regvar(m_pf_eel, "dx");		// i/o
-	    var_pf_dy		= NSEEL_VM_regvar(m_pf_eel, "dy");		// i/o
-	    var_pf_sx		= NSEEL_VM_regvar(m_pf_eel, "sx");		// i/o
-	    var_pf_sy		= NSEEL_VM_regvar(m_pf_eel, "sy");		// i/o
-	    var_pf_time		= NSEEL_VM_regvar(m_pf_eel, "time");		// i
-	    var_pf_fps      = NSEEL_VM_regvar(m_pf_eel, "fps");       // i
-	    var_pf_bass		= NSEEL_VM_regvar(m_pf_eel, "bass");		// i
-	    var_pf_mid		= NSEEL_VM_regvar(m_pf_eel, "mid");		// i
-	    var_pf_treb		= NSEEL_VM_regvar(m_pf_eel, "treb");		// i
-	    var_pf_bass_att	= NSEEL_VM_regvar(m_pf_eel, "bass_att");	// i
-	    var_pf_mid_att	= NSEEL_VM_regvar(m_pf_eel, "mid_att");	// i
-	    var_pf_treb_att	= NSEEL_VM_regvar(m_pf_eel, "treb_att");	// i
-	    var_pf_frame    = NSEEL_VM_regvar(m_pf_eel, "frame");
-	    var_pf_decay	= NSEEL_VM_regvar(m_pf_eel, "decay");
-	    var_pf_wave_a	= NSEEL_VM_regvar(m_pf_eel, "wave_a");
-	    var_pf_wave_r	= NSEEL_VM_regvar(m_pf_eel, "wave_r");
-	    var_pf_wave_g	= NSEEL_VM_regvar(m_pf_eel, "wave_g");
-	    var_pf_wave_b	= NSEEL_VM_regvar(m_pf_eel, "wave_b");
-	    var_pf_wave_x	= NSEEL_VM_regvar(m_pf_eel, "wave_x");
-	    var_pf_wave_y	= NSEEL_VM_regvar(m_pf_eel, "wave_y");
-	    var_pf_wave_mystery = NSEEL_VM_regvar(m_pf_eel, "wave_mystery");
-	    var_pf_wave_mode = NSEEL_VM_regvar(m_pf_eel, "wave_mode");
-		int vi;
-		for (vi=0; vi<NUM_Q_VAR; vi++)
+        NSEEL_VM_resetvars(m_pf_eel);
+        var_pf_zoom     = NSEEL_VM_regvar(m_pf_eel, "zoom");     // i/o
+        var_pf_zoomexp  = NSEEL_VM_regvar(m_pf_eel, "zoomexp");  // i/o
+        var_pf_rot      = NSEEL_VM_regvar(m_pf_eel, "rot");      // i/o
+        var_pf_warp     = NSEEL_VM_regvar(m_pf_eel, "warp");     // i/o
+        var_pf_cx       = NSEEL_VM_regvar(m_pf_eel, "cx");       // i/o
+        var_pf_cy       = NSEEL_VM_regvar(m_pf_eel, "cy");       // i/o
+        var_pf_dx       = NSEEL_VM_regvar(m_pf_eel, "dx");       // i/o
+        var_pf_dy       = NSEEL_VM_regvar(m_pf_eel, "dy");       // i/o
+        var_pf_sx       = NSEEL_VM_regvar(m_pf_eel, "sx");       // i/o
+        var_pf_sy       = NSEEL_VM_regvar(m_pf_eel, "sy");       // i/o
+        var_pf_time     = NSEEL_VM_regvar(m_pf_eel, "time");     // i
+        var_pf_fps      = NSEEL_VM_regvar(m_pf_eel, "fps");      // i
+        var_pf_bass     = NSEEL_VM_regvar(m_pf_eel, "bass");     // i
+        var_pf_mid      = NSEEL_VM_regvar(m_pf_eel, "mid");      // i
+        var_pf_treb     = NSEEL_VM_regvar(m_pf_eel, "treb");     // i
+        var_pf_bass_att = NSEEL_VM_regvar(m_pf_eel, "bass_att"); // i
+        var_pf_mid_att  = NSEEL_VM_regvar(m_pf_eel, "mid_att");  // i
+        var_pf_treb_att = NSEEL_VM_regvar(m_pf_eel, "treb_att"); // i
+        var_pf_frame    = NSEEL_VM_regvar(m_pf_eel, "frame");
+        var_pf_decay    = NSEEL_VM_regvar(m_pf_eel, "decay");
+        var_pf_wave_a   = NSEEL_VM_regvar(m_pf_eel, "wave_a");
+        var_pf_wave_r   = NSEEL_VM_regvar(m_pf_eel, "wave_r");
+        var_pf_wave_g   = NSEEL_VM_regvar(m_pf_eel, "wave_g");
+        var_pf_wave_b   = NSEEL_VM_regvar(m_pf_eel, "wave_b");
+        var_pf_wave_x   = NSEEL_VM_regvar(m_pf_eel, "wave_x");
+        var_pf_wave_y   = NSEEL_VM_regvar(m_pf_eel, "wave_y");
+        var_pf_wave_mystery = NSEEL_VM_regvar(m_pf_eel, "wave_mystery");
+        var_pf_wave_mode    = NSEEL_VM_regvar(m_pf_eel, "wave_mode");
+        for (int vi = 0; vi < NUM_Q_VAR; vi++)
         {
             char buf[16];
-            sprintf(buf, "q%d", vi+1);
+            sprintf_s(buf, "q%d", vi + 1);
             var_pf_q[vi] = NSEEL_VM_regvar(m_pf_eel, buf);
         }
-	    var_pf_progress = NSEEL_VM_regvar(m_pf_eel, "progress");
-	    var_pf_ob_size	= NSEEL_VM_regvar(m_pf_eel, "ob_size");
-	    var_pf_ob_r		= NSEEL_VM_regvar(m_pf_eel, "ob_r");
-	    var_pf_ob_g		= NSEEL_VM_regvar(m_pf_eel, "ob_g");
-	    var_pf_ob_b		= NSEEL_VM_regvar(m_pf_eel, "ob_b");
-	    var_pf_ob_a		= NSEEL_VM_regvar(m_pf_eel, "ob_a");
-	    var_pf_ib_size	= NSEEL_VM_regvar(m_pf_eel, "ib_size");
-	    var_pf_ib_r		= NSEEL_VM_regvar(m_pf_eel, "ib_r");
-	    var_pf_ib_g		= NSEEL_VM_regvar(m_pf_eel, "ib_g");
-	    var_pf_ib_b		= NSEEL_VM_regvar(m_pf_eel, "ib_b");
-	    var_pf_ib_a		= NSEEL_VM_regvar(m_pf_eel, "ib_a");
-	    var_pf_mv_x		= NSEEL_VM_regvar(m_pf_eel, "mv_x");
-	    var_pf_mv_y		= NSEEL_VM_regvar(m_pf_eel, "mv_y");
-	    var_pf_mv_dx	= NSEEL_VM_regvar(m_pf_eel, "mv_dx");
-	    var_pf_mv_dy	= NSEEL_VM_regvar(m_pf_eel, "mv_dy");
-	    var_pf_mv_l		= NSEEL_VM_regvar(m_pf_eel, "mv_l");
-	    var_pf_mv_r		= NSEEL_VM_regvar(m_pf_eel, "mv_r");
-	    var_pf_mv_g		= NSEEL_VM_regvar(m_pf_eel, "mv_g");
-	    var_pf_mv_b		= NSEEL_VM_regvar(m_pf_eel, "mv_b");
-	    var_pf_mv_a		= NSEEL_VM_regvar(m_pf_eel, "mv_a");
-	    var_pf_monitor  = NSEEL_VM_regvar(m_pf_eel, "monitor");
-	    var_pf_echo_zoom   = NSEEL_VM_regvar(m_pf_eel, "echo_zoom");
-	    var_pf_echo_alpha  = NSEEL_VM_regvar(m_pf_eel, "echo_alpha");
-	    var_pf_echo_orient = NSEEL_VM_regvar(m_pf_eel, "echo_orient");
+        var_pf_progress = NSEEL_VM_regvar(m_pf_eel, "progress");
+        var_pf_ob_size  = NSEEL_VM_regvar(m_pf_eel, "ob_size");
+        var_pf_ob_r     = NSEEL_VM_regvar(m_pf_eel, "ob_r");
+        var_pf_ob_g     = NSEEL_VM_regvar(m_pf_eel, "ob_g");
+        var_pf_ob_b     = NSEEL_VM_regvar(m_pf_eel, "ob_b");
+        var_pf_ob_a     = NSEEL_VM_regvar(m_pf_eel, "ob_a");
+        var_pf_ib_size  = NSEEL_VM_regvar(m_pf_eel, "ib_size");
+        var_pf_ib_r     = NSEEL_VM_regvar(m_pf_eel, "ib_r");
+        var_pf_ib_g     = NSEEL_VM_regvar(m_pf_eel, "ib_g");
+        var_pf_ib_b     = NSEEL_VM_regvar(m_pf_eel, "ib_b");
+        var_pf_ib_a     = NSEEL_VM_regvar(m_pf_eel, "ib_a");
+        var_pf_mv_x     = NSEEL_VM_regvar(m_pf_eel, "mv_x");
+        var_pf_mv_y     = NSEEL_VM_regvar(m_pf_eel, "mv_y");
+        var_pf_mv_dx    = NSEEL_VM_regvar(m_pf_eel, "mv_dx");
+        var_pf_mv_dy    = NSEEL_VM_regvar(m_pf_eel, "mv_dy");
+        var_pf_mv_l     = NSEEL_VM_regvar(m_pf_eel, "mv_l");
+        var_pf_mv_r     = NSEEL_VM_regvar(m_pf_eel, "mv_r");
+        var_pf_mv_g     = NSEEL_VM_regvar(m_pf_eel, "mv_g");
+        var_pf_mv_b     = NSEEL_VM_regvar(m_pf_eel, "mv_b");
+        var_pf_mv_a     = NSEEL_VM_regvar(m_pf_eel, "mv_a");
+        var_pf_monitor  = NSEEL_VM_regvar(m_pf_eel, "monitor");
+        var_pf_echo_zoom     = NSEEL_VM_regvar(m_pf_eel, "echo_zoom");
+        var_pf_echo_alpha    = NSEEL_VM_regvar(m_pf_eel, "echo_alpha");
+        var_pf_echo_orient   = NSEEL_VM_regvar(m_pf_eel, "echo_orient");
         var_pf_wave_usedots  = NSEEL_VM_regvar(m_pf_eel, "wave_usedots");
         var_pf_wave_thick    = NSEEL_VM_regvar(m_pf_eel, "wave_thick");
         var_pf_wave_additive = NSEEL_VM_regvar(m_pf_eel, "wave_additive");
         var_pf_wave_brighten = NSEEL_VM_regvar(m_pf_eel, "wave_brighten");
         var_pf_darken_center = NSEEL_VM_regvar(m_pf_eel, "darken_center");
-        var_pf_gamma         = NSEEL_VM_regvar(m_pf_eel, "gamma");
-        var_pf_wrap          = NSEEL_VM_regvar(m_pf_eel, "wrap");
-        var_pf_invert        = NSEEL_VM_regvar(m_pf_eel, "invert");
-        var_pf_brighten      = NSEEL_VM_regvar(m_pf_eel, "brighten");
-        var_pf_darken        = NSEEL_VM_regvar(m_pf_eel, "darken");
-        var_pf_solarize      = NSEEL_VM_regvar(m_pf_eel, "solarize");
-        var_pf_meshx         = NSEEL_VM_regvar(m_pf_eel, "meshx");
-        var_pf_meshy         = NSEEL_VM_regvar(m_pf_eel, "meshy");
-        var_pf_pixelsx       = NSEEL_VM_regvar(m_pf_eel, "pixelsx");
-        var_pf_pixelsy       = NSEEL_VM_regvar(m_pf_eel, "pixelsy");
-        var_pf_aspectx       = NSEEL_VM_regvar(m_pf_eel, "aspectx");
-        var_pf_aspecty       = NSEEL_VM_regvar(m_pf_eel, "aspecty");
-        var_pf_blur1min      = NSEEL_VM_regvar(m_pf_eel, "blur1_min");
-        var_pf_blur2min      = NSEEL_VM_regvar(m_pf_eel, "blur2_min");
-        var_pf_blur3min      = NSEEL_VM_regvar(m_pf_eel, "blur3_min");
-        var_pf_blur1max      = NSEEL_VM_regvar(m_pf_eel, "blur1_max");
-        var_pf_blur2max      = NSEEL_VM_regvar(m_pf_eel, "blur2_max");
-        var_pf_blur3max      = NSEEL_VM_regvar(m_pf_eel, "blur3_max");
+        var_pf_gamma     = NSEEL_VM_regvar(m_pf_eel, "gamma");
+        var_pf_wrap      = NSEEL_VM_regvar(m_pf_eel, "wrap");
+        var_pf_invert    = NSEEL_VM_regvar(m_pf_eel, "invert");
+        var_pf_brighten  = NSEEL_VM_regvar(m_pf_eel, "brighten");
+        var_pf_darken    = NSEEL_VM_regvar(m_pf_eel, "darken");
+        var_pf_solarize  = NSEEL_VM_regvar(m_pf_eel, "solarize");
+        var_pf_meshx     = NSEEL_VM_regvar(m_pf_eel, "meshx");
+        var_pf_meshy     = NSEEL_VM_regvar(m_pf_eel, "meshy");
+        var_pf_pixelsx   = NSEEL_VM_regvar(m_pf_eel, "pixelsx");
+        var_pf_pixelsy   = NSEEL_VM_regvar(m_pf_eel, "pixelsy");
+        var_pf_aspectx   = NSEEL_VM_regvar(m_pf_eel, "aspectx");
+        var_pf_aspecty   = NSEEL_VM_regvar(m_pf_eel, "aspecty");
+        var_pf_blur1min  = NSEEL_VM_regvar(m_pf_eel, "blur1_min");
+        var_pf_blur2min  = NSEEL_VM_regvar(m_pf_eel, "blur2_min");
+        var_pf_blur3min  = NSEEL_VM_regvar(m_pf_eel, "blur3_min");
+        var_pf_blur1max  = NSEEL_VM_regvar(m_pf_eel, "blur1_max");
+        var_pf_blur2max  = NSEEL_VM_regvar(m_pf_eel, "blur2_max");
+        var_pf_blur3max  = NSEEL_VM_regvar(m_pf_eel, "blur3_max");
         var_pf_blur1_edge_darken = NSEEL_VM_regvar(m_pf_eel, "blur1_edge_darken");
 
-	    // this is the list of variables that can be used for a PER-VERTEX calculation:
-	    // ('vertex' meaning a vertex on the mesh) (as opposed to a once-per-frame calculation)
-
+        // This is the list of variables that can be used for a PER-VERTEX calculation.
+        // 'vertex' meaning a vertex on the mesh, as opposed to a once-per-frame calculation.
         NSEEL_VM_resetvars(m_pv_eel);
-
-        var_pv_zoom		= NSEEL_VM_regvar(m_pv_eel, "zoom");		// i/o
-	    var_pv_zoomexp  = NSEEL_VM_regvar(m_pv_eel, "zoomexp");	// i/o
-	    var_pv_rot		= NSEEL_VM_regvar(m_pv_eel, "rot");		// i/o
-	    var_pv_warp		= NSEEL_VM_regvar(m_pv_eel, "warp");		// i/o
-	    var_pv_cx		= NSEEL_VM_regvar(m_pv_eel, "cx");		// i/o
-	    var_pv_cy		= NSEEL_VM_regvar(m_pv_eel, "cy");		// i/o
-	    var_pv_dx		= NSEEL_VM_regvar(m_pv_eel, "dx");		// i/o
-	    var_pv_dy		= NSEEL_VM_regvar(m_pv_eel, "dy");		// i/o
-	    var_pv_sx		= NSEEL_VM_regvar(m_pv_eel, "sx");		// i/o
-	    var_pv_sy		= NSEEL_VM_regvar(m_pv_eel, "sy");		// i/o
-	    var_pv_time		= NSEEL_VM_regvar(m_pv_eel, "time");		// i
-	    var_pv_fps 		= NSEEL_VM_regvar(m_pv_eel, "fps");		// i
-	    var_pv_bass		= NSEEL_VM_regvar(m_pv_eel, "bass");		// i
-	    var_pv_mid		= NSEEL_VM_regvar(m_pv_eel, "mid");		// i
-	    var_pv_treb		= NSEEL_VM_regvar(m_pv_eel, "treb");		// i
-	    var_pv_bass_att	= NSEEL_VM_regvar(m_pv_eel, "bass_att");	// i
-	    var_pv_mid_att	= NSEEL_VM_regvar(m_pv_eel, "mid_att");	// i
-	    var_pv_treb_att	= NSEEL_VM_regvar(m_pv_eel, "treb_att");	// i
-	    var_pv_frame    = NSEEL_VM_regvar(m_pv_eel, "frame");
-	    var_pv_x		= NSEEL_VM_regvar(m_pv_eel, "x");			// i
-	    var_pv_y		= NSEEL_VM_regvar(m_pv_eel, "y");			// i
-	    var_pv_rad		= NSEEL_VM_regvar(m_pv_eel, "rad");		// i
-	    var_pv_ang		= NSEEL_VM_regvar(m_pv_eel, "ang");		// i
-        for (vi=0; vi<NUM_Q_VAR; vi++)
+        var_pv_zoom     = NSEEL_VM_regvar(m_pv_eel, "zoom");     // i/o
+        var_pv_zoomexp  = NSEEL_VM_regvar(m_pv_eel, "zoomexp");  // i/o
+        var_pv_rot      = NSEEL_VM_regvar(m_pv_eel, "rot");      // i/o
+        var_pv_warp     = NSEEL_VM_regvar(m_pv_eel, "warp");     // i/o
+        var_pv_cx       = NSEEL_VM_regvar(m_pv_eel, "cx");       // i/o
+        var_pv_cy       = NSEEL_VM_regvar(m_pv_eel, "cy");       // i/o
+        var_pv_dx       = NSEEL_VM_regvar(m_pv_eel, "dx");       // i/o
+        var_pv_dy       = NSEEL_VM_regvar(m_pv_eel, "dy");       // i/o
+        var_pv_sx       = NSEEL_VM_regvar(m_pv_eel, "sx");       // i/o
+        var_pv_sy       = NSEEL_VM_regvar(m_pv_eel, "sy");       // i/o
+        var_pv_time     = NSEEL_VM_regvar(m_pv_eel, "time");     // i
+        var_pv_fps      = NSEEL_VM_regvar(m_pv_eel, "fps");      // i
+        var_pv_bass     = NSEEL_VM_regvar(m_pv_eel, "bass");     // i
+        var_pv_mid      = NSEEL_VM_regvar(m_pv_eel, "mid");      // i
+        var_pv_treb     = NSEEL_VM_regvar(m_pv_eel, "treb");     // i
+        var_pv_bass_att = NSEEL_VM_regvar(m_pv_eel, "bass_att"); // i
+        var_pv_mid_att  = NSEEL_VM_regvar(m_pv_eel, "mid_att");  // i
+        var_pv_treb_att = NSEEL_VM_regvar(m_pv_eel, "treb_att"); // i
+        var_pv_frame    = NSEEL_VM_regvar(m_pv_eel, "frame");
+        var_pv_x        = NSEEL_VM_regvar(m_pv_eel, "x");        // i
+        var_pv_y        = NSEEL_VM_regvar(m_pv_eel, "y");        // i
+        var_pv_rad      = NSEEL_VM_regvar(m_pv_eel, "rad");      // i
+        var_pv_ang      = NSEEL_VM_regvar(m_pv_eel, "ang");      // i
+        for (int vi = 0; vi < NUM_Q_VAR; vi++)
         {
             char buf[16];
-            sprintf(buf, "q%d", vi+1);
+            sprintf_s(buf, "q%d", vi + 1);
             var_pv_q[vi] = NSEEL_VM_regvar(m_pv_eel, buf);
         }
-	    var_pv_progress = NSEEL_VM_regvar(m_pv_eel, "progress");
+        var_pv_progress = NSEEL_VM_regvar(m_pv_eel, "progress");
         var_pv_meshx    = NSEEL_VM_regvar(m_pv_eel, "meshx");
         var_pv_meshy    = NSEEL_VM_regvar(m_pv_eel, "meshy");
         var_pv_pixelsx  = NSEEL_VM_regvar(m_pv_eel, "pixelsx");
@@ -885,10 +875,12 @@ void WriteCode(FILE* fOut, int i, char* pStr, const char* prefix, bool bPrependA
 	}
 }
 
-bool CState::Export(const wchar_t *szIniFile)
+bool CState::Export(const wchar_t* szIniFile)
 {
-	FILE *fOut = WOpen(szIniFile, L"w");
-	if (!fOut) return false;
+    FILE* fOut;
+    errno_t err = _wfopen_s(&fOut, szIniFile, L"w");
+    if (err || !fOut)
+        return false;
 
     // IMPORTANT: THESE MUST BE THE FIRST TWO LINES.  Otherwise it is assumed to be a MilkDrop 1-era preset.
     if (m_nMaxPSVersion > 0)
@@ -977,113 +969,114 @@ bool CState::Export(const wchar_t *szIniFile)
 	fprintf(fOut, "%s=%.3f\n", "b3x",                 m_fBlur3Max.eval(-1));       
 	fprintf(fOut, "%s=%.3f\n", "b1ed",                m_fBlur1EdgeDarken.eval(-1));       
 
-	int i;
-    for (i=0; i<MAX_CUSTOM_WAVES; i++)
+    int i = 0;
+    for (i = 0; i < MAX_CUSTOM_WAVES; i++)
         m_wave[i].Export(fOut, L"dummy_filename", i);
-
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
+    for (i = 0; i < MAX_CUSTOM_SHAPES; i++)
         m_shape[i].Export(fOut, L"dummy_filename", i);
 
-	// write out arbitrary expressions, one line at a time
+    // Write out arbitrary expressions, one line at a time.
     WriteCode(fOut, i, m_szPerFrameInit, "per_frame_init_");
-    WriteCode(fOut, i, m_szPerFrameExpr, "per_frame_"); 
-    WriteCode(fOut, i, m_szPerPixelExpr, "per_pixel_"); 
+    WriteCode(fOut, i, m_szPerFrameExpr, "per_frame_");
+    WriteCode(fOut, i, m_szPerPixelExpr, "per_pixel_");
     if (m_nWarpPSVersion >= MD2_PS_2_0)
         WriteCode(fOut, i, m_szWarpShadersText, "warp_", true);
     if (m_nCompPSVersion >= MD2_PS_2_0)
         WriteCode(fOut, i, m_szCompShadersText, "comp_", true);
 
-	fclose(fOut);
+    fclose(fOut);
 
-	return true;
+    return true;
 }
 
-int  CWave::Export(FILE* fOut, const wchar_t *szFile, int i)
+int CWave::Export(FILE* fOut, const wchar_t* szFile, int i)
 {
     FILE* f2 = fOut;
     if (!fOut)
     {
-	    f2 = WOpen(szFile, L"w");
-        if (!f2) return 0;
+        errno_t err = _wfopen_s(&f2, szFile, L"w");
+        if (err || !f2)
+            return 0;
     }
 
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "enabled",    enabled);
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "samples",    samples);
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "sep",        sep    );
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "bSpectrum",  bSpectrum);
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "bUseDots",   bUseDots);
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "bDrawThick", bDrawThick);
-	fprintf(f2, "wavecode_%d_%s=%d\n", i, "bAdditive",  bAdditive);
-	fprintf(f2, "wavecode_%d_%s=%.5f\n", i, "scaling",    scaling);
-	fprintf(f2, "wavecode_%d_%s=%.5f\n", i, "smoothing",  smoothing);
-	fprintf(f2, "wavecode_%d_%s=%.3f\n", i, "r",          r);
-	fprintf(f2, "wavecode_%d_%s=%.3f\n", i, "g",          g);
-	fprintf(f2, "wavecode_%d_%s=%.3f\n", i, "b",          b);
-	fprintf(f2, "wavecode_%d_%s=%.3f\n", i, "a",          a);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "enabled", enabled);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "samples", samples);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "sep", sep);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "bSpectrum", bSpectrum);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "bUseDots", bUseDots);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "bDrawThick", bDrawThick);
+    fprintf_s(f2, "wavecode_%d_%s=%d\n", i, "bAdditive", bAdditive);
+    fprintf_s(f2, "wavecode_%d_%s=%.5f\n", i, "scaling", scaling);
+    fprintf_s(f2, "wavecode_%d_%s=%.5f\n", i, "smoothing", smoothing);
+    fprintf_s(f2, "wavecode_%d_%s=%.3f\n", i, "r", r);
+    fprintf_s(f2, "wavecode_%d_%s=%.3f\n", i, "g", g);
+    fprintf_s(f2, "wavecode_%d_%s=%.3f\n", i, "b", b);
+    fprintf_s(f2, "wavecode_%d_%s=%.3f\n", i, "a", a);
 
     // READ THE CODE IN
     char prefix[64];
-    sprintf(prefix, "wave_%d_init",      i); WriteCode(f2, i, m_szInit,     prefix);
-    sprintf(prefix, "wave_%d_per_frame", i); WriteCode(f2, i, m_szPerFrame, prefix);
-    sprintf(prefix, "wave_%d_per_point", i); WriteCode(f2, i, m_szPerPoint, prefix);
+    sprintf_s(prefix, "wave_%d_init", i);      WriteCode(f2, i, m_szInit, prefix);
+    sprintf_s(prefix, "wave_%d_per_frame", i); WriteCode(f2, i, m_szPerFrame, prefix);
+    sprintf_s(prefix, "wave_%d_per_point", i); WriteCode(f2, i, m_szPerPoint, prefix);
 
     if (!fOut)
-	    fclose(f2); // [sic]
+        fclose(f2); // [sic]
 
     return 1;
 }
 
-int  CShape::Export(FILE* fOut, const wchar_t *szFile, int i)
+int CShape::Export(FILE* fOut, const wchar_t* szFile, int i)
 {
     FILE* f2 = fOut;
     if (!fOut)
     {
-	    f2 = WOpen(szFile, L"w");
-        if (!f2) return 0;
-	    //fprintf(f2, "[%s]\n", szSection);
+        errno_t err = _wfopen_s(&f2, szFile, L"w");
+        if (err || !f2)
+            return 0;
+        //fprintf_s(f2, "[%s]\n", szSection);
     }
 
-	fprintf(f2, "shapecode_%d_%s=%d\n", i, "enabled",    enabled);
-	fprintf(f2, "shapecode_%d_%s=%d\n", i, "sides",      sides);
-	fprintf(f2, "shapecode_%d_%s=%d\n", i, "additive",   additive);
-	fprintf(f2, "shapecode_%d_%s=%d\n", i, "thickOutline",thickOutline);
-	fprintf(f2, "shapecode_%d_%s=%d\n", i, "textured",   textured);
-	fprintf(f2, "shapecode_%d_%s=%d\n", i, "num_inst",   instances);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "x",          x);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "y",          y);
-	fprintf(f2, "shapecode_%d_%s=%.5f\n", i, "rad",        rad);
-	fprintf(f2, "shapecode_%d_%s=%.5f\n", i, "ang",        ang);
-	fprintf(f2, "shapecode_%d_%s=%.5f\n", i, "tex_ang",    tex_ang);
-	fprintf(f2, "shapecode_%d_%s=%.5f\n", i, "tex_zoom",   tex_zoom);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "r",          r);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "g",          g);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "b",          b);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "a",          a);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "r2",         r2);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "g2",         g2);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "b2",         b2);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "a2",         a2);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "border_r",   border_r);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "border_g",   border_g);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "border_b",   border_b);
-	fprintf(f2, "shapecode_%d_%s=%.3f\n", i, "border_a",   border_a);
+    fprintf_s(f2, "shapecode_%d_%s=%d\n", i, "enabled", enabled);
+    fprintf_s(f2, "shapecode_%d_%s=%d\n", i, "sides", sides);
+    fprintf_s(f2, "shapecode_%d_%s=%d\n", i, "additive", additive);
+    fprintf_s(f2, "shapecode_%d_%s=%d\n", i, "thickOutline", thickOutline);
+    fprintf_s(f2, "shapecode_%d_%s=%d\n", i, "textured", textured);
+    fprintf_s(f2, "shapecode_%d_%s=%d\n", i, "num_inst", instances);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "x", x);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "y", y);
+    fprintf_s(f2, "shapecode_%d_%s=%.5f\n", i, "rad", rad);
+    fprintf_s(f2, "shapecode_%d_%s=%.5f\n", i, "ang", ang);
+    fprintf_s(f2, "shapecode_%d_%s=%.5f\n", i, "tex_ang", tex_ang);
+    fprintf_s(f2, "shapecode_%d_%s=%.5f\n", i, "tex_zoom", tex_zoom);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "r", r);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "g", g);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "b", b);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "a", a);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "r2", r2);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "g2", g2);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "b2", b2);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "a2", a2);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "border_r", border_r);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "border_g", border_g);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "border_b", border_b);
+    fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "border_a", border_a);
 
     char prefix[64];
-    sprintf(prefix, "shape_%d_init",      i); WriteCode(f2, i, m_szInit,     prefix);
-    sprintf(prefix, "shape_%d_per_frame", i); WriteCode(f2, i, m_szPerFrame, prefix);
-    //sprintf(prefix, "shape_%d_per_point", i); WriteCode(f2, i, m_szPerPoint, prefix);
+    sprintf_s(prefix, "shape_%d_init", i);      WriteCode(f2, i, m_szInit, prefix);
+    sprintf_s(prefix, "shape_%d_per_frame", i); WriteCode(f2, i, m_szPerFrame, prefix);
+    //sprintf_s(prefix, "shape_%d_per_point", i); WriteCode(f2, i, m_szPerPoint, prefix);
 
     if (!fOut)
-	    fclose(f2); // [sic]
+        fclose(f2); // [sic]
 
     return 1;
 }
 
 void ReadCode(FILE* f, char* pStr, const char* prefix)
 {
-    if (!pStr) 
+    if (!pStr)
         return;
-    pStr[0] = 0;
+    pStr[0] = '\0';
 
 	// read in & compile arbitrary expressions
 	char szLineName[32];
@@ -1192,81 +1185,87 @@ int CWave::Import(FILE* f, const wchar_t* szFile, int i)
     FILE* f2 = f;
     if (!f)
     {
-	    f2 = WOpen(szFile, L"rb");
-        if (!f2) return 0;
+        errno_t err = _wfopen_s(&f2, szFile, L"rb");
+        if (err)
+            return 0;
         GetFast_CLEAR();
     }
 
+    // clang-format off
     char buf[64];
-    sprintf(buf, "wavecode_%d_%s", i, "enabled"   ); enabled    = GetFastInt  (buf, enabled   , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "samples"   ); samples    = GetFastInt  (buf, samples   , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "sep"       ); sep        = GetFastInt  (buf, sep       , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "bSpectrum" ); bSpectrum  = GetFastInt  (buf, bSpectrum , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "bUseDots"  ); bUseDots   = GetFastInt  (buf, bUseDots  , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "bDrawThick"); bDrawThick = GetFastInt  (buf, bDrawThick, f2);
-    sprintf(buf, "wavecode_%d_%s", i, "bAdditive" ); bAdditive  = GetFastInt  (buf, bAdditive , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "scaling"   ); scaling    = GetFastFloat(buf, scaling   , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "smoothing" ); smoothing  = GetFastFloat(buf, smoothing , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "r"         ); r          = GetFastFloat(buf, r         , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "g"         ); g          = GetFastFloat(buf, g         , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "b"         ); b          = GetFastFloat(buf, b         , f2);
-    sprintf(buf, "wavecode_%d_%s", i, "a"         ); a          = GetFastFloat(buf, a         , f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "enabled");    enabled    = GetFastInt(buf, enabled, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "samples");    samples    = GetFastInt(buf, samples, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "sep");        sep        = GetFastInt(buf, sep, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "bSpectrum");  bSpectrum  = GetFastInt(buf, bSpectrum, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "bUseDots");   bUseDots   = GetFastInt(buf, bUseDots, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "bDrawThick"); bDrawThick = GetFastInt(buf, bDrawThick, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "bAdditive");  bAdditive  = GetFastInt(buf, bAdditive, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "scaling");    scaling    = GetFastFloat(buf, scaling, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "smoothing");  smoothing  = GetFastFloat(buf, smoothing, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "r");          r          = GetFastFloat(buf, r, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "g");          g          = GetFastFloat(buf, g, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "b");          b          = GetFastFloat(buf, b, f2);
+    sprintf_s(buf, "wavecode_%d_%s", i, "a");          a          = GetFastFloat(buf, a, f2);
 
     // READ THE CODE IN
     char prefix[64];
-    sprintf(prefix, "wave_%d_init",      i); ReadCode(f2, m_szInit,     prefix);
-    sprintf(prefix, "wave_%d_per_frame", i); ReadCode(f2, m_szPerFrame, prefix);
-    sprintf(prefix, "wave_%d_per_point", i); ReadCode(f2, m_szPerPoint, prefix);
+    sprintf_s(prefix, "wave_%d_init",i);       ReadCode(f2, m_szInit, prefix);
+    sprintf_s(prefix, "wave_%d_per_frame", i); ReadCode(f2, m_szPerFrame, prefix);
+    sprintf_s(prefix, "wave_%d_per_point", i); ReadCode(f2, m_szPerPoint, prefix);
+    // clang-format on
 
     if (!f)
-	    fclose(f2); // [sic]
+        fclose(f2); // [sic]
 
     return 1;
 }
 
-int  CShape::Import(FILE* f, const wchar_t* szFile, int i)
+int CShape::Import(FILE* f, const wchar_t* szFile, int i)
 {
     FILE* f2 = f;
     if (!f)
     {
-	    f2 = WOpen(szFile, L"rb");
-        if (!f2) return 0;
+        errno_t err = _wfopen_s(&f2, szFile, L"rb");
+        if (err)
+            return 0;
         GetFast_CLEAR();
     }
 
+    // clang-format off
     char buf[64];
-	sprintf(buf, "shapecode_%d_%s", i, "enabled"     ); enabled      = GetFastInt  (buf, enabled     , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "sides"       ); sides        = GetFastInt  (buf, sides       , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "additive"    ); additive     = GetFastInt  (buf, additive    , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "thickOutline"); thickOutline = GetFastInt  (buf, thickOutline, f2);
-	sprintf(buf, "shapecode_%d_%s", i, "textured"    ); textured     = GetFastInt  (buf, textured    , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "num_inst"   ); instances    = GetFastInt  (buf, instances   , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "x"           ); x            = GetFastFloat(buf, x           , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "y"           ); y            = GetFastFloat(buf, y           , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "rad"         ); rad          = GetFastFloat(buf, rad         , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "ang"         ); ang          = GetFastFloat(buf, ang         , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "tex_ang"     ); tex_ang      = GetFastFloat(buf, tex_ang     , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "tex_zoom"    ); tex_zoom     = GetFastFloat(buf, tex_zoom    , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "r"           ); r            = GetFastFloat(buf, r           , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "g"           ); g            = GetFastFloat(buf, g           , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "b"           ); b            = GetFastFloat(buf, b           , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "a"           ); a            = GetFastFloat(buf, a           , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "r2"          ); r2           = GetFastFloat(buf, r2          , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "g2"          ); g2           = GetFastFloat(buf, g2          , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "b2"          ); b2           = GetFastFloat(buf, b2          , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "a2"          ); a2           = GetFastFloat(buf, a2          , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "border_r"    ); border_r     = GetFastFloat(buf, border_r    , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "border_g"    ); border_g     = GetFastFloat(buf, border_g    , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "border_b"    ); border_b     = GetFastFloat(buf, border_b    , f2);
-	sprintf(buf, "shapecode_%d_%s", i, "border_a"    ); border_a     = GetFastFloat(buf, border_a    , f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "enabled");      enabled   = GetFastInt(buf, enabled, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "sides");        sides     = GetFastInt(buf, sides, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "additive");     additive  = GetFastInt(buf, additive, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "thickOutline"); thickOutline = GetFastInt(buf, thickOutline, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "textured");     textured  = GetFastInt(buf, textured, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "num_inst");     instances = GetFastInt(buf, instances, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "x");            x         = GetFastFloat(buf, x, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "y");            y         = GetFastFloat(buf, y, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "rad");          rad       = GetFastFloat(buf, rad, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "ang");          ang       = GetFastFloat(buf, ang, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "tex_ang");      tex_ang   = GetFastFloat(buf, tex_ang, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "tex_zoom");     tex_zoom  = GetFastFloat(buf, tex_zoom, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "r");            r         = GetFastFloat(buf, r, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "g");            g         = GetFastFloat(buf, g, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "b");            b         = GetFastFloat(buf, b, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "a");            a         = GetFastFloat(buf, a, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "r2");           r2        = GetFastFloat(buf, r2, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "g2");           g2        = GetFastFloat(buf, g2, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "b2");           b2        = GetFastFloat(buf, b2, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "a2");           a2        = GetFastFloat(buf, a2, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "border_r");     border_r  = GetFastFloat(buf, border_r, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "border_g");     border_g  = GetFastFloat(buf, border_g, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "border_b");     border_b  = GetFastFloat(buf, border_b, f2);
+    sprintf_s(buf, "shapecode_%d_%s", i, "border_a");     border_a  = GetFastFloat(buf, border_a, f2);
+    // clang-format on
 
     // READ THE CODE IN
     char prefix[64];
-    sprintf(prefix, "shape_%d_init",      i); ReadCode(f2, m_szInit,     prefix);
-    sprintf(prefix, "shape_%d_per_frame", i); ReadCode(f2, m_szPerFrame, prefix);
+    sprintf_s(prefix, "shape_%d_init", i);      ReadCode(f2, m_szInit, prefix);
+    sprintf_s(prefix, "shape_%d_per_frame", i); ReadCode(f2, m_szPerFrame, prefix);
 
     if (!f)
-	    fclose(f2); // [sic]
+        fclose(f2); // [sic]
 
     return 1;
 }
@@ -1308,13 +1307,14 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
 		    if (p==NULL) p = szIniFile;
         wcscpy(m_szDesc, p+1);
 
-		    // next remove the extension
-		    RemoveExtension(m_szDesc);
-	    }
+            // next remove the extension
+            RemoveExtension(m_szDesc);
+        }
     }
-    
-    FILE* f = WOpen(szIniFile, L"rb");
-    if (!f)
+
+    FILE* f;
+    errno_t err = _wfopen_s(&f, szIniFile, L"rb");
+    if (err)
         return false;
 
     int nMilkdropPresetVersion = GetFastInt("MILKDROP_PRESET_VERSION",100,f);
@@ -1324,20 +1324,23 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
 
     int nWarpPSVersionInFile;
     int nCompPSVersionInFile;
-    if (nMilkdropPresetVersion < 200) {
+    if (nMilkdropPresetVersion < 200)
+    {
         nWarpPSVersionInFile = 0;
         nCompPSVersionInFile = 0;
     }
-    else if (nMilkdropPresetVersion == 200) {
+    else if (nMilkdropPresetVersion == 200)
+    {
         nWarpPSVersionInFile = GetFastInt("PSVERSION", 2, f);
         nCompPSVersionInFile = nWarpPSVersionInFile;
     }
-    else {
+    else
+    {
         nWarpPSVersionInFile = GetFastInt("PSVERSION_WARP", 2, f);
         nCompPSVersionInFile = GetFastInt("PSVERSION_COMP", 2, f);
     }
 
-    // general:
+    // General.
     if (ApplyFlags & STATE_GENERAL)
     {
         m_fRating				= GetFastFloat("fRating",m_fRating,f);

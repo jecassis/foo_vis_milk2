@@ -18,6 +18,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <process.h>
+
 #include <wrl/client.h>
 
 #include <d3d11_1.h>
@@ -25,8 +27,12 @@
 
 #include <DirectXColors.h>
 #include <DirectXMath.h>
+#include <DirectXHelpers.h>
 
 #include <algorithm>
+#include <cassert>
+#include <clocale>
+#include <cmath>
 #include <exception>
 #include <memory>
 #include <stdexcept>
@@ -36,6 +42,8 @@
 #ifdef _DEBUG
 #include <dxgidebug.h>
 #endif
+
+#include <eel2/ns-eel.h>
 
 namespace DX
 {

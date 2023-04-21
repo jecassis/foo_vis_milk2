@@ -1,5 +1,5 @@
 //
-// deviceresources.h - A wrapper for the Direct3D 11 device and swap chain.
+// deviceresources.h - Wrapper for the Direct3D 11 device and swap chain.
 //
 
 #pragma once

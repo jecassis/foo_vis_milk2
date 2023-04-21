@@ -48,7 +48,7 @@
               AllocateMilkDropDX11
           RUNNING
               +--> { CleanUpMilkDropDX11 + AllocateMilkDropDX11 }  // called together when user resizes window or toggles fullscreen<->windowed.
-              |    MilkDropRenderFn
+              |    MilkDropRenderFrame
               |    MilkDropRenderUI
               |    { MilkDropWindowProc } // called, between frames, on mouse/keyboard/system events. 100% thread safe.
               +----<< repeat >>
@@ -72,44 +72,20 @@
 */
 
 #include "pch.h"
-//#include "api.h"
 #include "plugin.h"
+//#include <nu/AutoCharFn.h>
+#include <nu/AutoWide.h>
+#include "defines.h"
+#include "shell_defines.h"
 #include "utility.h"
 #include "support.h"
 //#include "resource.h"
-#include "defines.h"
-#include "shell_defines.h"
-#include <assert.h>
-#include <locale.h>
-#include <process.h>  // for beginthread, etc.
-#include <shellapi.h>
-#include <strsafe.h>
-//#include "nu/AutoCharFn.h"
-#include "nu/AutoWide.h"
 
 #include <d3dcompiler.h>
 #include <d3d11shader.h>
 
-#pragma comment(lib,"d3dcompiler.lib")
-#pragma comment(lib,"dxguid.lib")
-
-FILE* WOpen(const wchar_t* WFilename, const wchar_t* WMode)
-{
-    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
-    char* utf8Name = new char[SizeNeeded];
-    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
-
-    SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WMode[0], -1, NULL, 0, NULL, NULL);
-    char* utf8Mode = new char[SizeNeeded];
-    WideCharToMultiByte(CP_UTF8, 0, &WMode[0], -1, &utf8Mode[0], SizeNeeded, NULL, NULL);
-
-    FILE* f = fopen(utf8Name, utf8Mode);
-
-    delete[] utf8Mode;
-    delete[] utf8Name;
-
-    return f;
-}
+#pragma comment(lib, "d3dcompiler.lib")
+//#pragma comment(lib, "dxguid.lib")
 
 int warand()
 {
@@ -118,168 +94,148 @@ int warand()
 
 #define FRAND ((warand() % 7381)/7380.0f)
 
-void NSEEL_HOSTSTUB_EnterMutex(){}
-void NSEEL_HOSTSTUB_LeaveMutex(){}
-_locale_t g_use_C_locale = 0;
-// note: these must match layouts in support.h!!
-#if 0
-D3DVERTEXELEMENT9 g_MyVertDecl[] =
+void NSEEL_HOSTSTUB_EnterMutex()
 {
-    { 0, 0,  D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-    { 0, 12, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,    0 },
-    { 0, 16, D3DDECLTYPE_FLOAT4,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-    { 0, 32, D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-    D3DDECL_END()
-};
-D3DVERTEXELEMENT9 g_WfVertDecl[] =
+}
+void NSEEL_HOSTSTUB_LeaveMutex()
 {
-    { 0, 0,  D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-    { 0, 12, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,    0 },
-    D3DDECL_END()
-};
-D3DVERTEXELEMENT9 g_SpriteVertDecl[] =
-{
-    // matches D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1
-    { 0, 0,  D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-    { 0, 12, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,    0 },
-    { 0, 16, D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-    D3DDECL_END()
-};
-#endif
-//extern CSoundData*   pg_sound;	// declared in main.cpp
-extern CPlugin g_plugin;		// declared in main.cpp (note: was 'pg')
+}
 
-// from support.cpp:
+_locale_t g_use_C_locale = 0;
+
+//extern CSoundData* pg_sound; // declared in "main.cpp"
+extern CPlugin g_plugin;
+
+// From "support.cpp".
 extern bool g_bDebugOutput;
 extern bool g_bDumpFileCleared;
 
-// for __UpdatePresetList:
-volatile HANDLE g_hThread;  // only r/w from our MAIN thread
-volatile bool g_bThreadAlive; // set true by MAIN thread, and set false upon exit from 2nd thread.
-volatile int  g_bThreadShouldQuit;  // set by MAIN thread to flag 2nd thread that it wants it to exit.
+// For `__UpdatePresetList`.
+volatile HANDLE g_hThread;        // only r/w from our MAIN thread
+volatile bool g_bThreadAlive;     // set true by MAIN thread, and set false upon exit from 2nd thread.
+volatile int g_bThreadShouldQuit; // set by MAIN thread to flag 2nd thread that it wants it to exit.
 static CRITICAL_SECTION g_cs;
 
 #define IsAlphabetChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
 #define IsAlphanumericChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0' && x <= '9') || x == '.')
 #define IsNumericChar(x) (x >= '0' && x <= '9')
 
+// clang-format off
 const unsigned char LC2UC[256] = {
-	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-	17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,255,
-	33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-	49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,
-	97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,
-	113,114,115,116,117,118,119,120,121,122,91,92,93,94,95,96,
-	97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,
-	113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,
-	129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,
-	145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,
-	161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,
-	177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,
-	193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,
-	209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,
-	225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,
-	241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,
+    0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,  15,  16,
+    17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  255,
+    33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,
+    49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,
+    97,  98,  99,  100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
+    113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 91,  92,  93,  94,  95,  96,
+    97,  98,  99,  100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
+    113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128,
+    129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144,
+    145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
+    161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+    177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192,
+    193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208,
+    209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224,
+    225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240,
+    241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255,
 };
-
+// clang-format on
 
 void ConvertCRsToLFCA(const char* src, char* dst)
 {
-    while (*src) 
+    while (*src)
     {
-        char ch = *src;
-        if (*src==13 && *(src+1)==10)
+        //char ch = *src;
+        if (*src == '\r' && *(src + 1) == '\n')
         {
             *dst++ = LINEFEED_CONTROL_CHAR;
             src += 2;
         }
-        else 
+        else
         {
             *dst++ = *src++;
         }
     }
-    *dst = 0;
+    *dst = '\0';
 }
 
 void ConvertCRsToLFCW(const wchar_t* src, wchar_t* dst)
 {
-    while (*src) 
+    while (*src)
     {
-        wchar_t ch = *src;
-        if (*src==13 && *(src+1)==10)
+        //wchar_t ch = *src;
+        if (*src == L'\r' && *(src + 1) == L'\n')
         {
             *dst++ = LINEFEED_CONTROL_CHAR;
             src += 2;
         }
-        else 
+        else
         {
             *dst++ = *src++;
         }
     }
-    *dst = 0;
+    *dst = L'\0';
 }
 
 void ConvertLFCToCRsA(const char* src, char* dst)
 {
-    while (*src) 
+    while (*src)
     {
-        char ch = *src;
-        if (*src==LINEFEED_CONTROL_CHAR)
+        //char ch = *src;
+        if (*src == LINEFEED_CONTROL_CHAR)
         {
-            *dst++ = 13;
-            *dst++ = 10;
+            *dst++ = '\r'; // 13
+            *dst++ = '\n'; // 10
             src++;
         }
-        else 
+        else
         {
             *dst++ = *src++;
         }
     }
-    *dst = 0;
+    *dst = '\0';
 }
 
 void ConvertLFCToCRsW(const wchar_t* src, wchar_t* dst)
 {
-    while (*src) 
+    while (*src)
     {
-        wchar_t ch = *src;
-        if (*src==LINEFEED_CONTROL_CHAR)
+        //wchar_t ch = *src;
+        if (*src == LINEFEED_CONTROL_CHAR)
         {
-            *dst++ = 13;
-            *dst++ = 10;
+            *dst++ = L'\r'; // 13
+            *dst++ = L'\n'; // 10
             src++;
         }
-        else 
+        else
         {
             *dst++ = *src++;
         }
     }
-    *dst = 0;
+    *dst = L'\0';
 }
 
-int mystrcmpiW(const wchar_t *s1, const wchar_t *s2)
+// Returns  1 if `s1` comes before `s2`.
+// Returns  0 if `s1` is equal to `s2`.
+// Returns -1 if `s1` comes after `s2`.
+// Treats all characters/symbols by their ASCII values,
+// except that it DOES ignore case.
+int mdstrcmpiW(const wchar_t* s1, const wchar_t* s2)
 {
-	// returns  1 if s1 comes before s2
-	// returns  0 if equal
-	// returns -1 if s1 comes after s2
-	// treats all characters/symbols by their ASCII values, 
-	//    except that it DOES ignore case.
+    int i = 0;
 
-	int i=0;
+    while (LC2UC[s1[i]] == LC2UC[s2[i]] && s1[i] != 0)
+        i++;
 
-	while (LC2UC[s1[i]] == LC2UC[s2[i]] && s1[i] != 0)
-		i++;
-
-	//FIX THIS!
-
-	if (s1[i]==0 && s2[i]==0)
-		return 0;
-	else if (s1[i]==0)
-		return -1;
-	else if (s2[i]==0)
-		return 1;
-	else 
-		return (LC2UC[s1[i]] < LC2UC[s2[i]]) ? -1 : 1;
+    //FIX THIS!
+    if (s1[i] == 0 && s2[i] == 0)
+        return 0;
+    else if (s1[i] == 0)
+        return -1;
+    else if (s2[i] == 0)
+        return 1;
+    else
+        return (LC2UC[s1[i]] < LC2UC[s2[i]]) ? -1 : 1;
 }
 
 // Read in all characters and replace character combinations
@@ -327,135 +283,127 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
     return true;
 }
 
-//----------------------------------------------------------------------
+// Here, you have the option of overriding the "default defaults"
+//   for the stuff on tab 1 of the config panel, replacing them
+//   with custom defaults for your plugin.
+// To override any of the defaults, just uncomment the line
+//   and change the value.
+// DO NOT modify these values from any function but this one!
 
+// This example plugin only changes the default width/height
+//   for fullscreen mode; the "default defaults" are just
+//   640 x 480.
+// If your plugin is very dependent on smooth animation and you
+//   wanted it plugin to have the 'save cpu' option OFF by default,
+//   for example, you could set 'm_save_cpu' to 0 here.
 void CPlugin::OverrideDefaults()
 {
-    // Here, you have the option of overriding the "default defaults"
-    //   for the stuff on tab 1 of the config panel, replacing them
-    //   with custom defaults for your plugin.
-    // To override any of the defaults, just uncomment the line 
-    //   and change the value.
-    // DO NOT modify these values from any function but this one!
+    //m_start_fullscreen      = 0;   // 0 or 1
+    //m_start_desktop         = 0;   // 0 or 1
+    //m_fake_fullscreen_mode  = 0;   // 0 or 1
+    //m_max_fps_fs            = 30;  // 1-120, or 0 for 'unlimited'
+    //m_max_fps_dm            = 30;  // 1-120, or 0 for 'unlimited'
+    //m_max_fps_w             = 30;  // 1-120, or 0 for 'unlimited'
+    //m_show_press_f1_msg     = 1;   // 0 or 1
+    m_allow_page_tearing_w = 0; // 0 or 1
+    //m_allow_page_tearing_fs = 0;   // 0 or 1
+    //m_allow_page_tearing_dm = 1;   // 0 or 1
+    //m_minimize_winamp       = 1;   // 0 or 1
+    //m_desktop_textlabel_boxes = 1; // 0 or 1
+    //m_save_cpu              = 0;   // 0 or 1
 
-    // This example plugin only changes the default width/height
-    //   for fullscreen mode; the "default defaults" are just
-    //   640 x 480.
-    // If your plugin is very dependent on smooth animation and you
-    //   wanted it plugin to have the 'save cpu' option OFF by default,
-    //   for example, you could set 'm_save_cpu' to 0 here.
-
-    // m_start_fullscreen      = 0;       // 0 or 1
-    // m_start_desktop         = 0;       // 0 or 1
-    // m_fake_fullscreen_mode  = 0;       // 0 or 1
-    // m_max_fps_fs            = 30;      // 1-120, or 0 for 'unlimited'
-    // m_max_fps_dm            = 30;      // 1-120, or 0 for 'unlimited'
-    // m_max_fps_w             = 30;      // 1-120, or 0 for 'unlimited'
-    // m_show_press_f1_msg     = 1;       // 0 or 1
-       m_allow_page_tearing_w  = 0;       // 0 or 1
-    // m_allow_page_tearing_fs = 0;       // 0 or 1
-    // m_allow_page_tearing_dm = 1;       // 0 or 1
-    // m_minimize_winamp       = 1;       // 0 or 1
-    // m_desktop_textlabel_boxes = 1;     // 0 or 1
-    // m_save_cpu              = 0;       // 0 or 1
-
-    // lstrcpy(m_fontinfo[0].szFace, "Trebuchet MS"); // system font
-    // m_fontinfo[0].nSize     = 18;
-    // m_fontinfo[0].bBold     = 0;
-    // m_fontinfo[0].bItalic   = 0;
-    // lstrcpy(m_fontinfo[1].szFace, "Times New Roman"); // decorative font
-    // m_fontinfo[1].nSize     = 24;
-    // m_fontinfo[1].bBold     = 0;
-    // m_fontinfo[1].bItalic   = 1;
+    //wcscpy_s(m_fontinfo[0].szFace, "Trebuchet MS"); // system font
+    //m_fontinfo[0].nSize     = 18;
+    //m_fontinfo[0].bBold     = 0;
+    //m_fontinfo[0].bItalic   = 0;
+    //wcscpy_s(m_fontinfo[1].szFace, "Times New Roman"); // decorative font
+    //m_fontinfo[1].nSize     = 24;
+    //m_fontinfo[1].bBold     = 0;
+    //m_fontinfo[1].bItalic   = 1;
 
     // Don't override default FS mode here; shell is now smart and sets it to match
     // the current desktop display mode, by default.
 
     //m_disp_mode_fs.Width    = 1024;             // normally 640
     //m_disp_mode_fs.Height   = 768;              // normally 480
-    // use either D3DFMT_X8R8G8B8 or D3DFMT_R5G6B5.  
-    // The former will match to any 32-bit color format available, 
-    // and the latter will match to any 16-bit color available, 
+    // Use either D3DFMT_X8R8G8B8 or D3DFMT_R5G6B5.
+    // The former will match to any 32-bit color format available,
+    // and the latter will match to any 16-bit color available,
     // if that exact format can't be found.
-	//m_disp_mode_fs.Format   = D3DFMT_UNKNOWN; //<- this tells config panel & visualizer to use current display mode as a default!!   //D3DFMT_X8R8G8B8;
-	// m_disp_mode_fs.RefreshRate = 60;
+    //m_disp_mode_fs.Format = D3DFMT_UNKNOWN; //<- this tells config panel & visualizer to use current display mode as a default!!   //D3DFMT_X8R8G8B8;
+    //m_disp_mode_fs.RefreshRate = 60;
 }
 
-//----------------------------------------------------------------------
-
-void CPlugin::MyPreInitialize()
+// Initialize every data member in CPlugin with their default values.
+// To initialize any of the variables with random values
+// (using rand()), seed the random number generator first!
+// seed the system's random number generator w/the current system time:
+//srand((unsigned)time(NULL));  -don't - let winamp do it
+// (If you want to change the default values for settings that are part of
+// the plugin shell (framework), do so from OverrideDefaults() above.)
+void CPlugin::MilkDropPreInitialize()
 {
-    // Initialize EVERY data member you've added to CPlugin here;
-    //   these will be the default values.
-    // If you want to initialize any of your variables with random values
-    //   (using rand()), be sure to seed the random number generator first!
-    // (If you want to change the default values for settings that are part of
-    //   the plugin shell (framework), do so from OverrideDefaults() above.)
+    // CONFIG PANEL SETTINGS THAT MilkDrop ADDED (TAB #2)
+    m_bInitialPresetSelected = false;
+    m_fBlendTimeUser = 1.7f;
+    m_fBlendTimeAuto = 2.7f;
+    m_fTimeBetweenPresets = 16.0f;
+    m_fTimeBetweenPresetsRand = 10.0f;
+    m_bSequentialPresetOrder = false;
+    m_bHardCutsDisabled = true;
+    m_fHardCutLoudnessThresh = 2.5f;
+    m_fHardCutHalflife = 60.0f;
+    //m_nWidth = 1024;
+    //m_nHeight = 768;
+    //m_nDispBits = 16;
+    m_nCanvasStretch = 0;
+    m_nTexSizeX = -1; // -1 means "auto"
+    m_nTexSizeY = -1; // -1 means "auto"
+    m_nTexBitsPerCh = 8;
+    m_nGridX = 48; //32;
+    m_nGridY = 36; //24;
 
-    // seed the system's random number generator w/the current system time:
-    //srand((unsigned)time(NULL));  -don't - let winamp do it
-
-    // CONFIG PANEL SETTINGS THAT WE'VE ADDED (TAB #2)
-    m_bInitialPresetSelected    = false;
-	m_fBlendTimeUser			= 1.7f;
-	m_fBlendTimeAuto			= 2.7f;
-	m_fTimeBetweenPresets		= 16.0f;
-	m_fTimeBetweenPresetsRand	= 10.0f;
-	m_bSequentialPresetOrder    = false;
-	m_bHardCutsDisabled			= true;
-	m_fHardCutLoudnessThresh	= 2.5f;
-	m_fHardCutHalflife			= 60.0f;
-	//m_nWidth			= 1024;
-	//m_nHeight			= 768;
-	//m_nDispBits		= 16;
-    m_nCanvasStretch    = 0;
-	m_nTexSizeX			= -1;	// -1 means "auto"
-	m_nTexSizeY			= -1;	// -1 means "auto"
-	m_nTexBitsPerCh     =  8;
-	m_nGridX			= 48;//32;
-	m_nGridY			= 36;//24;
-
-	m_bShowPressF1ForHelp = true;
-	m_n16BitGamma	= 2;
-	m_bAutoGamma    = true;
-	//m_nFpsLimit			= -1;
-	m_bEnableRating			= true;
-	m_bSongTitleAnims		= true;
-	m_fSongTitleAnimDuration = 1.7f;
-	m_fTimeBetweenRandomSongTitles = -1.0f;
-	m_fTimeBetweenRandomCustomMsgs = -1.0f;
-	m_nSongTitlesSpawned = 0;
-	m_nCustMsgsSpawned = 0;
+    m_bShowPressF1ForHelp = true;
+    m_n16BitGamma = 2;
+    m_bAutoGamma = true;
+    //m_nFpsLimit = -1;
+    m_bEnableRating = true;
+    m_bSongTitleAnims = true;
+    m_fSongTitleAnimDuration = 1.7f;
+    m_fTimeBetweenRandomSongTitles = -1.0f;
+    m_fTimeBetweenRandomCustomMsgs = -1.0f;
+    m_nSongTitlesSpawned = 0;
+    m_nCustMsgsSpawned = 0;
     m_nFramesSinceResize = 0;
 
-    //m_bAlways3D		  	    = false;
-    //m_fStereoSep            = 1.0f;
-    //m_bAlwaysOnTop		= false;
-    //m_bFixSlowText          = true;
-    //m_bWarningsDisabled     = false;
-    m_bWarningsDisabled2    = false;
+    //m_bAlways3D = false;
+    //m_fStereoSep = 1.0f;
+    //m_bAlwaysOnTop = false;
+    //m_bFixSlowText = true;
+    //m_bWarningsDisabled = false;
+    m_bWarningsDisabled2 = false;
     //m_bAnisotropicFiltering = true;
     m_bPresetLockOnAtStartup = false;
-	m_bPreventScollLockHandling = false;
-    m_nMaxPSVersion_ConfigPanel = -1;  // -1 = auto, 0 = disable shaders, 2 = ps_2_0, 3 = ps_3_0
-    m_nMaxPSVersion_DX9 = -1;          // 0 = no shader support, 2 = ps_2_0, 3 = ps_3_0
-    m_nMaxPSVersion = -1;              // this one will be the ~min of the other two.  0/2/3.
+    m_bPreventScollLockHandling = false;
+    m_nMaxPSVersion_ConfigPanel = -1; // -1 = auto, 0 = disable shaders, 2 = ps_2_0, 3 = ps_3_0
+    m_nMaxPSVersion_DX9 = -1;         // 0 = no shader support, 2 = ps_2_0, 3 = ps_3_0
+    m_nMaxPSVersion = -1;             // this one will be the ~min of the other two.  0/2/3.
     m_nMaxImages = 32;
-    m_nMaxBytes  = 16000000;
+    m_nMaxBytes = 16000000;
 
     //#ifdef _DEBUG
     //    m_dwShaderFlags = D3DXSHADER_DEBUG|(1<<16);
     //#else
     //    m_dwShaderFlags = (1<<16);//D3DXSHADER_SKIPOPTIMIZATION|D3DXSHADER_NO_PRESHADER;          
     //#endif
-    //m_pFragmentLinker = NULL;     
-    //m_pCompiledFragments = NULL;  
+    //m_pFragmentLinker = NULL;
+    //m_pCompiledFragments = NULL;
     m_pShaderCompileErrors = NULL;
     //m_vs_warp = NULL;
     //m_ps_warp = NULL;
     //m_vs_comp = NULL;
     //m_ps_comp = NULL;
-    ZeroMemory(&m_shaders,    sizeof(PShaderSet));
+    ZeroMemory(&m_shaders, sizeof(PShaderSet));
     ZeroMemory(&m_OldShaders, sizeof(PShaderSet));
     ZeroMemory(&m_NewShaders, sizeof(PShaderSet));
     ZeroMemory(&m_fallbackShaders_vs, sizeof(VShaderSet));
@@ -465,199 +413,190 @@ void CPlugin::MyPreInitialize()
     m_bCompShaderLock = false;
     m_bNeedRescanTexturesDir = true;
 
-    // vertex declarations:
+    // Vertex declarations.
     //m_pSpriteVertDecl = NULL;
     //m_pWfVertDecl = NULL;
     //m_pMyVertDecl = NULL;
 
-    m_gdi_title_font_doublesize  = NULL;
+    m_gdi_title_font_doublesize = NULL;
     m_d3dx_title_font_doublesize = NULL;
 
-    // RUNTIME SETTINGS THAT WE'VE ADDED
-    m_prev_time = GetTime() - 0.0333f; // note: this will be updated each frame, at bottom of MyRenderFn.
-	m_bTexSizeWasAutoPow2	= false;
-	m_bTexSizeWasAutoExact	= false;
-	//m_bPresetLockedByUser = false;  NOW SET IN DERIVED SETTINGS
-	m_bPresetLockedByCode = false;
-	m_fStartTime	= 0.0f;
-	m_fPresetStartTime = 0.0f;
-	m_fNextPresetTime  = -1.0f;	// negative value means no time set (...it will be auto-set on first call to UpdateTime)
-    m_nLoadingPreset   = 0;
+    // RUNTIME SETTINGS THAT MilkDrop ADDED
+    m_prev_time = GetTime() - 0.0333f; // note: this will be updated each frame, at bottom of `MilkDropRenderFrame()`.
+    m_bTexSizeWasAutoPow2 = false;
+    m_bTexSizeWasAutoExact = false;
+    //m_bPresetLockedByUser = false;  NOW SET IN DERIVED SETTINGS
+    m_bPresetLockedByCode = false;
+    m_fStartTime = 0.0f;
+    m_fPresetStartTime = 0.0f;
+    m_fNextPresetTime = -1.0f; // negative value means no time set (...it will be auto-set on first call to UpdateTime)
+    m_nLoadingPreset = 0;
     m_nPresetsLoadedTotal = 0;
     m_fSnapPoint = 0.5f;
-	m_pState    = &m_state_DO_NOT_USE[0];
-	m_pOldState = &m_state_DO_NOT_USE[1];
-	m_pNewState = &m_state_DO_NOT_USE[2];
-	m_UI_mode			= UI_REGULAR;
+    m_pState = &m_state_DO_NOT_USE[0];
+    m_pOldState = &m_state_DO_NOT_USE[1];
+    m_pNewState = &m_state_DO_NOT_USE[2];
+    m_UI_mode = UI_REGULAR;
     m_bShowShaderHelp = false;
 
-	m_fMotionVectorsTempDx = 0.0f;
-	m_fMotionVectorsTempDy = 0.0f;
-	
-	m_nPresets		= 0;
-	m_nDirs			= 0;
+    m_fMotionVectorsTempDx = 0.0f;
+    m_fMotionVectorsTempDy = 0.0f;
+
+    m_nPresets = 0;
+    m_nDirs = 0;
     m_nPresetListCurPos = 0;
-	m_nCurrentPreset = -1;
-	m_szCurrentPresetFile[0] = 0;
+    m_nCurrentPreset = -1;
+    m_szCurrentPresetFile[0] = 0;
     m_szLoadingPreset[0] = 0;
-	//m_szPresetDir[0] = 0; // will be set @ end of this function
+    //m_szPresetDir[0] = 0; // will be set @ end of this function
     m_bPresetListReady = false;
     m_szUpdatePresetMask[0] = 0;
     //m_nRatingReadProgress = -1;
 
-    myfft.Init(576, MY_FFT_SAMPLES, -1);
-	memset(&mysound, 0, sizeof(mysound));
+    mdfft.Init(576, MD_FFT_SAMPLES, -1);
+    memset(&mdsound, 0, sizeof(mdsound));
 
-	int i;
-    for (i=0; i<PRESET_HIST_LEN; i++)
+    for (int i = 0; i < PRESET_HIST_LEN; i++)
         m_presetHistory[i] = L"";
     m_presetHistoryPos = 0;
     m_presetHistoryBackFence = 0;
     m_presetHistoryFwdFence = 0;
 
-	//m_nTextHeightPixels = -1;
-	//m_nTextHeightPixels_Fancy = -1;
-	m_bShowFPS			= false;
-	m_bShowRating		= false;
-	m_bShowPresetInfo	= false;
-	m_bShowDebugInfo	= false;
-	m_bShowSongTitle	= false;
-	m_bShowSongTime		= false;
-	m_bShowSongLen		= false;
-	m_fShowRatingUntilThisTime = -1.0f;
+    //m_nTextHeightPixels = -1;
+    //m_nTextHeightPixels_Fancy = -1;
+    m_bShowFPS = false;
+    m_bShowRating = false;
+    m_bShowPresetInfo = false;
+    m_bShowDebugInfo = false;
+    m_bShowSongTitle = false;
+    m_bShowSongTime = false;
+    m_bShowSongLen = false;
+    m_fShowRatingUntilThisTime = -1.0f;
 	//ClearErrors();
-	m_szDebugMessage[0]	= 0;
-    m_szSongTitle[0]    = 0;
+    m_szDebugMessage[0] = 0;
+    m_szSongTitle[0] = 0;
     m_szSongTitlePrev[0] = 0;
 
-	m_lpVS[0]				= NULL;
-	m_lpVS[1]				= NULL;
-    #if (NUM_BLUR_TEX>0)
-        for (i=0; i<NUM_BLUR_TEX; i++)
-            m_lpBlur[i] = NULL;
-    #endif
-    m_lpDDSTitle			= NULL;
-    m_nTitleTexSizeX        = 0;
-    m_nTitleTexSizeY        = 0;
-	m_verts					= NULL;
-	m_verts_temp            = NULL;
-	m_vertinfo				= NULL;
-	m_indices_list			= NULL;
-	m_indices_strip			= NULL;
+    m_lpVS[0] = NULL;
+    m_lpVS[1] = NULL;
+#if (NUM_BLUR_TEX > 0)
+    for (int i = 0; i < NUM_BLUR_TEX; i++)
+        m_lpBlur[i] = NULL;
+#endif
+    m_lpDDSTitle = NULL;
+    m_nTitleTexSizeX = 0;
+    m_nTitleTexSizeY = 0;
+    m_verts = NULL;
+    m_verts_temp = NULL;
+    m_vertinfo = NULL;
+    m_indices_list = NULL;
+    m_indices_strip = NULL;
 
-    m_bHasFocus             = true;
-    m_bHadFocus             = false;
+    m_bHasFocus = true;
+    m_bHadFocus = false;
     //m_bOrigScrollLockState  = GetKeyState(VK_SCROLL) & 1;
-    // m_bMilkdropScrollLockState is derived at end of MyReadConfig()
+    //m_bMilkdropScrollLockState is derived at end of `MilkDropReadConfig()`
 
-	m_nNumericInputMode   = NUMERIC_INPUT_MODE_CUST_MSG;
-	m_nNumericInputNum    = 0;
-	m_nNumericInputDigits = 0;
-	//td_custom_msg_font   m_CustomMessageFont[MAX_CUSTOM_MESSAGE_FONTS];
-	//td_custom_msg        m_CustomMessage[MAX_CUSTOM_MESSAGES];
+    m_nNumericInputMode = NUMERIC_INPUT_MODE_CUST_MSG;
+    m_nNumericInputNum = 0;
+    m_nNumericInputDigits = 0;
+    //td_custom_msg_font m_CustomMessageFont[MAX_CUSTOM_MESSAGE_FONTS];
+    //td_custom_msg m_CustomMessage[MAX_CUSTOM_MESSAGES];
 
-    //texmgr      m_texmgr;		// for user sprites
+    //texmgr m_texmgr; // for user sprites
 
-	m_supertext.bRedrawSuperText = false;
-	m_supertext.fStartTime = -1.0f;
+    m_supertext.bRedrawSuperText = false;
+    m_supertext.fStartTime = -1.0f;
 
-	// --------------------other init--------------------
-
-    g_bDebugOutput		= false;
-	g_bDumpFileCleared	= false;
+    // Other initialization.
+    g_bDebugOutput = false;
+    g_bDumpFileCleared = false;
 
     swprintf_s(m_szMilkdrop2Path, L"%ls%ls", GetPluginsDirPath(), SUBDIR);
     swprintf_s(m_szPresetDir, L"%lspresets\\", m_szMilkdrop2Path);
 
-    // note that the config dir can be under Program Files or Application Data!!
+    // Note that the configuration directory can be under "Program Files" or "Application Data"!!
     wchar_t szConfigDir[MAX_PATH] = {0};
-    wcscpy(szConfigDir, GetConfigIniFile());
+    wcscpy_s(szConfigDir, GetConfigIniFile());
     wchar_t* p = wcsrchr(szConfigDir, L'\\');
     if (p) *(p+1) = 0;
     swprintf_s(m_szMsgIniFile, L"%ls%ls", szConfigDir, MSG_INIFILE);
     swprintf_s(m_szImgIniFile, L"%ls%ls", szConfigDir, IMG_INIFILE);
 }
 
-//----------------------------------------------------------------------
-
-void CPlugin::MyReadConfig()
+// Reads the user's settings from the .INI file.
+// Read the value from the .INI file for any controls
+// added to the configuration panel.
+void CPlugin::MilkDropReadConfig()
 {
 #if 0
-    // Read the user's settings from the .INI file.
-    // If you've added any controls to the config panel, read their value in
-    //   from the .INI file here.
-
-    // use this function         declared in   to read a value of this type:
+    // Use this function         declared in   to read a value of this type
     // -----------------         -----------   ----------------------------
-    // GetPrivateProfileInt      Win32 API     int
+    // GetPrivateProfileInt      WinBase.h     int
     // GetPrivateProfileBool     utility.h     bool
-    // GetPrivateProfileBOOL     utility.h     BOOL
     // GetPrivateProfileFloat    utility.h     float
-    // GetPrivateProfileString   Win32 API     string
+    // GetPrivateProfileString   WinBase.h     string
 
-    //ex: m_fog_enabled = GetPrivateProfileInt("settings","fog_enabled"       ,m_fog_enabled       ,GetConfigIniFile());
-
-	int n=0;
-    wchar_t *pIni = GetConfigIniFile();
+	int n = 0;
+    wchar_t* pIni = GetConfigIniFile();
 
 	m_bEnableRating = GetPrivateProfileBoolW(L"settings",L"bEnableRating",m_bEnableRating,pIni);
-	m_bHardCutsDisabled = GetPrivateProfileBoolW(L"settings",L"bHardCutsDisabled",m_bHardCutsDisabled,pIni);
-	g_bDebugOutput	= GetPrivateProfileBoolW(L"settings",L"bDebugOutput",g_bDebugOutput,pIni);
-	//m_bShowSongInfo = GetPrivateProfileBool("settings","bShowSongInfo",m_bShowSongInfo,pIni);
-	//m_bShowPresetInfo=GetPrivateProfileBool("settings","bShowPresetInfo",m_bShowPresetInfo,pIni);
-	m_bShowPressF1ForHelp = GetPrivateProfileBoolW(L"settings",L"bShowPressF1ForHelp",m_bShowPressF1ForHelp,pIni);
-	//m_bShowMenuToolTips = GetPrivateProfileBool("settings","bShowMenuToolTips",m_bShowMenuToolTips,pIni);
-	m_bSongTitleAnims   = GetPrivateProfileBoolW(L"settings",L"bSongTitleAnims",m_bSongTitleAnims,pIni);
+    m_bHardCutsDisabled = GetPrivateProfileBoolW(L"settings", L"bHardCutsDisabled", m_bHardCutsDisabled, pIni);
+    g_bDebugOutput = GetPrivateProfileBoolW(L"settings", L"bDebugOutput", g_bDebugOutput, pIni);
+    //m_bShowSongInfo = GetPrivateProfileBoolW(L"settings", L"bShowSongInfo", m_bShowSongInfo, pIni);
+    //m_bShowPresetInfo = GetPrivateProfileBoolW(L"settings", L"bShowPresetInfo", m_bShowPresetInfo, pIni);
+    m_bShowPressF1ForHelp = GetPrivateProfileBoolW(L"settings", L"bShowPressF1ForHelp", m_bShowPressF1ForHelp, pIni);
+    //m_bShowMenuToolTips = GetPrivateProfileBoolW(L"settings", L"bShowMenuToolTips", m_bShowMenuToolTips, pIni);
+    m_bSongTitleAnims = GetPrivateProfileBoolW(L"settings", L"bSongTitleAnims", m_bSongTitleAnims, pIni);
 
-	m_bShowFPS			= GetPrivateProfileBoolW(L"settings",L"bShowFPS",       m_bShowFPS			,pIni);
-	m_bShowRating		= GetPrivateProfileBoolW(L"settings",L"bShowRating",    m_bShowRating		,pIni);
-	m_bShowPresetInfo	= GetPrivateProfileBoolW(L"settings",L"bShowPresetInfo",m_bShowPresetInfo	,pIni);
-	//m_bShowDebugInfo	= GetPrivateProfileBool("settings","bShowDebugInfo", m_bShowDebugInfo	,pIni);
-	m_bShowSongTitle	= GetPrivateProfileBoolW(L"settings",L"bShowSongTitle", m_bShowSongTitle	,pIni);
-	m_bShowSongTime		= GetPrivateProfileBoolW(L"settings",L"bShowSongTime",  m_bShowSongTime	,pIni);
-	m_bShowSongLen		= GetPrivateProfileBoolW(L"settings",L"bShowSongLen",   m_bShowSongLen		,pIni);
+    m_bShowFPS = GetPrivateProfileBoolW(L"settings", L"bShowFPS", m_bShowFPS, pIni);
+    m_bShowRating = GetPrivateProfileBoolW(L"settings", L"bShowRating", m_bShowRating, pIni);
+    m_bShowPresetInfo = GetPrivateProfileBoolW(L"settings", L"bShowPresetInfo", m_bShowPresetInfo, pIni);
+    //m_bShowDebugInfo = GetPrivateProfileBoolW(L"settings", L"bShowDebugInfo", m_bShowDebugInfo, pIni);
+    m_bShowSongTitle = GetPrivateProfileBoolW(L"settings", L"bShowSongTitle", m_bShowSongTitle, pIni);
+    m_bShowSongTime = GetPrivateProfileBoolW(L"settings", L"bShowSongTime", m_bShowSongTime, pIni);
+    m_bShowSongLen = GetPrivateProfileBoolW(L"settings", L"bShowSongLen", m_bShowSongLen, pIni);
 
-	//m_bFixPinkBug		= GetPrivateProfileBool("settings","bFixPinkBug",m_bFixPinkBug,pIni);
-	int nTemp = GetPrivateProfileBoolW(L"settings",L"bFixPinkBug",-1,pIni);
-	if (nTemp == 0)
-		m_n16BitGamma = 0;
-	else if (nTemp == 1)
-		m_n16BitGamma = 2;
-	m_n16BitGamma		= GetPrivateProfileIntW(L"settings",L"n16BitGamma",m_n16BitGamma,pIni);
-	m_bAutoGamma        = GetPrivateProfileBoolW(L"settings",L"bAutoGamma",m_bAutoGamma,pIni);
-	//m_bAlways3D				= GetPrivateProfileBool("settings","bAlways3D",m_bAlways3D,pIni);
-    //m_fStereoSep            = GetPrivateProfileFloat("settings","fStereoSep",m_fStereoSep,pIni);
-	//m_bFixSlowText          = GetPrivateProfileBool("settings","bFixSlowText",m_bFixSlowText,pIni);
-	//m_bAlwaysOnTop		= GetPrivateProfileBool("settings","bAlwaysOnTop",m_bAlwaysOnTop,pIni);
+    //m_bFixPinkBug = GetPrivateProfileBoolW(L"settings", L"bFixPinkBug", m_bFixPinkBug, pIni);
+    int nTemp = GetPrivateProfileBoolW(L"settings", L"bFixPinkBug", -1, pIni);
+    if (nTemp == 0)
+        m_n16BitGamma = 0;
+    else if (nTemp == 1)
+        m_n16BitGamma = 2;
+    m_n16BitGamma = GetPrivateProfileIntW(L"settings", L"n16BitGamma", m_n16BitGamma, pIni);
+    m_bAutoGamma = GetPrivateProfileBoolW(L"settings", L"bAutoGamma", m_bAutoGamma, pIni);
+    //m_bAlways3D = GetPrivateProfileBoolW(L"settings", L"bAlways3D", m_bAlways3D, pIni);
+    //m_fStereoSep = GetPrivateProfileFloatW(L"settings", L"fStereoSep", m_fStereoSep, pIni);
+    //m_bFixSlowText = GetPrivateProfileBoolW(L"settings", L"bFixSlowText", m_bFixSlowText, pIni);
+    //m_bAlwaysOnTop = GetPrivateProfileBoolW(L"settings", L"bAlwaysOnTop", m_bAlwaysOnTop, pIni);
 	//m_bWarningsDisabled		= GetPrivateProfileBool("settings","bWarningsDisabled",m_bWarningsDisabled,pIni);
-	m_bWarningsDisabled2    = GetPrivateProfileBoolW(L"settings",L"bWarningsDisabled2",m_bWarningsDisabled2,pIni);
-    //m_bAnisotropicFiltering = GetPrivateProfileBool("settings","bAnisotropicFiltering",m_bAnisotropicFiltering,pIni);
-    m_bPresetLockOnAtStartup = GetPrivateProfileBoolW(L"settings",L"bPresetLockOnAtStartup",m_bPresetLockOnAtStartup,pIni);
+    m_bWarningsDisabled2 = GetPrivateProfileBoolW(L"settings", L"bWarningsDisabled2", m_bWarningsDisabled2, pIni);
+    //m_bAnisotropicFiltering = GetPrivateProfileBoolW(L"settings", L"bAnisotropicFiltering", m_bAnisotropicFiltering, pIni);
+    m_bPresetLockOnAtStartup = GetPrivateProfileBoolW(L"settings", L"bPresetLockOnAtStartup", m_bPresetLockOnAtStartup, pIni);
 	m_bPreventScollLockHandling = GetPrivateProfileBoolW(L"settings",L"m_bPreventScollLockHandling",m_bPreventScollLockHandling,pIni);
 
-    m_nCanvasStretch = GetPrivateProfileIntW(L"settings",L"nCanvasStretch"    ,m_nCanvasStretch,pIni);
-	m_nTexSizeX		= GetPrivateProfileIntW(L"settings",L"nTexSize"    ,m_nTexSizeX   ,pIni);
-	m_nTexSizeY		= m_nTexSizeX;
-	m_bTexSizeWasAutoPow2   = (m_nTexSizeX == -2);
-	m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
-	m_nTexBitsPerCh = GetPrivateProfileIntW(L"settings", L"nTexBitsPerCh", m_nTexBitsPerCh, pIni);
-	m_nGridX		= GetPrivateProfileIntW(L"settings",L"nMeshSize"   ,m_nGridX      ,pIni);
-	m_nGridY        = m_nGridX*3/4;
+    m_nCanvasStretch = GetPrivateProfileIntW(L"settings", L"nCanvasStretch", m_nCanvasStretch, pIni);
+    m_nTexSizeX = GetPrivateProfileIntW(L"settings", L"nTexSize", m_nTexSizeX, pIni);
+    m_nTexSizeY = m_nTexSizeX;
+    m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
+    m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
+    m_nTexBitsPerCh = GetPrivateProfileIntW(L"settings", L"nTexBitsPerCh", m_nTexBitsPerCh, pIni);
+    m_nGridX = GetPrivateProfileIntW(L"settings", L"nMeshSize", m_nGridX, pIni);
+    m_nGridY = m_nGridX * 3 / 4;
     m_nMaxPSVersion_ConfigPanel = GetPrivateProfileIntW(L"settings",L"MaxPSVersion",m_nMaxPSVersion_ConfigPanel,pIni);
     m_nMaxImages    = GetPrivateProfileIntW(L"settings",L"MaxImages",m_nMaxImages,pIni);
     m_nMaxBytes     = GetPrivateProfileIntW(L"settings",L"MaxBytes" ,m_nMaxBytes ,pIni);
 
-	m_fBlendTimeUser			= GetPrivateProfileFloatW(L"settings",L"fBlendTimeUser"         ,m_fBlendTimeUser         ,pIni);
-	m_fBlendTimeAuto			= GetPrivateProfileFloatW(L"settings",L"fBlendTimeAuto"         ,m_fBlendTimeAuto         ,pIni);
-	m_fTimeBetweenPresets		= GetPrivateProfileFloatW(L"settings",L"fTimeBetweenPresets"    ,m_fTimeBetweenPresets    ,pIni);
-	m_fTimeBetweenPresetsRand	= GetPrivateProfileFloatW(L"settings",L"fTimeBetweenPresetsRand",m_fTimeBetweenPresetsRand,pIni);
-	m_fHardCutLoudnessThresh	= GetPrivateProfileFloatW(L"settings",L"fHardCutLoudnessThresh" ,m_fHardCutLoudnessThresh ,pIni);
-	m_fHardCutHalflife			= GetPrivateProfileFloatW(L"settings",L"fHardCutHalflife"       ,m_fHardCutHalflife       ,pIni);
-	m_fSongTitleAnimDuration	= GetPrivateProfileFloatW(L"settings",L"fSongTitleAnimDuration" ,m_fSongTitleAnimDuration ,pIni);
-	m_fTimeBetweenRandomSongTitles = GetPrivateProfileFloatW(L"settings",L"fTimeBetweenRandomSongTitles" ,m_fTimeBetweenRandomSongTitles,pIni);
-	m_fTimeBetweenRandomCustomMsgs = GetPrivateProfileFloatW(L"settings",L"fTimeBetweenRandomCustomMsgs" ,m_fTimeBetweenRandomCustomMsgs,pIni);
+    m_fBlendTimeUser = GetPrivateProfileFloatW(L"settings", L"fBlendTimeUser", m_fBlendTimeUser, pIni);
+    m_fBlendTimeAuto = GetPrivateProfileFloatW(L"settings", L"fBlendTimeAuto", m_fBlendTimeAuto, pIni);
+    m_fTimeBetweenPresets = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenPresets", m_fTimeBetweenPresets, pIni);
+    m_fTimeBetweenPresetsRand = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenPresetsRand", m_fTimeBetweenPresetsRand, pIni);
+    m_fHardCutLoudnessThresh = GetPrivateProfileFloatW(L"settings", L"fHardCutLoudnessThresh", m_fHardCutLoudnessThresh, pIni);
+    m_fHardCutHalflife = GetPrivateProfileFloatW(L"settings", L"fHardCutHalflife", m_fHardCutHalflife, pIni);
+    m_fSongTitleAnimDuration = GetPrivateProfileFloatW(L"settings", L"fSongTitleAnimDuration", m_fSongTitleAnimDuration, pIni);
+    m_fTimeBetweenRandomSongTitles = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomSongTitles", m_fTimeBetweenRandomSongTitles, pIni);
+    m_fTimeBetweenRandomCustomMsgs = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomCustomMsgs", m_fTimeBetweenRandomCustomMsgs, pIni);
 
-    // --------
 
 	GetPrivateProfileStringW(L"settings",L"szPresetDir",m_szPresetDir,m_szPresetDir,sizeof(m_szPresetDir),pIni);
 #endif
@@ -666,42 +605,36 @@ void CPlugin::MyReadConfig()
 	m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
 	m_nGridY        = m_nGridX*3/4;
 
-	// bounds-checking:
-	if (m_nGridX > MAX_GRID_X)
-		m_nGridX = MAX_GRID_X;
-	if (m_nGridY > MAX_GRID_Y)
-		m_nGridY = MAX_GRID_Y;
-	if (m_fTimeBetweenPresetsRand < 0)
-		m_fTimeBetweenPresetsRand = 0;
-	if (m_fTimeBetweenPresets < 0.1f)
-		m_fTimeBetweenPresets = 0.1f;
+    // Bounds checking.
+    if (m_nGridX > MAX_GRID_X)
+        m_nGridX = MAX_GRID_X;
+    if (m_nGridY > MAX_GRID_Y)
+        m_nGridY = MAX_GRID_Y;
+    if (m_fTimeBetweenPresetsRand < 0)
+        m_fTimeBetweenPresetsRand = 0;
+    if (m_fTimeBetweenPresets < 0.1f)
+        m_fTimeBetweenPresets = 0.1f;
 
     // DERIVED SETTINGS
-    m_bPresetLockedByUser      = m_bPresetLockOnAtStartup;
+    m_bPresetLockedByUser = m_bPresetLockOnAtStartup;
     //m_bMilkdropScrollLockState = m_bPresetLockOnAtStartup;
 }
 
-//----------------------------------------------------------------------
-
-void CPlugin::MyWriteConfig()
+// Write the user's settings to the .INI file.
+// This gets called only when the user runs the config panel and hits OK.
+// If you've added any controls to the config panel, write their value out
+// to the .INI file here.
+void CPlugin::MilkDropWriteConfig()
 {
 #if 0
-    // Write the user's settings to the .INI file.
-    // This gets called only when the user runs the config panel and hits OK.
-    // If you've added any controls to the config panel, write their value out 
-    //   to the .INI file here.
+    // Use this function           declared in   to write a value of this type
+    // -----------------           -----------   -----------------------------
+    // WritePrivateProfileIntW     utility.h     int
+    // WritePrivateProfileIntW     utility.h     bool
+    // WritePrivateProfileFloatW   utility.h     float
+    // WritePrivateProfileString   WinBase.h     string
 
-    // use this function         declared in   to write a value of this type:
-    // -----------------         -----------   ----------------------------
-    // WritePrivateProfileInt    Win32 API     int
-    // WritePrivateProfileInt    utility.h     bool
-    // WritePrivateProfileInt    utility.h     BOOL
-    // WritePrivateProfileFloat  utility.h     float
-    // WritePrivateProfileString Win32 API     string
-
-    // ex: WritePrivateProfileInt(m_fog_enabled       ,"fog_enabled"       ,GetConfigIniFile(),"settings");
-
-    wchar_t *pIni = GetConfigIniFile();
+    wchar_t* pIni = GetConfigIniFile();
 
 	// constants:
 	WritePrivateProfileStringW(L"settings",L"bConfigured",L"1",pIni);
@@ -771,19 +704,19 @@ void StripComments(char* str)
     int nCharsToSkip = 0;
     while (1)
     {
-        // handle '//' comments
-        if (!bIgnoreTilCloseComment && c0=='/' && c1=='/')
+        // Handle "//" comments.
+        if (!bIgnoreTilCloseComment && c0 == '/' && c1 == '/')
             bIgnoreTilEndOfLine = true;
-        if (bIgnoreTilEndOfLine && (c0==10 || c0==13))
+        if (bIgnoreTilEndOfLine && (c0 == '\n' || c0 == '\r'))
         {
             bIgnoreTilEndOfLine = false;
             nCharsToSkip = 0;
         }
 
-        // handle /* */ comments
-        if (!bIgnoreTilEndOfLine && c0=='/' && c1=='*')
+        // Handle "/* */" comments.
+        if (!bIgnoreTilEndOfLine && c0 == '/' && c1 == '*')
             bIgnoreTilCloseComment = true;
-        if (bIgnoreTilCloseComment && c0=='*' && c1=='/') 
+        if (bIgnoreTilCloseComment && c0 == '*' && c1 == '/')
         {
             bIgnoreTilCloseComment = false;
             nCharsToSkip = 2;
@@ -797,7 +730,7 @@ void StripComments(char* str)
                 *dest++ = c0;
         }
 
-        if (c1==0)
+        if (c1 == '\0')
             break;
 
         p++;
@@ -805,34 +738,34 @@ void StripComments(char* str)
         c1 = *p;
     }
 
-    *dest++ = 0;
+    *dest++ = '\0';
 }
 
-int CPlugin::AllocateMyNonDx9Stuff()
+// This gets called only once, when your plugin is actually launched.
+// If only the config panel is launched, this does NOT get called.
+// (whereas `MilkDropPreInitialize()` still does).
+// If anything fails here, return FALSE to safely exit the plugin,
+// but only after displaying a message box giving the user some information
+// about what went wrong.
+int CPlugin::AllocateMilkDropNonDX11()
 {
-    // This gets called only once, when your plugin is actually launched.
-    // If only the config panel is launched, this does NOT get called.
-    //   (whereas MyPreInitialize() still does).
-    // If anything fails here, return FALSE to safely exit the plugin,
-    //   but only after displaying a messagebox giving the user some information
-    //   about what went wrong.
-
     /*
     if (!m_hBlackBrush)
-		m_hBlackBrush = CreateSolidBrush(RGB(0,0,0));
+        m_hBlackBrush = CreateSolidBrush(RGB(0,0,0));
     */
 
     g_hThread = INVALID_HANDLE_VALUE;
     g_bThreadAlive = false;
     g_bThreadShouldQuit = false;
-	InitializeCriticalSection(&g_cs);
+    InitializeCriticalSection(&g_cs);
 
-    // read in 'm_szShaderIncludeText'
+    // Read in `m_szShaderIncludeText`.
     bool bSuccess = true;
-    bSuccess = ReadFileToString(L"data\\include.fx", m_szShaderIncludeText, sizeof(m_szShaderIncludeText)-4, false);
+    bSuccess = ReadFileToString(L"data\\include.fx", m_szShaderIncludeText, sizeof(m_szShaderIncludeText) - 4, false);
 	if (!bSuccess) return false;
-	StripComments(m_szShaderIncludeText);
-	m_nShaderIncludeTextLen = strlen(m_szShaderIncludeText);
+    StripComments(m_szShaderIncludeText);
+    m_nShaderIncludeTextLen = strlen(m_szShaderIncludeText);
+
     bSuccess |= ReadFileToString(L"data\\warp_vs.fx", m_szDefaultWarpVShaderText, sizeof(m_szDefaultWarpVShaderText), true);
     if (!bSuccess) return false;
     bSuccess |= ReadFileToString(L"data\\warp_ps.fx", m_szDefaultWarpPShaderText, sizeof(m_szDefaultWarpPShaderText), true);
@@ -848,16 +781,14 @@ int CPlugin::AllocateMyNonDx9Stuff()
     bSuccess |= ReadFileToString(L"data\\blur2_ps.fx", m_szBlurPSY, sizeof(m_szBlurPSY), true);
     if (!bSuccess) return false;
 
-	m_pState->Default();
-	m_pOldState->Default();
+    m_pState->Default();
+    m_pOldState->Default();
     m_pNewState->Default();
 
-	//LoadRandomPreset(0.0f);   -avoid this here; causes some DX9 stuff to happen.
+    //LoadRandomPreset(0.0f);   -avoid this here; causes some DX9 stuff to happen.
 
     return true;
 }
-
-//----------------------------------------------------------------------
 
 void CancelThread(int max_wait_time_ms)
 {
@@ -868,7 +799,7 @@ void CancelThread(int max_wait_time_ms)
         Sleep(30);
         waited += 30;
     }
-    
+
     if (g_bThreadAlive)
     {
 #ifdef TARGET_WINDOWS_DESKTOP
@@ -882,15 +813,14 @@ void CancelThread(int max_wait_time_ms)
     g_hThread = INVALID_HANDLE_VALUE;
 }
 
-void CPlugin::CleanUpMyNonDx9Stuff()
+// This gets called only once, when the plugin exits.
+// Clean up any objects here that were
+// created or initialized in `AllocateMilkDropNonDX11()`.
+void CPlugin::CleanUpMilkDropNonDX11()
 {
-    // This gets called only once, when your plugin exits.
-    // Be sure to clean up any objects here that were 
-    //   created/initialized in AllocateMyNonDx9Stuff.
-    
     //sound.Finish();
 
-    // NOTE: DO NOT DELETE m_gdi_titlefont_doublesize HERE!!!
+    // Note: DO NOT DELETE `m_gdi_titlefont_doublesize` here!
 
     DeleteCriticalSection(&g_cs);
 
@@ -901,257 +831,139 @@ void CPlugin::CleanUpMyNonDx9Stuff()
     //dumpmsg("Finish: cleanup complete.");
 }
 
-//----------------------------------------------------------------------
-
 float SquishToCenter(float x, float fExp)
 {
     if (x > 0.5f)
-        return powf(x*2-1, fExp)*0.5f + 0.5f;
+        return powf(x * 2 - 1, fExp) * 0.5f + 0.5f;
 
-    return (1-powf(1-x*2, fExp))*0.5f;
+    return (1 - powf(1 - x * 2, fExp)) * 0.5f;
 }
 
 int GetNearestPow2Size(int w, int h)
 {
     float fExp = logf(std::max(w, h) * 0.75f + 0.25f * std::min(w, h)) / logf(2.0f);
     float bias = 0.55f;
-    if (fExp + bias >= 11.0f)   // ..don't jump to 2048x2048 quite as readily
+    if (fExp + bias >= 11.0f) // ..don't jump to 2048x2048 quite as readily
         bias = 0.5f;
-	int   nExp = (int)(fExp + bias);
-	int log2size = (int)powf(2.0f, (float)nExp);
+    int nExp = (int)(fExp + bias);
+    int log2size = (int)powf(2.0f, (float)nExp);
     return log2size;
 }
 
-int CPlugin::AllocateMyDX9Stuff() 
+// Allocate and initialize all the DX11 stuff here: textures,
+// surfaces, vertex/index buffers, fonts, and so on.
+// If anything fails here, return FALSE to safely exit the plugin,
+// but only after displaying a messagebox giving the user some information
+// about what went wrong.  If the error is NON-CRITICAL, you don't *have*
+// to return; just make sure that the rest of the code will be still safely
+// run (albeit with degraded features).
+// If you run out of video memory, you might want to show a short messagebox
+// saying what failed to allocate and that the reason is a lack of video
+// memory, and then call `SuggestHowToFreeSomeMem()`, which will show them
+// a *second* messagebox that (intelligently) suggests how they can free up
+// some video memory.
+// Don't forget to account for each object created or allocated here by cleaning
+// it up in `CleanUpMilkDropDX11()`!
+// IMPORTANT:
+// Note that the code here isn't just run at program startup!
+// When the user toggles between fullscreen and windowed modes
+// or resizes the window, the base class calls this function before
+// destroying & recreating the plugin window and DirectX object, and then
+// calls `AllocateMilkDropDX11()` afterwards, to get your plugin running again.
+// (...aka OnUserResizeWindow)
+// (...aka OnToggleFullscreen)
+int CPlugin::AllocateMilkDropDX11()
 {
-    // (...aka OnUserResizeWindow) 
-    // (...aka OnToggleFullscreen)
-    
-    // Allocate and initialize all your DX9 and D3DX stuff here: textures, 
-    //   surfaces, vertex/index buffers, D3DX fonts, and so on.  
-    // If anything fails here, return FALSE to safely exit the plugin,
-    //   but only after displaying a messagebox giving the user some information
-    //   about what went wrong.  If the error is NON-CRITICAL, you don't *have*
-    //   to return; just make sure that the rest of the code will be still safely 
-    //   run (albeit with degraded features).  
-    // If you run out of video memory, you might want to show a short messagebox
-    //   saying what failed to allocate and that the reason is a lack of video
-    //   memory, and then call SuggestHowToFreeSomeMem(), which will show them
-    //   a *second* messagebox that (intelligently) suggests how they can free up 
-    //   some video memory.
-    // Don't forget to account for each object you create/allocate here by cleaning
-    //   it up in CleanUpMyDX9Stuff!
-    // IMPORTANT:
-    //   Note that the code here isn't just run at program startup!
-    //   When the user toggles between fullscreen and windowed modes
-    //   or resizes the window, the base class calls this function before 
-    //   destroying & recreating the plugin window and DirectX object, and then
-    //   calls AllocateMyDX9Stuff afterwards, to get your plugin running again.
-
-    wchar_t buf[32768], title[64];
+    //wchar_t buf[32768], title[64];
 
     m_nFramesSinceResize = 0;
 
     int nNewCanvasStretch = (m_nCanvasStretch == 0) ? 100 : m_nCanvasStretch;
 
-    /*DWORD PSVersion = GetCaps()->PixelShaderVersion & 0xFFFF;  // 0x0300, etc.
-    if (PSVersion >= 0x0300) 
-        m_nMaxPSVersion_DX9 = MD2_PS_3_0;
-		else if (PSVersion > 0x0200) 
-        m_nMaxPSVersion_DX9 = MD2_PS_2_X;
-    else if (PSVersion >= 0x0200) 
-        m_nMaxPSVersion_DX9 = MD2_PS_2_0;
-    else 
-        m_nMaxPSVersion_DX9 = MD2_PS_NONE;*/
-
     D3D_FEATURE_LEVEL featureLevel = GetDevice()->GetFeatureLevel();
     if (featureLevel >= D3D_FEATURE_LEVEL_9_3)
-      m_nMaxPSVersion_DX9 = MD2_PS_3_0;
+        m_nMaxPSVersion_DX9 = MD2_PS_3_0;
     else if (featureLevel >= D3D_FEATURE_LEVEL_9_2)
-      m_nMaxPSVersion_DX9 = MD2_PS_2_X;
+        m_nMaxPSVersion_DX9 = MD2_PS_2_X;
     else if (featureLevel >= D3D_FEATURE_LEVEL_9_1)
-      m_nMaxPSVersion_DX9 = MD2_PS_2_0;
+        m_nMaxPSVersion_DX9 = MD2_PS_2_0;
     else
-      m_nMaxPSVersion_DX9 = MD2_PS_NONE;
+        m_nMaxPSVersion_DX9 = MD2_PS_NONE;
 
     if (m_nMaxPSVersion_ConfigPanel == -1)
         m_nMaxPSVersion = m_nMaxPSVersion_DX9;
     else
     {
-        // to still limit their choice by what HW reports:
-        //m_nMaxPSVersion = min(m_nMaxPSVersion_DX9, m_nMaxPSVersion_ConfigPanel);
+        // To limit user choice by what hardware reports.
+        //m_nMaxPSVersion = std::min(m_nMaxPSVersion_DX9, m_nMaxPSVersion_ConfigPanel);
 
-        // to allow them to override:
+        // To allow users to override.
         m_nMaxPSVersion = m_nMaxPSVersion_ConfigPanel;
     }
 
-    /*
-       Auto mode: do a check against a few known, *SLOW* DX9/ps_2_0 cards to see
-        if we should run them without pixel shaders instead.
-       Here is valve's list of the cards they run DX8 on (mostly because they're too slow under DX9 + ps_2_0):
-            NVIDIA GeForce FX 5200  31.12%
-            ATI Radeon 9200         21.29%
-            NVIDIA GeForce FX 5500  11.27%
-            NVIDIA GeForce4          7.74%
-            NVIDIA GeForce FX 5700   7.12%
-            NVIDIA GeForce FX 5600   5.16%
-            SiS 661FX_760_741        3.34%
-            NVIDIA GeForce FX 5900   3.24%
-            NVIDIA GeForce3          2.09%
-            ATI Radeon 9000          1.98%
-            other                    5.66%
-            [ from http://www.steampowered.com/status/survey.html ]
-            see also: 
-                http://en.wikipedia.org/wiki/Radeon
-                http://en.wikipedia.org/wiki/Geforce_fx
-    */
-
     const char* szGPU = GetDriverDescription();
-    /* known examples of this string:
-        "ATI MOBILITY RADEON X600"
-        "RADEON X800 Series   "     <- note the spaces at the end
-        "Sapphire RADEON X700"
-        "NVIDIA GeForce Go 6200  "  <- note the spaces at the end
-        "NVIDIA GeForce 6800 GT"
-        "Intel(R) 82865G Graphics Controller"
-        "Mobile Intel(R) 915GM/GMS,910GML Express Chipset Family"
-
-		might want to consider adding these to the list: [from http://www.intel.com/support/graphics/sb/cs-014257.htm ]
-			(...they should support PS2.0, but not sure if they're fast...)
-        "Mobile Intel(R) 945GM Express Chipset Family"
-        "Mobile Intel(R) 915GM/GMS,910GML Express Chipset"
-        "Intel(R) 945G Express Chipset"
-        "Intel(R) 82915G/82910GL Express Chipset Family"
-
-		or these, if they seem to be reporting that they do support ps_2_0, which would be very bogus info:
-        "Intel(R) 82865G Graphics Controller"
-        "Intel(R) 82852/82855 Graphics Controller Family"
-        "Intel(R) 82845G Graphics Controller"
-        "Intel(R) 82830M Graphics Controller"
-        "Intel(R) 82815 Graphics Controller"
-        "Intel(R) 82810 Graphics Controller"
-    */
-
     // GREY LIST - slow ps_2_0 cards
-    // In Canvas Stretch==Auto mode, for these cards, if they (claim to) run ps_2_0, 
-    //   we run at half-res (cuz they're slow).
+    // In Canvas Stretch==Auto mode, for these cards, if they (claim to) run ps_2_0,
+    //   run at half resolution (because they are slow).
     // THE GENERAL GUIDELINE HERE:
     //   It should be at least as fast as a GeForce FX 5700 or my GeForce 6200 (TC)
     //   if it's to run without stretch.
-    if (m_nCanvasStretch==0)// && m_nMaxPSVersion_DX9 > 0)
+    if (m_nCanvasStretch == 0) // && m_nMaxPSVersion_DX9 > 0)
     {
-        // put cards on this list if you see them successfully run ps_2_0 (using override) 
+        // put cards on this list if you see them successfully run ps_2_0 (using override)
         // and they run well at a low resolution (512x512 or less).
-        if (
-            strstr(szGPU, "GeForce 4"       ) ||    // probably not even ps_2_0
-            strstr(szGPU, "GeForce FX 52"   ) ||    // chip's computer (FX 5200) - does do ps_2_0, but slow
-            strstr(szGPU, "GeForce FX 53"   ) ||    
-            strstr(szGPU, "GeForce FX 54"   ) ||    
-            strstr(szGPU, "GeForce FX 55"   ) ||   //GeForce FX 5600 is 13 GB/s - 2.5x as fast as my 6200! 
-            strstr(szGPU, "GeForce FX 56"   ) ||  
-             //...GeForce FX 5700 and up, we let those run at full-res on ps_2_0...
-            strstr(szGPU, "GeForce FX 56"   ) ||  
-            strstr(szGPU, "GeForce FX 56"   ) ||  
-            strstr(szGPU, "SiS 300/305/630/540/730") ||    // mom's computer - just slow.
-            strstr(szGPU, "Radeon 8"   ) ||    // no shader model 2.
-            strstr(szGPU, "Radeon 90"  ) ||    // from Valve.  no shader model 2.
-            strstr(szGPU, "Radeon 91"  ) ||    // no shader model 2.
-            strstr(szGPU, "Radeon 92"  ) ||    // from Valve.  no shader model 2.
-            strstr(szGPU, "Radeon 93"  ) ||    // no shader model 2.
-            strstr(szGPU, "Radeon 94"  ) ||    // no shader model 2.  
-            // guessing that 9500+ are ok - they're all ps_2_0 and the 9600 is like an FX 5900.  
-            strstr(szGPU, "Radeon 9550") ||  // *maybe* - kiv - super budget R200 chip.  def. ps_2_0 but possibly very slow.  
-            strstr(szGPU, "Radeon X300") ||  // *maybe* - kiv - super budget R200 chip   def. ps_2_0 but possibly very slow.
+        if (strstr(szGPU, "GeForce 4") ||     // probably not even ps_2_0
+            strstr(szGPU, "GeForce FX 52") || // chip's computer (FX 5200) - does do ps_2_0, but slow
+            strstr(szGPU, "GeForce FX 53") ||
+            strstr(szGPU, "GeForce FX 54") ||
+            strstr(szGPU, "GeForce FX 55") ||           // GeForce FX 5600 is 13 GB/s - 2.5x as fast as my 6200!
+            strstr(szGPU, "GeForce FX 56") ||           //...GeForce FX 5700 and up, let those run at full resolution on ps_2_0...
+            strstr(szGPU, "SiS 300/305/630/540/730") || // mom's computer - just slow.
+            strstr(szGPU, "Radeon 8") ||                // no shader model 2.
+            strstr(szGPU, "Radeon 90") ||               // from Valve.  no shader model 2.
+            strstr(szGPU, "Radeon 91") ||               // no shader model 2.
+            strstr(szGPU, "Radeon 92") ||               // from Valve.  no shader model 2.
+            strstr(szGPU, "Radeon 93") ||               // no shader model 2.
+            strstr(szGPU, "Radeon 94") ||               // no shader model 2.
+            // guessing that 9500+ are ok - they're all ps_2_0 and the 9600 is like an FX 5900.
+            strstr(szGPU, "Radeon 9550") || // *maybe* - kiv - super budget R200 chip.  def. ps_2_0 but possibly very slow.
+            strstr(szGPU, "Radeon X300") || // *maybe* - kiv - super budget R200 chip   def. ps_2_0 but possibly very slow.
             0)
         {
-            nNewCanvasStretch = 200;        
+            nNewCanvasStretch = 200;
         }
     }
-
-    /*                           pix pipes
-                               core    Fill(G)  membw(GB/s)  
-        Radeon 9600 Pro	        400	 4	1.6	     9.6
-        Radeon 9600 XT	        500	 4	2.0	     9.6
-        GeForce FX 5600 Ultra	400	 4	1.6	    12.8
-        GeForce FX 5700 Ultra	475	 4	1.9	    14.4
-        GeForce FX 5900 XT	    400	 4	1.6	    22.4
-        GeForce FX 5900	        450	 4	1.8	    27.2
-        GeForce FX 5950 Ultra 	475  4  2.9     30
-        GeForce 6200 TC-32 	    350  4  1.1      5.6 (TurboDonkey)
-        GeForce 6600 GT 	    500  8  2.0     16
-        GeForce 6800 Ultra 	    400 16  6.4     35
-        ATI Radeon X800 XT PE 	520 16  8.3     36
-        ATI Radeon X850 XT PE   540 16  8.6     38
-
-        Entry-level GPU 	5200, 5300, 5500
-        Mid-Range GPU 	    5600, 5700
-        High-end GPU 	    5800, 5900, 5950
-
-        Entry-level GPU 	6200, 6500
-        Mid-Range GPU 	    6600
-        High-end GPU 	    6800
-        
-        Entry-level GPU 	
-        Mid-Range GPU 	    
-        High-end GPU 	    
-    
-        R200: only ps_1_4.  Radeon 8500-9250.
-        R300: ps_2_0.       Radeon 9500-9800, X300-X600, X1050.  9600 fast enough (~FX5900).  9500/9700 ~ GeForce 4 Ti.
-        R420: ps_2_0        Radeon X700-8750 - ALL FAST ENOUGH.  X700 is same speed as a GeForce 6600.
-
-        6600		    ~	X700
-        GeForce 4		<	X300 / X600 / 9600
-        GeForce 4 Ti	>	Radeon 8500
-        FX 5900		    =	Radeon 9600
-        FX 5900 Ultra	<< [half]	Radeon 9800 Pro
-        GeForce FX		<	Radeon 9700/9800
-    */
 
     // BLACK LIST
     // In Pixel Shaders==Auto mode, for these cards, we avoid ps_2_0 completely.
     // There shouldn't be much on this list... feel free to put anything you KNOW doesn't do ps_2_0 (why not),
     // and to put anything that is slow to begin with, and HAS BUGGY DRIVERS (INTEL).
-    if (m_nMaxPSVersion_ConfigPanel==-1) 
+    if (m_nMaxPSVersion_ConfigPanel == -1)
     {
-        if (strstr(szGPU, "GeForce2"     ) ||    // from Valve
-            strstr(szGPU, "GeForce3"     ) ||    // from Valve
-            strstr(szGPU, "GeForce4"     ) ||    // from Valve
-            strstr(szGPU, "Radeon 7"     ) ||    // from Valve
-            strstr(szGPU, "Radeon 8"     ) ||    
-            strstr(szGPU, "SiS 661FX_760_741") ||    // from Valve
-                //FOR NOW, FOR THESE, ASSUME INTEL EITHER DOESN'T DO PS_2_0, 
-                //OR DRIVERS SUCK AND IT WOULDN'T WORK ANYWAY!
-                (strstr(szGPU,"Intel") && strstr(szGPU,"945G")) ||
-                (strstr(szGPU,"Intel") && strstr(szGPU,"915G")) ||  // ben allison's laptop - snow, freezing when you try ps_2_0
-                (strstr(szGPU,"Intel") && strstr(szGPU,"910G")) ||
-            (strstr(szGPU,"Intel") && strstr(szGPU,"8291")) ||     // gonna guess that this supports ps_2_0 but is SLOW
-            (strstr(szGPU,"Intel") && strstr(szGPU,"8281")) ||     // definitely DOESN'T support pixel shaders
-            (strstr(szGPU,"Intel") && strstr(szGPU,"8283")) ||     // definitely DOESN'T support pixel shaders
-            (strstr(szGPU,"Intel") && strstr(szGPU,"8284")) ||     // definitely DOESN'T support pixel shaders
-            (strstr(szGPU,"Intel") && strstr(szGPU,"8285")) ||     // definitely DOESN'T support pixel shaders
-            (strstr(szGPU,"Intel") && strstr(szGPU,"8286")) ||     // definitely DOESN'T support pixel shaders.  Ben Allison's desktop (865) - no image w/ps_2_0.  Plus Nes's desktop - no ps_2_0.
-            0) 
+        if (strstr(szGPU, "GeForce2") ||          // from Valve
+            strstr(szGPU, "GeForce3") ||          // from Valve
+            strstr(szGPU, "GeForce4") ||          // from Valve
+            strstr(szGPU, "Radeon 7") ||          // from Valve
+            strstr(szGPU, "Radeon 8") ||
+            strstr(szGPU, "SiS 661FX_760_741") || // from Valve
+            // FOR NOW, FOR THESE, ASSUME INTEL EITHER DOESN'T DO PS_2_0,
+            // OR DRIVERS SUCK AND IT WOULDN'T WORK ANYWAY!
+            (strstr(szGPU, "Intel") && strstr(szGPU, "945G")) ||
+            (strstr(szGPU, "Intel") && strstr(szGPU, "915G")) || // ben allison's laptop - snow, freezing when you try ps_2_0
+            (strstr(szGPU, "Intel") && strstr(szGPU, "910G")) ||
+            (strstr(szGPU, "Intel") && strstr(szGPU, "8291")) || // gonna guess that this supports ps_2_0 but is SLOW
+            (strstr(szGPU, "Intel") && strstr(szGPU, "8281")) || // definitely DOESN'T support pixel shaders
+            (strstr(szGPU, "Intel") && strstr(szGPU, "8283")) || // definitely DOESN'T support pixel shaders
+            (strstr(szGPU, "Intel") && strstr(szGPU, "8284")) || // definitely DOESN'T support pixel shaders
+            (strstr(szGPU, "Intel") && strstr(szGPU, "8285")) || // definitely DOESN'T support pixel shaders
+            (strstr(szGPU, "Intel") && strstr(szGPU, "8286")) || // definitely DOESN'T support pixel shaders.  Ben Allison's desktop (865) - no image w/ps_2_0.  Plus Nes's desktop - no ps_2_0.
+            0)
         {
             m_nMaxPSVersion = MD2_PS_NONE;
             //if (m_nCanvasStretch==0)
-            //    nNewCanvasStretch = 100;        
+            //    nNewCanvasStretch = 100;
         }
     }
-
-    /*char fname[512];
-    sprintf(fname, "%s%s", GetPluginsDirPath(), TEXTURE_NAME);
-    if (D3DXCreateTextureFromFile(GetDevice(), fname, &m_object_tex) != S_OK)
-    {
-        // just give a warning, and move on
-        m_object_tex = NULL;    // (make sure pointer wasn't mangled by some bad driver)
-
-        char msg[1024];
-        sprintf(msg, "Unable to load texture:\r%s", fname);
-        MessageBox(GetPluginWindow(), msg, "WARNING", MB_OK|MB_SETFOREGROUND|MB_TOPMOST);
-        //return false;
-    }*/
-
-    // Note: this code used to be in OnResizeGraphicsWindow().
 
     // SHADERS
     //-------------------------------------
@@ -1181,9 +993,9 @@ int CPlugin::AllocateMyDX9Stuff()
 		    return false;
 		}*/
 
-		// Load the FALLBACK shaders...
-		if (!RecompilePShader(m_szDefaultWarpPShaderText, &m_fallbackShaders_ps.warp, SHADER_WARP, true, 2))
-		{
+        // Load the FALLBACK shaders...
+        if (!RecompilePShader(m_szDefaultWarpPShaderText, &m_fallbackShaders_ps.warp, SHADER_WARP, true, 2))
+        {
 /*
 			wchar_t szSM[64];
 			switch(m_nMaxPSVersion_DX9)
@@ -1203,15 +1015,15 @@ int CPlugin::AllocateMyDX9Stuff()
 				swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT),szSM,PSVersion);
 			dumpmsg(buf); 
 			MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );*/
-			return false;
-		}
-		if (!RecompileVShader(m_szDefaultWarpVShaderText, &m_fallbackShaders_vs.warp, SHADER_WARP, true))
-		{
+            return false;
+        }
+        if (!RecompileVShader(m_szDefaultWarpVShaderText, &m_fallbackShaders_vs.warp, SHADER_WARP, true))
+        {
 /*
 			WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_WV_SHADER,buf,sizeof(buf));
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );*/
-		    return false;
+            return false;
         }
         if (!RecompileVShader(m_szDefaultCompVShaderText, &m_fallbackShaders_vs.comp, SHADER_COMP, true))
         {
@@ -1220,7 +1032,7 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf);
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		    return false;
+            return false;
         }
         if (!RecompilePShader(m_szDefaultCompPShaderText, &m_fallbackShaders_ps.comp, SHADER_COMP, true, 2))
         {
@@ -1229,7 +1041,7 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		    return false;
+            return false;
         }
 
         // Load the BLUR shaders...
@@ -1240,7 +1052,7 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		    return false;
+            return false;
         }
         if (!RecompilePShader(m_szBlurPSX, &m_BlurShaders[0].ps, SHADER_BLUR, true, 2))
         {
@@ -1249,7 +1061,7 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		    return false;
+            return false;
         }
         if (!RecompileVShader(m_szBlurVS, &m_BlurShaders[1].vs, SHADER_BLUR, true))
         {
@@ -1258,7 +1070,7 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		    return false;
+            return false;
         }
         if (!RecompilePShader(m_szBlurPSY, &m_BlurShaders[1].ps, SHADER_BLUR, true, 2))
         {
@@ -1267,34 +1079,34 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		    return false;
+            return false;
         }
     }
 
-	// create m_lpVS[2] 
+    // Create `m_lpVS[2]`.
     {
         int log2texsize = GetNearestPow2Size(GetWidth(), GetHeight());
 
-        // auto-guess texsize
-	    if (m_bTexSizeWasAutoExact)
-		{
-            // note: in windowed mode, the winamp window could be weird sizes, 
-            //        so the plugin shell now gives us a slightly enlarged size,
-            //        which pads it out to the nearest 32x32 block size,
-            //        and then on display, it intelligently crops the image.
+        // Auto-guess texsize.
+        if (m_bTexSizeWasAutoExact)
+        {
+            // Note: In windowed mode, the winamp window could be weird sizes,
+            //       so the plugin shell now gives us a slightly enlarged size,
+            //       which pads it out to the nearest 32x32 block size,
+            //       and then on display, it intelligently crops the image.
             //       This is pretty likely to work on non-shitty GPUs.
-            //        but some shitty ones will still only do powers of 2!
-            //       So if we are running out of video memory here or experience 
-            //        other problems, though, we can make our VS's smaller;
-            //        which will work, although it will lead to stretching.
-			m_nTexSizeX = GetWidth();
+            //       but some shitty ones will still only do powers of 2!
+            //       So if we are running out of video memory here or experience
+            //       other problems, though, we can make our VS's smaller;
+            //       which will work, although it will lead to stretching.
+            m_nTexSizeX = GetWidth();
             m_nTexSizeY = GetHeight();
-		}
+        }
         else if (m_bTexSizeWasAutoPow2)
-	    {
-		    m_nTexSizeX = log2texsize;
-			m_nTexSizeY = log2texsize;
-	    }
+        {
+            m_nTexSizeX = log2texsize;
+            m_nTexSizeY = log2texsize;
+        }
 
 	    // clip texsize by max. from caps
 	    /*if ((DWORD)m_nTexSizeX > GetCaps()->MaxTextureWidth && GetCaps()->MaxTextureWidth>0)
@@ -1302,92 +1114,90 @@ int CPlugin::AllocateMyDX9Stuff()
 	    if ((DWORD)m_nTexSizeY > GetCaps()->MaxTextureHeight && GetCaps()->MaxTextureHeight>0)
 		    m_nTexSizeY = GetCaps()->MaxTextureHeight;*/
 
-        // apply canvas stretch
-        m_nTexSizeX = (m_nTexSizeX * 100)/nNewCanvasStretch;
-        m_nTexSizeY = (m_nTexSizeY * 100)/nNewCanvasStretch;
+        // Apply canvas stretch.
+        m_nTexSizeX = (m_nTexSizeX * 100) / nNewCanvasStretch;
+        m_nTexSizeY = (m_nTexSizeY * 100) / nNewCanvasStretch;
 
-        // re-compute closest power-of-2 size, now that we've factored in the stretching...
+        // Re-compute closest power-of-2 size, now that we've factored in the stretching...
         log2texsize = GetNearestPow2Size(m_nTexSizeX, m_nTexSizeY);
         if (m_bTexSizeWasAutoPow2)
-	    {
-		    m_nTexSizeX = log2texsize;
-			m_nTexSizeY = log2texsize;
-	    }
-	    
-        // snap to 16x16 blocks
-        // TODO DX11 or use own zBuffer
-        //m_nTexSizeX = ((m_nTexSizeX+15)/16)*16;
-        //m_nTexSizeY = ((m_nTexSizeY+15)/16)*16;
+        {
+            m_nTexSizeX = log2texsize;
+            m_nTexSizeY = log2texsize;
+        }
 
-		// determine format for VS1/VS2
-		DXGI_FORMAT fmt;
-		switch(m_nTexBitsPerCh) {
-		  //case 5:  fmt = D3DFMT_R5G6B5   ; break;
-		  case 8:  fmt = DXGI_FORMAT_B8G8R8A8_UNORM /*D3DFMT_X8R8G8B8*/ ; break;
-		  //case 10: fmt = D3DFMT_A2R10G10B10; break;  // D3DFMT_A2W10V10U10 or D3DFMT_A2R10G10B10 or D3DFMT_A2B10G10R10
-		  //case 16: fmt = D3DFMT_A16B16G16R16F; break; 
-		  //case 32: fmt = D3DFMT_A32B32G32R32F; break; //FIXME
-      default: fmt = DXGI_FORMAT_B8G8R8A8_UNORM /*D3DFMT_X8R8G8B8*/; break;
-		}
+        // Snap to 16x16 blocks.
+        // TODO: DX11 or use own zBuffer.
 
-	    // reallocate
-	    bool bSuccess = false;
+        // Determine format for VS1/VS2.
+        DXGI_FORMAT fmt;
+        switch (m_nTexBitsPerCh)
+        {
+		    //case 5:  fmt = D3DFMT_R5G6B5   ; break;
+            case 8: fmt = DXGI_FORMAT_B8G8R8A8_UNORM; break;
+		    //case 10: fmt = D3DFMT_A2R10G10B10; break;  // D3DFMT_A2W10V10U10 or D3DFMT_A2R10G10B10 or D3DFMT_A2B10G10R10
+		    //case 16: fmt = D3DFMT_A16B16G16R16F; break; 
+		    //case 32: fmt = D3DFMT_A32B32G32R32F; break; //FIXME
+            default: fmt = DXGI_FORMAT_B8G8R8A8_UNORM; break;
+        }
+
+        // Reallocate.
+        bool bSuccess = false;
         //DWORD vs_flags = D3DUSAGE_RENDERTARGET;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
         DWORD vs_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
         bool bRevertedBitDepth = false;
-	    do
-	    {
-		    SafeRelease(m_lpVS[0]);
-		    SafeRelease(m_lpVS[1]);
+        do
+        {
+            SafeRelease(m_lpVS[0]);
+            SafeRelease(m_lpVS[1]);
 
-		    // create VS1
+            // Create VS1.
             bSuccess = (GetDevice()->CreateTexture(m_nTexSizeX, m_nTexSizeY, 1, vs_flags, fmt, &m_lpVS[0]));
-			if (!bSuccess) 
-			{
-        bSuccess = (GetDevice()->CreateTexture(m_nTexSizeX, m_nTexSizeY, 1, vs_flags, DXGI_FORMAT_B8G8R8A8_UNORM, &m_lpVS[0]));
-				if (bSuccess)
-          fmt = DXGI_FORMAT_B8G8R8A8_UNORM /*GetBackBufFormat()*/;
-			}
+            if (!bSuccess)
+            {
+                bSuccess = (GetDevice()->CreateTexture(m_nTexSizeX, m_nTexSizeY, 1, vs_flags, DXGI_FORMAT_B8G8R8A8_UNORM, &m_lpVS[0]));
+                if (bSuccess)
+                    fmt = DXGI_FORMAT_B8G8R8A8_UNORM /* TODO: DX11 GetBackBufFormat() */;
+            }
 
-			// create VS2
-			if (bSuccess)
+            // Create VS2
+            if (bSuccess)
                 bSuccess = (GetDevice()->CreateTexture(m_nTexSizeX, m_nTexSizeY, 1, vs_flags, fmt, &m_lpVS[1]));
 
-			if (!bSuccess) 
-			{
-				if (m_bTexSizeWasAutoExact) 
-				{
-                    if (m_nTexSizeX > 256 || m_nTexSizeY > 256) 
+            if (!bSuccess)
+            {
+                if (m_bTexSizeWasAutoExact)
+                {
+                    if (m_nTexSizeX > 256 || m_nTexSizeY > 256)
                     {
                         m_nTexSizeX /= 2;
                         m_nTexSizeY /= 2;
-                        m_nTexSizeX = ((m_nTexSizeX+15)/16)*16;
-                        m_nTexSizeY = ((m_nTexSizeY+15)/16)*16;
+                        m_nTexSizeX = ((m_nTexSizeX + 15) / 16) * 16;
+                        m_nTexSizeY = ((m_nTexSizeY + 15) / 16) * 16;
                     }
                     else
                     {
-					    m_nTexSizeX = log2texsize;
-					    m_nTexSizeY = log2texsize;
+                        m_nTexSizeX = log2texsize;
+                        m_nTexSizeY = log2texsize;
                         m_bTexSizeWasAutoExact = false;
-					    m_bTexSizeWasAutoPow2 = true;
+                        m_bTexSizeWasAutoPow2 = true;
                     }
                 }
-				else if (m_bTexSizeWasAutoPow2) 
-				{
-                    if (m_nTexSizeX > 256) 
+                else if (m_bTexSizeWasAutoPow2)
+                {
+                    if (m_nTexSizeX > 256)
                     {
-				        m_nTexSizeX /= 2;
-				        m_nTexSizeY /= 2;
+                        m_nTexSizeX /= 2;
+                        m_nTexSizeY /= 2;
                     }
                     else
                         break;
-				}
-			}
-	    }
-	    while (!bSuccess);// && m_nTexSizeX >= 256 && (m_bTexSizeWasAutoExact || m_bTexSizeWasAutoPow2));
+                }
+            }
+        } while (!bSuccess); // && m_nTexSizeX >= 256 && (m_bTexSizeWasAutoExact || m_bTexSizeWasAutoPow2));
 
-	    if (!bSuccess)
-	    {
+        if (!bSuccess)
+        {
 /*            wchar_t buf[2048];
 			UINT err_id = IDS_COULD_NOT_CREATE_INTERNAL_CANVAS_TEXTURE_NOT_ENOUGH_VID_MEM;
 		    if (GetScreenMode() == FULLSCREEN)
@@ -1399,52 +1209,49 @@ int CPlugin::AllocateMyDX9Stuff()
 		    dumpmsg(buf); 
 		    MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 			*/
-		    return false;
-	    }
-        else 
+            return false;
+        }
+        else
         {
 //             swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SUCCESSFULLY_CREATED_VS0_VS1), m_nTexSizeX, m_nTexSizeY, GetWidth(), GetHeight());
 //             dumpmsg(buf);
         }
 
-	    /*
-        if (m_nTexSizeX != GetWidth() || m_nTexSizeY != GetHeight())
-	    {
-            char buf[2048];
-		    sprintf(buf, "warning - canvas size adjusted from %dx%d to %dx%d.", GetWidth(), GetHeight(), m_nTexSizeX, m_nTexSizeY);
-		    dumpmsg(buf);
+        /* if (m_nTexSizeX != GetWidth() || m_nTexSizeY != GetHeight())
+        {
+            swprintf_s(buf, "warning - canvas size adjusted from %dx%d to %dx%d.", GetWidth(), GetHeight(), m_nTexSizeX, m_nTexSizeY);
+            dumpmsg(buf);
             AddError(buf, 3.2f, ERR_INIT, true);
-	    }/**/
+        } */
 
-        // create blur textures w/same format.  A complete mip chain costs 33% more video mem then 1 full-sized VS.
-        #if (NUM_BLUR_TEX>0)
-            int w = m_nTexSizeX;
-            int h = m_nTexSizeY;
-            //DWORD blurtex_flags = D3DUSAGE_RENDERTARGET;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
-            DWORD blurtex_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-            for (int i = 0; i<NUM_BLUR_TEX; i++)
+        // Create blur textures with same format. A complete MIP chain costs 33% more video memory than 1 full-sized VS.
+#if (NUM_BLUR_TEX > 0)
+        int w = m_nTexSizeX;
+        int h = m_nTexSizeY;
+        DWORD blurtex_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        for (int i = 0; i < NUM_BLUR_TEX; i++)
+        {
+            // Main VS = 1024
+            // blur0 = 512
+            // blur1 = 256  <-  user sees this as "blur1"
+            // blur2 = 128
+            // blur3 = 128  <-  user sees this as "blur2"
+            // blur4 =  64
+            // blur5 =  64  <-  user sees this as "blur3"
+            if (!(i & 1) || (i < 2))
             {
-                // main VS = 1024
-                // blur0 = 512
-                // blur1 = 256  <-  user sees this as "blur1"
-                // blur2 = 128
-                // blur3 = 128  <-  user sees this as "blur2"
-                // blur4 =  64
-                // blur5 =  64  <-  user sees this as "blur3"
-                if (!(i&1) || (i<2))     
-                {
-                    w = std::max(16, w / 2);
-                    h = std::max(16, h / 2);
-                }
-                int w2 = ((w+3)/16)*16;
-                int h2 = ((h+3)/4)*4;
-                bSuccess = (GetDevice()->CreateTexture(w2, h2, 1, blurtex_flags, fmt, &m_lpBlur[i]));
-                m_nBlurTexW[i] = w2;
-                m_nBlurTexH[i] = h2;
-                if (!bSuccess) 
-                {
-                    m_nBlurTexW[i] = 1;
-                    m_nBlurTexH[i] = 1;
+                w = std::max(16, w / 2);
+                h = std::max(16, h / 2);
+            }
+            int w2 = ((w + 3) / 16) * 16;
+            int h2 = ((h + 3) / 4) * 4;
+            bSuccess = (GetDevice()->CreateTexture(w2, h2, 1, blurtex_flags, fmt, &m_lpBlur[i]));
+            m_nBlurTexW[i] = w2;
+            m_nBlurTexH[i] = h2;
+            if (!bSuccess)
+            {
+                m_nBlurTexW[i] = 1;
+                m_nBlurTexH[i] = 1;
 /*
 			        MessageBoxW(GetPluginWindow(), WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_BLUR_TEXTURES,buf,sizeof(buf)),
 							   WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_WARNING,title,sizeof(title)), MB_OK|MB_SETFOREGROUND|MB_TOPMOST);
@@ -1478,7 +1285,7 @@ int CPlugin::AllocateMyDX9Stuff()
     // BUILD VERTEX LIST for final composite blit
 	//   note the +0.5-texel offset! 
 	//   (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
-	ZeroMemory(m_comp_verts, sizeof(MYVERTEX)*FCGSX*FCGSY);
+	ZeroMemory(m_comp_verts, sizeof(MDVERTEX) * FCGSX * FCGSY);
 	//float fOnePlusInvWidth  = 1.0f + 1.0f/(float)GetWidth();
 	//float fOnePlusInvHeight = 1.0f + 1.0f/(float)GetHeight();
     float fHalfTexelW = 0.5f / static_cast<float>(std::max(1, GetWidth())); // 2.5: 2 pixels bad @ bottom right
@@ -1497,7 +1304,7 @@ int CPlugin::AllocateMyDX9Stuff()
             float u = i2*fDivX;
             u = SquishToCenter(u, 3.0f);
             float sx = (u-fHalfTexelW)*2-1;//fOnePlusInvWidth*u*2-1;
-            MYVERTEX* p = &m_comp_verts[i + j*FCGSX];
+            MDVERTEX* p = &m_comp_verts[i + j*FCGSX];
             p->x = sx;
             p->y = sy;
             p->z = 0;
@@ -1629,7 +1436,7 @@ int CPlugin::AllocateMyDX9Stuff()
 		// (m_lpDDSTitle[1]), then we blit that (once) to the DDSCAPS_TEXTURE surface 
 		// (m_lpDDSTitle[0]), which can then be drawn onto the screen on polys.
 
-        HRESULT hr;
+        //HRESULT hr;
         bool bSuccess;
 		do
 		{
@@ -1670,8 +1477,8 @@ int CPlugin::AllocateMyDX9Stuff()
     m_texmgr.Init(GetDevice());
 
 	//dumpmsg("Init: mesh allocation");
-	m_verts      = new MYVERTEX[(m_nGridX+1)*(m_nGridY+1)];
-	m_verts_temp = new MYVERTEX[(m_nGridX+2) * 4];
+	m_verts      = new MDVERTEX[(m_nGridX+1)*(m_nGridY+1)];
+	m_verts_temp = new MDVERTEX[(m_nGridX+2) * 4];
 	m_vertinfo   = new td_vertinfo[(m_nGridX+1)*(m_nGridY+1)];
 	m_indices_strip = new int[(m_nGridX+2)*(m_nGridY*2)];
 	m_indices_list  = new int[m_nGridX*m_nGridY*6];
@@ -1844,14 +1651,13 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     //           2 = smoothed (interp)
     //           4/8/16... = cubic interp.
 
-    wchar_t buf[2048], title[64];
+    //wchar_t buf[2048], title[64];
     D3D11Shim* lpDevice = GetDevice();
 
     // Synthesize noise texture(s)
     ID3D11Texture2D *pNoiseTex = NULL, *pStaging = NULL;
     // try twice - once with mips, once without.
-    int i;
-    //for (i=0; i<2; i++) 
+    //for (int i=0; i<2; i++) 
     {
         if (!lpDevice->CreateTexture(size, size, 1, D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_R8G8B8A8_UNORM, &pNoiseTex, 0, D3D11_USAGE_DYNAMIC))
         {
@@ -1885,35 +1691,36 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
 		return false;
     }
 
-    if (r.RowPitch < size*4)
+    if (r.RowPitch < (unsigned)(size * 4))
     {
 /*
 		WASABI_API_LNGSTRINGW_BUF(IDS_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED,buf,sizeof(buf));
 		dumpmsg(buf); 
 		MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		return false;
+        return false;
     }
 
-    // write to the bits...
+    // Write to the bits...
     DWORD* dst = (DWORD*)r.pData;
     int dwords_per_line = r.RowPitch / sizeof(DWORD);
     int RANGE = (zoom_factor > 1) ? 216 : 256;
-    for (int y=0; y<size; y++) {
+    for (int y = 0; y < size; y++)
+    {
         LARGE_INTEGER q;
         QueryPerformanceCounter(&q);
         srand(q.LowPart ^ q.HighPart ^ warand());
-		int x;
-        for (x=0; x<size; x++) {
-            dst[x] = (((DWORD)(warand() % RANGE)+RANGE/2) << 24) | 
-                     (((DWORD)(warand() % RANGE)+RANGE/2) << 16) | 
-                     (((DWORD)(warand() % RANGE)+RANGE/2) <<  8) | 
-                     (((DWORD)(warand() % RANGE)+RANGE/2)      ); 
-        }
-        // swap some pixels randomly, to improve 'randomness'
-        for (x=0; x<size; x++) 
+        for (int x = 0; x < size; x++)
         {
-            int x1 = (warand() ^ q.LowPart ) % size;
+            dst[x] = (((DWORD)(warand() % RANGE) + RANGE / 2) << 24) |
+                     (((DWORD)(warand() % RANGE) + RANGE / 2) << 16) |
+                     (((DWORD)(warand() % RANGE) + RANGE / 2) << 8) |
+                     (((DWORD)(warand() % RANGE) + RANGE / 2));
+        }
+        // Swap some pixels randomly, to improve "randomness".
+        for (int x = 0; x < size; x++)
+        {
+            int x1 = (warand() ^ q.LowPart) % size;
             int x2 = (warand() ^ q.HighPart) % size;
             DWORD temp = dst[x2];
             dst[x2] = dst[x1];
@@ -1922,8 +1729,8 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
         dst += dwords_per_line;
     }
 
-    // smoothing
-    if (zoom_factor > 1) 
+    // Smoothing.
+    if (zoom_factor > 1)
     {
         // first go ACROSS, blending cubically on X, but only on the main lines.
         DWORD* dst = (DWORD*)r.pData;
@@ -1965,44 +1772,41 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
 
     }
 
-    // unlock texture
-    //pNoiseTex->UnlockRect(0);
+    // Unlock texture.
     lpDevice->UnlockRect(pNoiseTex, 0);
     //lpDevice->CopyResource(pNoiseTex, pStaging);
     SafeRelease(pStaging);
 
-    // add it to m_textures[].  
-    TexInfo x;  
-    wcscpy(x.texname, szTexName);
-    x.texptr  = pNoiseTex;
+    // Add it to `m_textures[]`.
+    TexInfo x;
+    wcscpy_s(x.texname, szTexName);
+    x.texptr = pNoiseTex;
     //x.texsize_param = NULL;
     x.w = size;
     x.h = size;
     x.d = 1;
-    x.bEvictable    = false;
-    x.nAge          = m_nPresetsLoadedTotal;
-    x.nSizeInBytes  = 0;
+    x.bEvictable = false;
+    x.nAge = m_nPresetsLoadedTotal;
+    x.nSizeInBytes = 0;
     m_textures.push_back(x);
 
     return true;
 }
 
+// size = width and height and depth of the texture;
+// zoom_factor = how zoomed-in the texture features should be.
+//   1 = random noise
+//   2 = smoothed (interp)
+//   4/8/16... = cubic interp.
 bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
 {
-    // size = width & height & depth of the texture; 
-    // zoom_factor = how zoomed-in the texture features should be.
-    //           1 = random noise
-    //           2 = smoothed (interp)
-    //           4/8/16... = cubic interp.
-
-    wchar_t buf[2048], title[64];
+    //wchar_t buf[2048], title[64];
     D3D11Shim* lpDevice = GetDevice();
     // Synthesize noise texture(s)
     ID3D11Texture3D* pNoiseTex = NULL, *pStaging = NULL;
     // try twice - once with mips, once without.
     // NO, TRY JUST ONCE - DX9 doesn't do auto mipgen w/volume textures.  (Debug runtime complains.)
-    int i;
-    //for (i=1; i<2; i++) 
+    //for (int i=1; i<2; i++) 
     {
         //if (D3D_OK != GetDevice()->CreateVolumeTexture(size, size, size, i, D3DUSAGE_DYNAMIC | (i ? 0 : D3DUSAGE_AUTOGENMIPMAP), D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pNoiseTex, NULL))
         if (!GetDevice()->CreateVolumeTexture(size, size, size, 1, D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_R8G8B8A8_UNORM, &pNoiseTex, 0, D3D11_USAGE_DYNAMIC))
@@ -2035,36 +1839,39 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
 */
 		return false;
     }
-    if (r.RowPitch < size*4 || r.DepthPitch < size*size*4)
+    if (r.RowPitch < (unsigned)(size * 4) || r.DepthPitch < (unsigned)(size * size * 4))
     {
 /*
 		WASABI_API_LNGSTRINGW_BUF(IDS_3D_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED,buf,sizeof(buf));
 		dumpmsg(buf); 
 		MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		return false;
+        return false;
     }
-    // write to the bits...
+
+    // Write to the bits...
     int dwords_per_slice = r.DepthPitch / sizeof(DWORD);
     int dwords_per_line = r.RowPitch / sizeof(DWORD);
     int RANGE = (zoom_factor > 1) ? 216 : 256;
-    for (int z=0; z<size; z++) {
-        DWORD* dst = (DWORD*)r.pData + z*dwords_per_slice;
-        for (int y=0; y<size; y++) {
+    for (int z = 0; z < size; z++)
+    {
+        DWORD* dst = (DWORD*)r.pData + z * dwords_per_slice;
+        for (int y = 0; y < size; y++)
+        {
             LARGE_INTEGER q;
             QueryPerformanceCounter(&q);
             srand(q.LowPart ^ q.HighPart ^ warand());
-			int x;
-            for (x=0; x<size; x++) {
-                dst[x] = (((DWORD)(warand() % RANGE)+RANGE/2) << 24) | 
-                         (((DWORD)(warand() % RANGE)+RANGE/2) << 16) | 
-                         (((DWORD)(warand() % RANGE)+RANGE/2) <<  8) | 
-                         (((DWORD)(warand() % RANGE)+RANGE/2)      ); 
+            for (int x = 0; x < size; x++)
+            {
+                dst[x] = (((DWORD)(warand() % RANGE) + RANGE / 2) << 24) |
+                         (((DWORD)(warand() % RANGE) + RANGE / 2) << 16) |
+                         (((DWORD)(warand() % RANGE) + RANGE / 2) << 8) |
+                         (((DWORD)(warand() % RANGE) + RANGE / 2));
             }
             // swap some pixels randomly, to improve 'randomness'
-            for (x=0; x<size; x++) 
+            for (int x = 0; x < size; x++)
             {
-                int x1 = (warand() ^ q.LowPart ) % size;
+                int x1 = (warand() ^ q.LowPart) % size;
                 int x2 = (warand() ^ q.HighPart) % size;
                 DWORD temp = dst[x2];
                 dst[x2] = dst[x1];
@@ -2074,118 +1881,118 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
         }
     }
 
-    // smoothing
-    if (zoom_factor > 1) 
+    // Smoothing.
+    if (zoom_factor > 1)
     {
-        // first go ACROSS, blending cubically on X, but only on the main lines.
+        // First go ACROSS, blending cubically on X, but only on the main lines.
         DWORD* dst = (DWORD*)r.pData;
-		int z;
-        for (z=0; z<size; z+=zoom_factor)
-            for (int y=0; y<size; y+=zoom_factor)
-                for (int x=0; x<size; x++) 
+        for (int z = 0; z < size; z += zoom_factor)
+            for (int y = 0; y < size; y += zoom_factor)
+                for (int x = 0; x < size; x++)
                     if (x % zoom_factor)
                     {
-                        int base_x = (x/zoom_factor)*zoom_factor + size;
-                        int base_y = z*dwords_per_slice + y*dwords_per_line;
-                        DWORD y0 = dst[ base_y + ((base_x - zoom_factor  ) % size) ];
-                        DWORD y1 = dst[ base_y + ((base_x                ) % size) ];
-                        DWORD y2 = dst[ base_y + ((base_x + zoom_factor  ) % size) ];
-                        DWORD y3 = dst[ base_y + ((base_x + zoom_factor*2) % size) ];
+                        int base_x = (x / zoom_factor) * zoom_factor + size;
+                        int base_y = z * dwords_per_slice + y * dwords_per_line;
+                        DWORD y0 = dst[base_y + ((base_x - zoom_factor) % size)];
+                        DWORD y1 = dst[base_y + ((base_x) % size)];
+                        DWORD y2 = dst[base_y + ((base_x + zoom_factor) % size)];
+                        DWORD y3 = dst[base_y + ((base_x + zoom_factor * 2) % size)];
 
-                        float t = (x % zoom_factor)/(float)zoom_factor;
+                        float t = (x % zoom_factor) / (float)zoom_factor;
 
                         DWORD result = dwCubicInterpolate(y0, y1, y2, y3, t);
-                    
-                        dst[ z*dwords_per_slice + y*dwords_per_line + x ] = result;        
+
+                        dst[z * dwords_per_slice + y * dwords_per_line + x] = result;
                     }
-        
+
         // next go down, doing cubic interp along Y, on the main slices.
-        for (z=0; z<size; z+=zoom_factor)
-            for (int x=0; x<size; x++) 
-                for (int y=0; y<size; y++)
+        for (int z = 0; z < size; z += zoom_factor)
+            for (int x = 0; x < size; x++)
+                for (int y = 0; y < size; y++)
                     if (y % zoom_factor)
                     {
-                        int base_y = (y/zoom_factor)*zoom_factor + size;
-                        int base_z = z*dwords_per_slice;
-                        DWORD y0 = dst[ ((base_y - zoom_factor  ) % size)*dwords_per_line + base_z + x ];
-                        DWORD y1 = dst[ ((base_y                ) % size)*dwords_per_line + base_z + x ];
-                        DWORD y2 = dst[ ((base_y + zoom_factor  ) % size)*dwords_per_line + base_z + x ];
-                        DWORD y3 = dst[ ((base_y + zoom_factor*2) % size)*dwords_per_line + base_z + x ];
+                        int base_y = (y / zoom_factor) * zoom_factor + size;
+                        int base_z = z * dwords_per_slice;
+                        DWORD y0 = dst[((base_y - zoom_factor) % size) * dwords_per_line + base_z + x];
+                        DWORD y1 = dst[((base_y) % size) * dwords_per_line + base_z + x];
+                        DWORD y2 = dst[((base_y + zoom_factor) % size) * dwords_per_line + base_z + x];
+                        DWORD y3 = dst[((base_y + zoom_factor * 2) % size) * dwords_per_line + base_z + x];
 
-                        float t = (y % zoom_factor)/(float)zoom_factor;
+                        float t = (y % zoom_factor) / (float)zoom_factor;
 
                         DWORD result = dwCubicInterpolate(y0, y1, y2, y3, t);
-                    
-                        dst[ y*dwords_per_line + base_z + x ] = result;        
+
+                        dst[y * dwords_per_line + base_z + x] = result;
                     }
 
         // next go through, doing cubic interp along Z, everywhere.
-        for (int x=0; x<size; x++) 
-            for (int y=0; y<size; y++)
-                for (int z=0; z<size; z++)
+        for (int x = 0; x < size; x++)
+            for (int y = 0; y < size; y++)
+                for (int z = 0; z < size; z++)
                     if (z % zoom_factor)
                     {
-                        int base_y = y*dwords_per_line;
-                        int base_z = (z/zoom_factor)*zoom_factor + size;
-                        DWORD y0 = dst[ ((base_z - zoom_factor  ) % size)*dwords_per_slice + base_y + x ];
-                        DWORD y1 = dst[ ((base_z                ) % size)*dwords_per_slice + base_y + x ];
-                        DWORD y2 = dst[ ((base_z + zoom_factor  ) % size)*dwords_per_slice + base_y + x ];
-                        DWORD y3 = dst[ ((base_z + zoom_factor*2) % size)*dwords_per_slice + base_y + x ];
+                        int base_y = y * dwords_per_line;
+                        int base_z = (z / zoom_factor) * zoom_factor + size;
+                        DWORD y0 = dst[((base_z - zoom_factor) % size) * dwords_per_slice + base_y + x];
+                        DWORD y1 = dst[((base_z) % size) * dwords_per_slice + base_y + x];
+                        DWORD y2 = dst[((base_z + zoom_factor) % size) * dwords_per_slice + base_y + x];
+                        DWORD y3 = dst[((base_z + zoom_factor * 2) % size) * dwords_per_slice + base_y + x];
 
-                        float t = (z % zoom_factor)/(float)zoom_factor;
+                        float t = (z % zoom_factor) / (float)zoom_factor;
 
                         DWORD result = dwCubicInterpolate(y0, y1, y2, y3, t);
-                    
-                        dst[ z*dwords_per_slice + base_y + x ] = result;        
-                    }
 
+                        dst[z * dwords_per_slice + base_y + x] = result;
+                    }
     }
 
-    // unlock texture
-    //pNoiseTex->UnlockBox(0);
+    // Unlock texture.
     lpDevice->UnlockRect(pNoiseTex, 0);
     //lpDevice->CopyResource(pNoiseTex, pStaging);
     SafeRelease(pStaging);
 
-    // add it to m_textures[].  
-    TexInfo x;  
-    wcscpy(x.texname, szTexName);
-    x.texptr  = pNoiseTex;
+    // Add it to `m_textures[]`.
+    TexInfo x;
+    wcscpy_s(x.texname, szTexName);
+    x.texptr = pNoiseTex;
     //x.texsize_param = NULL;
     x.w = size;
     x.h = size;
     x.d = size;
-    x.bEvictable    = false;
-    x.nAge          = m_nPresetsLoadedTotal;
-    x.nSizeInBytes  = 0;
+    x.bEvictable = false;
+    x.nAge = m_nPresetsLoadedTotal;
+    x.nSizeInBytes = 0;
     m_textures.push_back(x);
 
     return true;
 }
 
-void VShaderInfo::Clear() 
-{ 
-    SafeRelease(ptr); 
-    SafeRelease(CT); 
-    params.Clear(); 
-}
-void PShaderInfo::Clear() 
-{ 
-    SafeRelease(ptr); 
-    SafeRelease(CT); 
-    params.Clear(); 
+void VShaderInfo::Clear()
+{
+    SafeRelease(ptr);
+    SafeRelease(CT);
+    params.Clear();
 }
 
-// global_CShaderParams_master_list: a master list of all CShaderParams classes in existence.
-//   ** when we evict a texture, we need to NULL out any texptrs these guys have! **
-CShaderParamsList global_CShaderParams_master_list;  
-CShaderParams::CShaderParams() {
+void PShaderInfo::Clear()
+{
+    SafeRelease(ptr);
+    SafeRelease(CT);
+    params.Clear();
+}
+
+// Global_CShaderParams_master_list: a master list of all CShaderParams classes in existence.
+// ** when we evict a texture, we need to NULL out any texptrs these guys have! **
+CShaderParamsList global_CShaderParams_master_list;
+CShaderParams::CShaderParams()
+{
     global_CShaderParams_master_list.push_back(this);
 }
 
-CShaderParams::~CShaderParams() {
-    int N = global_CShaderParams_master_list.size();
-    for (int i=0; i<N; i++)
+CShaderParams::~CShaderParams()
+{
+    size_t N = global_CShaderParams_master_list.size();
+    for (unsigned int i = 0; i < N; i++)
         if (global_CShaderParams_master_list[i] == this)
             global_CShaderParams_master_list.eraseAt(i);
     texsize_params.clear();
@@ -2193,15 +2000,15 @@ CShaderParams::~CShaderParams() {
 
 void CShaderParams::OnTextureEvict(ID3D11Resource* texptr)
 {
-    for (int i=0; i<sizeof(m_texture_bindings)/sizeof(m_texture_bindings[0]); i++)
+    for (int i = 0; i < sizeof(m_texture_bindings) / sizeof(m_texture_bindings[0]); i++)
         if (m_texture_bindings[i].texptr == texptr)
             m_texture_bindings[i].texptr = NULL;
 }
 
-void CShaderParams::Clear() 
+void CShaderParams::Clear()
 {
-    // float4 handles:
-    rand_frame  = NULL;
+    // `float4` handles.
+    rand_frame = NULL;
     rand_preset = NULL;
 
     ZeroMemory(rot_mat, sizeof(rot_mat));
@@ -2209,8 +2016,8 @@ void CShaderParams::Clear()
     ZeroMemory(q_const_handles, sizeof(q_const_handles));
     texsize_params.clear();
 
-    // sampler stages for various PS texture bindings:
-    for (int i=0; i<sizeof(m_texture_bindings)/sizeof(m_texture_bindings[0]); i++)
+    // Sampler stages for various PS texture bindings.
+    for (int i = 0; i < sizeof(m_texture_bindings) / sizeof(m_texture_bindings[0]); i++)
     {
         m_texture_bindings[i].texptr = NULL;
         m_texcode[i] = TEX_DISK;
@@ -2944,7 +2751,7 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
     }
 
     ID3DBlob* pShaderByteCode;
-    wchar_t title[64];
+    //wchar_t title[64];
     
     *ppShader = NULL;
     *ppConstTable = NULL;
@@ -3087,7 +2894,7 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
 
 	bool failed=false;
     int len = strlen(szShaderText);
-    ID3DBlob *pCode, *pErrors;
+    //ID3DBlob *pCode, *pErrors;
 #if _DEBUG
     int flags = D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY;
 #else
@@ -3195,67 +3002,62 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
     return true;
 }
 
-//----------------------------------------------------------------------
-
-void CPlugin::CleanUpMyDX9Stuff(int final_cleanup)
+// Clean up all the DX11 textures, fonts, buffers, etc...
+// EVERYTHING CREATED IN ALLOCATEMDDX11() SHOULD BE CLEANED UP HERE.
+// The input parameter, 'final_cleanup', will be 0 if this is
+// a routine cleanup (part of a window resize or switch between
+// fullscr/windowed modes), or 1 if this is the final cleanup
+// and the plugin is exiting.  Note that even if it is a routine
+// cleanup, *you still have to release ALL your DirectX stuff,
+// because the DirectX device is being destroyed and recreated!*
+// Also set all the pointers back to NULL;
+// this is important because if we go to reallocate the DX9
+// stuff later, and something fails, then CleanUp will get called,
+// but it will then be trying to clean up invalid pointers.)
+// The SafeRelease() and SafeDelete() macros make your code prettier;
+// they are defined here in "utility.h" as follows:
+//       #define SafeRelease(x) if (x) { x->Release(); x=NULL; }
+//       #define SafeDelete(x)  if (x) { delete x; x=NULL; }
+// IMPORTANT:
+// This function ISN'T only called when the plugin exits!
+// It is also called whenever the user toggles between fullscreen and
+// windowed modes, or resizes the window.  Basically, on these events,
+// the base class calls `CleanUpMilkDropDX11()` before Reset()ing the DirectX
+// device, and then calls `AllocateMilkDropDX11()` afterwards.
+// One funky thing here: if we're switching between fullscreen and windowed,
+//  or doing any other thing that causes all this stuff to get reloaded in a second,
+//  then if we were blending 2 presets, jump fully to the new preset.
+// Otherwise the old preset wouldn't get all reloaded, and it app would crash
+//  when trying to use its stuff.
+void CPlugin::CleanUpMilkDropDX11(int final_cleanup)
 {
-    // Clean up all your DX9 and D3DX textures, fonts, buffers, etc. here.
-    // EVERYTHING CREATED IN ALLOCATEMYDX9STUFF() SHOULD BE CLEANED UP HERE.
-    // The input parameter, 'final_cleanup', will be 0 if this is 
-    //   a routine cleanup (part of a window resize or switch between
-    //   fullscr/windowed modes), or 1 if this is the final cleanup
-    //   and the plugin is exiting.  Note that even if it is a routine
-    //   cleanup, *you still have to release ALL your DirectX stuff,
-    //   because the DirectX device is being destroyed and recreated!*
-    // Also set all the pointers back to NULL;
-    //   this is important because if we go to reallocate the DX9
-    //   stuff later, and something fails, then CleanUp will get called,
-    //   but it will then be trying to clean up invalid pointers.)
-    // The SafeRelease() and SafeDelete() macros make your code prettier;
-    //   they are defined here in utility.h as follows:
-    //       #define SafeRelease(x) if (x) {x->Release(); x=NULL;}
-    //       #define SafeDelete(x)  if (x) {delete x; x=NULL;} 
-    // IMPORTANT:
-    //   This function ISN'T only called when the plugin exits!
-    //   It is also called whenever the user toggles between fullscreen and 
-    //   windowed modes, or resizes the window.  Basically, on these events, 
-    //   the base class calls CleanUpMyDX9Stuff before Reset()ing the DirectX 
-    //   device, and then calls AllocateMyDX9Stuff afterwards.
-
-
-
-    // One funky thing here: if we're switching between fullscreen and windowed,
-    //  or doing any other thing that causes all this stuff to get reloaded in a second,
-    //  then if we were blending 2 presets, jump fully to the new preset.
-    // Otherwise the old preset wouldn't get all reloaded, and it app would crash
-    //  when trying to use its stuff.
-    if (m_nLoadingPreset != 0) {
-        // finish up the pre-load & start the official blend
+    if (m_nLoadingPreset != 0)
+    {
+        // Finish up the pre-load & start the official blend.
         m_nLoadingPreset = 8;
-        LoadPresetTick();        
+        LoadPresetTick();
     }
-    // just force this:
+
+    // Force this.
     m_pState->m_bBlending = false;
 
-
-	size_t i;
-    for (i=0; i<m_textures.size(); i++) 
+    for (size_t i = 0; i < m_textures.size(); i++)
         if (m_textures[i].texptr)
         {
-            // notify all CShaderParams classes that we're releasing a bindable texture!!
+            // Notify all CShaderParams classes that we're releasing a bindable texture!!
             size_t N = global_CShaderParams_master_list.size();
-            for (size_t j=0; j<N; j++) 
-                global_CShaderParams_master_list[j]->OnTextureEvict( m_textures[i].texptr );
+            for (size_t j = 0; j < N; j++)
+                global_CShaderParams_master_list[j]->OnTextureEvict(m_textures[i].texptr);
 
             SafeRelease(m_textures[i].texptr);
         }
     m_textures.clear();
 
     // DON'T RELEASE blur textures - they were already released because they're in m_textures[].
-    #if (NUM_BLUR_TEX>0)
-        for (i=0; i<NUM_BLUR_TEX; i++)
-            m_lpBlur[i] = NULL;//SafeRelease(m_lpBlur[i]);
-    #endif
+#if (NUM_BLUR_TEX > 0)
+    for (int i = 0; i < NUM_BLUR_TEX; i++)
+        m_lpBlur[i] = NULL; //SafeRelease(m_lpBlur[i]);
+#endif
 
     // NOTE: not necessary; shell does this for us.
     /*if (GetDevice())
@@ -3282,23 +3084,22 @@ void CPlugin::CleanUpMyDX9Stuff(int final_cleanup)
     m_BlurShaders[0].ps.Clear();
     m_BlurShaders[1].vs.Clear();
     m_BlurShaders[1].ps.Clear();
-    /*
-    SafeRelease( m_shaders.comp.ptr );
-    SafeRelease( m_shaders.warp.ptr );
-    SafeRelease( m_OldShaders.comp.ptr );
-    SafeRelease( m_OldShaders.warp.ptr );
-    SafeRelease( m_NewShaders.comp.ptr );
-    SafeRelease( m_NewShaders.warp.ptr );
-    SafeRelease( m_fallbackShaders_vs.comp.ptr );
-    SafeRelease( m_fallbackShaders_ps.comp.ptr );
-    SafeRelease( m_fallbackShaders_vs.warp.ptr );
-    SafeRelease( m_fallbackShaders_ps.warp.ptr );
-    */
-    SafeRelease( m_pShaderCompileErrors );
-    //SafeRelease( m_pCompiledFragments );
-    //SafeRelease( m_pFragmentLinker );
 
-    // 2. release stuff
+    //SafeRelease(m_shaders.comp.ptr);
+    //SafeRelease(m_shaders.warp.ptr);
+    //SafeRelease(m_OldShaders.comp.ptr);
+    //SafeRelease(m_OldShaders.warp.ptr);
+    //SafeRelease(m_NewShaders.comp.ptr);
+    //SafeRelease(m_NewShaders.warp.ptr);
+    //SafeRelease(m_fallbackShaders_vs.comp.ptr);
+    //SafeRelease(m_fallbackShaders_ps.comp.ptr);
+    //SafeRelease(m_fallbackShaders_vs.warp.ptr);
+    //SafeRelease(m_fallbackShaders_ps.warp.ptr);
+    SafeRelease(m_pShaderCompileErrors);
+    //SafeRelease(m_pCompiledFragments);
+    //SafeRelease(m_pFragmentLinker);
+
+    // 2. Release stuff.
     SafeRelease(m_lpVS[0]);
     SafeRelease(m_lpVS[1]);
     SafeRelease(m_lpDDSTitle);
@@ -3313,35 +3114,35 @@ void CPlugin::CleanUpMyDX9Stuff(int final_cleanup)
 
     m_texmgr.Finish();
 
-	if (m_verts != NULL)
-	{
-		delete m_verts;
-		m_verts = NULL;
-	}
+    if (m_verts != NULL)
+    {
+        delete m_verts;
+        m_verts = NULL;
+    }
 
-	if (m_verts_temp != NULL)
-	{
-		delete m_verts_temp;
-		m_verts_temp = NULL;
-	}
+    if (m_verts_temp != NULL)
+    {
+        delete m_verts_temp;
+        m_verts_temp = NULL;
+    }
 
-	if (m_vertinfo != NULL)
-	{
-		delete m_vertinfo;
-		m_vertinfo = NULL;
-	}
+    if (m_vertinfo != NULL)
+    {
+        delete m_vertinfo;
+        m_vertinfo = NULL;
+    }
 
-	if (m_indices_list != NULL)
-	{
-		delete m_indices_list;
-		m_indices_list = NULL;
-	}
+    if (m_indices_list != NULL)
+    {
+        delete m_indices_list;
+        m_indices_list = NULL;
+    }
 
     if (m_indices_strip != NULL)
-	{
-		delete m_indices_strip;
-		m_indices_strip = NULL;
-	}
+    {
+        delete m_indices_strip;
+        m_indices_strip = NULL;
+    }
 
     //ClearErrors();
 
@@ -3349,36 +3150,31 @@ void CPlugin::CleanUpMyDX9Stuff(int final_cleanup)
     // The "random" state should be preserved from session to session.
     // It's pretty safe to do, because the Scroll Lock key is hard to
     //   accidentally click... :)
-    WritePrivateProfileIntW(m_bPresetLockedByUser,L"bPresetLockOnAtStartup", GetConfigIniFile(),L"settings");
+    WritePrivateProfileIntW(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
 }
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-
-void CPlugin::MyRenderFn(int redraw)
+// Renders a frame of animation.
+// This function is called each frame just AFTER `BeginScene()`.
+// For timing information, call `GetTime()` and `GetFps()`.
+// The usual formula is like this (but doesn't have to be):
+//   1. Take care of timing, other paperwork, etc... for new frame
+//   2. Clear the background
+//   3. Get ready for 3D drawing
+//   4. Draw 3D stuff
+//   5. Call `PrepareFor2DDrawing()`
+//   6. Draw your 2D stuff (overtop of the 3D scene).
+// If the `redraw` flag is 1, try to redraw the last frame;
+// GetTime, GetFps, and GetFrame should all return the
+// same values as they did on the last call to
+// `MilkDropRenderFrame()`. Otherwise, the `redraw` flag will
+// be zero and draw a new frame. The flag is
+// used to force the desktop to repaint itself when
+// running in desktop mode and Winamp is paused or stopped.
+void CPlugin::MilkDropRenderFrame(int redraw)
 {
-	EnterCriticalSection(&g_cs);
+    EnterCriticalSection(&g_cs);
 
-    // Render a frame of animation here.  
-    // This function is called each frame just AFTER BeginScene().
-    // For timing information, call 'GetTime()' and 'GetFps()'.
-    // The usual formula is like this (but doesn't have to be):
-    //   1. take care of timing/other paperwork/etc. for new frame
-    //   2. clear the background
-    //   3. get ready for 3D drawing
-    //   4. draw your 3D stuff
-    //   5. call PrepareFor2DDrawing()
-    //   6. draw your 2D stuff (overtop of your 3D scene)
-    // If the 'redraw' flag is 1, you should try to redraw
-    //   the last frame; GetTime, GetFps, and GetFrame should
-    //   all return the same values as they did on the last 
-    //   call to MyRenderFn().  Otherwise, the redraw flag will
-    //   be zero, and you can draw a new frame.  The flag is
-    //   used to force the desktop to repaint itself when 
-    //   running in desktop mode and Winamp is paused or stopped.
-
-    //   1. take care of timing/other paperwork/etc. for new frame
+    // 1. Take care of timing, other paperwork, etc... for new frame.
     if (!redraw)
     {
         float dt = GetTime() - m_prev_time;
@@ -3386,20 +3182,20 @@ void CPlugin::MyRenderFn(int redraw)
         m_bPresetLockedByCode = (m_UI_mode != UI_REGULAR);
         if (m_bPresetLockedByUser || m_bPresetLockedByCode)
         {
-            // to freeze time (at current preset time value) when menus are up or Scroll Lock is on:
-		    //m_fPresetStartTime += dt;
-		    //m_fNextPresetTime += dt;
+            // To freeze time (at current preset time value) when menus are up or Scroll Lock is on.
+            //m_fPresetStartTime += dt;
+            //m_fNextPresetTime += dt;
             // OR, to freeze time @ [preset] zero, so that when you exit menus,
             //   you don't run the risk of it changing the preset on you right away:
             m_fPresetStartTime = GetTime();
-        	m_fNextPresetTime = -1.0f;		// flags UpdateTime() to recompute this.
+            m_fNextPresetTime = -1.0f; // flags UpdateTime() to recompute this.
         }
 
         //if (!m_bPresetListReady)
         //    UpdatePresetList(true);//UpdatePresetRatings(); // read in a few each frame, til they're all in
     }
 
-    // 2. check for lost or gained kb focus:
+    // 2. Check for lost or gained keyboard focus.
     // (note: can't use wm_setfocus or wm_killfocus because they don't work w/embedwnd)
 	/*
 	if (GetFrame()==0)
@@ -3410,7 +3206,7 @@ void CPlugin::MyRenderFn(int redraw)
 
         SetScrollLock(m_bPresetLockOnAtStartup, m_bPreventScollLockHandling);
 
-        // make sure the 'random' button on the skin shows the right thing:
+        // Make sure the 'random' button on the skin shows the right thing.
         // NEVERMIND - if it's a fancy skin, it'll send us WM_COMMAND/ID_VIS_RANDOM
         //   and we'll match the skin's Random button state.
         //SendMessage(GetWinampWindow(),WM_WA_IPC,m_bMilkdropScrollLockState, IPC_CB_VISRANDOM);
@@ -3439,7 +3235,7 @@ void CPlugin::MyRenderFn(int redraw)
 
         if (GetFocus()==NULL)
             m_bHasFocus = 0;
-                          ;
+
         //HWND t1 = GetFocus();
         //HWND t2 = GetPluginWindow();
         //HWND t3 = GetParent(t2);
@@ -3458,11 +3254,11 @@ void CPlugin::MyRenderFn(int redraw)
 	*/
   
 
-    // 2. Clear the background:
+    // 2. Clear the background.
     //DWORD clear_color = (m_fog_enabled) ? FOG_COLOR : 0xFF000000;
     //GetDevice()->Clear(0, 0, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, clear_color, 1.0f, 0);
 
-    // 5. switch to 2D drawing mode.  2D coord system:
+    // 5. Switch to 2D drawing mode. 2D coordinate system.
     //         +--------+ Y=-1
     //         |        |
     //         | screen |             Z=0: front of scene
@@ -3472,14 +3268,14 @@ void CPlugin::MyRenderFn(int redraw)
     PrepareFor2DDrawing(GetDevice());
 
     if (!redraw)
-        DoCustomSoundAnalysis();    // emulates old pre-vms milkdrop sound analysis
+        DoCustomSoundAnalysis(); // emulates old pre-VMS milkdrop sound analysis
 
-    RenderFrame(redraw);  // see milkdropfs.cpp
+    RenderFrame(redraw); // see "milkdropfs.cpp"
 
     if (!redraw)
     {
         m_nFramesSinceResize++;
-        if (m_nLoadingPreset > 0) 
+        if (m_nLoadingPreset > 0)
         {
             LoadPresetTick();
         }
@@ -4122,52 +3918,55 @@ retry:
 			else
 				swprintf(szFilename, L"*%s", fd.cFileName);
 		}
-		else
-		{
-			// skip normal files not ending in ".milk"
-			int len = wcslen(fd.cFileName);
-			if (len < 5 || _wcsicmp(fd.cFileName + len - 5, L".milk") != 0)
-				bSkip = true;					
+        else
+        {
+            // Skip normal files not ending in ".milk".
+            size_t len = wcslen(fd.cFileName);
+            if (len < 5 || wcscmp(fd.cFileName + len - 5, L".milk") != 0)
+                bSkip = true;
 
-            // if it is .milk, make sure we know how to run its pixel shaders -
+            // If it is .milk, make sure we know how to run its pixel shaders -
             // otherwise we don't want to show it in the preset list!
-            if (!bSkip) 
+            if (!bSkip)
             {
                 // If the first line of the file is not "MILKDROP_PRESET_VERSION XXX",
                 //   then it's a MilkDrop 1 era preset, so it is definitely runnable. (no shaders)
                 // Otherwise, check for the value "PSVERSION".  It will be 0, 2, or 3.
                 //   If missing, assume it is 2.
                 wchar_t szFullPath[MAX_PATH];
-                swprintf(szFullPath, L"%s%s", szPresetDir, fd.cFileName);
-                FILE* f = WOpen(szFullPath, L"r");
-                if (!f)
+                swprintf_s(szFullPath, L"%s%s", szPresetDir, fd.cFileName);
+                FILE* f;
+                errno_t err = _wfopen_s(&f, szFullPath, L"r");
+                if (err)
                     bSkip = true;
-                else {
-                    #define PRESET_HEADER_SCAN_BYTES 160
+                else
+                {
+                    constexpr size_t PRESET_HEADER_SCAN_BYTES = 160U;
                     char szLine[PRESET_HEADER_SCAN_BYTES];
-                    char *p = szLine;
+                    char* p = szLine;
 
-                    int bytes_to_read = sizeof(szLine)-1;
-                    int count = fread(szLine, bytes_to_read, 1, f);
-                    if (count < 1) {
+                    int bytes_to_read = sizeof(szLine) - 1;
+                    size_t count = fread(szLine, bytes_to_read, 1, f);
+                    if (count < 1)
+                    {
                         fseek(f, SEEK_SET, 0);
                         count = fread(szLine, 1, bytes_to_read, f);
-                        szLine[ count ] = 0;
+                        szLine[count] = 0;
                     }
                     else
-                        szLine[bytes_to_read-1] = 0;
+                        szLine[bytes_to_read - 1] = 0;
 
                     bool bScanForPreset00AndRating = false;
                     bool bRatingKnown = false;
 
-                    // try to read the PSVERSION and the fRating= value.
-                    // most presets (unless hand-edited) will have these right at the top.
-                    // if not, [at least for fRating] use GetPrivateProfileFloat to search whole file.
-                    // read line 1
-                    //p = NextLine(p);//fgets(p, sizeof(p)-1, f);
+                    // Try to read the PSVERSION and the fRating= value.
+                    // Most presets (unless hand-edited) will have these right at the top.
+                    // If not, [at least for fRating] use GetPrivateProfileFloat to search whole file.
+                    // Read line 1.
+                    //p = NextLine(p); //fgets(p, sizeof(p)-1, f);
                     if (!strncmp(p, "MILKDROP_PRESET_VERSION", 23)) 
                     {
-                        p = NextLine(p);//fgets(p, sizeof(p)-1, f);
+                        p = NextLine(p); //fgets(p, sizeof(p)-1, f);
                         int ps_version = 2;
                         if (p && !strncmp(p, "PSVERSION", 9)) 
                         {
@@ -4438,7 +4237,7 @@ void CPlugin::MergeSortPresets(int left, int right)
 			}
 			else
 			{
-				bSwap = (mystrcmpiW(m_presets[a].szFilename.c_str(), m_presets[b].szFilename.c_str()) > 0);
+				bSwap = (mdstrcmpiW(m_presets[a].szFilename.c_str(), m_presets[b].szFilename.c_str()) > 0);
 			}
 
 			if (bSwap)
@@ -4469,7 +4268,7 @@ void CPlugin::MergeSortPresets(int left, int right)
 				m_presets[right] = temp;
 			}
 		}
-		else if (mystrcmpiW(m_presets[left].szFilename.c_str(), m_presets[right].szFilename.c_str()) > 0)
+		else if (mdstrcmpiW(m_presets[left].szFilename.c_str(), m_presets[right].szFilename.c_str()) > 0)
 		{
             PresetInfo temp = m_presets[left];
 			m_presets[left] = m_presets[right];
@@ -4480,8 +4279,8 @@ void CPlugin::MergeSortPresets(int left, int right)
 
 void CPlugin::DoCustomSoundAnalysis()
 {
-    memcpy(mysound.fWave[0], m_sound.fWaveform[0], sizeof(float)*576);
-    memcpy(mysound.fWave[1], m_sound.fWaveform[1], sizeof(float)*576);
+    memcpy(mdsound.fWave[0], m_sound.fWaveform[0], sizeof(float)*576);
+    memcpy(mdsound.fWave[1], m_sound.fWaveform[1], sizeof(float)*576);
 
     // do our own [UN-NORMALIZED] fft
 	float fWaveLeft[576];
@@ -4489,23 +4288,23 @@ void CPlugin::DoCustomSoundAnalysis()
 	for (i=0; i<576; i++) 
         fWaveLeft[i] = m_sound.fWaveform[0][i];
 
-	memset(mysound.fSpecLeft, 0, sizeof(float)*MY_FFT_SAMPLES);
+	memset(mdsound.fSpecLeft, 0, sizeof(float)*MD_FFT_SAMPLES);
 
-	myfft.time_to_frequency_domain(fWaveLeft, mysound.fSpecLeft);
+	mdfft.time_to_frequency_domain(fWaveLeft, mdsound.fSpecLeft);
 	//for (i=0; i<MY_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i]*fSpecLeft[i] + fSpecTemp[i]*fSpecTemp[i]);
 
 	// sum spectrum up into 3 bands
 	for (i=0; i<3; i++)
 	{
 		// note: only look at bottom half of spectrum!  (hence divide by 6 instead of 3)
-		int start = MY_FFT_SAMPLES*i/6;
-		int end   = MY_FFT_SAMPLES*(i+1)/6;
+		int start = MD_FFT_SAMPLES*i/6;
+		int end   = MD_FFT_SAMPLES*(i+1)/6;
 		int j;
 
-		mysound.imm[i] = 0;
+		mdsound.imm[i] = 0;
 
 		for (j=start; j<end; j++)
-			mysound.imm[i] += mysound.fSpecLeft[j];
+			mdsound.imm[i] += mdsound.fSpecLeft[j];
 	}
 
 	// do temporal blending to create attenuated and super-attenuated versions
@@ -4513,31 +4312,30 @@ void CPlugin::DoCustomSoundAnalysis()
 	{
         float rate;
 
-		if (mysound.imm[i] > mysound.avg[i])
+		if (mdsound.imm[i] > mdsound.avg[i])
 			rate = 0.2f;
 		else
 			rate = 0.5f;
         rate = AdjustRateToFPS(rate, 30.0f, GetFps());
-        mysound.avg[i] = mysound.avg[i]*rate + mysound.imm[i]*(1-rate);
+        mdsound.avg[i] = mdsound.avg[i]*rate + mdsound.imm[i]*(1-rate);
 
 		if (GetFrame() < 50)
 			rate = 0.9f;
 		else
 			rate = 0.992f;
         rate = AdjustRateToFPS(rate, 30.0f, GetFps());
-        mysound.long_avg[i] = mysound.long_avg[i]*rate + mysound.imm[i]*(1-rate);
-
+        mdsound.long_avg[i] = mdsound.long_avg[i]*rate + mdsound.imm[i]*(1-rate);
 
 		// also get bass/mid/treble levels *relative to the past*
-		if (fabsf(mysound.long_avg[i]) < 0.001f)
-			mysound.imm_rel[i] = 1.0f;
+		if (fabsf(mdsound.long_avg[i]) < 0.001f)
+			mdsound.imm_rel[i] = 1.0f;
 		else
-			mysound.imm_rel[i]  = mysound.imm[i] / mysound.long_avg[i];
+			mdsound.imm_rel[i]  = mdsound.imm[i] / mdsound.long_avg[i];
 
-		if (fabsf(mysound.long_avg[i]) < 0.001f)
-			mysound.avg_rel[i]  = 1.0f;
+		if (fabsf(mdsound.long_avg[i]) < 0.001f)
+			mdsound.avg_rel[i]  = 1.0f;
 		else
-			mysound.avg_rel[i]  = mysound.avg[i] / mysound.long_avg[i];
+			mdsound.avg_rel[i]  = mdsound.avg[i] / mdsound.long_avg[i];
 	}
 }
 

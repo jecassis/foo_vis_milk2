@@ -28,94 +28,86 @@
 */
 
 #ifndef GEISS_TEXTURE_MANAGER
-#define GEISS_TEXTURE_MANAGER 1
+#define GEISS_TEXTURE_MANAGER
 
-#define NUM_TEX 16
-
-#ifdef _DEBUG
-    #define D3D_DEBUG_INFO  // declare this before including d3d9.h
-#endif
-//#include <d3d9.h>
-#include "ns-eel2/ns-eel.h"
+#include <ns-eel2/ns-eel.h>
 #include "md_defines.h"
 #include "d3d11shim.h"
 
-#define TEXMGR_ERROR_MASK                 0x0F
-#define TEXMGR_ERR_SUCCESS                0
-#define TEXMGR_ERR_BAD_INDEX              1
-/*
-#define TEXMGR_ERR_OPENING                2
-#define TEXMGR_ERR_IMAGE_NOT_24_BIT       3
-#define TEXMGR_ERR_IMAGE_TOO_LARGE        4
-#define TEXMGR_ERR_CREATESURFACE_FAILED   5
-#define TEXMGR_ERR_LOCKSURFACE_FAILED     6
-#define TEXMGR_ERR_CORRUPT_JPEG           7
-*/
-#define TEXMGR_ERR_FORMAT                 8
-#define TEXMGR_ERR_BADFILE                9
-#define TEXMGR_ERR_OUTOFMEM               10
-#define TEXMGR_WARNING_MASK               0xF0
-#define TEXMGR_WARN_ERROR_IN_INIT_CODE    0x10
-#define TEXMGR_WARN_ERROR_IN_REG_CODE     0x20
+#define NUM_TEX 16
+#define TEXMGR_ERROR_MASK 0x0F
+#define TEXMGR_ERR_SUCCESS 0
+#define TEXMGR_ERR_BAD_INDEX 1
+
+//#define TEXMGR_ERR_OPENING 2
+//#define TEXMGR_ERR_IMAGE_NOT_24_BIT 3
+//#define TEXMGR_ERR_IMAGE_TOO_LARGE 4
+//#define TEXMGR_ERR_CREATESURFACE_FAILED 5
+//#define TEXMGR_ERR_LOCKSURFACE_FAILED 6
+//#define TEXMGR_ERR_CORRUPT_JPEG 7
+
+#define TEXMGR_ERR_FORMAT 8
+#define TEXMGR_ERR_BADFILE 9
+#define TEXMGR_ERR_OUTOFMEM 10
+#define TEXMGR_WARNING_MASK 0xF0
+#define TEXMGR_WARN_ERROR_IN_INIT_CODE 0x10
+#define TEXMGR_WARN_ERROR_IN_REG_CODE 0x20
 
 typedef struct
 {
-	ID3D11Resource*     pSurface;
-	int                    img_w, img_h;
-    /*
-	int                    tex_w, tex_h;
-	float                  scale_x, scale_y;  // the factors by which the original image was squished to become (img_w x img_h) texels in size.
-	DDPIXELFORMAT          ddpf;
-    */
-	wchar_t				   szFileName[512];	
-	float				   fStartTime;
-	int                    nStartFrame;
-	int                    nUserData;
+    ID3D11Resource* pSurface;
+    int img_w, img_h;
 
-	// stuff for expressions:
-	char            m_szExpr[8192];         // for expression eval
-    NSEEL_CODEHANDLE				m_codehandle;	        // for expression eval
-	// input variables for expression eval
-    double          *var_time, *var_frame, *var_fps, *var_progress;
-	double          *var_bass, *var_bass_att, *var_mid, *var_mid_att, *var_treb, *var_treb_att;
-	// output variables for expression eval
-	double          *var_x, *var_y;
-	double          *var_sx, *var_sy, *var_rot, *var_flipx, *var_flipy;
-	double          *var_r, *var_g, *var_b, *var_a;
-	double          *var_blendmode;
-	double          *var_repeatx, *var_repeaty;
-	double          *var_done, *var_burn;
-	NSEEL_VMCTX	tex_eel_ctx;
-}
-td_tex;
+    //int tex_w, tex_h;
+    //float scale_x, scale_y; // the factors by which the original image was squished to become (img_w x img_h) texels in size.
+    //DDPIXELFORMAT ddpf;
+
+    wchar_t szFileName[512];
+    float fStartTime;
+    int nStartFrame;
+    int nUserData;
+
+    // Expressions
+    char m_szExpr[8192];
+    NSEEL_CODEHANDLE m_codehandle;
+
+    // Expression inputs
+    double *var_time, *var_frame, *var_fps, *var_progress;
+    double *var_bass, *var_bass_att, *var_mid, *var_mid_att, *var_treb, *var_treb_att;
+
+    // Expression outputs
+    double *var_x, *var_y;
+    double *var_sx, *var_sy, *var_rot, *var_flipx, *var_flipy;
+    double *var_r, *var_g, *var_b, *var_a;
+    double *var_blendmode;
+    double *var_repeatx, *var_repeaty;
+    double *var_done, *var_burn;
+    NSEEL_VMCTX tex_eel_ctx;
+} td_tex;
 
 class texmgr
 {
-public:
-	texmgr();
-	~texmgr();
+  public:
+    texmgr();
+    ~texmgr();
 
-	// members
-  void Init(D3D11Shim* lpDD);           // DirectDraw object
-	int  LoadTex(wchar_t *szFilename, int iSlot, char *szInitCode, char *szCode, float time, int frame, unsigned int ck);
-	void KillTex(int iSlot);
-	void Finish();
+    void Init(D3D11Shim* lpDD); // DirectDraw object
+    int LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCode, float time, int frame, unsigned int ck);
+    void KillTex(int iSlot);
+    void Finish();
 
-	// data
-	td_tex          m_tex[NUM_TEX];
-	
-protected:
-	// members
-	//bool TryCreateDDrawSurface(int iSlot, int w, int h);
-	void FreeVars(int iSlot);
-	void FreeCode(int iSlot);
-	void RegisterBuiltInVariables(int iSlot);
-	bool RunInitCode(int iSlot, char *szInitCode);
-	bool RecompileExpressions(int iSlot);
-	void StripLinefeedCharsAndComments(char *src, char *dest);
+    td_tex m_tex[NUM_TEX];
 
-	// data
-	D3D11Shim* m_lpDD;					
+  protected:
+    // bool TryCreateDDrawSurface(int iSlot, int w, int h);
+    void FreeVars(int iSlot);
+    void FreeCode(int iSlot);
+    void RegisterBuiltInVariables(int iSlot);
+    bool RunInitCode(int iSlot, char* szInitCode);
+    bool RecompileExpressions(int iSlot);
+    void StripLinefeedCharsAndComments(char* src, char* dest);
+
+    D3D11Shim* m_lpDD;
 };
 
 #endif

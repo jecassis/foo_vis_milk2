@@ -27,32 +27,28 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef __NULLSOFT_DX9_PLUGIN_SHELL_UTILITY_H__
-#define __NULLSOFT_DX9_PLUGIN_SHELL_UTILITY_H__ 1
+#ifndef __NULLSOFT_DX_PLUGIN_SHELL_UTILITY_H__
+#define __NULLSOFT_DX_PLUGIN_SHELL_UTILITY_H__
 
-#include <windows.h>
-#include <crtdefs.h>
-//#include <d3d9.h>
+#define SafeRelease(x) { if (x) { x->Release(); x = nullptr; } }
+#define SafeDelete(x) { if (x) { delete x; x = nullptr; } }
+#define IsNullGuid(lpGUID) (((int *)lpGUID)[0] == 0 && ((int *)lpGUID)[1] == 0 && ((int *)lpGUID)[2] == 0 && ((int *)lpGUID)[3] == 0)
+#define DlgItemIsChecked(hDlg, nIDDlgItem) ((SendDlgItemMessage(hDlg, nIDDlgItem, BM_GETCHECK, (WPARAM)0, (LPARAM)0) == BST_CHECKED) ? true : false)
+#define CosineInterp(x) (0.5f - 0.5f * cosf((x) * 3.1415926535898f))
+#define InvCosineInterp(x) (acosf(1.0f - 2.0f * (x)) / 3.1415926535898f)
+float PowCosineInterp(float x, float pow);
+float AdjustRateToFPS(float per_frame_decay_rate_at_fps1, float fps1, float actual_fps);
 
-#define SafeRelease(x) { if (x) {x->Release(); x=NULL;} } 
-#define SafeDelete(x) { if (x) {delete x; x=NULL;} }
-#define IsNullGuid(lpGUID) ( ((int*)lpGUID)[0]==0 && ((int*)lpGUID)[1]==0 && ((int*)lpGUID)[2]==0 && ((int*)lpGUID)[3]==0 )
-#define DlgItemIsChecked(hDlg, nIDDlgItem) ((SendDlgItemMessage(hDlg, nIDDlgItem, BM_GETCHECK, (WPARAM) 0, (LPARAM) 0) == BST_CHECKED) ? true : false)
-#define CosineInterp(x) (0.5f - 0.5f*cosf((x) * 3.1415926535898f))
-#define InvCosineInterp(x) (acosf(1.0f - 2.0f*(x))/3.1415926535898f)
-float   PowCosineInterp(float x, float pow);
-float   AdjustRateToFPS(float per_frame_decay_rate_at_fps1, float fps1, float actual_fps);
+// `GetPrivateProfileInt()` is part of the Win32 API.
+#define GetPrivateProfileBoolW(w, x, y, z) (static_cast<bool>(GetPrivateProfileInt(w, x, y, z) != 0))
+float GetPrivateProfileFloatW(const wchar_t* szSectionName, const wchar_t* szKeyName, const float fDefault, const wchar_t* szIniFile);
+bool WritePrivateProfileIntW(int d, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName);
+bool WritePrivateProfileFloatW(float f, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName);
 
-#define GetPrivateProfileBoolW(w,x,y,z) ((bool)(GetPrivateProfileIntW(w,x,y,z) != 0))
-#define GetPrivateProfileBOOLW(w,x,y,z) ((BOOL)(GetPrivateProfileIntW(w,x,y,z) != 0))
-float   GetPrivateProfileFloatW(const wchar_t *szSectionName, const wchar_t *szKeyName, float fDefault, wchar_t *szIniFile);
-bool    WritePrivateProfileIntW(int d, const wchar_t *szKeyName, wchar_t *szIniFile, const wchar_t *szSectionName);
-bool    WritePrivateProfileFloatW(float f, const wchar_t *szKeyName, wchar_t *szIniFile, wchar_t *szSectionName);
+extern _locale_t g_use_C_locale;
 
-extern  _locale_t g_use_C_locale;
+void SetScrollLock(int bNewState, bool bPreventHandling);
+void RemoveExtension(wchar_t* str);
+void TextToGuidA(char* str, GUID* pGUID);
 
-void	SetScrollLock(int bNewState, bool bPreventHandling);
-void    RemoveExtension(wchar_t *str);
-void    TextToGuid(char *str, GUID *pGUID);
-#include <list>
 #endif
