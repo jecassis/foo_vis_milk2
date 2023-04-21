@@ -36,18 +36,31 @@
 #include "shell_defines.h"
 #include "utility.h"
 
-DXContext::DXContext(HWND hWndWinamp /*, wchar_t* szIniFile*/) noexcept(false)
+DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniFile) noexcept(false)
 {
     m_hwnd = hWndWinamp;
-    m_bpp = 0;
+    m_bpp = 32;
     m_frame_delay = 0;
-    //wcscpy_s(m_szIniFile, szIniFile);
+    wcscpy_s(m_szIniFile, szIniFile);
+    memcpy_s(&m_current_mode, sizeof(m_current_mode), pParams, sizeof(DXCONTEXT_PARAMS));
 
     // Clear the error register.
     m_lastErr = S_OK;
 
     // Clear the active flag.
     m_ready = FALSE;
+
+    // Create the device.
+    // Provide parameters for swap chain format, depth/stencil format, and back buffer count.
+    m_deviceResources = std::make_unique<DX::DeviceResources>(
+        DXGI_FORMAT_B8G8R8A8_UNORM, // backBufferFormat
+        DXGI_FORMAT_D24_UNORM_S8_UINT, // depthBufferFormat
+        m_current_mode.nbackbuf, // backBufferCount
+        D3D_FEATURE_LEVEL_9_1, // minFeatureLevel
+        DX::DeviceResources::c_FlipPresent | ((m_current_mode.allow_page_tearing << 1) & DX::DeviceResources::c_AllowTearing) |
+            ((m_current_mode.enable_hdr << 2) & DX::DeviceResources::c_EnableHDR) // flags
+    );
+    m_deviceResources->RegisterDeviceNotify(this);
 }
 
 DXContext::~DXContext()
@@ -70,42 +83,35 @@ const GUID avs_guid = {
     10, 12, 16, {255, 123, 1, 1, 66, 99, 69, 12}
 };
 
-BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* pParams, BOOL bFirstInit)
+BOOL DXContext::Internal_Init(BOOL bFirstInit)
 {
-    memcpy_s(&m_current_mode, sizeof(m_current_mode), pParams, sizeof(DXCONTEXT_PARAMS));
-
     // Screen mode check.
     if (m_current_mode.screenmode != WINDOWED)
         m_current_mode.m_skin = 0;
 
-    if (bFirstInit)
-    {
-        // Create the device.
-        // Provide parameters for swap chain format, depth/stencil format, and back buffer count.
-        m_deviceResources = std::make_unique<DX::DeviceResources>(
-            DXGI_FORMAT_B8G8R8A8_UNORM, // backBufferFormat
-            DXGI_FORMAT_D24_UNORM_S8_UINT, // depthBufferFormat
-            m_current_mode.nbackbuf, // backBufferCount
-            D3D_FEATURE_LEVEL_9_1, // minFeatureLevel
-            DX::DeviceResources::c_FlipPresent |
-                ((m_current_mode.allow_page_tearing << 1) & DX::DeviceResources::c_AllowTearing) |
-                ((m_current_mode.enable_hdr << 2) & DX::DeviceResources::c_EnableHDR) // flags
-        );
-        m_deviceResources->RegisterDeviceNotify(this);
-        m_bpp = 32;
+    RECT r;
+    GetClientRect(m_hwnd, &r);
+    m_client_width = std::max(1l, r.right - r.left);
+    m_client_height = std::max(1l, r.bottom - r.top);
+    m_REAL_client_width = std::max(1l, r.right - r.left);
+    m_REAL_client_height = std::max(1l, r.bottom - r.top);
 
-        m_deviceResources->SetWindow(m_hwnd, m_current_mode.display_mode.Width, m_current_mode.display_mode.Height);
+    m_deviceResources->SetWindow(m_hwnd, m_client_width, m_client_height);
 
-        //m_deviceResources->CreateDeviceIndependentResources();
-        m_deviceResources->CreateDeviceResources();
-        CreateDeviceDependentResources();
+    m_deviceResources->CreateDeviceResources();
+    CreateDeviceDependentResources();
 
-        //m_deviceResources->SetDpi(96.0f);
-        m_deviceResources->CreateWindowSizeDependentResources();
-        CreateWindowSizeDependentResources();
-    }
+    m_deviceResources->CreateWindowSizeDependentResources();
+    CreateWindowSizeDependentResources();
 
-    return m_ready;
+    m_ready = TRUE;
+    return TRUE;
+}
+
+// Display the swap chain contents to the screen.
+void DXContext::Show()
+{
+    m_deviceResources->Present();
 }
 
 void DXContext::Clear()
@@ -124,18 +130,25 @@ void DXContext::Clear()
     context->RSSetViewports(1, &viewport);
 }
 
+void DXContext::RestoreTarget()
+{
+    auto context = m_deviceResources->GetD3DDeviceContext();
+    auto rt = m_deviceResources->GetRenderTarget();
+    m_lpDevice->SetRenderTarget(rt);
+}
+
 // Call this to [re]initialize the DirectX environment with new parameters.
 // Examples: startup; toggle windowed/fullscreen mode; change fullscreen resolution;
 //           and so on.
 // Clean up all the DirectX collateral first (textures, vertex buffers,
 // D3DX allocations, etc...) and reallocate it afterwards!
 // Note: for windowed mode, `pParams->disp_mode` (w/h/r/f) is ignored.
-BOOL DXContext::StartOrRestartDevice(DXCONTEXT_PARAMS* pParams)
+BOOL DXContext::StartOrRestartDevice()
 {
     if (!m_ready)
     {
         // First time init: create a fresh new device.
-        return Internal_Init(pParams, TRUE);
+        return Internal_Init(TRUE);
     }
     else
     {
@@ -147,8 +160,42 @@ BOOL DXContext::StartOrRestartDevice(DXCONTEXT_PARAMS* pParams)
 
         // But leave the D3D object!
         //RestoreWinamp();
-        return Internal_Init(pParams, FALSE);
+        return Internal_Init(FALSE);
     }
+}
+
+// Call this function on `WM_EXITSIZEMOVE` when running windowed.
+// Do not call when fullscreen. Clean up all the DirectX stuff
+// first (textures, vertex buffers, etc...) and reallocate it
+// afterwards!
+BOOL DXContext::OnUserResizeWindow(RECT* new_client_rect)
+{
+    if (!m_ready)// || (m_current_mode.screenmode != WINDOWED))
+        return FALSE;
+
+    if ((m_client_width == new_client_rect->right - new_client_rect->left) &&
+        (m_client_height == new_client_rect->bottom - new_client_rect->top))
+    {
+        return TRUE;
+    }
+
+    m_ready = FALSE;
+
+    m_client_width = new_client_rect->right - new_client_rect->left;
+    m_client_height = new_client_rect->bottom - new_client_rect->top;
+    m_REAL_client_width = new_client_rect->right - new_client_rect->left;
+    m_REAL_client_height = new_client_rect->bottom - new_client_rect->top;
+
+    if (!m_deviceResources->WindowSizeChanged(m_client_width, m_client_height))
+    {
+        m_lastErr = DXC_ERR_RESIZEFAILED;
+        return FALSE;
+    }
+
+    CreateWindowSizeDependentResources();
+
+    m_ready = TRUE;
+    return TRUE;
 }
 
 #pragma region Direct3D Resources
@@ -160,75 +207,15 @@ void DXContext::CreateDeviceDependentResources()
 
     m_lpDevice = std::make_unique<D3D11Shim>(device, context);
     m_lpDevice->Initialize();
-
-    //m_states = std::make_unique<CommonStates>(device);
-
-    //m_fxFactory = std::make_unique<EffectFactory>(device);
-    //m_fxFactory->SetDirectory(std::wstring(m_pwd.begin(), m_pwd.end()).c_str());
-
-    //m_sprites = std::make_unique<SpriteBatch>(context);
-
-    //m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
-
-    //m_batchEffect = std::make_unique<BasicEffect>(device);
-    //m_batchEffect->SetVertexColorEnabled(true);
-
-    //DX::ThrowIfFailed(CreateInputLayoutFromEffect<VertexPositionColor>(device, m_batchEffect.get(),
-    //                                                                   m_batchInputLayout.ReleaseAndGetAddressOf()));
-
-    //std::string spritefont = m_pwd + "SegoeUI_18.spritefont";
-    //std::string sdkmesh = m_pwd + "tiny.sdkmesh";
-    //std::string dds1 = m_pwd + "seafloor.dds";
-    //std::string dds2 = m_pwd + "windowslogo.dds";
-
-    //m_font = std::make_unique<SpriteFont>(device, std::wstring(spritefont.begin(), spritefont.end()).c_str());
-
-    //m_shape = GeometricPrimitive::CreateTeapot(context, 4.f, 8);
-
-    //// SDKMESH has to use clockwise winding with right-handed coordinates, so textures are flipped in U
-    //m_model = Model::CreateFromSDKMESH(device, std::wstring(sdkmesh.begin(), sdkmesh.end()).c_str(), *m_fxFactory);
-
-    //// Load textures
-    //DX::ThrowIfFailed(CreateDDSTextureFromFile(device, std::wstring(dds1.begin(), dds1.end()).c_str(), nullptr,
-    //                                           m_texture1.ReleaseAndGetAddressOf()));
-
-    //DX::ThrowIfFailed(CreateDDSTextureFromFile(device, std::wstring(dds2.begin(), dds2.end()).c_str(), nullptr,
-    //                                           m_texture2.ReleaseAndGetAddressOf()));
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
 void DXContext::CreateWindowSizeDependentResources()
 {
-    //auto const size = m_deviceResources->GetOutputSize();
-    //const float aspectRatio = float(size.right) / float(size.bottom);
-    //float fovAngleY = 70.0f * XM_PI / 180.0f;
-
-    //// This is a simple example of change that can be made when the app is in
-    //// portrait or snapped view.
-    //if (aspectRatio < 1.0f)
-    //{
-    //    fovAngleY *= 2.0f;
-    //}
-
-    //// This sample makes use of a right-handed coordinate system using row-major matrices.
-    //m_projection = Matrix::CreatePerspectiveFieldOfView(fovAngleY, aspectRatio, 0.01f, 100.0f);
-
-    //m_batchEffect->SetProjection(m_projection);
 }
 
 void DXContext::OnDeviceLost()
 {
-    //m_states.reset();
-    //m_fxFactory.reset();
-    //m_sprites.reset();
-    //m_batch.reset();
-    //m_batchEffect.reset();
-    //m_font.reset();
-    //m_shape.reset();
-    //m_model.reset();
-    //m_texture1.Reset();
-    //m_texture2.Reset();
-    //m_batchInputLayout.Reset();
 }
 
 void DXContext::OnDeviceRestored()

@@ -824,9 +824,9 @@ void CPlugin::RenderFrame(int bRedraw)
 		ShowSongTitleAnim(m_nTexSizeX, m_nTexSizeY, 1.0f);
 	}
 
-    // Change the rendertarget back to the original setup
+    // Change the render target back to the original setup
     lpDevice->SetTexture(0, NULL);
-    lpDevice->SetRenderTarget( pBackBuffer );
+    m_lpDX->RestoreTarget(); //lpDevice->SetRenderTarget( pBackBuffer );
 	 //lpDevice->SetDepthStencilSurface( pZBuffer );
     SafeRelease(pBackBuffer);
     //SafeRelease(pZBuffer);
@@ -950,7 +950,7 @@ void CPlugin::DrawMotionVectors()
 			if (dy2 > 1.0f) dy2 -= (int)dy2;
 			if (dx2 < 0.0f) dx2 = 1.0f - (-dx2 - (int)(-dx2));
 			if (dy2 < 0.0f) dy2 = 1.0f - (-dy2 - (int)(-dy2));
-			// hack: when there is only 1 motion vector on the screem, to keep it in
+			// hack: when there is only 1 motion vector on the screen, to keep it in
 			//       the center, we gradually migrate it toward 0.5.
 			dx2 = dx2*0.995f + 0.5f*0.005f;	
 			dy2 = dy2*0.995f + 0.5f*0.005f;

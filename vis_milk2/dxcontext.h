@@ -76,7 +76,7 @@ typedef struct _DXCONTEXT_PARAMS
 class DXContext final : public DX::IDeviceNotify
 {
   public:
-    DXContext(HWND hWndWinamp) noexcept(false);
+    DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniFile) noexcept(false);
     ~DXContext();
 
     //DXContext(DXContext&&) = default;
@@ -85,8 +85,12 @@ class DXContext final : public DX::IDeviceNotify
     //DXContext(DXContext const&) = delete;
     //DXContext& operator=(DXContext const&) = delete;
 
-    BOOL StartOrRestartDevice(DXCONTEXT_PARAMS* pParams); // also serves as Init() function
+    BOOL StartOrRestartDevice(); // also serves as Init() function
+    BOOL OnUserResizeWindow(RECT* new_client_rect);
+    inline HWND GetHwnd() { return m_hwnd; };
+    void Show();
     void Clear();
+    void RestoreTarget();
     void UpdateMonitorWorkRect();
     int GetBitDepth() { return m_bpp; };
     void SaveWindow();
@@ -102,6 +106,7 @@ class DXContext final : public DX::IDeviceNotify
     int m_REAL_client_width; // actual (raw) width: only valid in windowed mode
     int m_REAL_client_height; // actual (raw) height: only valid in windowed mode
     int m_frame_delay;
+    wchar_t m_szIniFile[MAX_PATH];
     DXCONTEXT_PARAMS m_current_mode;
     std::unique_ptr<D3D11Shim> m_lpDevice;
 
@@ -111,7 +116,7 @@ class DXContext final : public DX::IDeviceNotify
     int m_bpp;
 
     int GetWindowedModeAutoSize(int iteration);
-    BOOL Internal_Init(DXCONTEXT_PARAMS* pParams, BOOL bFirstInit);
+    BOOL Internal_Init(BOOL bFirstInit);
     void Internal_CleanUp();
 
   private:

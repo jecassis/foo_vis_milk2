@@ -218,6 +218,20 @@ void CPluginShell::CleanUpDX9Stuff(int final_cleanup)
 	CleanUpMyDX9Stuff(final_cleanup);
 }
 
+void CPluginShell::OnUserResizeWindow()
+{
+    // Update window properties
+    RECT w, c;
+    GetClientRect(m_lpDX->GetHwnd(), &c);
+
+
+
+            if (!m_lpDX->OnUserResizeWindow(&c))
+            {
+                return;
+            }
+}
+
 void CPluginShell::StuffParams(DXCONTEXT_PARAMS *pParams)
 {
     pParams->screenmode = m_screenmode;
@@ -259,7 +273,7 @@ int CPluginShell::InitDirectX()
     StuffParams(&params);
 
     //m_lpDX = new DXContext(m_hWndWinamp, m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp, m_szConfigIniFile);
-    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp/*, m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp, m_szConfigIniFile*/);
+    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp, &params, m_szConfigIniFile);
 
 	if (!m_lpDX)
 	{
@@ -278,7 +292,7 @@ int CPluginShell::InitDirectX()
 		return FALSE;
 	}
 
-	if (!m_lpDX->StartOrRestartDevice(&params))
+	if (!m_lpDX->StartOrRestartDevice())
 	{
 		// note: a basic warning messagebox will have already been given.
 
@@ -291,7 +305,6 @@ int CPluginShell::InitDirectX()
         m_lpDX.reset(); //delete m_lpDX; m_lpDX = NULL;
 		return FALSE;
 	}
-
 
 	return TRUE;
 }
@@ -554,7 +567,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	return TRUE;
 }
 
-int CPluginShell::PluginInitialize(/* ID3D11DeviceContext* context, */ int iPosX, int iPosY, int iWidth, int iHeight /*, float pixelRatio*/)
+int CPluginShell::PluginInitialize(int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio)
 {
     m_disp_mode_fs.Width = iWidth;
     m_disp_mode_fs.Height = iHeight;
@@ -753,19 +766,17 @@ int CPluginShell::PluginRender(unsigned char *pWaveL, unsigned char *pWaveR)//, 
 	}
 */
 
-	
+    DoTime();
+    AnalyzeNewSound(pWaveL, pWaveR);
+    AlignWaves();
 
-	DoTime();
-	AnalyzeNewSound(pWaveL, pWaveR);
-	AlignWaves();
+    DrawAndDisplay(0);
 
-	DrawAndDisplay(0);
+    EnforceMaxFPS();
 
-	EnforceMaxFPS();
+    m_frame++;
 
-	m_frame++;
-
-	return true;
+    return true;
 }
 
 void CPluginShell::DrawAndDisplay(int redraw)
@@ -779,7 +790,9 @@ void CPluginShell::DrawAndDisplay(int redraw)
 	m_left_edge            = TEXT_MARGIN + GetCanvasMarginX();
 	m_right_edge           = cx - TEXT_MARGIN - GetCanvasMarginX();
 
-	MyRenderFn(redraw);
+    MyRenderFn(redraw);
+
+    m_lpDX->Show();
 }
 
 void CPluginShell::EnforceMaxFPS()
