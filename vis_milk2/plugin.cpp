@@ -282,41 +282,38 @@ int mystrcmpiW(const wchar_t *s1, const wchar_t *s2)
 		return (LC2UC[s1[i]] < LC2UC[s2[i]]) ? -1 : 1;
 }
 
+// Read in all characters and replace character combinations
+// {13; 13+10; 10} with `LINEFEED_CONTROL_CHAR`, if
+// `bConvertLFsToSpecialChar` is true.
 bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxBytes, bool bConvertLFsToSpecialChar)
 {
     wchar_t szFile[MAX_PATH];
-    swprintf(szFile, L"%s%s", g_plugin.m_szMilkdrop2Path, szBaseFilename);
-    
-    // read in all chars.  Replace char combos:  { 13;  13+10;  10 } with LINEFEED_CONTROL_CHAR, if bConvertLFsToSpecialChar is true.
-//    FILE* f = _wfopen(szFile, L"rb");
-	FILE* f = WOpen( szFile, L"rb");
-    if (!f)
+    swprintf_s(szFile, L"%ls%ls", g_plugin.m_szMilkdrop2Path, szBaseFilename);
+
+    FILE* f;
+    errno_t err = _wfopen_s(&f, szFile, L"rb");
+    if (err || !f)
     {
-/*        wchar_t buf[1024], title[64];
-		swprintf(buf, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_READ_DATA_FILE_X), szFile);
-		g_plugin.dumpmsg(buf); 
-		MessageBoxW(NULL, buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-		*/
-		return false;
+        return false;
     }
     int len = 0;
     int x;
     char prev_ch = 0;
-    while ( (x = fgetc(f)) >= 0 && len < nMaxBytes-4 ) 
+    while ((x = fgetc(f)) >= 0 && len < nMaxBytes - 4)
     {
         char orig_ch = (char)x;
         char ch = orig_ch;
         bool bSkipChar = false;
         if (bConvertLFsToSpecialChar)
         {
-            if (ch==10)
+            if (ch == '\n')
             {
-                if (prev_ch==13)
+                if (prev_ch == '\r')
                     bSkipChar = true;
-                else 
+                else
                     ch = LINEFEED_CONTROL_CHAR;
             }
-            else if (ch==13)
+            else if (ch == '\r')
                 ch = LINEFEED_CONTROL_CHAR;
         }
 
@@ -325,7 +322,7 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
         prev_ch = orig_ch;
     }
     szDestText[len] = 0;
-    szDestText[len++] = ' ';   // make sure there is some whitespace after
+    szDestText[len++] = ' '; // make sure there is some whitespace after
     fclose(f);
     return true;
 }
@@ -577,8 +574,8 @@ void CPlugin::MyPreInitialize()
     wcscpy(szConfigDir, GetConfigIniFile());
     wchar_t* p = wcsrchr(szConfigDir, L'\\');
     if (p) *(p+1) = 0;
-   	swprintf(m_szMsgIniFile, L"%ls%ls", szConfigDir, MSG_INIFILE );
-	swprintf(m_szImgIniFile, L"%ls%ls", szConfigDir, IMG_INIFILE );
+    swprintf_s(m_szMsgIniFile, L"%ls%ls", szConfigDir, MSG_INIFILE);
+    swprintf_s(m_szImgIniFile, L"%ls%ls", szConfigDir, IMG_INIFILE);
 }
 
 //----------------------------------------------------------------------
@@ -1291,7 +1288,7 @@ int CPlugin::AllocateMyDX9Stuff()
             //        other problems, though, we can make our VS's smaller;
             //        which will work, although it will lead to stretching.
 			m_nTexSizeX = GetWidth();
-			m_nTexSizeY = GetHeight();
+            m_nTexSizeY = GetHeight();
 		}
         else if (m_bTexSizeWasAutoPow2)
 	    {

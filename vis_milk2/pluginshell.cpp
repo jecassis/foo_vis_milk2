@@ -245,25 +245,25 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS *pParams)
 	{
 	case WINDOWED:
 		pParams->allow_page_tearing = m_allow_page_tearing_w;
-		pParams->adapter_guid       = m_adapter_guid_windowed;
-		//pParams->multisamp          = m_multisample_windowed;
+		pParams->adapter_guid = m_adapter_guid_windowed;
+		//pParams->multisamp = m_multisample_windowed;
 		strcpy(pParams->adapter_devicename, m_adapter_devicename_windowed);
 		break;
 	case FULLSCREEN:
 	case FAKE_FULLSCREEN:
 		pParams->allow_page_tearing = m_allow_page_tearing_fs;
-		pParams->adapter_guid       = m_adapter_guid_fullscreen;
-		//pParams->multisamp          = m_multisample_fullscreen;
+		pParams->adapter_guid = m_adapter_guid_fullscreen;
+		//pParams->multisamp = m_multisample_fullscreen;
 		strcpy(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
 		break;
 	case DESKTOP:
 		pParams->allow_page_tearing = m_allow_page_tearing_dm;
-		pParams->adapter_guid       = m_adapter_guid_desktop;
-		//pParams->multisamp          = m_multisample_desktop;
+		pParams->adapter_guid = m_adapter_guid_desktop;
+		//pParams->multisamp = m_multisample_desktop;
 		strcpy(pParams->adapter_devicename, m_adapter_devicename_desktop);
 		break;
 	}
-//	pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
+	//pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
 }
 
 int CPluginShell::InitDirectX()
@@ -312,120 +312,120 @@ int CPluginShell::InitDirectX()
 void CPluginShell::CleanUpDirectX()
 {
     m_lpDX.reset(); //SafeDelete(m_lpDX);
-  //SafeRelease(m_device);
+    //SafeRelease(m_device);
 }
 
 int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance)
 {
-	// PROTECTED CONFIG PANEL SETTINGS (also see 'private' settings, below)
-	m_start_fullscreen      = 0;
-	m_start_desktop         = 0;
-	m_fake_fullscreen_mode  = 0;
-	m_max_fps_fs            = 30;
-	m_max_fps_dm            = 30;
-	m_max_fps_w             = 60;
-	m_show_press_f1_msg     = 1;
-	m_allow_page_tearing_w  = 1;
-	m_allow_page_tearing_fs = 0;
-	m_allow_page_tearing_dm = 0;
-	m_minimize_winamp       = 1;
-	m_desktop_show_icons    = 1;
-	m_desktop_textlabel_boxes = 1;
-	m_desktop_manual_icon_scoot = 0;
-	m_desktop_555_fix       = 2;
-	m_dualhead_horz         = 2;
-	m_dualhead_vert         = 1;
-	m_save_cpu              = 1;
-	m_skin                  = 1;
-	m_fix_slow_text         = 0;
+    // PROTECTED CONFIG PANEL SETTINGS (also see 'private' settings, below)
+    m_start_fullscreen = 0;
+    m_start_desktop = 0;
+    m_fake_fullscreen_mode = 0;
+    m_max_fps_fs = 30;
+    m_max_fps_dm = 30;
+    m_max_fps_w = 60;
+    m_show_press_f1_msg = 1;
+    m_allow_page_tearing_w = 1;
+    m_allow_page_tearing_fs = 0;
+    m_allow_page_tearing_dm = 0;
+    m_minimize_winamp = 1;
+    m_desktop_show_icons = 1;
+    m_desktop_textlabel_boxes = 1;
+    m_desktop_manual_icon_scoot = 0;
+    m_desktop_555_fix = 2;
+    m_dualhead_horz = 2;
+    m_dualhead_vert = 1;
+    m_save_cpu = 1;
+    m_skin = 1;
+    m_fix_slow_text = 0;
 
-	// initialize font settings:
-	wcscpy(m_fontinfo[SIMPLE_FONT    ].szFace,        SIMPLE_FONT_DEFAULT_FACE);
-	m_fontinfo[SIMPLE_FONT    ].nSize        = SIMPLE_FONT_DEFAULT_SIZE ;
-	m_fontinfo[SIMPLE_FONT    ].bBold        = SIMPLE_FONT_DEFAULT_BOLD ;
-	m_fontinfo[SIMPLE_FONT    ].bItalic      = SIMPLE_FONT_DEFAULT_ITAL ;
-	m_fontinfo[SIMPLE_FONT    ].bAntiAliased = SIMPLE_FONT_DEFAULT_AA   ;
-	wcscpy(m_fontinfo[DECORATIVE_FONT].szFace,        DECORATIVE_FONT_DEFAULT_FACE);
-	m_fontinfo[DECORATIVE_FONT].nSize        = DECORATIVE_FONT_DEFAULT_SIZE;
-	m_fontinfo[DECORATIVE_FONT].bBold        = DECORATIVE_FONT_DEFAULT_BOLD;
-	m_fontinfo[DECORATIVE_FONT].bItalic      = DECORATIVE_FONT_DEFAULT_ITAL;
-	m_fontinfo[DECORATIVE_FONT].bAntiAliased = DECORATIVE_FONT_DEFAULT_AA  ;
-	wcscpy(m_fontinfo[HELPSCREEN_FONT].szFace,        HELPSCREEN_FONT_DEFAULT_FACE);
-	m_fontinfo[HELPSCREEN_FONT].nSize        = HELPSCREEN_FONT_DEFAULT_SIZE;
-	m_fontinfo[HELPSCREEN_FONT].bBold        = HELPSCREEN_FONT_DEFAULT_BOLD;
-	m_fontinfo[HELPSCREEN_FONT].bItalic      = HELPSCREEN_FONT_DEFAULT_ITAL;
-	m_fontinfo[HELPSCREEN_FONT].bAntiAliased = HELPSCREEN_FONT_DEFAULT_AA  ;
-	wcscpy(m_fontinfo[PLAYLIST_FONT  ].szFace,        PLAYLIST_FONT_DEFAULT_FACE);
-	m_fontinfo[PLAYLIST_FONT  ].nSize        = PLAYLIST_FONT_DEFAULT_SIZE;
-	m_fontinfo[PLAYLIST_FONT  ].bBold        = PLAYLIST_FONT_DEFAULT_BOLD;
-	m_fontinfo[PLAYLIST_FONT  ].bItalic      = PLAYLIST_FONT_DEFAULT_ITAL;
-	m_fontinfo[PLAYLIST_FONT  ].bAntiAliased = PLAYLIST_FONT_DEFAULT_AA  ;
+    // initialize font settings:
+    wcscpy(m_fontinfo[SIMPLE_FONT].szFace, SIMPLE_FONT_DEFAULT_FACE);
+    m_fontinfo[SIMPLE_FONT].nSize = SIMPLE_FONT_DEFAULT_SIZE;
+    m_fontinfo[SIMPLE_FONT].bBold = SIMPLE_FONT_DEFAULT_BOLD;
+    m_fontinfo[SIMPLE_FONT].bItalic = SIMPLE_FONT_DEFAULT_ITAL;
+    m_fontinfo[SIMPLE_FONT].bAntiAliased = SIMPLE_FONT_DEFAULT_AA;
+    wcscpy(m_fontinfo[DECORATIVE_FONT].szFace, DECORATIVE_FONT_DEFAULT_FACE);
+    m_fontinfo[DECORATIVE_FONT].nSize = DECORATIVE_FONT_DEFAULT_SIZE;
+    m_fontinfo[DECORATIVE_FONT].bBold = DECORATIVE_FONT_DEFAULT_BOLD;
+    m_fontinfo[DECORATIVE_FONT].bItalic = DECORATIVE_FONT_DEFAULT_ITAL;
+    m_fontinfo[DECORATIVE_FONT].bAntiAliased = DECORATIVE_FONT_DEFAULT_AA;
+    wcscpy(m_fontinfo[HELPSCREEN_FONT].szFace, HELPSCREEN_FONT_DEFAULT_FACE);
+    m_fontinfo[HELPSCREEN_FONT].nSize = HELPSCREEN_FONT_DEFAULT_SIZE;
+    m_fontinfo[HELPSCREEN_FONT].bBold = HELPSCREEN_FONT_DEFAULT_BOLD;
+    m_fontinfo[HELPSCREEN_FONT].bItalic = HELPSCREEN_FONT_DEFAULT_ITAL;
+    m_fontinfo[HELPSCREEN_FONT].bAntiAliased = HELPSCREEN_FONT_DEFAULT_AA;
+    wcscpy(m_fontinfo[PLAYLIST_FONT].szFace, PLAYLIST_FONT_DEFAULT_FACE);
+    m_fontinfo[PLAYLIST_FONT].nSize = PLAYLIST_FONT_DEFAULT_SIZE;
+    m_fontinfo[PLAYLIST_FONT].bBold = PLAYLIST_FONT_DEFAULT_BOLD;
+    m_fontinfo[PLAYLIST_FONT].bItalic = PLAYLIST_FONT_DEFAULT_ITAL;
+    m_fontinfo[PLAYLIST_FONT].bAntiAliased = PLAYLIST_FONT_DEFAULT_AA;
 
 #if (NUM_EXTRA_FONTS >= 1)
-	wcscpy(m_fontinfo[NUM_BASIC_FONTS + 0].szFace,        EXTRA_FONT_1_DEFAULT_FACE);
-	m_fontinfo[NUM_BASIC_FONTS + 0].nSize        = EXTRA_FONT_1_DEFAULT_SIZE;
-	m_fontinfo[NUM_BASIC_FONTS + 0].bBold        = EXTRA_FONT_1_DEFAULT_BOLD;
-	m_fontinfo[NUM_BASIC_FONTS + 0].bItalic      = EXTRA_FONT_1_DEFAULT_ITAL;
-	m_fontinfo[NUM_BASIC_FONTS + 0].bAntiAliased = EXTRA_FONT_1_DEFAULT_AA;
+    wcscpy(m_fontinfo[NUM_BASIC_FONTS + 0].szFace, EXTRA_FONT_1_DEFAULT_FACE);
+    m_fontinfo[NUM_BASIC_FONTS + 0].nSize = EXTRA_FONT_1_DEFAULT_SIZE;
+    m_fontinfo[NUM_BASIC_FONTS + 0].bBold = EXTRA_FONT_1_DEFAULT_BOLD;
+    m_fontinfo[NUM_BASIC_FONTS + 0].bItalic = EXTRA_FONT_1_DEFAULT_ITAL;
+    m_fontinfo[NUM_BASIC_FONTS + 0].bAntiAliased = EXTRA_FONT_1_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 2)
-	wcscpy(m_fontinfo[NUM_BASIC_FONTS + 1].szFace,        EXTRA_FONT_2_DEFAULT_FACE);
-	m_fontinfo[NUM_BASIC_FONTS + 1].nSize        = EXTRA_FONT_2_DEFAULT_SIZE;
-	m_fontinfo[NUM_BASIC_FONTS + 1].bBold        = EXTRA_FONT_2_DEFAULT_BOLD;
-	m_fontinfo[NUM_BASIC_FONTS + 1].bItalic      = EXTRA_FONT_2_DEFAULT_ITAL;
-	m_fontinfo[NUM_BASIC_FONTS + 1].bAntiAliased = EXTRA_FONT_2_DEFAULT_AA;
+    wcscpy(m_fontinfo[NUM_BASIC_FONTS + 1].szFace, EXTRA_FONT_2_DEFAULT_FACE);
+    m_fontinfo[NUM_BASIC_FONTS + 1].nSize = EXTRA_FONT_2_DEFAULT_SIZE;
+    m_fontinfo[NUM_BASIC_FONTS + 1].bBold = EXTRA_FONT_2_DEFAULT_BOLD;
+    m_fontinfo[NUM_BASIC_FONTS + 1].bItalic = EXTRA_FONT_2_DEFAULT_ITAL;
+    m_fontinfo[NUM_BASIC_FONTS + 1].bAntiAliased = EXTRA_FONT_2_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 3)
-	strcpy(m_fontinfo[NUM_BASIC_FONTS + 2].szFace,        EXTRA_FONT_3_DEFAULT_FACE);
-	m_fontinfo[NUM_BASIC_FONTS + 2].nSize        = EXTRA_FONT_3_DEFAULT_SIZE;
-	m_fontinfo[NUM_BASIC_FONTS + 2].bBold        = EXTRA_FONT_3_DEFAULT_BOLD;
-	m_fontinfo[NUM_BASIC_FONTS + 2].bItalic      = EXTRA_FONT_3_DEFAULT_ITAL;
-	m_fontinfo[NUM_BASIC_FONTS + 2].bAntiAliased = EXTRA_FONT_3_DEFAULT_AA;
+    strcpy(m_fontinfo[NUM_BASIC_FONTS + 2].szFace, EXTRA_FONT_3_DEFAULT_FACE);
+    m_fontinfo[NUM_BASIC_FONTS + 2].nSize = EXTRA_FONT_3_DEFAULT_SIZE;
+    m_fontinfo[NUM_BASIC_FONTS + 2].bBold = EXTRA_FONT_3_DEFAULT_BOLD;
+    m_fontinfo[NUM_BASIC_FONTS + 2].bItalic = EXTRA_FONT_3_DEFAULT_ITAL;
+    m_fontinfo[NUM_BASIC_FONTS + 2].bAntiAliased = EXTRA_FONT_3_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 4)
-	strcpy(m_fontinfo[NUM_BASIC_FONTS + 3].szFace,        EXTRA_FONT_4_DEFAULT_FACE);
-	m_fontinfo[NUM_BASIC_FONTS + 3].nSize        = EXTRA_FONT_4_DEFAULT_SIZE;
-	m_fontinfo[NUM_BASIC_FONTS + 3].bBold        = EXTRA_FONT_4_DEFAULT_BOLD;
-	m_fontinfo[NUM_BASIC_FONTS + 3].bItalic      = EXTRA_FONT_4_DEFAULT_ITAL;
-	m_fontinfo[NUM_BASIC_FONTS + 3].bAntiAliased = EXTRA_FONT_4_DEFAULT_AA;
+    strcpy(m_fontinfo[NUM_BASIC_FONTS + 3].szFace, EXTRA_FONT_4_DEFAULT_FACE);
+    m_fontinfo[NUM_BASIC_FONTS + 3].nSize = EXTRA_FONT_4_DEFAULT_SIZE;
+    m_fontinfo[NUM_BASIC_FONTS + 3].bBold = EXTRA_FONT_4_DEFAULT_BOLD;
+    m_fontinfo[NUM_BASIC_FONTS + 3].bItalic = EXTRA_FONT_4_DEFAULT_ITAL;
+    m_fontinfo[NUM_BASIC_FONTS + 3].bAntiAliased = EXTRA_FONT_4_DEFAULT_AA;
 #endif
 #if (NUM_EXTRA_FONTS >= 5)
-	strcpy(m_fontinfo[NUM_BASIC_FONTS + 4].szFace,        EXTRA_FONT_5_DEFAULT_FACE);
-	m_fontinfo[NUM_BASIC_FONTS + 4].nSize        = EXTRA_FONT_5_DEFAULT_SIZE;
-	m_fontinfo[NUM_BASIC_FONTS + 4].bBold        = EXTRA_FONT_5_DEFAULT_BOLD;
-	m_fontinfo[NUM_BASIC_FONTS + 4].bItalic      = EXTRA_FONT_5_DEFAULT_ITAL;
-	m_fontinfo[NUM_BASIC_FONTS + 4].bAntiAliased = EXTRA_FONT_5_DEFAULT_AA;
+    strcpy(m_fontinfo[NUM_BASIC_FONTS + 4].szFace, EXTRA_FONT_5_DEFAULT_FACE);
+    m_fontinfo[NUM_BASIC_FONTS + 4].nSize = EXTRA_FONT_5_DEFAULT_SIZE;
+    m_fontinfo[NUM_BASIC_FONTS + 4].bBold = EXTRA_FONT_5_DEFAULT_BOLD;
+    m_fontinfo[NUM_BASIC_FONTS + 4].bItalic = EXTRA_FONT_5_DEFAULT_ITAL;
+    m_fontinfo[NUM_BASIC_FONTS + 4].bAntiAliased = EXTRA_FONT_5_DEFAULT_AA;
 #endif
 
-	m_disp_mode_fs.Width = DEFAULT_FULLSCREEN_WIDTH;
-	m_disp_mode_fs.Height = DEFAULT_FULLSCREEN_HEIGHT;
+    m_disp_mode_fs.Width = DEFAULT_FULLSCREEN_WIDTH;
+    m_disp_mode_fs.Height = DEFAULT_FULLSCREEN_HEIGHT;
     m_disp_mode_fs.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     m_disp_mode_fs.RefreshRate = {60 * 1000, 1000};
-	
-	// PROTECTED STRUCTURES/POINTERS
-	int i;
-	for (i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
-		m_d3dx_font[i] = NULL;
-	m_d3dx_desktop_font = NULL;
-	m_lpDDSText = NULL;
-	ZeroMemory(&m_sound, sizeof(td_soundinfo));
-	for (int ch=0; ch<2; ch++)
-		for (int i=0; i<3; i++)
-		{
-			m_sound.infinite_avg[ch][i] = m_sound.avg[ch][i] = m_sound.med_avg[ch][i] = m_sound.long_avg[ch][i] = 1.0f;
-		}
 
-	// GENERAL PRIVATE STUFF
-	//m_screenmode: set at end (derived setting)
-	m_frame = 0;
-	m_time = 0;
-	m_fps = 30;
+    // PROTECTED STRUCTURES/POINTERS
+    int i;
+    for (i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+        m_d3dx_font[i] = NULL;
+    m_d3dx_desktop_font = NULL;
+    m_lpDDSText = NULL;
+    ZeroMemory(&m_sound, sizeof(td_soundinfo));
+    for (int ch = 0; ch < 2; ch++)
+        for (int i = 0; i < 3; i++)
+        {
+        m_sound.infinite_avg[ch][i] = m_sound.avg[ch][i] = m_sound.med_avg[ch][i] = m_sound.long_avg[ch][i] = 1.0f;
+        }
+
+    // GENERAL PRIVATE STUFF
+    //m_screenmode: set at end (derived setting)
+    m_frame = 0;
+    m_time = 0;
+    m_fps = 30;
     m_hWndWinamp = hWinampWnd;
-	m_hInstance = hWinampInstance;
-	m_lpDX = NULL;
-//	m_szPluginsDirPath[0] = 0;  // will be set further down
-	m_szConfigIniFile[0] = 0;  // will be set further down
-	// m_szPluginsDirPath:
+    m_hInstance = hWinampInstance;
+    m_lpDX = NULL;
+    //m_szPluginsDirPath[0] = 0;  // will be set further down
+    //m_szConfigIniFile[0] = 0;  // will be set further down
+    //m_szPluginsDirPath:
 
     /*
 	wchar_t *p;
@@ -444,10 +444,9 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 		if (++p >= m_szPluginsDirPath) *p = 0;
 	}
 	*/
-//	swprintf(m_szPluginsDirPath, L"special://xbmc/addons/");
-//	swprintf(m_szPluginsDirPath, L"");
+    //	swprintf(m_szPluginsDirPath, L"");
 
-	/*
+    /*
 	if (hWinampWnd
 	    && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))
 	    && p != (wchar_t *)1)
@@ -497,106 +496,106 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 	m_adapter_devicename_desktop[0]    = 0;
 	*/
 
-	// PRIVATE RUNTIME SETTINGS
-	m_lost_focus = 0;
-	m_hidden     = 0;
-	m_resizing   = 0;
-	m_show_help  = 0;
-	m_show_playlist = 0;
-	m_playlist_pos = 0;
-	m_playlist_pageups = 0;
-	m_playlist_top_idx = -1;
-	m_playlist_btm_idx = -1;
-	// m_playlist_width_pixels will be considered invalid whenever 'm_playlist_top_idx' is -1.
-	// m_playlist[256][256] will be considered invalid whenever 'm_playlist_top_idx' is -1.
-	m_exiting    = 0;
-	m_upper_left_corner_y = 0;
-	m_lower_left_corner_y = 0;
-	m_upper_right_corner_y = 0;
-	m_lower_right_corner_y = 0;
-	m_left_edge = 0;
-	m_right_edge = 0;
-	m_force_accept_WM_WINDOWPOSCHANGING = 0;
+    // PRIVATE RUNTIME SETTINGS
+    m_lost_focus = 0;
+    m_hidden = 0;
+    m_resizing = 0;
+    m_show_help = 0;
+    m_show_playlist = 0;
+    m_playlist_pos = 0;
+    m_playlist_pageups = 0;
+    m_playlist_top_idx = -1;
+    m_playlist_btm_idx = -1;
+    //m_playlist_width_pixels will be considered invalid whenever 'm_playlist_top_idx' is -1.
+    //m_playlist[256][256] will be considered invalid whenever 'm_playlist_top_idx' is -1.
+    m_exiting = 0;
+    m_upper_left_corner_y = 0;
+    m_lower_left_corner_y = 0;
+    m_upper_right_corner_y = 0;
+    m_lower_right_corner_y = 0;
+    m_left_edge = 0;
+    m_right_edge = 0;
+    m_force_accept_WM_WINDOWPOSCHANGING = 0;
 
-	// PRIVATE - GDI STUFF
-	m_main_menu     = NULL;
-	m_context_menu  = NULL;
-	for (i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
-		m_font[i] = NULL;
-	m_font_desktop = NULL;
+    // PRIVATE - GDI STUFF
+    m_main_menu = NULL;
+    m_context_menu = NULL;
+    for (i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+        m_font[i] = NULL;
+    m_font_desktop = NULL;
 
-	// PRIVATE - MORE TIMEKEEPING
-	m_last_raw_time = 0;
-	memset(m_time_hist, 0, sizeof(m_time_hist));
-	m_time_hist_pos = 0;
-	if (!QueryPerformanceFrequency(&m_high_perf_timer_freq))
-		m_high_perf_timer_freq.QuadPart = 0;
-	m_prev_end_of_frame.QuadPart = 0;
+    // PRIVATE - MORE TIMEKEEPING
+    m_last_raw_time = 0;
+    memset(m_time_hist, 0, sizeof(m_time_hist));
+    m_time_hist_pos = 0;
+    if (!QueryPerformanceFrequency(&m_high_perf_timer_freq))
+        m_high_perf_timer_freq.QuadPart = 0;
+    m_prev_end_of_frame.QuadPart = 0;
 
-	// PRIVATE AUDIO PROCESSING DATA
-	//(m_fftobj needs no init)
-	memset(m_oldwave[0], 0, sizeof(float)*576);
-	memset(m_oldwave[1], 0, sizeof(float)*576);
-	m_prev_align_offset[0] = 0;
-	m_prev_align_offset[1] = 0;
-	m_align_weights_ready = 0;
+    // PRIVATE AUDIO PROCESSING DATA
+    //(m_fftobj needs no init)
+    memset(m_oldwave[0], 0, sizeof(float) * 576);
+    memset(m_oldwave[1], 0, sizeof(float) * 576);
+    m_prev_align_offset[0] = 0;
+    m_prev_align_offset[1] = 0;
+    m_align_weights_ready = 0;
 
-	// SEPARATE TEXT WINDOW (FOR VJ MODE)
-	m_vj_mode       = 0;
-	m_hidden_textwnd = 0;
-	m_resizing_textwnd = 0;
-	m_hTextWnd		= NULL;
-	m_nTextWndWidth = 0;
-	m_nTextWndHeight = 0;
-	m_bTextWindowClassRegistered = false;
-	//m_vjd3d9        = NULL;
-	m_vjd3d9_device = NULL;
+    // SEPARATE TEXT WINDOW (FOR VJ MODE)
+    m_vj_mode = 0;
+    m_hidden_textwnd = 0;
+    m_resizing_textwnd = 0;
+    m_hTextWnd = NULL;
+    m_nTextWndWidth = 0;
+    m_nTextWndHeight = 0;
+    m_bTextWindowClassRegistered = false;
+    //m_vjd3d9 = NULL;
+    m_vjd3d9_device = NULL;
 
-	//-----
+    //-----
 
-	m_screenmode = FULLSCREEN;
+    m_screenmode = FULLSCREEN;
 
-	OverrideDefaults();
-	ReadConfig();
-	m_screenmode = FULLSCREEN;
-	MyPreInitialize();
-	MyReadConfig();
+    OverrideDefaults();
+    ReadConfig();
+    m_screenmode = FULLSCREEN;
+    MyPreInitialize();
+    MyReadConfig();
 
-	//-----
+    //-----
 
-	return TRUE;
+    return TRUE;
 }
 
 int CPluginShell::PluginInitialize(int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio)
 {
     m_disp_mode_fs.Width = iWidth;
     m_disp_mode_fs.Height = iHeight;
+    //m_posX = iPosX;
+    //m_posY = iPosY;
+    //m_pixelRatio = pixelRatio;
 
-	if (!InitDirectX())        return FALSE;  // gives its own error messages
+    if (!InitDirectX()) return FALSE; // gives its own error 
     m_lpDX->m_client_width = iWidth;
     m_lpDX->m_client_height = iHeight;
-    //	m_posX = iPosX;
-//	m_posY = iPosY;
-//	m_pixelRatio = pixelRatio;
-
-	if (!InitNondx9Stuff())    return FALSE;  // gives its own error messages
-	if (!AllocateDX9Stuff())   return FALSE;  // gives its own error messages
-//	if (!InitVJStuff())        return FALSE;
-	return TRUE;
+    if (!InitNondx9Stuff()) return FALSE; // gives its own error messages
+    if (!AllocateDX9Stuff()) return FALSE; // gives its own error messages
+    //if (!InitVJStuff()) return FALSE;
+    return TRUE;
 }
 
 void CPluginShell::PluginQuit()
 {
-//	CleanUpVJStuff();
-	CleanUpDX9Stuff(1);
-	CleanUpNondx9Stuff();
-	CleanUpDirectX();
+    //CleanUpVJStuff();
+    CleanUpDX9Stuff(1);
+    CleanUpNondx9Stuff();
+    CleanUpDirectX();
 }
 
-wchar_t* BuildSettingName(wchar_t* name, int number){
-static wchar_t temp[64];
-	swprintf(temp, L"%s%d", name, number);
-	return temp;
+wchar_t* BuildSettingName(wchar_t* name, int number)
+{
+    static wchar_t temp[64];
+    swprintf(temp, L"%s%d", name, number);
+    return temp;
 }
 
 void CPluginShell::READ_FONT(int n){
@@ -697,7 +696,8 @@ void CPluginShell::ReadConfig()
 #endif
 }
 
-void CPluginShell::WRITE_FONT(int n){
+void CPluginShell::WRITE_FONT(int n)
+{
 #if 0
 	WritePrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_szConfigIniFile);
 	WritePrivateProfileIntW(m_fontinfo[n].bBold,  BuildSettingName(L"bFontBold",n),   m_szConfigIniFile, L"settings");
@@ -711,19 +711,19 @@ void CPluginShell::WRITE_FONT(int n){
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-int CPluginShell::PluginRender(unsigned char *pWaveL, unsigned char *pWaveR)//, unsigned char *pSpecL, unsigned char *pSpecR)
+int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //, unsigned char *pSpecL, unsigned char *pSpecR)
 {
-	// return FALSE here to tell Winamp to terminate the plugin
+    // return FALSE here to tell Winamp to terminate the plugin
 
-	if (!m_lpDX || !m_lpDX->m_ready)
-	{
-		// note: 'm_ready' will go false when a device reset fatally fails
-		//       (for example, when user resizes window, or toggles fullscreen.)
-		m_exiting = 1;
-		return false;   // EXIT THE PLUGIN
-	}
+    if (!m_lpDX || !m_lpDX->m_ready)
+    {
+        // note: 'm_ready' will go false when a device reset fatally fails
+        //       (for example, when user resizes window, or toggles fullscreen.)
+        m_exiting = 1;
+        return false; // EXIT THE PLUGIN
+    }
 
-/*
+    /*
 	if (m_hTextWnd)
 		m_lost_focus = ((GetFocus() != GetPluginWindow()) && (GetFocus() != m_hTextWnd));
 	else
@@ -738,7 +738,7 @@ int CPluginShell::PluginRender(unsigned char *pWaveL, unsigned char *pWaveR)//, 
 		return true;
 	}*/
 
-	/*// test for lost device
+    /*// test for lost device
 	// (this happens when device is fullscreen & user alt-tabs away,
 	//  or when monitor power-saving kicks in)
 	HRESULT hr = m_lpDX->m_lpDevice->TestCooperativeLevel();
@@ -781,14 +781,14 @@ int CPluginShell::PluginRender(unsigned char *pWaveL, unsigned char *pWaveR)//, 
 
 void CPluginShell::DrawAndDisplay(int redraw)
 {
-	int cx = m_vjd3d9_device ? m_nTextWndWidth  : m_lpDX->m_client_width;
-	int cy = m_vjd3d9_device ? m_nTextWndHeight : m_lpDX->m_client_height;
-	m_upper_left_corner_y  = TEXT_MARGIN + GetCanvasMarginY();
-	m_upper_right_corner_y = TEXT_MARGIN + GetCanvasMarginY();
-	m_lower_left_corner_y  = cy - TEXT_MARGIN - GetCanvasMarginY();
-	m_lower_right_corner_y = cy - TEXT_MARGIN - GetCanvasMarginY();
-	m_left_edge            = TEXT_MARGIN + GetCanvasMarginX();
-	m_right_edge           = cx - TEXT_MARGIN - GetCanvasMarginX();
+    int cx = m_vjd3d9_device ? m_nTextWndWidth : m_lpDX->m_client_width;
+    int cy = m_vjd3d9_device ? m_nTextWndHeight : m_lpDX->m_client_height;
+    m_upper_left_corner_y = TEXT_MARGIN + GetCanvasMarginY();
+    m_upper_right_corner_y = TEXT_MARGIN + GetCanvasMarginY();
+    m_lower_left_corner_y = cy - TEXT_MARGIN - GetCanvasMarginY();
+    m_lower_right_corner_y = cy - TEXT_MARGIN - GetCanvasMarginY();
+    m_left_edge = TEXT_MARGIN + GetCanvasMarginX();
+    m_right_edge = cx - TEXT_MARGIN - GetCanvasMarginX();
 
     MyRenderFn(redraw);
 
