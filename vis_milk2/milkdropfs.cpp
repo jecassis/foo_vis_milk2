@@ -28,14 +28,14 @@
 */
 
 #include "pch.h"
+#include <assert.h>
+#include <math.h>
+#include <DirectXHelpers.h>
+#include "utility.h"
 #include "plugin.h"
 #include "support.h"
 #include "ns-eel2/ns-eel.h"
-#include "utility.h"
-#include <assert.h>
-#include <math.h>
-#include "dx11/d3d11shim.h"
-#include "DirectXHelpers.h"
+#include "d3d11shim.h"
 
 #define COLOR_NORM(x) (((int)(x*255)&0xFF) / 255.0f)
 #define COPY_COLOR(x, y) {x.a = y.a; x.r = y.r; x.g = y.g; x.b = y.b;}

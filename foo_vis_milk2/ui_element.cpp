@@ -1,16 +1,11 @@
 #include "pch.h"
-
-#include "DeviceResources.h"
 #include "vis.h"
-
-using namespace DirectX;
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default
 //extern "C" {
 //__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 //__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 //}
-
 // Anonymous namespace is standard practice in foobar2000 components.
 // Nothing outside should have any reason to see these symbols and do not want
 // funny results if another component has similarly named classes.
@@ -125,22 +120,6 @@ milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr conf
     m_callback(p_callback),
     m_config(config)
 {
-    typedef struct _DXCONTEXT_PARAMS
-    {
-        int nbackbuf;
-        int allow_page_tearing;
-        unsigned int enable_hdr;
-        LUID adapter_guid;
-        wchar_t adapter_devicename[256];
-        DXGI_MODE_DESC1 display_mode;
-        DXGI_SAMPLE_DESC multisamp;
-        HWND parent_window;
-    } DXCONTEXT_PARAMS;
-
-    DXCONTEXT_PARAMS m_current_mode{};
-    m_current_mode.nbackbuf = 2;
-    m_current_mode.allow_page_tearing = 0;
-    m_current_mode.enable_hdr = 0;
     s_in_sizemove = false;
     s_in_suspend = false;
     s_minimized = false;
@@ -184,8 +163,9 @@ void milk2_ui_element_instance::notify(const GUID& p_what, t_size p_param1, cons
 
 int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 {
+#ifndef NDEBUG
     console::formatter() << core_api::get_my_file_name() << ": OnCreate " << cs->x << ", " << cs->y;
-
+#endif
     std::string base_path = core_api::get_my_full_path();
     std::string::size_type t = base_path.rfind('\\');
     if (t != std::string::npos)
@@ -198,9 +178,15 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     int w, h;
     g_vis->GetDefaultSize(w, h);
 
-    CRect r = {0, 0, static_cast<LONG>(w), static_cast<LONG>(h)};
+    //CRect rd = {0, 0, static_cast<LONG>(w), static_cast<LONG>(h)};
+    CRect r{};
     WIN32_OP_D(GetClientRect(&r))
-    g_vis->Initialize(get_wnd(), r.right - r.left, r.bottom - r.top);
+    if (r.right - r.left > 0 && r.bottom - r.top)
+    {
+        w = r.right - r.left;
+        h = r.bottom - r.top;
+    }
+    g_vis->Initialize(get_wnd(), w, h);
     //console::formatter() << core_api::get_my_file_name() << ": Could not initialize MilkDrop";
     console::formatter() << core_api::get_my_file_name() << ": OnCreate2 " << r.right << ", " << r.left << ", " << r.top << ", " << r.bottom;
     try
@@ -222,7 +208,9 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 
 void milk2_ui_element_instance::OnDestroy()
 {
+#ifndef NDEBUG
     console::formatter() << core_api::get_my_file_name() << ": OnDestroy";
+#endif
     m_vis_stream.release();
 
     if (m_IsInitialized)
@@ -235,14 +223,18 @@ void milk2_ui_element_instance::OnDestroy()
 
 void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 {
+#ifndef NDEBUG
     //console::formatter() << core_api::get_my_file_name() << ": OnTimer";
+#endif
     KillTimer(ID_REFRESH_TIMER);
     Invalidate();
 }
 
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
+#ifndef NDEBUG
     //console::formatter() << core_api::get_my_file_name() << ": OnPaint";
+#endif
     auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (vis) //s_in_sizemove && vis
     {
@@ -282,8 +274,10 @@ void milk2_ui_element_instance::OnMove(CPoint ptPos)
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 {
+#ifndef NDEBUG
+    //console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
+#endif
     auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
-    console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
     if (nType == SIZE_MINIMIZED)
     {
         if (!s_minimized)
@@ -321,6 +315,11 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 
 BOOL milk2_ui_element_instance::OnEraseBkgnd(CDCHandle dc)
 {
+    CRect r;
+    WIN32_OP_D(GetClientRect(&r));
+    CBrush brush;
+    WIN32_OP_D(brush.CreateSolidBrush(m_callback->query_std_color(ui_color_background)) != NULL);
+    WIN32_OP_D(dc.FillRect(&r, brush));
     return TRUE;
 }
 
@@ -369,7 +368,9 @@ void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFla
 
 void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
 {
-    console::formatter() << core_api::get_my_file_name() << ": OnContextMenu " << point.x << ", " << point.y;
+#ifndef NDEBUG
+    //console::formatter() << core_api::get_my_file_name() << ": OnContextMenu " << point.x << ", " << point.y;
+#endif
     if (m_callback->is_edit_mode_enabled())
     {
         SetMsgHandled(FALSE);

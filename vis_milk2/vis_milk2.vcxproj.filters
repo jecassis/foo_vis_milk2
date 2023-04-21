@@ -9,9 +9,14 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{18e1b9a9-b727-4ef1-a443-52bb678849c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NS-EEL 2 Files">
+      <UniqueIdentifier>{ea7fd4df-a21a-4ecd-9f04-504bf69e3dbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility Files">
+      <UniqueIdentifier>{3e19c0b4-7cfd-4d60-915d-c27bbad1a317}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -27,6 +32,9 @@
     <ClInclude Include="d3d11shim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="deviceresources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -34,9 +42,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fft.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="md_defines.h">
@@ -63,14 +68,23 @@
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\external\ns-eel2\ns-eel-int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\external\ns-eel2\ns-eel.h">
-      <Filter>Header Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClInclude>
     <ClInclude Include="..\external\ns-eel2\ns-eel-addfuncs.h">
-      <Filter>Header Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\ns-eel2\ns-eel-int.h">
+      <Filter>NS-EEL 2 Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gstring.h">
+      <Filter>Utility Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\nu\AutoWide.h">
+      <Filter>Utility Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\nu\Vector.h">
+      <Filter>Utility Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +95,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="d3d11shim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="deviceresources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dxcontext.cpp">
@@ -110,49 +127,49 @@
     <ClCompile Include="utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\external\ns-eel2\nseel-yylex.c">
+      <Filter>NS-EEL 2 Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\external\ns-eel2\nseel-caltab.c">
-      <Filter>Source Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClCompile>
     <ClCompile Include="..\external\ns-eel2\nseel-cfunc.c">
-      <Filter>Source Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClCompile>
     <ClCompile Include="..\external\ns-eel2\nseel-compiler.c">
-      <Filter>Source Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClCompile>
     <ClCompile Include="..\external\ns-eel2\nseel-eval.c">
-      <Filter>Source Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClCompile>
     <ClCompile Include="..\external\ns-eel2\nseel-lextab.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-yylex.c">
-      <Filter>Source Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClCompile>
     <ClCompile Include="..\external\ns-eel2\nseel-ram.c">
-      <Filter>Source Files</Filter>
+      <Filter>NS-EEL 2 Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="ColorPixelShader.hlsl">
-      <Filter>Source Files</Filter>
+    <FxCompile Include="colorps.hlsl">
+      <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="DefaultVertexShader.hlsl">
-      <Filter>Source Files</Filter>
+    <FxCompile Include="defaultvs.hlsl">
+      <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="DiffusePixelShader.hlsl">
-      <Filter>Source Files</Filter>
+    <FxCompile Include="diffuseps.hlsl">
+      <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="Texture2PixelShader.hlsl">
-      <Filter>Source Files</Filter>
+    <FxCompile Include="texture1ps.hlsl">
+      <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="TexturePixelShader.hlsl">
-      <Filter>Source Files</Filter>
+    <FxCompile Include="texture0ps.hlsl">
+      <Filter>Shader Files</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\external\ns-eel2\asm-nseel-x64.asm">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="packages.config" />
+    <None Include="..\external\ns-eel2\asm-nseel-x64.asm">
+      <Filter>NS-EEL 2 Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

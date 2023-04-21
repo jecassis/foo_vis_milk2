@@ -30,9 +30,9 @@
 #ifndef __NULLSOFT_DX9_EXAMPLE_PLUGIN_SUPPORT_H__
 #define __NULLSOFT_DX9_EXAMPLE_PLUGIN_SUPPORT_H__ 1
 
-#include "dx11/d3d11shim.h"
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
+#include "d3d11shim.h"
 
 using namespace DirectX;
 

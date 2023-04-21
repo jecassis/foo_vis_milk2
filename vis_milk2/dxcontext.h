@@ -30,7 +30,7 @@
 #ifndef __NULLSOFT_DX_PLUGIN_SHELL_DXCONTEXT_H__
 #define __NULLSOFT_DX_PLUGIN_SHELL_DXCONTEXT_H__
 
-#include "../foo_vis_milk2/DeviceResources.h"
+#include "deviceresources.h"
 
 #include "shell_defines.h"
 
@@ -39,7 +39,7 @@
 #endif
 //#include <d3d9.h>
 #include <d3d11_1.h>
-#include "dx11/d3d11shim.h"
+#include "d3d11shim.h"
 
 #define SNAP_WINDOWED_MODE_BLOCKSIZE 32 // or use 0 if disabling snapping
 #define MAX_DXC_ADAPTERS 32

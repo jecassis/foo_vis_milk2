@@ -1,14 +1,13 @@
 //
-// Vis.h
+// vis.h
 //
 
 #pragma once
 
-//#include "DeviceResources.h"
-#include "StepTimer.h"
+#include "steptimer.h"
 
-// Creates a D3D11 device and provides a visualization loop.
-class Vis final // : public DX::IDeviceNotify
+// Provides a visualization loop and communication between foobar2000 and MilkDrop.
+class Vis final
 {
   public:
     Vis() noexcept(false);
@@ -21,14 +20,14 @@ class Vis final // : public DX::IDeviceNotify
     Vis& operator=(Vis const&) = delete;
 
     // Initialization and management
-    void Initialize(HWND window, int width, int height);
+    bool Initialize(HWND window, int width, int height);
 
     // Basic visualization loop
     void Tick();
 
-    // IDeviceNotify
-    void OnDeviceLost();//override;
-    void OnDeviceRestored();//override;
+    // Device status
+    void OnDeviceLost();
+    void OnDeviceRestored();
 
     //HRESULT Render();
     HRESULT RenderChunk(const audio_chunk& chunk);
@@ -42,7 +41,7 @@ class Vis final // : public DX::IDeviceNotify
     int GetActivePreset();
     char* WideToUTF8(const wchar_t* WFilename);
 
-    // Messages
+    // Window Messages
     void OnActivated();
     void OnDeactivated();
     void OnSuspending();
@@ -66,33 +65,12 @@ class Vis final // : public DX::IDeviceNotify
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 
-    void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin,
-                              size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
-
-    // Device resources
-    //std::unique_ptr<DX::DeviceResources> m_deviceResources;
+    // MilkDrop status
+    bool m_milk2 = false;
 
     // Rendering loop timer
     DX::StepTimer m_timer;
 
     // Component paths
     std::string m_pwd;
-
-    // DirectXTK objects
-    std::unique_ptr<DirectX::CommonStates> m_states;
-    std::unique_ptr<DirectX::BasicEffect> m_batchEffect;
-    std::unique_ptr<DirectX::EffectFactory> m_fxFactory;
-    std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
-    std::unique_ptr<DirectX::Model> m_model;
-    std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
-    std::unique_ptr<DirectX::SpriteBatch> m_sprites;
-    std::unique_ptr<DirectX::SpriteFont> m_font;
-
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture1;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
-    Microsoft::WRL::ComPtr<ID3D11InputLayout> m_batchInputLayout;
-
-    DirectX::SimpleMath::Matrix m_world;
-    DirectX::SimpleMath::Matrix m_view;
-    DirectX::SimpleMath::Matrix m_projection;
 };

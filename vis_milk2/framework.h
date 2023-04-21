@@ -1,5 +1,9 @@
 #pragma once
 
+//#include <winsdkver.h>
+//#define _WIN32_WINNT 0x0601
+//#include <sdkddkver.h>
+
 // DirectX apps do not need GDI
 #define NODRAWTEXT
 #define NOGDI
@@ -19,12 +23,15 @@
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
 
+#include <DirectXColors.h>
+#include <DirectXMath.h>
+
 #include <algorithm>
 #include <exception>
 #include <memory>
 #include <stdexcept>
-
-#include <stdio.h>
+#include <string>
+#include <system_error>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>

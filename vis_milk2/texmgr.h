@@ -38,7 +38,7 @@
 //#include <d3d9.h>
 #include "ns-eel2/ns-eel.h"
 #include "md_defines.h"
-#include "dx11/d3d11shim.h"
+#include "d3d11shim.h"
 
 #define TEXMGR_ERROR_MASK                 0x0F
 #define TEXMGR_ERR_SUCCESS                0

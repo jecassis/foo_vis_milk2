@@ -27,9 +27,6 @@
     <ClCompile Include="ui_element.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeviceResources.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="vis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -41,13 +38,10 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DeviceResources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StepTimer.h">
+    <ClInclude Include="steptimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

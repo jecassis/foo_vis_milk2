@@ -38,7 +38,7 @@
 
 //#include "icon_t.h"
 #include "nu/Vector.h"
-#include "dx11/d3d11shim.h"
+#include "d3d11shim.h"
 
 #define TIME_HIST_SLOTS 128     // # of slots used if fps > 60.  half this many if fps==30.
 #define MAX_SONGS_PER_PAGE 40

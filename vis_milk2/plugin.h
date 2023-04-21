@@ -40,7 +40,7 @@
 
 #include "gstring.h"
 #include "ns-eel2/ns-eel.h"
-#include "dx11/ConstantTable.h"
+#include "constanttable.h"
 
 int warand();
 

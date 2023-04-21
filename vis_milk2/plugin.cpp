@@ -569,16 +569,16 @@ void CPlugin::MyPreInitialize()
     g_bDebugOutput		= false;
 	g_bDumpFileCleared	= false;
 
-    swprintf(m_szMilkdrop2Path, L"%s%s", GetPluginsDirPath(), SUBDIR); 
-	swprintf(m_szPresetDir,  L"%spresets\\", m_szMilkdrop2Path );
+    swprintf_s(m_szMilkdrop2Path, L"%ls%ls", GetPluginsDirPath(), SUBDIR);
+    swprintf_s(m_szPresetDir, L"%lspresets\\", m_szMilkdrop2Path);
 
     // note that the config dir can be under Program Files or Application Data!!
     wchar_t szConfigDir[MAX_PATH] = {0};
     wcscpy(szConfigDir, GetConfigIniFile());
     wchar_t* p = wcsrchr(szConfigDir, L'\\');
     if (p) *(p+1) = 0;
-   	swprintf(m_szMsgIniFile, L"%s%s", szConfigDir, MSG_INIFILE );
-	swprintf(m_szImgIniFile, L"%s%s", szConfigDir, IMG_INIFILE );
+   	swprintf(m_szMsgIniFile, L"%ls%ls", szConfigDir, MSG_INIFILE );
+	swprintf(m_szImgIniFile, L"%ls%ls", szConfigDir, IMG_INIFILE );
 }
 
 //----------------------------------------------------------------------
