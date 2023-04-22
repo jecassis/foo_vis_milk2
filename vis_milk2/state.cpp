@@ -32,8 +32,6 @@
 #include "support.h"
 #include "plugin.h"
 #include "utility.h"
-#include <windows.h>
-#include <locale.h>
 
 extern CPlugin g_plugin; // declared in "main.cpp"
 
@@ -46,20 +44,18 @@ extern CPlugin g_plugin; // declared in "main.cpp"
 //  the next line doesn't have the expected token - we rescan from the top.  If the line
 //  is never found, we use the default value, and leave MyGetPos untouched.
 
-#include "nu/Vector.h"
-#include "gstring.h"
-
 typedef Vector<GStringA> VarNameList;
 typedef Vector<int> IntList;
 
 FILE* fLastFilePtr = NULL;
 void GetFast_CLEAR() { fLastFilePtr = NULL; }
+
+// Lines in the file look like this: szVarName=szRet
+//                               or: szVarName szRet
+// The part of the line after the '=' sign (or space) goes into `szRet`.
+// `szVarName` cannot have any spaces in it.
 bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChars)
 {
-    // lines in the file look like this:  szVarName=szRet
-    //                               OR:  szVarName szRet
-    // the part of the line after the '=' sign (or space) goes into szRet.  
-    // szVarName can't have any spaces in it.
 
     static int MyLineNum = 0;
     static VarNameList line_varName;

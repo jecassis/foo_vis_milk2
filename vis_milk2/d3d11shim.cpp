@@ -8,8 +8,8 @@
 #include <DirectXHelpers.h>
 #include <DDSTextureLoader.h>
 #include <WICTextureLoader.h>
-#include "../vis_milk2/support.h"
-#include "../vis_milk2/utility.h"
+#include "support.h"
+#include "utility.h"
 
 using namespace DirectX;
 

@@ -40,7 +40,7 @@
 //#include "../nu/AutoCharFn.h"
 #include <mmsystem.h>
 #include "DirectXHelpers.h"
-#pragma comment(lib,"winmm.lib")    // for timeGetTime
+#pragma comment(lib,"winmm.lib") // for timeGetTime
 
 // STATE VALUES & VERTEX FORMATS FOR HELP SCREEN TEXTURE:
 #define TEXT_SURFACE_NOT_READY 0

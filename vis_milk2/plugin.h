@@ -41,7 +41,6 @@
 #include "gstring.h"
 #include "constanttable.h"
 
-int warand();
 
 // clang-format off
 typedef enum { TEX_DISK, TEX_VS, TEX_BLUR0, TEX_BLUR1, TEX_BLUR2, TEX_BLUR3, TEX_BLUR4, TEX_BLUR5, TEX_BLUR6, TEX_BLUR_LAST } tex_code;

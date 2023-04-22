@@ -73,7 +73,6 @@
 
 #include "pch.h"
 #include "plugin.h"
-//#include <nu/AutoCharFn.h>
 #include <nu/AutoWide.h>
 #include "defines.h"
 #include "shell_defines.h"
@@ -81,15 +80,12 @@
 #include "support.h"
 //#include "resource.h"
 
-#include <d3dcompiler.h>
-#include <d3d11shader.h>
-
-#pragma comment(lib, "d3dcompiler.lib")
+//#pragma comment(lib, "d3dcompiler.lib")
 //#pragma comment(lib, "dxguid.lib")
 
 int warand()
 {
-	return rand();
+    return rand();
 }
 
 #define FRAND ((warand() % 7381)/7380.0f)

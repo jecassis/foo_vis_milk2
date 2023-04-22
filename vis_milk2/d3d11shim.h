@@ -5,9 +5,10 @@
 #pragma once
 
 #include <memory>
-#include <d3d11.h>
+#include <string>
+#include <d3d11_1.h>
 #include <DirectXMath.h>
-#include "CommonStates.h"
+#include <CommonStates.h>
 #include "constanttable.h"
 
 #define MAX_NUM_SHADERS (4)

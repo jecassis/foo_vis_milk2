@@ -32,7 +32,7 @@
 #include <cstring>
 
 constexpr float PI = 3.141592653589793238462643383279502884197169399f;
-#define SafeDeleteArray(x) { if (x) { delete [] x; x = 0; } }
+#define SafeDeleteArray(x) { if (x) { delete[] x; x = 0; } }
 
 FFT::FFT()
 {

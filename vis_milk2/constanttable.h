@@ -58,9 +58,9 @@ class CConstantTable
 
     bool GrabShaderData(ID3D11Device* pDevice);
     int GetVariablesCount();
-    int GetBuffersCount() { return m_ConstantBuffers.size(); }
+    size_t GetBuffersCount() { return m_ConstantBuffers.size(); }
     void GetBuffers(ID3D11Buffer** ppBuffers);
-    ;
+
     int GetTextureSlot(std::string& strName);
 
     bool SetVector(LPCSTR handle, XMFLOAT4* vector);
