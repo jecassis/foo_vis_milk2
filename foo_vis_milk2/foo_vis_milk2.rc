@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -50,75 +51,316 @@ END
 // Dialog
 //
 
-IDD_MYPREFERENCES DIALOGEX 0, 0, 332, 288
-STYLE DS_SETFONT | WS_CHILD
+IDD_CONFIG DIALOGEX 0, 0, 390, 292
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "(Window title will be assigned at runtime)"
+FONT 8, "Microsoft Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | WS_TABSTOP,6,7,324,255
+    CONTROL         "",IDC_RECT,"Static",SS_BLACKRECT | NOT WS_VISIBLE,8,20,320,240
+    DEFPUSHBUTTON   "OK",IDOK,335,19,50,13
+    PUSHBUTTON      "Cancel",IDCANCEL,335,35,50,13
+    PUSHBUTTON      "Defaults",ID_DEFAULTS,335,51,50,13
+    PUSHBUTTON      "View Docs",ID_DOCS,335,67,50,13
+    PUSHBUTTON      "View Website",ID_WEB,335,83,50,13
+    CTEXT           "For settings help, click the '?' in the upper-right corner and then click on the item.",IDC_STATIC,6,268,153,19,SS_SUNKEN
+    CTEXT           "(""About"" text will be placed in this box automatically at runtime)",IDC_SZ_ABOUT,162,268,223,19,SS_SUNKEN
+END
+
+IDD_PROPPAGE_0 DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+//EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     RTEXT           "Bogo setting 1:",IDC_STATIC,44,60,59,8
-    EDITTEXT        IDC_BOGO1,104,58,40,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_ADAPTER_DMS,104,58,40,12,ES_AUTOHSCROLL | ES_NUMBER
     RTEXT           "Bogo setting 2:",IDC_STATIC,44,82,59,8
-    EDITTEXT        IDC_BOGO2,104,80,40,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_DISP_MODE_TEXT,104,80,40,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "This is a sample preferences page with meaningless settings.",IDC_STATIC,52,24,204,8
+    GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,5,7,187,96
+    RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,20,25,116,10
+    EDITTEXT        IDC_BETWEEN_TIME,142,23,32,13,ES_AUTOHSCROLL
+    RTEXT           "Additional random time:",IDC_BETWEEN_TIME_RANDOM_LABEL,33,39,103,10
+    EDITTEXT        IDC_BETWEEN_TIME_RANDOM,142,38,32,13,ES_AUTOHSCROLL
+    RTEXT           "Auto preset blend time:",IDC_BLEND_AUTO_LABEL,34,55,102,10
+    EDITTEXT        IDC_BLEND_AUTO,142,53,32,13,ES_AUTOHSCROLL
+    RTEXT           "User-solicited preset blend time:",IDC_BLEND_USER_LABEL,26,70,110,10
+    EDITTEXT        IDC_BLEND_USER,142,68,32,13,ES_AUTOHSCROLL
+    LTEXT           "(seconds)",IDC_STATIC,142,83,33,10
+    GROUPBOX        "Hard Cuts (driven by major beats)",IDC_STATIC,5,106,187,91
+    RTEXT           "Average time between hard cuts:",IDC_HARDCUT_BETWEEN_TIME_LABEL,20,119,116,10
+    EDITTEXT        IDC_HARDCUT_BETWEEN_TIME,142,117,32,13,ES_AUTOHSCROLL
+    LTEXT           "(seconds)",IDC_STATIC,142,132,33,10
+    LTEXT           "Loudness threshold:",IDC_HARDCUT_LOUDNESS_LABEL,31,139,71,9
+    CTEXT           "Min.",IDC_HARDCUT_LOUDNESS_MIN,37,151,14,9
+    CONTROL         "Slider1",IDC_HARDCUT_LOUDNESS,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,150,114,16
+    CTEXT           "Max.",IDC_HARDCUT_LOUDNESS_MAX,165,151,16,9
+    CONTROL         "&Disable hard cuts",IDC_CB_HARDCUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,171,72,13
 END
 
-IDD_PLAYBACK_STATE DIALOGEX 0, 0, 260, 95
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Playback State Demo"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+IDD_PROPPAGE_1 DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Pattern:",IDC_STATIC,12,8,28,8
-    EDITTEXT        IDC_PATTERN,8,16,244,12,ES_AUTOHSCROLL
-    LTEXT           "State:",IDC_STATIC,12,36,21,8
-    EDITTEXT        IDC_STATE,8,44,244,12,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "Context menu test area - right click me",IDC_CONTEXTMENU,8,60,244,14
-    PUSHBUTTON      "Play",IDC_PLAY,12,76,36,14
-    PUSHBUTTON      "Pause",IDC_PAUSE,52,76,36,14
-    PUSHBUTTON      "Stop",IDC_STOP,92,76,36,14
-    PUSHBUTTON      "Prev",IDC_PREV,132,76,36,14
-    PUSHBUTTON      "Next",IDC_NEXT,172,76,36,14
-    PUSHBUTTON      "Rand",IDC_RAND,212,76,36,14
+    GROUPBOX        "",IDC_STATIC,0,0,319,239
+    RTEXT           "Display Adapter:",IDC_DMS_ADAPTER_CAPTION,68,12,53,9,WS_DISABLED
+    COMBOBOX        IDC_ADAPTER_DMS,126,9,185,191,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "DESKTOP Settings",IDC_DMS_LABEL,3,16,52,18
+    RTEXT           "Max. Frame Rate:",IDC_DMS_MAXFPS_CAPTION,63,28,58,9,WS_DISABLED
+    COMBOBOX        IDC_DMS_MAXFPS,126,25,81,106,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "More &Options",ID_DM_MORE,262,25,50,15
+    RTEXT           "Multisampling:",IDC_DMS_MULTISAMPLING_CAPTION,5,43,46,9,NOT WS_VISIBLE | WS_DISABLED
+    COMBOBOX        IDC_DMSMS,56,41,66,123,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Allow page tearing",IDC_CB_DMSPT,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,126,43,75,10
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT,0,58,318,1
+    RTEXT           "Display Adapter:",IDC_FS_ADAPTER_CAPTION,68,66,53,9
+    COMBOBOX        IDC_ADAPTER_FS,126,63,185,208,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "FULLSCREEN Settings",IDC_FS_LABEL,3,75,50,18
+    RTEXT           "Display Mode:",IDC_DISP_MODE_CAPTION,66,81,55,9
+    COMBOBOX        IDC_DISP_MODE,126,78,185,208,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Max. Frame Rate:",IDC_FS_MAXFPS_CAPTION,66,96,55,9
+    COMBOBOX        IDC_FS_MAXFPS,126,94,81,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Multisampling:",IDC_FS_MULTISAMPLING_CAPTION,5,112,47,9,NOT WS_VISIBLE | WS_DISABLED
+    COMBOBOX        IDC_FSMS,56,110,66,123,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,112,75,10
+    CONTROL         "Use fa&ke fullscreen mode",IDC_CB_FAKE,"Button",BS_AUTOCHECKBOX | BS_TOP | WS_DISABLED | WS_TABSTOP,214,112,97,10
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT,0,127,318,1
+    RTEXT           "Display Adapter:",IDC_W_ADAPTER_CAPTION,68,135,53,9
+    COMBOBOX        IDC_ADAPTER_W,126,132,185,208,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "WINDOWED Settings",IDC_W_LABEL,3,138,46,18
+    RTEXT           "Max. Frame Rate:",IDC_W_MAXFPS_CAPTION,56,151,65,9
+    COMBOBOX        IDC_W_MAXFPS,126,148,81,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Multisampling:",IDC_W_MULTISAMPLING_CAPTION,5,165,46,9,NOT WS_VISIBLE | WS_DISABLED
+    COMBOBOX        IDC_WMS,56,163,66,123,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Allow page tearing",IDC_CB_WPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,165,75,10
+    CONTROL         "Integrate with Winamp skin",IDC_CB_SKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,214,165,103,10
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT,0,180,318,1
+    LTEXT           "Start Mode...",IDC_STATIC,9,192,61,8
+    CONTROL         "&Fullscreen",IDC_CB_FS,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,9,203,48,10
+    CONTROL         "&Desktop",IDC_CB_DMS,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,9,215,61,10
+    CONTROL         "Sa&ve CPU by loosely enforcing maximum frame rate",IDC_CB_SAVE_CPU,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,78,183,180,10
+    CONTROL         "Show ""&Press F1 for Help"" message at startup",IDC_CB_PRESS_F1_MSG,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,78,194,159,10
+    CONTROL         "&Minimize Winamp when going fullscreen",IDC_CB_MIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,78,205,141,10
+    CONTROL         "Fix slow menus/text (uses more video memory)",IDC_CB_FIXSLOWTEXT,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,78,216,183,10
+    CONTROL         "V&J Mode - show text, menus in a second window",IDC_CB_VJMODE,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,78,227,173,10
+    PUSHBUTTON      "Dual &Head",ID_DUALHEAD,262,200,50,15
+    PUSHBUTTON      "&Select Fonts",ID_FONTS,262,217,50,15
 END
 
-IDD_DSP DIALOGEX 0, 0, 284, 83
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Sample DSP Configuration"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+IDD_PROPPAGE_2 DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,172,64,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,226,64,50,14
-    CONTROL         "",IDC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,12,12,260,24
-    CTEXT           "N dB",IDC_SLIDER_LABEL,120,44,44,8
+    GROUPBOX        "",IDC_FS_BOX,0,3,319,236
+    RTEXT           "Canvas Stretch:",IDC_STRETCH_CAPTION,5,33,56,10
+    COMBOBOX        IDC_STRETCH,67,30,99,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "<-- use with a slow graphics chip (GPU)!!",IDC_STATIC,169,32,144,8
+    RTEXT           "Mesh Size:",IDC_MESHSIZECOMBO_CAPTION,19,49,43,10
+    COMBOBOX        IDC_MESHSIZECOMBO,67,47,99,123,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "<-- decrease for a slow processor (CPU)!!",IDC_STATIC,168,49,150,8
+    RTEXT           "Pixel Shaders:",IDC_SHADERS_CAPTION,13,67,49,10
+    COMBOBOX        IDC_SHADERS,67,64,99,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "<-- not recommended to change the default.",IDC_STATIC,168,66,144,8
+    RTEXT           "Canvas Size:",IDC_TEXSIZECOMBO_CAPTION,19,84,43,10
+    COMBOBOX        IDC_TEXSIZECOMBO,67,81,99,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "<-- not recommended to change the default.",IDC_STATIC,168,83,144,8
+    CONTROL         "Start MilkDrop with preset lock [Scroll Lock key] on",IDC_CB_SCROLLON,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,22,116,175,10
+    CONTROL         "Disable preset rating (...all presets have equal chance)",IDC_CB_NORATING,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,22,129,192,10
+    CONTROL         "Suppress all errors/warnings (for VJ'ing)",IDC_CB_NOWARN2,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,142,143,10
+    CONTROL         "Prevent MilkDrop from controlling Scroll Lock key",IDC_CB_SCROLLON2,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,22,155,227,10
+    GROUPBOX        "Brightness Control for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,8,182,180,49
+    CONTROL         "Slider1",IDC_BRIGHT_SLIDER,"msctls_trackbar32",WS_TABSTOP,25,193,89,14
+    CTEXT           "0\n(bright)",IDC_T1,20,207,25,17
+    CTEXT           "2\n(normal)",IDC_T3,54,207,28,18
+    CTEXT           "3",IDC_T4,83,207,8,10
+    CTEXT           "4\n(dark)",IDC_T5,91,207,30,18
+    CONTROL         "Guess,\nbased on the GPU",IDC_CB_AUTOGAMMA,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,129,194,54,30
+    CONTROL         "Scan presets instantly at startup or directory change (can cause a pause)",IDC_CB_INSTASCAN,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,199,176,114,17
+    CONTROL         "Stereo 3D mode always on",IDC_CB_ALWAYS3D,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,199,221,103,10
+    CONTROL         "Use anisotropic filtering (if available) instead of bilinear interpolation",IDC_CB_ANISO,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,199,157,114,16
+    CTEXT           "1",IDC_T2,46,207,8,10
+    COMBOBOX        IDC_TEXFORMAT,199,206,99,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Texture Format:",IDC_TEXFORMAT_CAPTION,199,195,55,10,NOT WS_VISIBLE | WS_DISABLED
 END
 
-IDD_UI_ELEMENT DIALOGEX 0, 0, 221, 113
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+IDD_PROPPAGE_3 DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Lock min width @ 200 units",IDC_LOCK_MIN_WIDTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,20,104,10
-    CONTROL         "Lock min height @ 200 units",IDC_LOCK_MIN_HEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,32,107,10
-    LTEXT           "Current size: XXX x XXX units / XXX x XXX pixels",IDC_STATIC_SIZE,8,4,168,8
-    CONTROL         "Lock max width @ 400 units",IDC_LOCK_MAX_WIDTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,48,106,10
-    CONTROL         "Lock max height @ 400 units",IDC_LOCK_MAX_HEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,60,108,10
+    GROUPBOX        "Image Cache",IDC_BRIGHT_SLIDER_BOX2,5,4,167,83
+    LTEXT           "Max. Number of Images:",IDC_MAX_IMAGES_CAPTION,16,17,79,10
+    COMBOBOX        IDC_MAX_IMAGES,97,14,67,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Max. Video Memory:",IDC_MAX_BYTES_CAPTION,16,34,67,10
+    COMBOBOX        IDC_MAX_BYTES,97,31,67,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Note: cache settings are only relevant if there are many textures in the ""milkdrop2\\textures\\"" folder. Otherwise, everything fits in 1 MB of VRAM.",IDC_STATIC,13,49,150,33
+    PUSHBUTTON      "Edit &Sprites",ID_SPRITE,11,93,82,15
+    PUSHBUTTON      "&Edit Custom Messages",ID_MSG,11,110,82,15
+    GROUPBOX        "Song Title Animations and Custom Messages",IDC_STATIC,5,130,169,104
+    LTEXT           "(seconds)",IDC_STATIC,137,140,33,9
+    RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,20,153,110,10
+    EDITTEXT        IDC_SONGTITLEANIM_DURATION,136,151,32,13,ES_AUTOHSCROLL
+    RTEXT           "Time between\nRANDOM song title anims",IDC_RAND_TITLE_LABEL,34,166,96,17
+    EDITTEXT        IDC_RAND_TITLE,136,169,32,13,ES_AUTOHSCROLL
+    RTEXT           "Time between\nRANDOM custom messages",IDC_RAND_MSG_LABEL,34,185,96,17
+    EDITTEXT        IDC_RAND_MSG,136,188,32,13,ES_AUTOHSCROLL
+    CONTROL         "Automatically show song title anims when song changes?",IDC_CB_TITLE_ANIMS,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,41,207,114,18
+    GROUPBOX        "Colored-Lens 3D Glasses",IDC_STATIC,182,4,133,83,NOT WS_VISIBLE | WS_DISABLED
+    PUSHBUTTON      "Set &right eye lens color",IDRIGHT,187,37,80,14,NOT WS_VISIBLE | WS_DISABLED
+    PUSHBUTTON      "Set &left eye lens color",IDLEFT,187,19,80,14,NOT WS_VISIBLE | WS_DISABLED
+    RTEXT           "Default stereo separation (normal=1):",IDC_3DSEP_LABEL,187,59,80,19,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_3DSEP,272,65,32,13,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    GROUPBOX        "VJ Mode",IDC_STATIC,188,129,127,69,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "Enable &VJ Mode\n(creates a second window for text input and output and leaves the graphics display text-free; use this in conjunction with multiple monitors for live shows)",IDC_CB_SEPTEXT,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,194,143,118,51
 END
 
-IDD_THREADS DIALOGEX 0, 0, 364, 232
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "UI and Threads Demo"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+IDD_PROPPAGE_4 DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Start",IDOK,252,200,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,306,200,50,14
-    LISTBOX         IDC_LIST,4,20,356,176,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Header",IDC_HEADER,8,4,348,8
+    GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,5,7,187,96
+    RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,20,25,116,10
+    EDITTEXT        IDC_BETWEEN_TIME,142,23,32,13,ES_AUTOHSCROLL
+    RTEXT           "Additional random time:",IDC_BETWEEN_TIME_RANDOM_LABEL,33,39,103,10
+    EDITTEXT        IDC_BETWEEN_TIME_RANDOM,142,38,32,13,ES_AUTOHSCROLL
+    RTEXT           "Auto preset blend time:",IDC_BLEND_AUTO_LABEL,34,55,102,10
+    EDITTEXT        IDC_BLEND_AUTO,142,53,32,13,ES_AUTOHSCROLL
+    RTEXT           "User-solicited preset blend time:",IDC_BLEND_USER_LABEL,26,70,110,10
+    EDITTEXT        IDC_BLEND_USER,142,68,32,13,ES_AUTOHSCROLL
+    LTEXT           "(seconds)",IDC_STATIC,142,83,33,10
+    GROUPBOX        "Hard Cuts (driven by major beats)",IDC_STATIC,5,106,187,91
+    RTEXT           "Average time between hard cuts:",IDC_HARDCUT_BETWEEN_TIME_LABEL,20,119,116,10
+    EDITTEXT        IDC_HARDCUT_BETWEEN_TIME,142,117,32,13,ES_AUTOHSCROLL
+    LTEXT           "(seconds)",IDC_STATIC,142,132,33,10
+    LTEXT           "Loudness threshold:",IDC_HARDCUT_LOUDNESS_LABEL,31,139,71,9
+    CTEXT           "Min.",IDC_HARDCUT_LOUDNESS_MIN,37,151,14,9
+    CONTROL         "Slider1",IDC_HARDCUT_LOUDNESS,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,150,114,16
+    CTEXT           "Max.",IDC_HARDCUT_LOUDNESS_MAX,165,151,16,9
+    CONTROL         "&Disable hard cuts",IDC_CB_HARDCUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,171,72,13
 END
 
-IDD_LISTCONTROL_DEMO DIALOGEX 0, 0, 311, 177
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+IDD_FONTDIALOG DIALOGEX 0, 0, 354, 175
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_NOPARENTNOTIFY
+CAPTION "Select Fonts"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LIST1,"SysListView32",LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,12,12,288,156
+    LTEXT           "Typeset:",IDC_FONT_CAPTION,85,4,109,9
+    LTEXT           "Size:",IDC_FONTSIZE_CAPTION,217,4,50,10
+    LTEXT           "Bold",IDC_FONTOPTIONS_CAPTION,290,4,16,10
+    LTEXT           "Italics",IDC_FONTOPTIONS_CAPTION2,311,4,20,10
+    LTEXT           "AA",IDC_FONTOPTIONS_CAPTION3,336,4,11,10
+    RTEXT           "Simple Font:",IDC_FONT_NAME_1,7,16,70,9
+    COMBOBOX        IDC_FONT1,85,13,127,291,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE1,217,13,65,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,293,16,9,9
+    CONTROL         "",IDC_FONTITAL1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,315,16,9,9
+    CONTROL         "",IDC_FONTAA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,337,16,9,9
+    RTEXT           "Decorative Font:",IDC_FONT_NAME_2,7,32,70,9
+    COMBOBOX        IDC_FONT2,85,29,127,291,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE2,217,29,65,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,293,32,9,9
+    CONTROL         "",IDC_FONTITAL2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,315,32,9,9
+    CONTROL         "",IDC_FONTAA2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,337,32,9,9
+    RTEXT           "Help Screen:",IDC_FONT_NAME_3,7,48,70,9
+    COMBOBOX        IDC_FONT3,85,45,127,291,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE3,217,45,65,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,293,48,9,9
+    CONTROL         "",IDC_FONTITAL3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,315,48,9,9
+    CONTROL         "",IDC_FONTAA3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,337,48,9,9
+    RTEXT           "Playlist:",IDC_FONT_NAME_4,7,65,70,9
+    COMBOBOX        IDC_FONT4,85,61,127,291,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE4,217,61,65,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,293,64,9,9
+    CONTROL         "",IDC_FONTITAL4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,315,64,9,9
+    CONTROL         "",IDC_FONTAA4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,337,64,9,9
+    RTEXT           "Font 5:",IDC_FONT_NAME_5,7,80,70,9,NOT WS_VISIBLE
+    COMBOBOX        IDC_FONT5,85,77,127,291,CBS_DROPDOWNLIST | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE5,217,77,65,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD5,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,293,80,9,9
+    CONTROL         "",IDC_FONTITAL5,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,315,80,9,9
+    CONTROL         "",IDC_FONTAA5,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,337,80,9,9
+    RTEXT           "Font 6:",IDC_FONT_NAME_6,7,96,70,9,NOT WS_VISIBLE
+    COMBOBOX        IDC_FONT6,85,93,127,291,CBS_DROPDOWNLIST | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE6,217,93,65,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD6,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,293,96,9,9
+    CONTROL         "",IDC_FONTITAL6,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,315,96,9,9
+    CONTROL         "",IDC_FONTAA6,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,337,96,9,9
+    RTEXT           "Font 7:",IDC_FONT_NAME_7,7,112,70,9,NOT WS_VISIBLE
+    COMBOBOX        IDC_FONT7,85,109,127,291,CBS_DROPDOWNLIST | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE7,217,109,65,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD7,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,293,112,9,9
+    CONTROL         "",IDC_FONTITAL7,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,315,112,9,9
+    CONTROL         "",IDC_FONTAA7,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,337,112,9,9
+    RTEXT           "Font 8:",IDC_FONT_NAME_8,7,128,70,9,NOT WS_VISIBLE
+    COMBOBOX        IDC_FONT8,85,125,127,291,CBS_DROPDOWNLIST | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE8,217,125,65,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD8,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,293,128,9,9
+    CONTROL         "",IDC_FONTITAL8,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,315,128,9,9
+    CONTROL         "",IDC_FONTAA8,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,337,128,9,9
+    RTEXT           "Font 9:",IDC_FONT_NAME_9,7,144,70,9,NOT WS_VISIBLE
+    COMBOBOX        IDC_FONT9,85,141,127,291,CBS_DROPDOWNLIST | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE9,217,141,65,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_FONTBOLD9,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,293,144,9,9
+    CONTROL         "",IDC_FONTITAL9,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,315,144,9,9
+    CONTROL         "",IDC_FONTAA9,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,337,144,9,9
+    CTEXT           "Note: 'AA' stands for anti-aliasing (smoothing); not always available.",IDC_FONT_TEXT,7,160,235,8,SS_CENTERIMAGE
+    DEFPUSHBUTTON   "OK",IDOK,246,158,50,13
+    PUSHBUTTON      "Cancel",IDCANCEL,300,158,50,13
 END
+
+IDD_DESKTOPMODE DIALOGEX 0, 0, 201, 105
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTEXTHELP
+CAPTION "Desktop Mode Options"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "Show icons",IDC_CB_SHOW_ICONS,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,4,4,51,10
+    CONTROL         "Draw colored boxes around icon text labels",IDC_CB_BOX,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,4,16,154,10
+    CONTROL         "Fix desktop icons being occluded by the taskbar when in Desktop Mode",IDC_CB_MANUAL_SCOOT,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,4,28,184,18
+    LTEXT           "When Windows is in [5-6-5] 16-bit color and there is no\nalpha (transparency) channel, try drawing the icons using...",IDC_DM_ALPHA_FIX_CAPTION,4,50,193,17,WS_DISABLED
+    COMBOBOX        IDC_DM_ALPHA_FIX,4,71,193,291,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,91,88,50,13
+    PUSHBUTTON      "Cancel",IDCANCEL,147,88,50,13
+END
+
+IDD_DUALHEAD DIALOGEX 0, 0, 304, 164
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_NOPARENTNOTIFY
+CAPTION "Dual Head Options"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Typically, multiple monitor setups feature separate video cards and separate monitors. Each resulting display has its own resolution and the desktop spans across them in some fashion.",IDC_STATIC,4,13,296,18
+    LTEXT           "Dual head video cards, though, feature a single card that feeds two monitors. Some of these cards treat the two monitors separately, but some of them treat them as halves of a single double-width (~2048x768) or double-height (~1024x1536) ""virtual screen"".",IDC_STATIC,4,34,296,26
+    GROUPBOX        "Desktop and *Fake* Fullscreen Modes",IDC_STATIC,4,64,150,96
+    LTEXT           "When a single virtual display spans two real screens Horizontally:",IDC_STATIC,10,75,137,18
+    COMBOBOX        IDC_H_PICK,16,96,104,91,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "When a single virtual display spans two real screens Vertically:",IDC_STATIC,10,113,137,18
+    COMBOBOX        IDC_V_PICK,16,134,104,67,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "As a result, graphics applications can't go 'fullscreen' on just one monitor, because it's really only half of the 'screen', from Windows' point of view.",IDC_STATIC,159,64,141,32
+    LTEXT           "This plug-in, however, will let you get away with it, when you're in Desktop Mode or *Fake* Fullscreen Mode; it just needs to know which half of the display (left/right or top/bottom) you want to use -- or both.",IDC_STATIC,159,100,141,42
+    DEFPUSHBUTTON   "OK",IDOK,196,147,50,13
+    PUSHBUTTON      "Cancel",IDCANCEL,250,147,50,13
+END
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,52 +371,52 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_MYPREFERENCES, DIALOG
+    IDD_CONFIG, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 325
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 385
         TOPMARGIN, 7
-        BOTTOMMARGIN, 281
+        BOTTOMMARGIN, 287
     END
 
-    IDD_PLAYBACK_STATE, DIALOG
+    IDD_PROPPAGE_1, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 253
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 88
     END
 
-    IDD_DSP, DIALOG
+    IDD_PROPPAGE_2, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 277
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 76
     END
 
-    IDD_UI_ELEMENT, DIALOG
+    IDD_PROPPAGE_3, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 214
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 106
     END
 
-    IDD_THREADS, DIALOG
+    IDD_PROPPAGE_4, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 357
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 225
     END
 
-    IDD_LISTCONTROL_DEMO, DIALOG
+    IDD_FONTDIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 304
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 170
+        RIGHTMARGIN, 350
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 171
+    END
+
+    IDD_DESKTOPMODE, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 197
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 101
+    END
+
+    IDD_DUALHEAD, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 300
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 160
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -200,6 +442,11 @@ BEGIN
     0
 END
 
+IDD_MYPREFERENCES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -207,13 +454,13 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,0,0
- PRODUCTVERSION 0,0,0,0
+ FILEVERSION LIBRARY_VERSION_NUMERIC
+ PRODUCTVERSION COMPONENT_VERSION_NUMERIC
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x1L
+ FILEFLAGS 0x3L
 #else
- FILEFLAGS 0x0L
+ FILEFLAGS 0x2L
 #endif
  FILEOS 0x40004L
  FILETYPE 0x2L
@@ -223,14 +470,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "KernelOops"
+            VALUE "CompanyName", COMPONENT_AUTHOR
             VALUE "FileDescription", "MilkDrop 2 Visualization Library"
-            VALUE "FileVersion", "0.0.0.0"
-            VALUE "InternalName", "foo_vis_milk2.dll"
-            VALUE "LegalCopyright", "Copyright (c) 2023 KernelOops"
-            VALUE "OriginalFilename", "foo_vis_milk2.dll"
-            VALUE "ProductName", "MilkDrop 2 Visualization for foobar2000"
-            VALUE "ProductVersion", "0.0.0.0"
+            VALUE "FileVersion", LIBRARY_VERSION
+            VALUE "InternalName", COMPONENT_FILENAME
+            VALUE "LegalCopyright", "Copyright (c) " COMPONENT_COPYRIGHT_YEAR " " COMPONENT_AUTHOR
+            VALUE "OriginalFilename", COMPONENT_FILENAME
+            VALUE "ProductName", COMPONENT_NAME
+            VALUE "ProductVersion", COMPONENT_VERSION
         END
     END
     BLOCK "VarFileInfo"

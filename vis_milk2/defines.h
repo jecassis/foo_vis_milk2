@@ -1,7 +1,7 @@
 /*
   LICENSE
   -------
-  Copyright 2005-2012 Nullsoft, Inc.
+  Copyright 2005-2013 Nullsoft, Inc.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification,
@@ -45,7 +45,7 @@
 // their old settings and reset them to the defaults for the new version;
 // but that only works if you keep this value up-to-date.
 // ***To disable this behavior, just always leave this at 100. ***
-#define INT_VERSION 200
+#define INT_VERSION 225
 
 // INT_SUBVERSION is the minor version #, counting up from 0 as you do
 // mini-releases. If the plugin goes to read the old INI file and sees that
@@ -84,7 +84,7 @@
 // launch their default browser to display this page.
 // ***Note that the button will be invisible (on the config panel)
 // at runtime if this string is empty.***
-#define PLUGIN_WEB_URL L"http://www.geisswerks.com/milkdrop/"
+#define PLUGIN_WEB_URL "http://www.geisswerks.com/milkdrop/"
 
 // The following two strings - AUTHOR_NAME and COPYRIGHT - will be used
 // in a little box in the config panel, to identify the author and copyright

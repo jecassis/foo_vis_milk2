@@ -35,15 +35,13 @@
 
 extern CPlugin g_plugin; // declared in "main.cpp"
 
-#define FRAND ((rand() % 7381)/7380.0f)
-
-// These are intended to replace GetPrivateProfileInt/FloatString, which are very slow
-//  for large files (they always start from the top).  (really slow - some preset loads 
-//  were taking 90 ms because of these!)
-// The trick here is that we assume the file will be ordered correctly.  If not - if 
-//  the next line doesn't have the expected token - we rescan from the top.  If the line
-//  is never found, we use the default value, and leave MyGetPos untouched.
-
+// These are intended to replace `GetPrivateProfileInt()/FloatString()`,
+// which are very slow for large files (they always start from the top).
+// (really slow - some preset loads were taking 90 ms because of these!)
+// The trick here is to assume the file will be ordered correctly.
+// If not - if the next line doesn't have the expected token - rescan
+// from the top. If the line is never found, we use the default value,
+// and leave MyGetPos untouched.
 typedef Vector<GStringA> VarNameList;
 typedef Vector<int> IntList;
 
@@ -171,28 +169,26 @@ bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChar
     return true;
 }
 
-int GetFastInt   (const char* szVarName, int   def, FILE* f)
+int GetFastInt(const char* szVarName, int def, FILE* f)
 {
     char buf[256];
     if (!_GetLineByName(f, szVarName, buf, 255))
         return def;
     int ret;
-    if (sscanf(buf, "%d", &ret)==1)
+    if (sscanf(buf, "%d", &ret) == 1)
         return ret;
     return def;
 }
 
-float GetFastFloat (const char* szVarName, float def, FILE* f)
+float GetFastFloat(const char* szVarName, float def, FILE* f)
 {
     char buf[256];
     if (!_GetLineByName(f, szVarName, buf, 255))
         return def;
     float ret;
-    if (_sscanf_l(buf, "%f", g_use_C_locale, &ret)==1)
-	{
+    if (_sscanf_l(buf, "%f", g_use_C_locale, &ret) == 1)
         return ret;
-	}
-	return def;
+    return def;
 }
 
 void GetFastString(const char* szVarName, const char* szDef, char* szRetLine, int nMaxChars, FILE* f)
@@ -207,7 +203,7 @@ void GetFastString(const char* szVarName, const char* szDef, char* szRetLine, in
         szRetLine[x] = szDef[x];
         x++;
     }
-    szRetLine[x] = 0;
+    szRetLine[x] = '\0';
 }
 
 CState::CState()

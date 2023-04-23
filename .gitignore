@@ -62,7 +62,6 @@ ipch/
 # Guidance Automation Toolkit
 *.gpState
 
-
 # DocProject is a documentation generator add-in
 DocProject/buildhelp/
 DocProject/Help/*.HxT
@@ -81,8 +80,7 @@ publish/
 *.pubxml
 
 # NuGet Packages Directory
-## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-#packages/
+#external/
 
 # Windows Azure Build Output
 csx
@@ -104,6 +102,7 @@ ClientBin/
 *.publishsettings
 /*.patch
 *.diff
+*.o
 
 ####################
 ## Windows detritus
@@ -143,6 +142,7 @@ CMakeLists.txt
 /external/Microsoft.XAudio2.*/
 /external/wtl*/
 /external/windows*/
+/external/eel2/
 /external/ns-eel2/asm-nseel-x86-gcc.c
 /external/ns-eel2/asm-nseel-ppc-gcc.c
 /external/ns-eel2/asm-nseel-x64-macho.o

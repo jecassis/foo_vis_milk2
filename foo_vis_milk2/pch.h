@@ -1,17 +1,18 @@
+//
+// pch.h: Pre-compiled header file.
+//
+
 #pragma once
 
 #include <winsdkver.h>
-#define _WIN32_WINNT 0x0601
-#include <sdkddkver.h>
-
-// Use the C++ standard templated min/max
-#define NOMINMAX
+#define _WIN32_WINNT 0x0601 // Windows 7
 
 // DirectX apps do not need GDI
 //#define NODRAWTEXT
 //#define NOGDI
 #define NOBITMAP
 
+#define NOMINMAX // Use the C++ standard templated min/max
 #define NOMCX
 #define NOSERVICE
 
@@ -29,3 +30,4 @@
 
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
+#include <wrl/client.h>

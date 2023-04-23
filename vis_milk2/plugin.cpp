@@ -88,11 +88,10 @@ int warand()
     return rand();
 }
 
-#define FRAND ((warand() % 7381)/7380.0f)
-
 void NSEEL_HOSTSTUB_EnterMutex()
 {
 }
+
 void NSEEL_HOSTSTUB_LeaveMutex()
 {
 }
@@ -1255,32 +1254,30 @@ int CPlugin::AllocateMilkDropDX11()
                     break;
                 }
 
-                // add it to m_textures[].  
-                TexInfo x;  
-				swprintf(x.texname, L"blur%d%s", i/2+1, (i%2) ? L"" : L"doNOTuseME");
-                x.texptr  = m_lpBlur[i];
-                //x.texsize_param = NULL;
-                x.w = w2;
-                x.h = h2;
-                x.d = 1;
-                x.bEvictable    = false;
-                x.nAge          = m_nPresetsLoadedTotal;
-                x.nSizeInBytes  = 0;
-                m_textures.push_back(x);
-            }
-        #endif
+            // Add it to `m_textures[]`.
+            TexInfo x;
+            swprintf_s(x.texname, L"blur%d%s", i / 2 + 1, (i % 2) ? L"" : L"doNOTuseME");
+            x.texptr = m_lpBlur[i];
+            //x.texsize_param = NULL;
+            x.w = w2;
+            x.h = h2;
+            x.d = 1;
+            x.bEvictable = false;
+            x.nAge = m_nPresetsLoadedTotal;
+            x.nSizeInBytes = 0;
+            m_textures.push_back(x);
+        }
+#endif
     }
 
-
-    m_fAspectX = (m_nTexSizeY > m_nTexSizeX) ? m_nTexSizeX/(float)m_nTexSizeY : 1.0f;
-    m_fAspectY = (m_nTexSizeX > m_nTexSizeY) ? m_nTexSizeY/(float)m_nTexSizeX : 1.0f;
-    m_fInvAspectX = 1.0f/m_fAspectX;
-    m_fInvAspectY = 1.0f/m_fAspectY;
-
+    m_fAspectX = (m_nTexSizeY > m_nTexSizeX) ? m_nTexSizeX / (float)m_nTexSizeY : 1.0f;
+    m_fAspectY = (m_nTexSizeX > m_nTexSizeY) ? m_nTexSizeY / (float)m_nTexSizeX : 1.0f;
+    m_fInvAspectX = 1.0f / m_fAspectX;
+    m_fInvAspectY = 1.0f / m_fAspectY;
 
     // BUILD VERTEX LIST for final composite blit
-	//   note the +0.5-texel offset! 
-	//   (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
+    // note the +0.5-texel offset!
+    // (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
 	ZeroMemory(m_comp_verts, sizeof(MDVERTEX) * FCGSX * FCGSY);
 	//float fOnePlusInvWidth  = 1.0f + 1.0f/(float)GetWidth();
 	//float fOnePlusInvHeight = 1.0f + 1.0f/(float)GetHeight();
@@ -1353,7 +1350,6 @@ int CPlugin::AllocateMilkDropDX11()
             //p->tv_orig = v;
             p->rad = rad;
             p->ang = ang;
-            //p->Diffuse = 0xFFFFFFFF;
             p->a = 1.0f;
             p->r = 1.0f;
             p->g = 1.0f;
@@ -1977,7 +1973,7 @@ void PShaderInfo::Clear()
     params.Clear();
 }
 
-// Global_CShaderParams_master_list: a master list of all CShaderParams classes in existence.
+// `global_CShaderParams_master_list`: a master list of all CShaderParams classes in existence.
 // ** when we evict a texture, we need to NULL out any texptrs these guys have! **
 CShaderParamsList global_CShaderParams_master_list;
 CShaderParams::CShaderParams()
@@ -2022,10 +2018,9 @@ void CShaderParams::Clear()
 
 bool CPlugin::EvictSomeTexture()
 {
-    // note: this won't evict a texture whose age is zero,
+#if _DEBUG
+    // Note: this won't evict a texture whose age is zero,
     //       or whose reported size is zero!
-
-    #if _DEBUG
     {
         int nEvictableFiles = 0;
         int nEvictableBytes = 0;
@@ -2058,7 +2053,7 @@ bool CPlugin::EvictSomeTexture()
         }
     if (!bAtLeastOneFound)
         return false;
-    
+
     // find the "biggest" texture, but dilate things so that the newest textures
     // are HALF as big as the oldest textures, and thus, less likely to get booted.
     int biggest_bytes = 0;
@@ -2066,27 +2061,26 @@ bool CPlugin::EvictSomeTexture()
     for (i=0; i<N; i++)
         if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes>0 && m_textures[i].nAge < m_nPresetsLoadedTotal-1) // note: -1 here keeps images around for the blend-from preset, too...
         {
-            float size_mult = 1.0f + (m_textures[i].nAge - newest)/(float)(oldest-newest);
+            float size_mult = 1.0f + (m_textures[i].nAge - newest) / (float)(oldest - newest);
             int bytes = (int)(m_textures[i].nSizeInBytes * size_mult);
             if (bytes > biggest_bytes)
             {
                 biggest_bytes = bytes;
                 biggest_index = i;
-            }            
+            }
         }
     if (biggest_index == -1)
         return false;
 
-    
-    // evict that sucker
+    // Evict that sucker.
     assert(m_textures[biggest_index].texptr);
 
-    // notify all CShaderParams classes that we're releasing a bindable texture!!
+    // Notify all CShaderParams classes that we're releasing a bindable texture!!
     N = global_CShaderParams_master_list.size();
     for (i=0; i<N; i++) 
         global_CShaderParams_master_list[i]->OnTextureEvict( m_textures[biggest_index].texptr );
 
-    // 2. erase the texture itself
+    // 2. Erase the texture itself.
     SafeRelease(m_textures[biggest_index].texptr);
     m_textures.eraseAt(biggest_index);   
 
@@ -2096,12 +2090,12 @@ bool CPlugin::EvictSomeTexture()
 GString texture_exts[] = { L"jpg", L"dds", L"png", L"tga", L"bmp", L"dib", };
 const wchar_t szExtsWithSlashes[] = L"jpg|png|dds|etc.";
 typedef Vector<GString> StringVec;
-bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename)  //should be MAX_PATH chars
+bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // should be MAX_PATH chars
 {
     static StringVec texfiles;
-    static DWORD     texfiles_timestamp = 0;   // update this a max of every ~2 seconds or so
+    static DWORD texfiles_timestamp = 0; // update this a max of every ~2 seconds or so
 
-    // if it's been more than a few seconds since the last textures dir scan, redo it.  
+    // If it's been more than a few seconds since the last textures dir scan, redo it.
     // (..just enough to make sure we don't do it more than once per preset load)
     //DWORD t = timeGetTime(); // in milliseconds
     //if (abs(t - texfiles_timestamp) > 2000)
@@ -2132,28 +2126,27 @@ bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename)  //
             for (int i=0; i<sizeof(texture_exts)/sizeof(texture_exts[0]); i++)
                 if (!_wcsicmp(texture_exts[i].c_str(), ext+1))
                 {
-                    // valid texture found - add it to the list.  ("heart.jpg", for example)
+                    // Valid texture found - add it to the list. ("heart.jpg", for example).
                     texfiles.push_back( ffd.cFileName );
                     continue;
                 }
-        }
-	    while (FindNextFileW(hFindFile, &ffd));
-	    FindClose(hFindFile);
+        } while (FindNextFileW(hFindFile, &ffd));
+        FindClose(hFindFile);
     }
 
     if (texfiles.size() == 0)
         return false;
 
-    // then randomly pick one
-    if (prefix==NULL || prefix[0]==0) 
+    // Then randomly pick one.
+    if (prefix == NULL || prefix[0] == 0)
     {
-        // pick randomly from entire list
+        // Pick randomly from entire list.
         int i = warand() % texfiles.size();
         wcscpy(szRetTextureFilename, texfiles[i].c_str());
     }
     else
     {
-        // only pick from files w/the right prefix
+        // Only pick from files with the right prefix.
         StringVec temp_list;
         int N = texfiles.size();
         int len = wcslen(prefix);
@@ -2164,7 +2157,7 @@ bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename)  //
         N = temp_list.size();
         if (N==0)
             return false;
-        // pick randomly from the subset
+        // Pick randomly from the subset.
         i = warand() % temp_list.size();
         wcscpy(szRetTextureFilename, temp_list[i].c_str());
     }
@@ -4094,7 +4087,7 @@ retry:
     {
     	g_plugin.MergeSortPresets(0, g_plugin.m_nPresets-1);
 
-        // update cumulative ratings, since order changed...
+        // Update cumulative ratings, since order changed...
         g_plugin.m_presets[0].fRatingCum = g_plugin.m_presets[0].fRatingThis;
         for (int i=0; i<g_plugin.m_nPresets; i++)
             g_plugin.m_presets[i].fRatingCum = g_plugin.m_presets[i-1].fRatingCum + g_plugin.m_presets[i].fRatingThis;

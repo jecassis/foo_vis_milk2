@@ -123,13 +123,13 @@ void Vis::SetPwd(std::string pwd) noexcept
 
 bool Vis::NextPreset()
 {
-    //g_plugin.NextPreset(1.0f);
+    g_plugin.NextPreset(1.0f);
     return true;
 }
 
 bool Vis::PrevPreset()
 {
-    //g_plugin.PrevPreset(1.0f);
+    g_plugin.PrevPreset(1.0f);
     return true;
 }
 
@@ -147,13 +147,13 @@ bool Vis::LoadPreset(int select)
 
 bool Vis::LockPreset(bool lockUnlock)
 {
-    //g_plugin.m_bPresetLockedByUser = lockUnlock;
+    g_plugin.m_bPresetLockedByUser = lockUnlock;
     return true;
 }
 
 bool Vis::RandomPreset()
 {
-    //g_plugin.LoadRandomPreset(1.0f);
+    g_plugin.LoadRandomPreset(1.0f);
     return true;
 }
 

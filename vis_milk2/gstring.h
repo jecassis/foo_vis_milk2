@@ -5,7 +5,7 @@
 // It cleans itself up automatically, it can copy itself,
 //   test for equality, etc. 
 // and you can use .c_str() to get the string const, so it's
-//   sytactically the same (usage-wise) as std::string.
+//   syntactically the same (usage-wise) as std::string.
 // Written by Ryan Geiss.
 
 #include <windows.h>
@@ -48,7 +48,7 @@ public:
             delete m_data;  // note: delete is safe on NULL ptrs
             if (src) 
             {
-                m_size = wcslen(src)+1;
+                m_size = static_cast<int>(wcslen(src) + 1);
                 m_data = new wchar_t[m_size];
                 memcpy(m_data, src, m_size*2);
             }
@@ -156,7 +156,7 @@ public:
             delete m_data;  // note: delete is safe on NULL ptrs
             if (src)
             {
-                m_size = strlen(src)+1;
+                m_size = static_cast<int>(strlen(src) + 1);
                 m_data = new char[m_size];
                 memcpy(m_data, src, m_size);
             }

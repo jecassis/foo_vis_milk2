@@ -30,22 +30,24 @@
 #ifndef __NULLSOFT_DX_PLUGIN_H__
 #define __NULLSOFT_DX_PLUGIN_H__
 
+#include <nu/Vector.h>
+#include "gstring.h"
 #include "pluginshell.h"
 #include "md_defines.h"
 //#include "menu.h"
 #include "support.h"
 #include "texmgr.h"
 #include "state.h"
-#include <nu/Vector.h>
-
-#include "gstring.h"
 #include "constanttable.h"
 
+int warand();
+
+#define FRAND ((warand() % 7381) / 7380.0f)
 
 // clang-format off
 typedef enum { TEX_DISK, TEX_VS, TEX_BLUR0, TEX_BLUR1, TEX_BLUR2, TEX_BLUR3, TEX_BLUR4, TEX_BLUR5, TEX_BLUR6, TEX_BLUR_LAST } tex_code;
 typedef enum { UI_REGULAR, UI_MENU, UI_LOAD, UI_LOAD_DEL, UI_LOAD_RENAME, UI_SAVEAS, UI_SAVE_OVERWRITE, UI_EDIT_MENU_STRING, UI_CHANGEDIR, UI_IMPORT_WAVE, UI_EXPORT_WAVE, UI_IMPORT_SHAPE, UI_EXPORT_SHAPE, UI_UPGRADE_PIXEL_SHADER, UI_MASHUP } ui_mode;
-typedef struct { float rad; float ang; float a; float c; } td_vertinfo; // blending: mix = max(0,min(1,a*t + c));
+typedef struct { float rad; float ang; float a; float c; } td_vertinfo; //blending: mix = std::max(0, std::min(1, a * t + c));
 // clang-format on
 typedef char* CHARPTR;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);

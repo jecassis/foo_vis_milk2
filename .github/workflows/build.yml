@@ -1,0 +1,101 @@
+name: Win32 MSVC DLL Build
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    name: Build and test library
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Release] #, Debug]
+        platform: [x86, x64, arm64]
+    env:
+      SDK_VERSION: '2023-04-18'
+      SDK_SHA256: 54cb34d63bc03e124d0a56a39d269c933e2ac3b4719fac0c57f5babc4d0e2b91
+    steps:
+      - name: Clone foo_vis_milk2 repository
+        uses: actions/checkout@v3
+      - name: Cache NuGet packages (DirectXTK and WTL)
+        uses: actions/cache@v3
+        id: nuget
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+      - name: Cache NuGet packages (DirectXTK and WTL)
+        uses: actions/cache@v3
+        id: nuget
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ runner.os }}-foobar2000-${{ hashFiles('**/fb2ksdk.7z') }}
+      - name: Restore cached NuGet packages (DirectXTK and WTL)
+        if: steps.nuget.outputs.cache-hit != 'true'
+        run: nuget restore foo_vis_milk2.sln
+      - name: Download and install foobar2000 SDK
+        if: steps.sdk.outputs.cache-hit != 'true'
+        run: |
+          Invoke-WebRequest -Uri "https://www.foobar2000.org/getfile/SDK-${Env:SDK_VERSION}.7z" -OutFile "$(Get-Location)\fb2ksdk.7z"
+          (Get-FileHash -Path "$(Get-Location)\fb2ksdk.7z" -Algorithm SHA256).Hash -eq "${Env:SDK_SHA256}"
+          7z.exe x -o"$(Get-Location)\external\foobar2000 "$(Get-Location)\fb2ksdk.7z"
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1
+        with:
+          msbuild-architecture: ${{ matrix.platform }}
+      - name: Set up NuGet and add to PATH
+        uses: nuget/setup-nuget@v1
+      #- name: Prepare build
+      #  run: |
+      #    (Get-Content ${{github.workspace}}\src\vis_milk2\vis.cpp).replace('if (WASABI_API_SVC == (api_service*)1)', 'goto done;') | Set-Content ${{github.workspace}}\src\vis_milk2\vis.cpp
+      - name: Build ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }} # https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022
+        run: msbuild.exe --% -verbosity:diagnostic -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} "${{ github.workspace }}\foo_vis_milk2.sln"
+      - name: Validate ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
+        run: |
+          Write-Host ((Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
+          (Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.FileVersion
+          (Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.ProductVersion
+      #- name: Test ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
+      #  working-directory: ${{ github.workspace }}
+      #  run: |
+      #    #(Get-Content ${{ github.workspace }}\src\vis_milk2\vis.cpp).replace('if (WASABI_API_SVC == (api_service*)1)', 'goto done;') | Set-Content ${{github.workspace}}\src\vis_milk2\vis.cpp
+      #    #msbuild.exe /t:Clean /verbosity:normal /nologo /m:4 /p:'Configuration=${{ matrix.configuration }};Platform=Win32' ${{ github.workspace }}\src\vis_milk2\milkdrop.sln
+      #    #msbuild.exe --% /t:Build /verbosity:quiet /nologo /m:4 /p:Configuration=${{ matrix.configuration }};Platform=Win32;OutDir=$(SolutionDir)${{ matrix.configuration }}\test ${{ github.workspace }}\src\vis_milk2\milkdrop.sln
+      #    vstest.console.exe ${{ github.workspace }}\src\vis_milk2\${{ matrix.configuration }}\test.dll
+      - name: Upload ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}
+          path: |
+            ${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll
+            ${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.pdb
+  package:
+    name: Package foobar2000 MilkDrop 2 component
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Prepare component bundle area
+        run: |
+          New-Item -Path "${{ github.workspace }}\component" -Type Directory
+          New-Item -Path "${{ github.workspace }}\component\x64" -Type Directory
+      - name: Download x86 DLL
+        uses: actions/download-artifact@v3
+        with:
+          name: milk2-x86-Release
+          path: ${{ github.workspace }}\component
+      - name: Download results from x64 build
+        uses: actions/download-artifact@v3
+        with:
+          name: milk2-x64-Release
+          path: ${{ github.workspace }}\component\x64
+      - name: Package foobar2000 MilkDrop 2 component
+        run: |
+          Get-ChildItem -Path "${{ github.workspace }}\component" -File -Recurse -Force -Name
+          Get-ChildItem -Path "${{ github.workspace }}\component" -Include '*.pdb' -Recurse -Force | Remove-Item
+          Compress-Archive -Path "${{ github.workspace }}\component\*" -DestinationPath "${{ github.workspace }}\foo_vis_milk2.fb2k-component"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: foo_vis_milk2-component
+          path: ${{ github.workspace }}\foo_vis_milk2.fb2k-component

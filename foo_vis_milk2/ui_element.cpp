@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "config.h"
 #include "vis.h"
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default
@@ -6,6 +7,7 @@
 //__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 //__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 //}
+
 // Anonymous namespace is standard practice in foobar2000 components.
 // Nothing outside should have any reason to see these symbols and do not want
 // funny results if another component has similarly named classes.
@@ -13,16 +15,11 @@ namespace
 {
 static const GUID guid_milk2 = {
     0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}
-};
-
-static float sin1 = 0;
-static float sin2 = 0;
+}; // {204B0345-4DF5-4B47-ADD3-989F811BD9A5}
 
 std::unique_ptr<Vis> g_vis;
 
-class milk2_ui_element_instance :
-    public ui_element_instance,
-    public CWindowImpl<milk2_ui_element_instance>
+class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl<milk2_ui_element_instance>
 {
   public:
     DECLARE_WND_CLASS_EX(TEXT("MilkDrop2"), CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));
@@ -49,8 +46,8 @@ class milk2_ui_element_instance :
 
     milk2_ui_element_instance(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback);
     HWND get_wnd() { return *this; }
-    void set_configuration(ui_element_config::ptr config) { m_config = config; }
-    ui_element_config::ptr get_configuration() { return m_config; }
+    void set_configuration(ui_element_config::ptr config);
+    ui_element_config::ptr get_configuration();
     static GUID g_get_guid() { return guid_milk2; }
     static GUID g_get_subclass() { return ui_element_subclass_playback_visualisation; }
     static void g_get_name(pfc::string_base& out) { out = "MilkDrop"; }
@@ -75,11 +72,10 @@ class milk2_ui_element_instance :
     void OnLButtonDblClk(UINT nFlags, CPoint point) { ToggleFullScreen(); }
 
     void ToggleFullScreen() { static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window()); }
-    void AudioData(const float* pAudioData, size_t iAudioDataLength);
-    void AddPCM();
+    void BuildWaves();
     void UpdateChannelMode();
 
-    ui_element_config::ptr m_config; //milk2_config m_config;
+    milk2_config m_config;
     visualisation_stream_v3::ptr m_vis_stream;
 
     ULONGLONG m_last_refresh;
@@ -92,24 +88,34 @@ class milk2_ui_element_instance :
     bool s_in_suspend;
     bool s_minimized;
 
-    enum
+    enum milk2_ui_timer
     {
         ID_REFRESH_TIMER = 1
     };
 
-    enum
+    enum milk2_ui_menu_id
     {
         IDM_TOGGLE_FULLSCREEN = 1,
-        IDM_HW_RENDERING_ENABLED,
-        IDM_DOWNMIX_ENABLED,
-        IDM_RESAMPLE_ENABLED,
-        IDM_WINDOW_DURATION_50,
-        IDM_WINDOW_DURATION_100,
-        IDM_ZOOM_50,
-        IDM_ZOOM_75,
-        IDM_ZOOM_100,
-        IDM_REFRESH_RATE_LIMIT_20,
-        IDM_REFRESH_RATE_LIMIT_60
+        IDM_NEXT_PRESET,
+        IDM_PREVIOUS_PRESET,
+        IDM_LOCK_PRESET,
+        IDM_SHUFFLE_PRESET,
+        IDM_ENABLE_DOWNMIX,
+        //IDM_DURATION_5,
+        //IDM_DURATION_10,
+        //IDM_DURATION_20,
+        //IDM_DURATION_30,
+        //IDM_DURATION_45,
+        //IDM_DURATION_60,
+        //IDM_HW_RENDERING_ENABLED,
+        //IDM_RESAMPLE_ENABLED,
+        //IDM_WINDOW_DURATION_50,
+        //IDM_WINDOW_DURATION_100,
+        //IDM_ZOOM_50,
+        //IDM_ZOOM_75,
+        //IDM_ZOOM_100,
+        //IDM_REFRESH_RATE_LIMIT_20,
+        //IDM_REFRESH_RATE_LIMIT_60
     };
 
   protected:
@@ -117,24 +123,39 @@ class milk2_ui_element_instance :
 };
 
 milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
-    m_callback(p_callback),
-    m_config(config)
+    m_callback(p_callback)
 {
     s_in_sizemove = false;
     s_in_suspend = false;
     s_minimized = false;
 
-    //set_configuration(config);
+    set_configuration(config);
     g_vis = std::make_unique<Vis>();
 }
 
 ui_element_config::ptr milk2_ui_element_instance::g_get_default_configuration()
 {
-    //ui_element_config_builder builder;
-    //oscilloscope_config config;
-    //config.build(builder);
-    //return builder.finish(g_get_guid());
-    return ui_element_config::g_create_empty(g_get_guid());
+    ui_element_config_builder builder;
+    milk2_config config;
+    config.build(builder);
+    return builder.finish(g_get_guid());
+    //return ui_element_config::g_create_empty(g_get_guid());
+}
+
+void milk2_ui_element_instance::set_configuration(ui_element_config::ptr p_data) {
+    ui_element_config_parser parser(p_data);
+    milk2_config config;
+    config.parse(parser);
+    m_config = config;
+
+    UpdateChannelMode();
+    //UpdateRefreshRateLimit();
+}
+
+ui_element_config::ptr milk2_ui_element_instance::get_configuration() {
+    ui_element_config_builder builder;
+    m_config.build(builder);
+    return builder.finish(g_get_guid());
 }
 
 void milk2_ui_element_instance::notify(const GUID& p_what, t_size p_param1, const void* p_param2, t_size p_param2size)
@@ -145,25 +166,9 @@ void milk2_ui_element_instance::notify(const GUID& p_what, t_size p_param1, cons
     }
 }
 
-//void milk2_ui_element_instance::set_configuration(ui_element_config::ptr p_data) {
-//    ui_element_config_parser parser(p_data);
-//    oscilloscope_config config;
-//    config.parse(parser);
-//    m_config = config;
-//
-//    UpdateChannelMode();
-//    UpdateRefreshRateLimit();
-//}
-
-//ui_element_config::ptr milk2_ui_element_instance::get_configuration() {
-//    ui_element_config_builder builder;
-//    m_config.build(builder);
-//    return builder.finish(g_get_guid());
-//}
-
 int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 {
-#ifndef NDEBUG
+#ifdef _DEBUG
     console::formatter() << core_api::get_my_file_name() << ": OnCreate " << cs->x << ", " << cs->y;
 #endif
     std::string base_path = core_api::get_my_full_path();
@@ -187,8 +192,10 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
         h = r.bottom - r.top;
     }
     g_vis->Initialize(get_wnd(), w, h);
+#ifdef _DEBUG
     //console::formatter() << core_api::get_my_file_name() << ": Could not initialize MilkDrop";
     console::formatter() << core_api::get_my_file_name() << ": OnCreate2 " << r.right << ", " << r.left << ", " << r.top << ", " << r.bottom;
+#endif
     try
     {
         static_api_ptr_t<visualisation_manager> vis_manager;
@@ -208,7 +215,7 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 
 void milk2_ui_element_instance::OnDestroy()
 {
-#ifndef NDEBUG
+#ifdef _DEBUG
     console::formatter() << core_api::get_my_file_name() << ": OnDestroy";
 #endif
     m_vis_stream.release();
@@ -223,18 +230,18 @@ void milk2_ui_element_instance::OnDestroy()
 
 void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 {
-#ifndef NDEBUG
-    //console::formatter() << core_api::get_my_file_name() << ": OnTimer";
-#endif
+//#ifdef _DEBUG
+//    console::formatter() << core_api::get_my_file_name() << ": OnTimer";
+//#endif
     KillTimer(ID_REFRESH_TIMER);
     Invalidate();
 }
 
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
-#ifndef NDEBUG
-    //console::formatter() << core_api::get_my_file_name() << ": OnPaint";
-#endif
+//#ifdef _DEBUG
+//    console::formatter() << core_api::get_my_file_name() << ": OnPaint";
+//#endif
     auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (vis) //s_in_sizemove && vis
     {
@@ -247,11 +254,11 @@ void milk2_ui_element_instance::OnPaint(CDCHandle dc)
         EndPaint(&ps);
     }
     ValidateRect(nullptr);
-    AddPCM();
 
     ULONGLONG now = GetTickCount64();
     if (m_vis_stream.is_valid())
     {
+        BuildWaves();
         ULONGLONG next_refresh = m_last_refresh + m_refresh_interval;
         // (next_refresh < now) would break when GetTickCount() overflows
         if (static_cast<LONGLONG>(next_refresh - now) < 0)
@@ -274,8 +281,8 @@ void milk2_ui_element_instance::OnMove(CPoint ptPos)
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 {
-#ifndef NDEBUG
-    //console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
+#ifdef _DEBUG
+    console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
 #endif
     auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (nType == SIZE_MINIMIZED)
@@ -356,10 +363,13 @@ void milk2_ui_element_instance::OnActivateApp(BOOL bActive, DWORD dwThreadID)
     }
 }
 
-// Bit 29: The context code. The value is 1 if the ALT key is down while the key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to the active window because no window has the keyboard focus.
-// Bit 30: The previous key state. The value is 1 if the key is down before the message is sent, or it is 0 if the key is up.
 void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    // Bit 29: The context code. The value is 1 if the ALT key is down while the
+    //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
+    //         the active window because no window has the keyboard focus.
+    // Bit 30: The previous key state. The value is 1 if the key is down before
+    //         the message is sent, or it is 0 if the key is up.
     if (nChar == VK_RETURN && (nFlags & 0x6000) == 0x2000)
     {
         ToggleFullScreen();
@@ -368,8 +378,8 @@ void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFla
 
 void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
 {
-#ifndef NDEBUG
-    //console::formatter() << core_api::get_my_file_name() << ": OnContextMenu " << point.x << ", " << point.y;
+#ifdef _DEBUG
+    console::formatter() << core_api::get_my_file_name() << ": OnContextMenu " << point.x << ", " << point.y;
 #endif
     if (m_callback->is_edit_mode_enabled())
     {
@@ -377,108 +387,113 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
     }
     else
     {
+        // A (-1,-1) point is due to context menu key rather than right click.
+        // `GetContextMenuPoint()` fixes that, returning a proper point at which the menu should be shown.
+        //point = m_list.GetContextMenuPoint(point);
         CMenu menu;
-        menu.CreatePopupMenu();
-        menu.AppendMenu(MF_STRING, IDM_TOGGLE_FULLSCREEN, TEXT("Toggle Full-Screen Mode"));
+        WIN32_OP_D(menu.CreatePopupMenu());
+        menu.AppendMenu(MF_STRING, IDM_NEXT_PRESET, TEXT("Next Preset"));
+        menu.AppendMenu(MF_STRING, IDM_PREVIOUS_PRESET, TEXT("Previous Preset"));
+        menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
+        menu.AppendMenu(MF_STRING | (m_config.m_bPresetLockedByUser ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
         menu.AppendMenu(MF_SEPARATOR);
-        menu.AppendMenu(MF_STRING /* | (m_config.m_downmix_enabled ? MF_CHECKED : 0) */, IDM_DOWNMIX_ENABLED, TEXT("Downmix Channels"));
-
-        CMenu durationMenu;
-        durationMenu.CreatePopupMenu();
-        durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 50) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_50, TEXT("50 ms"));
-        durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 100) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_100, TEXT("100 ms"));
-
-        menu.AppendMenu(MF_STRING, durationMenu, TEXT("Window Duration"));
-
-        CMenu zoomMenu;
-        zoomMenu.CreatePopupMenu();
-        zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 50) ? MF_CHECKED : 0) */, IDM_ZOOM_50, TEXT("50 %"));
-        zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 75) ? MF_CHECKED : 0) */, IDM_ZOOM_75, TEXT("75 %"));
-        zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 100) ? MF_CHECKED : 0) */, IDM_ZOOM_100, TEXT("100 %"));
-
-        menu.AppendMenu(MF_STRING, zoomMenu, TEXT("Zoom"));
-
-        CMenu refreshRateLimitMenu;
-        refreshRateLimitMenu.CreatePopupMenu();
-        refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 20) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_20, TEXT("20 Hz"));
-        refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 60) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_60, TEXT("60 Hz"));
-
-        menu.AppendMenu(MF_STRING, refreshRateLimitMenu, TEXT("Refresh Rate Limit"));
-
+        menu.AppendMenu(MF_STRING | (m_config.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
         menu.AppendMenu(MF_SEPARATOR);
+        menu.AppendMenu(MF_STRING, IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
 
-        menu.AppendMenu(MF_STRING /* | (m_config.m_resample_enabled ? MF_CHECKED : 0) */, IDM_RESAMPLE_ENABLED, TEXT("Resample For Display"));
-        menu.AppendMenu(MF_STRING /* | (m_config.m_hw_rendering_enabled ? MF_CHECKED : 0) */, IDM_HW_RENDERING_ENABLED, TEXT("Allow Hardware Rendering"));
+        //CMenu durationMenu;
+        //durationMenu.CreatePopupMenu();
+        //durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 50) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_50, TEXT("50 ms"));
+        //durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 100) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_100, TEXT("100 ms"));
 
-        menu.SetMenuDefaultItem(IDM_TOGGLE_FULLSCREEN);
+        //menu.AppendMenu(MF_STRING, durationMenu, TEXT("Window Duration"));
+
+        //CMenu zoomMenu;
+        //zoomMenu.CreatePopupMenu();
+        //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 50) ? MF_CHECKED : 0) */, IDM_ZOOM_50, TEXT("50 %"));
+        //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 75) ? MF_CHECKED : 0) */, IDM_ZOOM_75, TEXT("75 %"));
+        //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 100) ? MF_CHECKED : 0) */, IDM_ZOOM_100, TEXT("100 %"));
+
+        //menu.AppendMenu(MF_STRING, zoomMenu, TEXT("Zoom"));
+
+        //CMenu refreshRateLimitMenu;
+        //refreshRateLimitMenu.CreatePopupMenu();
+        //refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 20) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_20, TEXT("20 Hz"));
+        //refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 60) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_60, TEXT("60 Hz"));
+
+        //menu.AppendMenu(MF_STRING, refreshRateLimitMenu, TEXT("Refresh Rate Limit"));
+
+        //menu.AppendMenu(MF_SEPARATOR);
+
+        //menu.AppendMenu(MF_STRING /* | (m_config.m_resample_enabled ? MF_CHECKED : 0) */, IDM_RESAMPLE_ENABLED, TEXT("Resample For Display"));
+        //menu.AppendMenu(MF_STRING /* | (m_config.m_hw_rendering_enabled ? MF_CHECKED : 0) */, IDM_HW_RENDERING_ENABLED, TEXT("Allow Hardware Rendering"));
+
+        //menu.SetMenuDefaultItem(IDM_TOGGLE_FULLSCREEN);
 
         int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
 
         switch (cmd)
         {
             case IDM_TOGGLE_FULLSCREEN:
-                //ToggleFullScreen();
+                ToggleFullScreen();
                 break;
-            case IDM_HW_RENDERING_ENABLED:
-                //m_config.m_hw_rendering_enabled = !m_config.m_hw_rendering_enabled;
-                //DiscardDeviceResources();
+            case IDM_NEXT_PRESET:
+                vis->NextPreset();
                 break;
-            case IDM_DOWNMIX_ENABLED:
-                //m_config.m_downmix_enabled = !m_config.m_downmix_enabled;
+            case IDM_PREVIOUS_PRESET:
+                vis->PrevPreset();
+                break;
+            case IDM_LOCK_PRESET:
+                m_config.m_bPresetLockedByUser = !m_config.m_bPresetLockedByUser;
+                vis->LockPreset(m_config.m_bPresetLockedByUser);
+                break;
+            case IDM_SHUFFLE_PRESET:
+                vis->RandomPreset();
+                break;
+            case IDM_ENABLE_DOWNMIX:
+                m_config.m_bEnableDownmix = !m_config.m_bEnableDownmix;
                 UpdateChannelMode();
                 break;
-            case IDM_RESAMPLE_ENABLED:
-                //m_config.m_resample_enabled = !m_config.m_resample_enabled;
-                break;
-            case IDM_WINDOW_DURATION_50:
-                //m_config.m_window_duration_millis = 50;
-                break;
-            case IDM_WINDOW_DURATION_100:
-                //m_config.m_window_duration_millis = 100;
-                break;
-            case IDM_ZOOM_50:
-                //m_config.m_zoom_percent = 50;
-                break;
-            case IDM_ZOOM_75:
-                //m_config.m_zoom_percent = 75;
-                break;
-            case IDM_ZOOM_100:
-                //m_config.m_zoom_percent = 100;
-                break;
-            case IDM_REFRESH_RATE_LIMIT_20:
-                //m_config.m_refresh_rate_limit_hz = 20;
-                //UpdateRefreshRateLimit();
-                break;
-            case IDM_REFRESH_RATE_LIMIT_60:
-                //m_config.m_refresh_rate_limit_hz = 60;
-                //UpdateRefreshRateLimit();
-                break;
+            //case IDM_HW_RENDERING_ENABLED:
+            //    m_config.m_hw_rendering_enabled = !m_config.m_hw_rendering_enabled;
+            //    DiscardDeviceResources();
+            //    break;
+            //case IDM_RESAMPLE_ENABLED:
+            //    m_config.m_resample_enabled = !m_config.m_resample_enabled;
+            //    break;
+            //case IDM_WINDOW_DURATION_50:
+            //    m_config.m_window_duration_millis = 50;
+            //    break;
+            //case IDM_WINDOW_DURATION_100:
+            //    m_config.m_window_duration_millis = 100;
+            //    break;
+            //case IDM_ZOOM_50:
+            //    m_config.m_zoom_percent = 50;
+            //    break;
+            //case IDM_ZOOM_75:
+            //    m_config.m_zoom_percent = 75;
+            //    break;
+            //case IDM_ZOOM_100:
+            //    m_config.m_zoom_percent = 100;
+            //    break;
+            //case IDM_REFRESH_RATE_LIMIT_20:
+            //    m_config.m_refresh_rate_limit_hz = 20;
+            //    UpdateRefreshRateLimit();
+            //    break;
+            //case IDM_REFRESH_RATE_LIMIT_60:
+            //    m_config.m_refresh_rate_limit_hz = 60;
+            //    UpdateRefreshRateLimit();
+            //    break;
         }
 
         Invalidate();
     }
 }
 
-void milk2_ui_element_instance::AudioData(const float* pAudioData, size_t iAudioDataLength)
+void milk2_ui_element_instance::BuildWaves()
 {
-    int ipos = 0;
-    while (ipos < 576)
-    {
-        for (int i = 0; static_cast<unsigned int>(i) < iAudioDataLength; i += 2)
-        {
-            g_vis->waves[0][ipos] = static_cast<unsigned char>(pAudioData[i] * 255.0f);
-            g_vis->waves[1][ipos] = static_cast<unsigned char>(pAudioData[i + 1] * 255.0f);
-            ipos++;
-            if (ipos >= 576)
-                break;
-        }
-    }
-}
-
-void milk2_ui_element_instance::AddPCM()
-{
-    if (!m_vis_stream.is_valid())
-        return;
+    //if (!m_vis_stream.is_valid())
+    //    return;
 
     double time;
     if (!m_vis_stream->get_absolute_time(time))
@@ -496,58 +511,39 @@ void milk2_ui_element_instance::AddPCM()
     {
         dt = min_time;
         use_fake = true;
-    }
-    if (dt > max_time)
+    } else if (dt > max_time)
         dt = max_time;
 
     audio_chunk_impl chunk;
     if (use_fake || !m_vis_stream->get_chunk_absolute(chunk, time - dt, dt))
-        m_vis_stream->make_fake_chunk_absolute(chunk, time - dt, dt);
-    auto count = chunk.get_sample_count();
-    auto channels = chunk.get_channel_count();
-    std::vector<int16_t> data(count * channels, 0);
-    audio_math::convert_to_int16(chunk.get_data(), count * channels, data.data(), 1.0);
-    //if (channels == 2)
-    //    milk2_pcm_add_int16(data.data(), count, STEREO);
-    //else
-    //    milk2_pcm_add_int16(data.data(), count, MONO);
-    float sin1add = 0.05f;
-    float sin2add = 0.08f;
-
-    //float color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    //pImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
-
-    //  sin1 += 10;
-    //  sin2 += 20;
-
-    float sin1start = sin1;
-    float sin2start = sin2;
-
-    float Current = 0;
-    for (int i = 0; i < 576; i++)
     {
-        //if ( ( rand() % 10) > 4)
-        //iCurrent += (short)(rand() % (255));
-        //else
-        //iCurrent -= (short)(rand() % (255));
-        Current = sinf(sin1 + sin2);
-        //Current += sinf(sin2);
-        sin1 += sin1add;
-        sin2 += sin2add;
-        g_vis->waves[0][i] = static_cast<unsigned char>(Current * 0.2f);
-        g_vis->waves[1][i] = static_cast<unsigned char>(Current * 0.2f);
-        //waves[0][i] = (rand() % 128 ) / 128.0f;//iCurrent;
-        //waves[1][i] = (rand() % 128 ) / 128.0f;//iCurrent;
+        //m_vis_stream->make_fake_chunk_absolute(chunk, time - dt, dt);
+        for (uint32_t i = 0; i < 576u; ++i)
+        {
+            g_vis->waves[0][i] = g_vis->waves[1][i] = 0u;
+        }
+        return;
     }
-    sin1 = sin1start + sin1add;
-    sin2 = sin2start + sin2add * 7;
+    auto count = chunk.get_sample_count();
+    auto sample_rate = chunk.get_srate();
+    auto channels = chunk.get_channel_count() > 1 ? 2 : 1;
+    std::vector<int16_t> audio_data(count * channels, 0);
+    audio_math::convert_to_int16(chunk.get_data(), count * channels, audio_data.data(), 1.0);
+
+    size_t top = std::min(count / channels, static_cast<size_t>(576));
+    for (size_t i = 0; i < top; ++i)
+    {
+        g_vis->waves[0][i] = static_cast<unsigned char>(audio_data[i * channels] * 255.0f);
+        if (channels >= 2)
+            g_vis->waves[1][i] = static_cast<unsigned char>(audio_data[i * channels + 1] * 255.0f);
+    }
 }
 
 void milk2_ui_element_instance::UpdateChannelMode()
 {
     if (m_vis_stream.is_valid())
     {
-        m_vis_stream->set_channel_mode(false /* m_config.m_downmix_enabled */ ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
+        m_vis_stream->set_channel_mode(m_config.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
     }
 }
 

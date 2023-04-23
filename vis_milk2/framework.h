@@ -1,14 +1,14 @@
 #pragma once
 
-//#include <winsdkver.h>
-//#define _WIN32_WINNT 0x0601
-//#include <sdkddkver.h>
+#include <winsdkver.h>
+#define _WIN32_WINNT 0x0600 // Windows Vista
 
 // DirectX apps do not need GDI
 #define NODRAWTEXT
 #define NOGDI
 #define NOBITMAP
 
+#define NOMINMAX // Use the C++ standard templated min/max
 #define NOMCX
 #define NOSERVICE
 
@@ -23,11 +23,15 @@
 #include <wrl/client.h>
 
 #include <d3d11_1.h>
+#include <d3d11shader.h>
 #include <dxgi1_6.h>
+#ifdef _DEBUG
+#include <dxgidebug.h>
+#endif
+#include <d3dcompiler.h>
 
 #include <DirectXColors.h>
 #include <DirectXMath.h>
-#include <DirectXHelpers.h>
 
 #include <algorithm>
 #include <cassert>
@@ -39,11 +43,10 @@
 #include <string>
 #include <system_error>
 
-#ifdef _DEBUG
-#include <dxgidebug.h>
-#endif
-
-#include <eel2/ns-eel.h>
+#include <CommonStates.h>
+#include <DDSTextureLoader.h>
+#include <DirectXHelpers.h>
+#include <WICTextureLoader.h>
 
 namespace DX
 {
