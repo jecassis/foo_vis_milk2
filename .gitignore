@@ -90,6 +90,7 @@ csx
 AppPackages/
 
 # Others
+data/
 sql/
 *.Cache
 ClientBin/
