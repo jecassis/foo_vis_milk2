@@ -47,11 +47,11 @@ jobs:
           msbuild-architecture: ${{ matrix.platform }}
       - name: Set up NuGet and add to PATH
         uses: nuget/setup-nuget@v1
-      #- name: Prepare build
-      #  run: |
-      #    (Get-Content ${{github.workspace}}\src\vis_milk2\vis.cpp).replace('if (WASABI_API_SVC == (api_service*)1)', 'goto done;') | Set-Content ${{github.workspace}}\src\vis_milk2\vis.cpp
+      - name: Prepare build
+        run: |
+          Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
       - name: Build ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }} # https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022
-        run: msbuild.exe --% -verbosity:diagnostic -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} "${{ github.workspace }}\foo_vis_milk2.sln"
+        run: msbuild.exe --% -verbosity:diagnostic -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} "${{ github.workspace }}\foo_vis_milk2_.sln"
       - name: Validate ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
         run: |
           Write-Host ((Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '

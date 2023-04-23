@@ -643,7 +643,7 @@ void CPlugin::RenderFrame(int bRedraw)
     ID3D11Texture2D* pBackBuffer = NULL; //, *pZBuffer = NULL;
     lpDevice->GetRenderTarget(&pBackBuffer);
     //lpDevice->GetDepthStencilSurface(&pZBuffer);
-    // set up render state DX11
+    // Set up render state DX11
     {
       //D3D11_TEXTURE_ADDRESS_MODE texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
       D3D11_TEXTURE_ADDRESS_MODE texaddr = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -741,8 +741,8 @@ void CPlugin::RenderFrame(int bRedraw)
 		else if (strstr(GetDriverDescription(), "ATI RAGE MOBILITY M"))
 	        m_n16BitGamma = 2;
 		else*/ 
-            m_n16BitGamma = 0;
-	}
+        m_n16BitGamma = 0;
+    }
 
     ComputeGridAlphaValues();
 

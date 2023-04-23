@@ -1,5 +1,5 @@
 //
-// pch.h: Pre-compiled header file.
+// pch.h - Pre-compiled header file.
 //
 
 #ifndef PCH_H

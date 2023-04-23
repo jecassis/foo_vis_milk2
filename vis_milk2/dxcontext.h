@@ -30,15 +30,8 @@
 #ifndef __NULLSOFT_DX_PLUGIN_SHELL_DXCONTEXT_H__
 #define __NULLSOFT_DX_PLUGIN_SHELL_DXCONTEXT_H__
 
-#include "deviceresources.h"
-
 #include "shell_defines.h"
-
-#ifdef _DEBUG
-#define D3D_DEBUG_INFO // declare this before including d3d9.h
-#endif
-//#include <d3d9.h>
-#include <d3d11_1.h>
+#include "deviceresources.h"
 #include "d3d11shim.h"
 
 #define SNAP_WINDOWED_MODE_BLOCKSIZE 32 // or use 0 if disabling snapping
@@ -98,7 +91,7 @@ class DXContext final : public DX::IDeviceNotify
     void OnDeviceLost() override;
     void OnDeviceRestored() override;
 
-    // PUBLIC DATA - DO NOT WRITE TO THESE FROM OUTSIDE THE CLASS
+    // DO NOT WRITE TO THESE FROM OUTSIDE THE CLASS
     int m_ready;
     HRESULT m_lastErr;
     int m_client_width; // width: in windowed mode, SNAPPED (locked to nearest 32x32) width
