@@ -42,7 +42,7 @@ extern CPlugin g_plugin; // declared in "main.cpp"
 // If not - if the next line doesn't have the expected token - rescan
 // from the top. If the line is never found, we use the default value,
 // and leave MyGetPos untouched.
-typedef Vector<GStringA> VarNameList;
+typedef Vector<std::string> VarNameList;
 typedef Vector<int> IntList;
 
 FILE* fLastFilePtr = NULL;

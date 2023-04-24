@@ -31,7 +31,6 @@
 #define __NULLSOFT_DX_PLUGIN_H__
 
 #include <nu/Vector.h>
-#include "gstring.h"
 #include "pluginshell.h"
 #include "md_defines.h"
 //#include "menu.h"

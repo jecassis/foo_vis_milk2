@@ -30,8 +30,7 @@
 #ifndef _MILKDROP_STATE_H_
 #define _MILKDROP_STATE_H_
 
-#include <ns-eel2/ns-eel.h>
-#include "gstring.h"
+#include <eel2/ns-eel.h>
 #include "md_defines.h"
 //#include "texmgr.h"
 

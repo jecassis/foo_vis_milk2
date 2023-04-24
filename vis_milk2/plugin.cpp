@@ -2089,9 +2089,9 @@ bool CPlugin::EvictSomeTexture()
     return true;
 }
 
-GString texture_exts[] = { L"jpg", L"dds", L"png", L"tga", L"bmp", L"dib", };
+std::wstring texture_exts[] = {L"jpg", L"png", L"dds", L"tga", L"bmp", L"dib"};
 const wchar_t szExtsWithSlashes[] = L"jpg|png|dds|etc.";
-typedef Vector<GString> StringVec;
+typedef Vector<std::wstring> StringVec;
 bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // should be MAX_PATH chars
 {
     static StringVec texfiles;
@@ -2178,7 +2178,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
     //D3DXCONSTANT_DESC cd;
 
 #define MAX_RAND_TEX 16
-    GString RandTexName[MAX_RAND_TEX];
+    std::wstring RandTexName[MAX_RAND_TEX];
 
     // pass 1: find all the samplers (and texture bindings).
     for (UINT i = 0; i < pCT->ShaderDesc.BoundResources; i++)
@@ -2360,7 +2360,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                                 *p = 0;
                         }
 
-                        assert(RandTexName[rand_slot].GetLength() == 0);
+                        assert(RandTexName[rand_slot].length() == 0);
                         RandTexName[rand_slot] = szRootName; // we'll need to remember this for texsize_ params!
                     }
                 }
@@ -2574,7 +2574,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
 
                         swscanf_s(&szRootName[4], L"%d", &rand_slot);
                         if (rand_slot >= 0 && rand_slot <= 15) // otherwise, not a special filename - ignore it
-                            if (RandTexName[rand_slot].GetLength() > 0)
+                            if (RandTexName[rand_slot].length() > 0)
                                 wcscpy_s(szRootName, RandTexName[rand_slot].c_str());
                     }
 
