@@ -80,7 +80,7 @@ static void MungeFPCW(WORD* /* pwOldCW */)
 #endif
 }
 
-#ifdef WIN32
+#ifdef _M_IX86
 void RestoreFPCW(WORD wSave)
 {
     __asm fldcw wSave

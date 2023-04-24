@@ -1251,8 +1251,8 @@ int CPlugin::AllocateMilkDropDX11()
 			        MessageBoxW(GetPluginWindow(), WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_BLUR_TEXTURES,buf,sizeof(buf)),
 							   WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_WARNING,title,sizeof(title)), MB_OK|MB_SETFOREGROUND|MB_TOPMOST);
 */
-                    break;
-                }
+                break;
+            }
 
             // Add it to `m_textures[]`.
             TexInfo x;
@@ -1278,72 +1278,76 @@ int CPlugin::AllocateMilkDropDX11()
     // BUILD VERTEX LIST for final composite blit
     // note the +0.5-texel offset!
     // (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
-	ZeroMemory(m_comp_verts, sizeof(MDVERTEX) * FCGSX * FCGSY);
-	//float fOnePlusInvWidth  = 1.0f + 1.0f/(float)GetWidth();
-	//float fOnePlusInvHeight = 1.0f + 1.0f/(float)GetHeight();
+    ZeroMemory(m_comp_verts, sizeof(MDVERTEX) * FCGSX * FCGSY);
+    //float fOnePlusInvWidth  = 1.0f + 1.0f / (float)GetWidth();
+    //float fOnePlusInvHeight = 1.0f + 1.0f / (float)GetHeight();
     float fHalfTexelW = 0.5f / static_cast<float>(std::max(1, GetWidth())); // 2.5: 2 pixels bad @ bottom right
     float fHalfTexelH = 0.5f / static_cast<float>(std::max(1, GetHeight()));
-    float fDivX = 1.0f / (float)(FCGSX-2);
-    float fDivY = 1.0f / (float)(FCGSY-2);
-    for (int j=0; j<FCGSY; j++) 
+    float fDivX = 1.0f / (float)(FCGSX - 2);
+    float fDivY = 1.0f / (float)(FCGSY - 2);
+    for (int j = 0; j < FCGSY; j++)
     {
-        int j2 = j - j/(FCGSY/2);
-        float v = j2*fDivY;
+        int j2 = j - j / (FCGSY / 2);
+        float v = j2 * fDivY;
         v = SquishToCenter(v, 3.0f);
-        float sy = -((v-fHalfTexelH)*2-1);//fOnePlusInvHeight*v*2-1;
-        for (int i=0; i<FCGSX; i++) 
+        float sy = -((v - fHalfTexelH) * 2 - 1); //fOnePlusInvHeight*v*2-1;
+        for (int i = 0; i < FCGSX; i++)
         {
-            int i2 = i - i/(FCGSX/2);
-            float u = i2*fDivX;
+            int i2 = i - i / (FCGSX / 2);
+            float u = i2 * fDivX;
             u = SquishToCenter(u, 3.0f);
-            float sx = (u-fHalfTexelW)*2-1;//fOnePlusInvWidth*u*2-1;
-            MDVERTEX* p = &m_comp_verts[i + j*FCGSX];
+            float sx = (u - fHalfTexelW) * 2 - 1; //fOnePlusInvWidth*u*2-1;
+            MDVERTEX* p = &m_comp_verts[i + j * FCGSX];
             p->x = sx;
             p->y = sy;
             p->z = 0;
             float rad, ang;
-            UvToMathSpace( u, v, &rad, &ang );
-                // fix-ups:
-               if (i==FCGSX/2-1) {
-                   if (j < FCGSY/2-1)
-                       ang = 3.1415926535898f*1.5f;
-                   else if (j == FCGSY/2-1)
-                       ang = 3.1415926535898f*1.25f;
-                   else if (j == FCGSY/2)
-                       ang = 3.1415926535898f*0.75f;
-                   else
-                       ang = 3.1415926535898f*0.5f;
-               }
-               else if (i==FCGSX/2) {
-                   if (j < FCGSY/2-1)
-                       ang = 3.1415926535898f*1.5f;
-                   else if (j == FCGSY/2-1)
-                       ang = 3.1415926535898f*1.75f;
-                   else if (j == FCGSY/2)
-                       ang = 3.1415926535898f*0.25f;
-                   else
-                       ang = 3.1415926535898f*0.5f;
-               }
-               else if (j==FCGSY/2-1) {
-                   if (i < FCGSX/2-1)
-                       ang = 3.1415926535898f*1.0f;
-                   else if (i == FCGSX/2-1)
-                       ang = 3.1415926535898f*1.25f;
-                   else if (i == FCGSX/2)
-                       ang = 3.1415926535898f*1.75f;
-                   else
-                       ang = 3.1415926535898f*2.0f;
-               }
-               else if (j==FCGSY/2) {
-                   if (i < FCGSX/2-1)
-                       ang = 3.1415926535898f*1.0f;
-                   else if (i == FCGSX/2-1)
-                       ang = 3.1415926535898f*0.75f;
-                   else if (i == FCGSX/2)
-                       ang = 3.1415926535898f*0.25f;
-                   else
-                       ang = 3.1415926535898f*0.0f;
-               }
+            UvToMathSpace(u, v, &rad, &ang);
+            // Fix-ups.
+            if (i == FCGSX / 2 - 1)
+            {
+                if (j < FCGSY / 2 - 1)
+                    ang = 3.1415926535898f * 1.5f;
+                else if (j == FCGSY / 2 - 1)
+                    ang = 3.1415926535898f * 1.25f;
+                else if (j == FCGSY / 2)
+                    ang = 3.1415926535898f * 0.75f;
+                else
+                    ang = 3.1415926535898f * 0.5f;
+            }
+            else if (i == FCGSX / 2)
+            {
+                if (j < FCGSY / 2 - 1)
+                    ang = 3.1415926535898f * 1.5f;
+                else if (j == FCGSY / 2 - 1)
+                    ang = 3.1415926535898f * 1.75f;
+                else if (j == FCGSY / 2)
+                    ang = 3.1415926535898f * 0.25f;
+                else
+                    ang = 3.1415926535898f * 0.5f;
+            }
+            else if (j == FCGSY / 2 - 1)
+            {
+                if (i < FCGSX / 2 - 1)
+                    ang = 3.1415926535898f * 1.0f;
+                else if (i == FCGSX / 2 - 1)
+                    ang = 3.1415926535898f * 1.25f;
+                else if (i == FCGSX / 2)
+                    ang = 3.1415926535898f * 1.75f;
+                else
+                    ang = 3.1415926535898f * 2.0f;
+            }
+            else if (j == FCGSY / 2)
+            {
+                if (i < FCGSX / 2 - 1)
+                    ang = 3.1415926535898f * 1.0f;
+                else if (i == FCGSX / 2 - 1)
+                    ang = 3.1415926535898f * 0.75f;
+                else if (i == FCGSX / 2)
+                    ang = 3.1415926535898f * 0.25f;
+                else
+                    ang = 3.1415926535898f * 0.0f;
+            }
             p->tu = u;
             p->tv = v;
             //p->tu_orig = u;
@@ -1357,8 +1361,8 @@ int CPlugin::AllocateMilkDropDX11()
         }
     }
 
-    // build index list for final composite blit - 
-    // order should be friendly for interpolation of 'ang' value!
+    // Build index list for final composite blit.
+    // Order should be friendly for interpolation of 'ang' value!
     int* cur_index = &m_comp_indices[0];
 	int y;
     for (y=0; y<FCGSY-1; y++) 
@@ -1573,42 +1577,42 @@ int CPlugin::AllocateMilkDropDX11()
 	}
 
     // GENERATED TEXTURES FOR SHADERS
-    //-------------------------------------
+    //-------------------------------
     if (m_nMaxPSVersion > 0)
     {
         // Generate noise textures
-        if (!AddNoiseTex(L"noise_lq",      256, 1)) return false; 
-        if (!AddNoiseTex(L"noise_lq_lite",  32, 1)) return false; 
-        if (!AddNoiseTex(L"noise_mq",      256, 4)) return false;
-        if (!AddNoiseTex(L"noise_hq",      256, 8)) return false; 
+        if (!AddNoiseTex(L"noise_lq", 256, 1)) return false;
+        if (!AddNoiseTex(L"noise_lq_lite", 32, 1)) return false;
+        if (!AddNoiseTex(L"noise_mq", 256, 4)) return false;
+        if (!AddNoiseTex(L"noise_hq", 256, 8)) return false;
 
-        if (!AddNoiseVol(L"noisevol_lq", 32, 1)) return false; 
-        if (!AddNoiseVol(L"noisevol_hq", 32, 4)) return false; 
+        if (!AddNoiseVol(L"noisevol_lq", 32, 1)) return false;
+        if (!AddNoiseVol(L"noisevol_hq", 32, 4)) return false;
     }
 
     if (!m_bInitialPresetSelected)
     {
-		UpdatePresetList(true); //...just does its initial burst!
+        UpdatePresetList(true); //...just does its initial burst!
         LoadRandomPreset(0.0f);
         m_bInitialPresetSelected = true;
     }
     else
-        LoadShaders(&m_shaders, m_pState, false);  // Also force-load the shaders - otherwise they'd only get compiled on a preset switch.
+        LoadShaders(&m_shaders, m_pState, false); // also force-load the shaders - otherwise they'd only get compiled on a preset switch.
 
-	return true;
+    return true;
 }
 
 float fCubicInterpolate(float y0, float y1, float y2, float y3, float t)
 {
-   float a0,a1,a2,a3,t2;
+    float a0, a1, a2, a3, t2;
 
-   t2 = t*t;
-   a0 = y3 - y2 - y0 + y1;
-   a1 = y0 - y1 - a0;
-   a2 = y2 - y0;
-   a3 = y1;
+    t2 = t * t;
+    a0 = y3 - y2 - y0 + y1;
+    a1 = y0 - y1 - a0;
+    a2 = y2 - y0;
+    a3 = y1;
 
-   return(a0*t*t2+a1*t2+a2*t+a3);
+    return (a0 * t * t2 + a1 * t2 + a2 * t + a3);
 }
 
 DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
@@ -1635,20 +1639,20 @@ DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
     return ret;
 }
 
+// size = width and height of the texture;
+// zoom_factor = how zoomed-in the texture features should be.
+//   1 = random noise
+//   2 = smoothed (interp)
+//   4/8/16... = cubic interp.
 bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
 {
-    // size = width & height of the texture; 
-    // zoom_factor = how zoomed-in the texture features should be.
-    //           1 = random noise
-    //           2 = smoothed (interp)
-    //           4/8/16... = cubic interp.
-
     //wchar_t buf[2048], title[64];
     D3D11Shim* lpDevice = GetDevice();
 
     // Synthesize noise texture(s)
     ID3D11Texture2D *pNoiseTex = NULL, *pStaging = NULL;
-    // try twice - once with mips, once without.
+
+    // Try twice: once with mips, once without.
     //for (int i=0; i<2; i++) 
     {
         if (!lpDevice->CreateTexture(size, size, 1, D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_R8G8B8A8_UNORM, &pNoiseTex, 0, D3D11_USAGE_DYNAMIC))
@@ -1680,7 +1684,7 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
 		dumpmsg(buf); 
 		MessageBoxW(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 */
-		return false;
+        return false;
     }
 
     if (r.RowPitch < (unsigned)(size * 4))
@@ -1724,44 +1728,43 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     // Smoothing.
     if (zoom_factor > 1)
     {
-        // first go ACROSS, blending cubically on X, but only on the main lines.
-        DWORD* dst = (DWORD*)r.pData;
-        for (int y=0; y<size; y+=zoom_factor)
-            for (int x=0; x<size; x++) 
+        // First go across, blending cubically on 'X', but only on the main lines.
+        DWORD* dstZF = (DWORD*)r.pData;
+        for (int y = 0; y < size; y += zoom_factor)
+            for (int x = 0; x < size; x++)
                 if (x % zoom_factor)
                 {
-                    int base_x = (x/zoom_factor)*zoom_factor + size;
-                    int base_y = y*dwords_per_line;
-                    DWORD y0 = dst[ base_y + ((base_x - zoom_factor  ) % size) ];
-                    DWORD y1 = dst[ base_y + ((base_x                ) % size) ];
-                    DWORD y2 = dst[ base_y + ((base_x + zoom_factor  ) % size) ];
-                    DWORD y3 = dst[ base_y + ((base_x + zoom_factor*2) % size) ];
+                    int base_x = (x / zoom_factor) * zoom_factor + size;
+                    int base_y = y * dwords_per_line;
+                    DWORD y0 = dstZF[base_y + ((base_x - zoom_factor) % size)];
+                    DWORD y1 = dstZF[base_y + ((base_x) % size)];
+                    DWORD y2 = dstZF[base_y + ((base_x + zoom_factor) % size)];
+                    DWORD y3 = dstZF[base_y + ((base_x + zoom_factor * 2) % size)];
 
-                    float t = (x % zoom_factor)/(float)zoom_factor;
+                    float t = (x % zoom_factor) / (float)zoom_factor;
 
                     DWORD result = dwCubicInterpolate(y0, y1, y2, y3, t);
-                    
-                    dst[ y*dwords_per_line + x ] = result;        
+
+                    dstZF[y * dwords_per_line + x] = result;
                 }
-        
-        // next go down, doing cubic interp along Y, on every line.
-        for (int x=0; x<size; x++) 
-            for (int y=0; y<size; y++)
+
+        // Next go down, doing cubic interpolation along 'Y', on every line.
+        for (int x = 0; x < size; x++)
+            for (int y = 0; y < size; y++)
                 if (y % zoom_factor)
                 {
-                    int base_y = (y/zoom_factor)*zoom_factor + size;
-                    DWORD y0 = dst[ ((base_y - zoom_factor  ) % size)*dwords_per_line + x ];
-                    DWORD y1 = dst[ ((base_y                ) % size)*dwords_per_line + x ];
-                    DWORD y2 = dst[ ((base_y + zoom_factor  ) % size)*dwords_per_line + x ];
-                    DWORD y3 = dst[ ((base_y + zoom_factor*2) % size)*dwords_per_line + x ];
+                    int base_y = (y / zoom_factor) * zoom_factor + size;
+                    DWORD y0 = dstZF[((base_y - zoom_factor) % size) * dwords_per_line + x];
+                    DWORD y1 = dstZF[((base_y) % size) * dwords_per_line + x];
+                    DWORD y2 = dstZF[((base_y + zoom_factor) % size) * dwords_per_line + x];
+                    DWORD y3 = dstZF[((base_y + zoom_factor * 2) % size) * dwords_per_line + x];
 
-                    float t = (y % zoom_factor)/(float)zoom_factor;
+                    float t = (y % zoom_factor) / (float)zoom_factor;
 
                     DWORD result = dwCubicInterpolate(y0, y1, y2, y3, t);
-                    
-                    dst[ y*dwords_per_line + x ] = result;        
-                }
 
+                    dstZF[y * dwords_per_line + x] = result;
+                }
     }
 
     // Unlock texture.
@@ -1974,7 +1977,7 @@ void PShaderInfo::Clear()
 }
 
 // `global_CShaderParams_master_list`: a master list of all CShaderParams classes in existence.
-// ** when we evict a texture, we need to NULL out any texptrs these guys have! **
+// ** When we evict a texture, we need to NULL out any texptrs these guys have! **
 CShaderParamsList global_CShaderParams_master_list;
 CShaderParams::CShaderParams()
 {
@@ -2024,27 +2027,26 @@ bool CPlugin::EvictSomeTexture()
     {
         int nEvictableFiles = 0;
         int nEvictableBytes = 0;
-        int N = m_textures.size();
-        for (int i=0; i<N; i++)
-            if (m_textures[i].bEvictable && m_textures[i].texptr) 
+        size_t N = m_textures.size();
+        for (size_t i = 0; i < N; i++)
+            if (m_textures[i].bEvictable && m_textures[i].texptr)
             {
                 nEvictableFiles++;
                 nEvictableBytes += m_textures[i].nSizeInBytes;
             }
-        char buf[1024];
-        sprintf(buf, "evicting at %d textures, %.1f MB\n", nEvictableFiles, nEvictableBytes*0.000001f);
+        wchar_t buf[1024];
+        swprintf_s(buf, L"Evicting at %d textures, %.1f MB\n", nEvictableFiles, nEvictableBytes * 0.000001f);
         //OutputDebugString(buf);
     }
-    #endif
+#endif
 
-    int N = m_textures.size();
-    
+    size_t N = m_textures.size();
+
     // find age gap
     int newest = 99999999;
     int oldest = 0;
     bool bAtLeastOneFound = false;
-	int i;
-    for (i=0; i<N; i++)                                                            
+    for (size_t i = 0; i < N; i++)
         if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes>0 && m_textures[i].nAge < m_nPresetsLoadedTotal-1) // note: -1 here keeps images around for the blend-from preset, too...
         {
             newest = std::min(newest, m_textures[i].nAge);
@@ -2058,15 +2060,15 @@ bool CPlugin::EvictSomeTexture()
     // are HALF as big as the oldest textures, and thus, less likely to get booted.
     int biggest_bytes = 0;
     int biggest_index = -1;
-    for (i=0; i<N; i++)
+    for (size_t i = 0; i < N; i++)
         if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes>0 && m_textures[i].nAge < m_nPresetsLoadedTotal-1) // note: -1 here keeps images around for the blend-from preset, too...
         {
             float size_mult = 1.0f + (m_textures[i].nAge - newest) / (float)(oldest - newest);
-            int bytes = (int)(m_textures[i].nSizeInBytes * size_mult);
+            int bytes =  static_cast<int>(m_textures[i].nSizeInBytes * size_mult);
             if (bytes > biggest_bytes)
             {
                 biggest_bytes = bytes;
-                biggest_index = i;
+                biggest_index = static_cast<int>(i);
             }
         }
     if (biggest_index == -1)
@@ -2101,19 +2103,19 @@ bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // 
     //if (abs(t - texfiles_timestamp) > 2000)
     if (g_plugin.m_bNeedRescanTexturesDir)
     {
-        g_plugin.m_bNeedRescanTexturesDir = false;//texfiles_timestamp = t;
+        g_plugin.m_bNeedRescanTexturesDir = false; //texfiles_timestamp = t;
         texfiles.clear();
 
         wchar_t szMask[MAX_PATH];
-        swprintf(szMask, L"%stextures\\*.*", g_plugin.m_szMilkdrop2Path);
+        swprintf_s(szMask, L"%stextures\\*.*", g_plugin.m_szMilkdrop2Path);
 
-		WIN32_FIND_DATAW ffd = {0};
+        WIN32_FIND_DATAW ffd = {0};
 
         HANDLE hFindFile = INVALID_HANDLE_VALUE;
-	    if( (hFindFile = FindFirstFileW(szMask, &ffd )) == INVALID_HANDLE_VALUE )		// note: returns filename -without- path
+        if ((hFindFile = FindFirstFile(szMask, &ffd)) == INVALID_HANDLE_VALUE) // note: returns filename without path
             return false;
 
-        // first, count valid texture files
+        // First, count valid texture files.
         do
         {
             if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -2123,11 +2125,11 @@ bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // 
             if (!ext)
                 continue;
 
-            for (int i=0; i<sizeof(texture_exts)/sizeof(texture_exts[0]); i++)
-                if (!_wcsicmp(texture_exts[i].c_str(), ext+1))
+            for (int i = 0; i < sizeof(texture_exts) / sizeof(texture_exts[0]); i++)
+                if (!_wcsicmp(texture_exts[i].c_str(), ext + 1))
                 {
                     // Valid texture found - add it to the list. ("heart.jpg", for example).
-                    texfiles.push_back( ffd.cFileName );
+                    texfiles.push_back(ffd.cFileName);
                     continue;
                 }
         } while (FindNextFileW(hFindFile, &ffd));
@@ -2142,29 +2144,28 @@ bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // 
     {
         // Pick randomly from entire list.
         int i = warand() % texfiles.size();
-        wcscpy(szRetTextureFilename, texfiles[i].c_str());
+        wcscpy_s(szRetTextureFilename, MAX_PATH, texfiles[i].c_str());
     }
     else
     {
         // Only pick from files with the right prefix.
         StringVec temp_list;
-        int N = texfiles.size();
-        int len = wcslen(prefix);
-		int i;
-        for (i=0; i<N; i++) 
+        size_t N = texfiles.size();
+        size_t len = wcslen(prefix);
+        for (size_t i = 0; i < N; i++)
             if (!_wcsnicmp(prefix, texfiles[i].c_str(), len))
                 temp_list.push_back(texfiles[i]);
         N = temp_list.size();
-        if (N==0)
+        if (N == 0)
             return false;
         // Pick randomly from the subset.
-        i = warand() % temp_list.size();
-        wcscpy(szRetTextureFilename, temp_list[i].c_str());
+        int j = warand() % temp_list.size();
+        wcscpy_s(szRetTextureFilename, MAX_PATH, temp_list[j].c_str());
     }
     return true;
 }
 
-void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
+void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
 {
     Clear();
 
@@ -2176,177 +2177,185 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
 
     //D3DXCONSTANT_DESC cd;
 
-    #define MAX_RAND_TEX 16
+#define MAX_RAND_TEX 16
     GString RandTexName[MAX_RAND_TEX];
 
     // pass 1: find all the samplers (and texture bindings).
-    for (UINT i = 0; i<pCT->ShaderDesc.BoundResources; i++)
+    for (UINT i = 0; i < pCT->ShaderDesc.BoundResources; i++)
     {
         ShaderBinding* binding = pCT->GetBindingByIndex(i);
         D3D11_SHADER_INPUT_BIND_DESC cd = binding->Description;
         LPCSTR h = cd.Name;
-        unsigned int count = 1;
+        //unsigned int count = 1;
 
-        // cd.Name          = VS_Sampler
-        // cd.RegisterSet   = D3DXRS_SAMPLER
-        // cd.RegisterIndex = 3
+        //cd.Name = VS_Sampler
+        //cd.RegisterSet = D3DXRS_SAMPLER
+        //cd.RegisterIndex = 3
         if (cd.Type == D3D_SIT_SAMPLER && cd.BindPoint >= 0 && cd.BindPoint < sizeof(m_texture_bindings) / sizeof(m_texture_bindings[0]))
         {
             assert(m_texture_bindings[cd.BindPoint].texptr == NULL);
 
-            // remove "sampler_" prefix to create root file name.  could still have "FW_" prefix or something like that.
+            // Remove "sampler_" prefix to create root file name. Could still have "FW_" prefix or something like that.
             wchar_t szRootName[MAX_PATH];
-            if (!strncmp(cd.Name, "sampler_", 8)) 
-              wcscpy(szRootName, AutoWide(&cd.Name[8]));
+            if (!strncmp(cd.Name, "sampler_", 8))
+                wcscpy_s(szRootName, AutoWide(&cd.Name[8]));
             else
-              wcscpy(szRootName, AutoWide(cd.Name));
+                wcscpy_s(szRootName, AutoWide(cd.Name));
 
-            // also peel off "XY_" prefix, if it's there, to specify filtering & wrap mode.
+            // Also peel off "XY_" prefix, if it's there, to specify filtering & wrap mode.
             bool bBilinear = true;
-            bool bWrap     = true;
+            bool bWrap = true;
             bool bWrapFilterSpecified = false;
-            if (wcslen(szRootName) > 3 && szRootName[2]==L'_') 
+            if (wcslen(szRootName) > 3 && szRootName[2] == L'_')
             {
                 wchar_t temp[3];
                 temp[0] = szRootName[0];
                 temp[1] = szRootName[1];
                 temp[2] = 0;
-                // convert to uppercase
+                // Convert to uppercase.
                 if (temp[0] >= L'a' && temp[0] <= L'z')
                     temp[0] -= L'a' - L'A';
                 if (temp[1] >= L'a' && temp[1] <= L'z')
                     temp[1] -= L'a' - L'A';
 
+                // clang-format off
                 if      (!wcscmp(temp, L"FW")) { bWrapFilterSpecified = true; bBilinear = true;  bWrap = true; }
                 else if (!wcscmp(temp, L"FC")) { bWrapFilterSpecified = true; bBilinear = true;  bWrap = false; }
                 else if (!wcscmp(temp, L"PW")) { bWrapFilterSpecified = true; bBilinear = false; bWrap = true; }
                 else if (!wcscmp(temp, L"PC")) { bWrapFilterSpecified = true; bBilinear = false; bWrap = false; }
-                // also allow reverses:
+                // Also allow reverses.
                 else if (!wcscmp(temp, L"WF")) { bWrapFilterSpecified = true; bBilinear = true;  bWrap = true; }
                 else if (!wcscmp(temp, L"CF")) { bWrapFilterSpecified = true; bBilinear = true;  bWrap = false; }
                 else if (!wcscmp(temp, L"WP")) { bWrapFilterSpecified = true; bBilinear = false; bWrap = true; }
                 else if (!wcscmp(temp, L"CP")) { bWrapFilterSpecified = true; bBilinear = false; bWrap = false; }
+                // clang-format on
 
-                // peel off the prefix
-                int i = 0;
-                while (szRootName[i+3]) 
+                // Peel off the prefix.
+                int j = 0;
+                while (szRootName[j + 3])
                 {
-                    szRootName[i] = szRootName[i+3];
-                    i++;
+                    szRootName[j] = szRootName[j + 3];
+                    j++;
                 }
-                szRootName[i] = 0;
+                szRootName[j] = 0;
             }
             std::string strName(h);
-            m_texture_bindings[ cd.BindPoint ].bWrap = bWrap;
-            m_texture_bindings[ cd.BindPoint ].bBilinear = bBilinear;
-            m_texture_bindings[ cd.BindPoint ].bindPoint = pCT->GetTextureSlot(strName);
+            m_texture_bindings[cd.BindPoint].bWrap = bWrap;
+            m_texture_bindings[cd.BindPoint].bBilinear = bBilinear;
+            m_texture_bindings[cd.BindPoint].bindPoint = pCT->GetTextureSlot(strName);
 
             // if <szFileName> is "main", map it to the VS...
             if (!wcscmp(L"main", szRootName))
             {
-                m_texture_bindings[ cd.BindPoint ].texptr    = NULL;
-                m_texcode[ cd.BindPoint ] = TEX_VS;
+                m_texture_bindings[cd.BindPoint].texptr = NULL;
+                m_texcode[cd.BindPoint] = TEX_VS;
             }
-            #if (NUM_BLUR_TEX >= 2)
+#if (NUM_BLUR_TEX >= 2)
             else if (!wcscmp(L"blur1", szRootName))
             {
-                m_texture_bindings[ cd.BindPoint ].texptr = g_plugin.m_lpBlur[1];
-                m_texcode         [ cd.BindPoint ]        = TEX_BLUR1;
-                if (!bWrapFilterSpecified) { // when sampling blur textures, default is CLAMP
-                    m_texture_bindings[ cd.BindPoint ].bWrap = false;
-                    m_texture_bindings[ cd.BindPoint ].bBilinear = true;
+                m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_lpBlur[1];
+                m_texcode[cd.BindPoint] = TEX_BLUR1;
+                if (!bWrapFilterSpecified)
+                { // when sampling blur textures, default is CLAMP
+                    m_texture_bindings[cd.BindPoint].bWrap = false;
+                    m_texture_bindings[cd.BindPoint].bBilinear = true;
                 }
             }
-            #endif
-            #if (NUM_BLUR_TEX >= 4)
-                else if (!wcscmp(L"blur2", szRootName))
-                {
-                    m_texture_bindings[ cd.BindPoint ].texptr = g_plugin.m_lpBlur[3];
-                    m_texcode         [ cd.BindPoint ]        = TEX_BLUR2;
-                    if (!bWrapFilterSpecified) { // when sampling blur textures, default is CLAMP
-                        m_texture_bindings[ cd.BindPoint ].bWrap = false;
-                        m_texture_bindings[ cd.BindPoint ].bBilinear = true;
-                    }
-                }
-            #endif
-            #if (NUM_BLUR_TEX >= 6)
-                else if (!wcscmp(L"blur3", szRootName))
-                {
-                    m_texture_bindings[ cd.BindPoint ].texptr    = g_plugin.m_lpBlur[5];
-                    m_texcode         [ cd.BindPoint ]        = TEX_BLUR3;
-                    if (!bWrapFilterSpecified) { // when sampling blur textures, default is CLAMP
-                        m_texture_bindings[ cd.BindPoint ].bWrap = false;
-                        m_texture_bindings[ cd.BindPoint ].bBilinear = true;
-                    }
-                }
-            #endif
-            #if (NUM_BLUR_TEX >= 8)
-                else if (!wcscmp("blur4", szRootName))
-                {
-                    m_texture_bindings[ cd.RegisterIndex ].texptr    = g_plugin.m_lpBlur[7];
-                    m_texcode         [ cd.RegisterIndex ]        = TEX_BLUR4;
-                    if (!bWrapFilterSpecified) { // when sampling blur textures, default is CLAMP
-                        m_texture_bindings[ cd.RegisterIndex ].bWrap = false;
-                        m_texture_bindings[ cd.RegisterIndex ].bBilinear = true;
-                    }
-                }
-            #endif
-            #if (NUM_BLUR_TEX >= 10)
-                else if (!wcscmp("blur5", szRootName))
-                {
-                    m_texture_bindings[ cd.RegisterIndex ].texptr    = g_plugin.m_lpBlur[9];
-                    m_texcode         [ cd.RegisterIndex ]        = TEX_BLUR5;
-                    if (!bWrapFilterSpecified) { // when sampling blur textures, default is CLAMP
-                        m_texture_bindings[ cd.RegisterIndex ].bWrap = false;
-                        m_texture_bindings[ cd.RegisterIndex ].bBilinear = true;
-                    }
-                }
-            #endif
-            #if (NUM_BLUR_TEX >= 12)
-                else if (!wcscmp("blur6", szRootName))
-                {
-                    m_texture_bindings[ cd.RegisterIndex ].texptr    = g_plugin.m_lpBlur[11];
-                    m_texcode         [ cd.RegisterIndex ]        = TEX_BLUR6;
-                    if (!bWrapFilterSpecified) { // when sampling blur textures, default is CLAMP
-                        m_texture_bindings[ cd.RegisterIndex ].bWrap = false;
-                        m_texture_bindings[ cd.RegisterIndex ].bBilinear = true;
-                    }
-                }
-            #endif
-            else 
+#endif
+#if (NUM_BLUR_TEX >= 4)
+            else if (!wcscmp(L"blur2", szRootName))
             {
-                m_texcode[ cd.BindPoint ] = TEX_DISK;
+                m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_lpBlur[3];
+                m_texcode[cd.BindPoint] = TEX_BLUR2;
+                if (!bWrapFilterSpecified)
+                { // when sampling blur textures, default is CLAMP
+                    m_texture_bindings[cd.BindPoint].bWrap = false;
+                    m_texture_bindings[cd.BindPoint].bBilinear = true;
+                }
+            }
+#endif
+#if (NUM_BLUR_TEX >= 6)
+            else if (!wcscmp(L"blur3", szRootName))
+            {
+                m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_lpBlur[5];
+                m_texcode[cd.BindPoint] = TEX_BLUR3;
+                if (!bWrapFilterSpecified)
+                { // when sampling blur textures, default is CLAMP
+                    m_texture_bindings[cd.BindPoint].bWrap = false;
+                    m_texture_bindings[cd.BindPoint].bBilinear = true;
+                }
+            }
+#endif
+#if (NUM_BLUR_TEX >= 8)
+            else if (!wcscmp("blur4", szRootName))
+            {
+                m_texture_bindings[cd.RegisterIndex].texptr = g_plugin.m_lpBlur[7];
+                m_texcode[cd.RegisterIndex] = TEX_BLUR4;
+                if (!bWrapFilterSpecified)
+                { // when sampling blur textures, default is CLAMP
+                    m_texture_bindings[cd.RegisterIndex].bWrap = false;
+                    m_texture_bindings[cd.RegisterIndex].bBilinear = true;
+                }
+            }
+#endif
+#if (NUM_BLUR_TEX >= 10)
+            else if (!wcscmp("blur5", szRootName))
+            {
+                m_texture_bindings[cd.RegisterIndex].texptr = g_plugin.m_lpBlur[9];
+                m_texcode[cd.RegisterIndex] = TEX_BLUR5;
+                if (!bWrapFilterSpecified)
+                { // when sampling blur textures, default is CLAMP
+                    m_texture_bindings[cd.RegisterIndex].bWrap = false;
+                    m_texture_bindings[cd.RegisterIndex].bBilinear = true;
+                }
+            }
+#endif
+#if (NUM_BLUR_TEX >= 12)
+            else if (!wcscmp("blur6", szRootName))
+            {
+                m_texture_bindings[cd.RegisterIndex].texptr = g_plugin.m_lpBlur[11];
+                m_texcode[cd.RegisterIndex] = TEX_BLUR6;
+                if (!bWrapFilterSpecified)
+                { // when sampling blur textures, default is CLAMP
+                    m_texture_bindings[cd.RegisterIndex].bWrap = false;
+                    m_texture_bindings[cd.RegisterIndex].bBilinear = true;
+                }
+            }
+#endif
+            else
+            {
+                m_texcode[cd.BindPoint] = TEX_DISK;
 
                 // check for request for random texture.
-                if (!wcsncmp(L"rand", szRootName, 4) && 
-                    IsNumericChar(szRootName[4]) && 
-                    IsNumericChar(szRootName[5]) && 
-                    (szRootName[6]==0 || szRootName[6]=='_') )
+                if (!wcsncmp(L"rand", szRootName, 4) &&
+                    IsNumericChar(szRootName[4]) &&
+                    IsNumericChar(szRootName[5]) &&
+                    (szRootName[6] == 0 || szRootName[6] == '_'))
                 {
                     int rand_slot = -1;
-                    
-                    // peel off filename prefix ("rand13_smalltiled", for example)
+
+                    // Peel off filename prefix ("rand13_smalltiled", for example).
                     wchar_t prefix[MAX_PATH];
-                    if (szRootName[6]==L'_')
-                      wcscpy(prefix, &szRootName[7]);
+                    if (szRootName[6] == L'_')
+                        wcscpy_s(prefix, &szRootName[7]);
                     else
                         prefix[0] = 0;
                     szRootName[6] = 0;
 
-                    swscanf(&szRootName[4], L"%d", &rand_slot);
-                    if (rand_slot >= 0 && rand_slot <= 15)      // otherwise, not a special filename - ignore it
+                    swscanf_s(&szRootName[4], L"%d", &rand_slot);
+                    if (rand_slot >= 0 && rand_slot <= 15) // otherwise, not a special filename - ignore it
                     {
                         if (!PickRandomTexture(prefix, szRootName))
                         {
                             if (prefix[0])
-                                swprintf(szRootName, L"[rand%02d] %s*", rand_slot, prefix);
+                                swprintf_s(szRootName, L"[rand%02d] %s*", rand_slot, prefix);
                             else
-                                swprintf(szRootName, L"[rand%02d] *", rand_slot);
+                                swprintf_s(szRootName, L"[rand%02d] *", rand_slot);
                         }
-                        else 
-                        {       
+                        else
+                        {
                             //chop off extension
-                            wchar_t *p = wcsrchr(szRootName, L'.');
+                            wchar_t* p = wcsrchr(szRootName, L'.');
                             if (p)
                                 *p = 0;
                         }
@@ -2359,61 +2368,60 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
                 // see if <szRootName>.tga or .jpg has already been loaded.
                 //   (if so, grab a pointer to it)
                 //   (if NOT, create & load it).
-                int N = g_plugin.m_textures.size();
-                for (int n=0; n<N; n++) {
+                size_t N1 = g_plugin.m_textures.size();
+                for (size_t n = 0; n < N1; n++)
+                {
                     if (!wcscmp(g_plugin.m_textures[n].texname, szRootName))
                     {
-                        // found a match - texture was already loaded
-                        m_texture_bindings[ cd.BindPoint ].texptr = g_plugin.m_textures[n].texptr;
-                        // also bump its age down to zero! (for cache mgmt)
+                        // Found a match - texture was already loaded.
+                        m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_textures[n].texptr;
+                        // Also bump its age down to zero! (for cache management)
                         g_plugin.m_textures[n].nAge = g_plugin.m_nPresetsLoadedTotal;
                         break;
                     }
                 }
-                // if still not found, load it up / make a new texture
-                if (!m_texture_bindings[ cd.BindPoint ].texptr)
+                // If still not found, load it up / make a new texture.
+                if (!m_texture_bindings[cd.BindPoint].texptr)
                 {
-                    TexInfo x;  
-                    wcsncpy(x.texname, szRootName, 254);
-                    x.texptr  = NULL;
+                    TexInfo x;
+                    wcsncpy_s(x.texname, szRootName, 254);
+                    x.texptr = NULL;
                     //x.texsize_param = NULL;
 
-                    // check if we need to evict anything from the cache, 
+                    // Check if we need to evict anything from the cache,
                     // due to our own cache constraints...
                     while (1)
                     {
                         int nTexturesCached = 0;
                         int nBytesCached = 0;
-                        int N = g_plugin.m_textures.size();
-                        for (int i=0; i<N; i++)
-                            if (g_plugin.m_textures[i].bEvictable && g_plugin.m_textures[i].texptr)
+                        size_t N2 = g_plugin.m_textures.size();
+                        for (size_t n = 0; n < N2; n++)
+                            if (g_plugin.m_textures[n].bEvictable && g_plugin.m_textures[n].texptr)
                             {
-                                nBytesCached += g_plugin.m_textures[i].nSizeInBytes;
+                                nBytesCached += g_plugin.m_textures[n].nSizeInBytes;
                                 nTexturesCached++;
                             }
-                        if ( nTexturesCached < g_plugin.m_nMaxImages && 
-                             nBytesCached < g_plugin.m_nMaxBytes )
+                        if (nTexturesCached < g_plugin.m_nMaxImages && nBytesCached < g_plugin.m_nMaxBytes)
                             break;
-                        // otherwise, evict now - and loop until we are within the constraints
+                        // Otherwise, evict now - and loop until within the constraints.
                         if (!g_plugin.EvictSomeTexture())
                             break; // or if there was nothing to evict, just give up
                     }
 
-                    //load the texture
+                    // Load the texture.
                     wchar_t szFilename[MAX_PATH];
-                    for (int z=0; z<sizeof(texture_exts)/sizeof(texture_exts[0]); z++) 
+                    for (int z = 0; z < sizeof(texture_exts) / sizeof(texture_exts[0]); z++)
                     {
-                        swprintf(szFilename, L"%stextures\\%s.%s", g_plugin.m_szMilkdrop2Path, szRootName, texture_exts[z].c_str());
+                        swprintf_s(szFilename, L"%stextures\\%s.%s", g_plugin.m_szMilkdrop2Path, szRootName, texture_exts[z].c_str());
                         if (GetFileAttributesW(szFilename) == 0xFFFFFFFF)
                         {
-                            // try again, but in presets dir
-                            swprintf(szFilename, L"%s%s.%s", g_plugin.m_szPresetDir, szRootName, texture_exts[z].c_str());
+                            // Try again, but in presets directory.
+                            swprintf_s(szFilename, L"%s%s.%s", g_plugin.m_szPresetDir, szRootName, texture_exts[z].c_str());
                             if (GetFileAttributesW(szFilename) == 0xFFFFFFFF)
-                              continue;
+                                continue;
                         }
-                        //D3DXIMAGE_INFO desc;
-                        
-                        // keep trying to load it - if it fails due to memory, evict something and try again.
+
+                        // Keep trying to load it - if it fails due to memory, evict something and try again.
                         while (1)
                         {
                             HRESULT hr = g_plugin.GetDevice()->CreateTextureFromFile(szFilename, &x.texptr);
@@ -2432,47 +2440,46 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
                                                                    NULL,             //palette
                                                                    (IDirect3DTexture9**)&x.texptr 
                                                                      );*/
-                            if (hr==E_OUTOFMEMORY)
+                            if (hr == E_OUTOFMEMORY)
                             {
-                                // out of memory - try evicting something old and/or big
+                                // Out of memory - try evicting something old and/or big.
                                 if (g_plugin.EvictSomeTexture())
                                     continue;
                             }
 
-                            if (hr== S_OK)
+                            if (hr == S_OK)
                             {
-                              D3D11_RESOURCE_DIMENSION type;
-                              x.texptr->GetType(&type);
-                              if (type == D3D11_RESOURCE_DIMENSION_TEXTURE2D)
-                              {
-                                D3D11_TEXTURE2D_DESC texDesc;
-                                reinterpret_cast<ID3D11Texture2D*>(x.texptr)->GetDesc(&texDesc);
-                                x.w = texDesc.Width;
-                                x.h = texDesc.Height;
-                                x.d = 1;
-                                int nPixels = texDesc.Width*texDesc.Height;
-                                int BitsPerPixel = GetDX11TexFormatBitsPerPixel(texDesc.Format);
-                                x.nSizeInBytes = nPixels*BitsPerPixel / 8 + 16384;  //plus some overhead
-                              }
-                              if (type == D3D11_RESOURCE_DIMENSION_TEXTURE3D)
-                              {
-                                D3D11_TEXTURE3D_DESC texDesc;
-                                reinterpret_cast<ID3D11Texture3D*>(x.texptr)->GetDesc(&texDesc);
-
-                                x.w = texDesc.Width;
-                                x.h = texDesc.Height;
-                                x.d = texDesc.Depth;
-                                x.bEvictable = true;
-                                x.nAge = g_plugin.m_nPresetsLoadedTotal;
-                                int nPixels = texDesc.Width * texDesc.Height * std::max(static_cast<UINT>(1), texDesc.Depth);
-                                int BitsPerPixel = GetDX11TexFormatBitsPerPixel(texDesc.Format);
-                                x.nSizeInBytes = nPixels*BitsPerPixel / 8 + 16384;  //plus some overhead
-                              }
+                                D3D11_RESOURCE_DIMENSION type;
+                                x.texptr->GetType(&type);
+                                if (type == D3D11_RESOURCE_DIMENSION_TEXTURE2D)
+                                {
+                                    D3D11_TEXTURE2D_DESC texDesc;
+                                    reinterpret_cast<ID3D11Texture2D*>(x.texptr)->GetDesc(&texDesc);
+                                    x.w = texDesc.Width;
+                                    x.h = texDesc.Height;
+                                    x.d = 1;
+                                    int nPixels = texDesc.Width * texDesc.Height;
+                                    int BitsPerPixel = GetDX11TexFormatBitsPerPixel(texDesc.Format);
+                                    x.nSizeInBytes = nPixels * BitsPerPixel / 8 + 16384; //plus some overhead
+                                }
+                                if (type == D3D11_RESOURCE_DIMENSION_TEXTURE3D)
+                                {
+                                    D3D11_TEXTURE3D_DESC texDesc;
+                                    reinterpret_cast<ID3D11Texture3D*>(x.texptr)->GetDesc(&texDesc);
+                                    x.w = texDesc.Width;
+                                    x.h = texDesc.Height;
+                                    x.d = texDesc.Depth;
+                                    x.bEvictable = true;
+                                    x.nAge = g_plugin.m_nPresetsLoadedTotal;
+                                    int nPixels = texDesc.Width * texDesc.Height * std::max(static_cast<UINT>(1), texDesc.Depth);
+                                    int BitsPerPixel = GetDX11TexFormatBitsPerPixel(texDesc.Format);
+                                    x.nSizeInBytes = nPixels * BitsPerPixel / 8 + 16384; // plus some overhead
+                                }
                             }
                             break;
                         }
                     }
-                
+
                     if (!x.texptr)
                     {
 /*
@@ -2484,45 +2491,45 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
                         else {
                             g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
                         }*/
-		                return;
+                        return;
                     }
 
                     g_plugin.m_textures.push_back(x);
-                    m_texture_bindings[ cd.BindPoint ].texptr    = x.texptr;
+                    m_texture_bindings[cd.BindPoint].texptr = x.texptr;
                 }
             }
         }
     }
 
-    // pass 2: bind all the float4's.  "texsize_XYZ" params will be filled out via knowledge of loaded texture sizes.
-    for (int i = 0; i<pCT->GetVariablesCount(); i++)
+    // Pass 2: bind all the float4's."texsize_XYZ" params will be filled out via knowledge of loaded texture sizes.
+    for (size_t i = 0; i < pCT->GetVariablesCount(); i++)
     {
         ShaderVariable* var = pCT->GetVariableByIndex(i);
         LPCSTR h = var->Description.Name;
-        unsigned int count = 1;
+        //unsigned int count = 1;
         D3D11_SHADER_VARIABLE_DESC cd = var->Description;
         D3D11_SHADER_TYPE_DESC ct = var->Type;
-        // dx11 don't process not used vars
-        if (cd.uFlags == 0)
+
+        if (cd.uFlags == 0) // DX11 do not process unused variables.
           continue;
         //pCT->GetConstantDesc(h, &cd, &count);
 
         if (ct.Type == D3D_SVT_FLOAT)
         {
-            if (ct.Class == D3D_SVC_MATRIX_COLUMNS) 
+            if (ct.Class == D3D_SVC_MATRIX_COLUMNS)
             {
-                if      (!strcmp(cd.Name, "rot_s1" )) rot_mat[0]  = h;
-                else if (!strcmp(cd.Name, "rot_s2" )) rot_mat[1]  = h;
-                else if (!strcmp(cd.Name, "rot_s3" )) rot_mat[2]  = h;
-                else if (!strcmp(cd.Name, "rot_s4" )) rot_mat[3]  = h;
-                else if (!strcmp(cd.Name, "rot_d1" )) rot_mat[4]  = h;
-                else if (!strcmp(cd.Name, "rot_d2" )) rot_mat[5]  = h;
-                else if (!strcmp(cd.Name, "rot_d3" )) rot_mat[6]  = h;
-                else if (!strcmp(cd.Name, "rot_d4" )) rot_mat[7]  = h;
-                else if (!strcmp(cd.Name, "rot_f1" )) rot_mat[8]  = h;
-                else if (!strcmp(cd.Name, "rot_f2" )) rot_mat[9]  = h;
-                else if (!strcmp(cd.Name, "rot_f3" )) rot_mat[10] = h;
-                else if (!strcmp(cd.Name, "rot_f4" )) rot_mat[11] = h;
+                if      (!strcmp(cd.Name, "rot_s1"))  rot_mat[0]  = h;
+                else if (!strcmp(cd.Name, "rot_s2"))  rot_mat[1]  = h;
+                else if (!strcmp(cd.Name, "rot_s3"))  rot_mat[2]  = h;
+                else if (!strcmp(cd.Name, "rot_s4"))  rot_mat[3]  = h;
+                else if (!strcmp(cd.Name, "rot_d1"))  rot_mat[4]  = h;
+                else if (!strcmp(cd.Name, "rot_d2"))  rot_mat[5]  = h;
+                else if (!strcmp(cd.Name, "rot_d3"))  rot_mat[6]  = h;
+                else if (!strcmp(cd.Name, "rot_d4"))  rot_mat[7]  = h;
+                else if (!strcmp(cd.Name, "rot_f1"))  rot_mat[8]  = h;
+                else if (!strcmp(cd.Name, "rot_f2"))  rot_mat[9]  = h;
+                else if (!strcmp(cd.Name, "rot_f3"))  rot_mat[10] = h;
+                else if (!strcmp(cd.Name, "rot_f4"))  rot_mat[11] = h;
                 else if (!strcmp(cd.Name, "rot_vf1")) rot_mat[12] = h;
                 else if (!strcmp(cd.Name, "rot_vf2")) rot_mat[13] = h;
                 else if (!strcmp(cd.Name, "rot_vf3")) rot_mat[14] = h;
@@ -2538,51 +2545,54 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
             }
             else if (ct.Class == D3D_SVC_VECTOR)
             {
-                if      (!strcmp(cd.Name, "rand_frame"))  rand_frame  = h;
-                else if (!strcmp(cd.Name, "rand_preset")) rand_preset = h;
-                else if (!strncmp(cd.Name, "texsize_", 8)) 
+                if (!strcmp(cd.Name, "rand_frame"))
+                    rand_frame = h;
+                else if (!strcmp(cd.Name, "rand_preset"))
+                    rand_preset = h;
+                else if (!strncmp(cd.Name, "texsize_", 8))
                 {
-                    // remove "texsize_" prefix to find root file name.
+                    // Remove "texsize_" prefix to find root file name.
                     wchar_t szRootName[MAX_PATH];
-                    if (!strncmp(cd.Name, "texsize_", 8)) 
-                      wcscpy(szRootName, AutoWide(&cd.Name[8]));
+                    if (!strncmp(cd.Name, "texsize_", 8))
+                        wcscpy_s(szRootName, AutoWide(&cd.Name[8]));
                     else
-                      wcscpy(szRootName, AutoWide(cd.Name));
+                        wcscpy_s(szRootName, AutoWide(cd.Name));
 
-                    // check for request for random texture.
-                    // it should be a previously-seen random index - just fetch/reuse the name.
-                    if (!wcsncmp(L"rand", szRootName, 4) && 
-                        IsNumericChar(szRootName[4]) && 
-                        IsNumericChar(szRootName[5]) && 
-                        (szRootName[6]==0 || szRootName[6]==L'_') )
+                    // Check for request for random texture.
+                    // It should be a previously-seen random index - just fetch/reuse the name.
+                    if (!wcsncmp(L"rand", szRootName, 4) &&
+                        IsNumericChar(szRootName[4]) &&
+                        IsNumericChar(szRootName[5]) &&
+                        (szRootName[6] == 0 || szRootName[6] == L'_'))
                     {
                         int rand_slot = -1;
 
-                        // ditch filename prefix ("rand13_smalltiled", for example)
-                        // and just go by the slot
-                        if (szRootName[6]==L'_')
+                        // Ditch filename prefix ("rand13_smalltiled", for example)
+                        // and just go by the slot.
+                        if (szRootName[6] == L'_')
                             szRootName[6] = 0;
 
-                        swscanf(&szRootName[4], L"%d", &rand_slot);
-                        if (rand_slot >= 0 && rand_slot <= 15)      // otherwise, not a special filename - ignore it
+                        swscanf_s(&szRootName[4], L"%d", &rand_slot);
+                        if (rand_slot >= 0 && rand_slot <= 15) // otherwise, not a special filename - ignore it
                             if (RandTexName[rand_slot].GetLength() > 0)
-                              wcscpy(szRootName, RandTexName[rand_slot].c_str());
+                                wcscpy_s(szRootName, RandTexName[rand_slot].c_str());
                     }
 
                     // see if <szRootName>.tga or .jpg has already been loaded.
                     bool bTexFound = false;
-                    int N = g_plugin.m_textures.size();
-                    for (int n=0; n<N; n++) {
+                    size_t N = g_plugin.m_textures.size();
+                    for (size_t n = 0; n < N; n++)
+                    {
                         if (!wcscmp(g_plugin.m_textures[n].texname, szRootName))
                         {
-                            // found a match - texture was loaded
+                            // Found a match - texture was loaded.
                             TexSizeParamInfo y;
-                            y.texname       = szRootName; //for debugging
+                            y.texname = szRootName; // for debugging
                             y.texsize_param = h;
-                            y.w             = g_plugin.m_textures[n].w;
-                            y.h             = g_plugin.m_textures[n].h;
+                            y.w = g_plugin.m_textures[n].w;
+                            y.h = g_plugin.m_textures[n].h;
                             texsize_params.push_back(y);
-                            
+
                             bTexFound = true;
                             break;
                         }
@@ -2597,17 +2607,17 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
 */
                     }
                 }
-                else if (cd.Name[0] == '_' && cd.Name[1] == 'c') 
+                else if (cd.Name[0] == '_' && cd.Name[1] == 'c')
                 {
                     int z;
-                    if (sscanf(&cd.Name[2], "%d", &z)==1) 
-                        if (z >= 0 && z < sizeof(const_handles)/sizeof(const_handles[0]))
+                    if (sscanf_s(&cd.Name[2], "%d", &z) == 1)
+                        if (z >= 0 && z < sizeof(const_handles) / sizeof(const_handles[0]))
                             const_handles[z] = h;
                 }
-                else if (cd.Name[0] == '_' && cd.Name[1] == 'q') 
+                else if (cd.Name[0] == '_' && cd.Name[1] == 'q')
                 {
                     int z = cd.Name[2] - 'a';
-                    if (z >= 0 && z < sizeof(q_const_handles)/sizeof(q_const_handles[0]))
+                    if (z >= 0 && z < sizeof(q_const_handles) / sizeof(q_const_handles[0]))
                         q_const_handles[z] = h;
                 }
             }
@@ -2615,55 +2625,52 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool bHardErrors)
     }
 }
 
-//----------------------------------------------------------------------
-
-bool CPlugin::RecompileVShader(const char* szShadersText, VShaderInfo *si, int shaderType, bool bHardErrors)
+bool CPlugin::RecompileVShader(const char* szShadersText, VShaderInfo* si, int shaderType, bool bHardErrors)
 {
     SafeRelease(si->ptr);
-    ZeroMemory(si, sizeof(VShaderInfo));    
-   
+    ZeroMemory(si, sizeof(VShaderInfo));
+
     // LOAD SHADER
-    if (!LoadShaderFromMemory( szShadersText, "VS", "vs_4_0_level_9_1", &si->CT, (void**)&si->ptr, shaderType, bHardErrors && (GetScreenMode()==WINDOWED)))
+    if (!LoadShaderFromMemory(szShadersText, "VS", "vs_4_0_level_9_1", &si->CT, (void**)&si->ptr, shaderType, bHardErrors && (GetScreenMode() == WINDOWED)))
         return false;
 
-    // Track down texture & float4 param bindings for this shader.  
+    // Track down texture & float4 param bindings for this shader.
     // Also loads any textures that need loaded.
     si->params.CacheParams(si->CT, bHardErrors);
 
     return true;
 }
 
-bool CPlugin::RecompilePShader(const char* szShadersText, PShaderInfo *si, int shaderType, bool bHardErrors, int PSVersion)
+bool CPlugin::RecompilePShader(const char* szShadersText, PShaderInfo* si, int shaderType, bool bHardErrors, int PSVersion)
 {
     assert(m_nMaxPSVersion > 0);
 
     SafeRelease(si->ptr);
-    ZeroMemory(si, sizeof(PShaderInfo));    
-   
+    ZeroMemory(si, sizeof(PShaderInfo));
+
     // LOAD SHADER
     // note: ps_1_4 required for dependent texture lookups.
     //       ps_2_0 required for tex2Dbias.
-		char ver[32];
-		strcpy(ver, "ps_0_0");
-		switch(PSVersion) {
-		case MD2_PS_NONE: 
-			// Even though the PRESET doesn't use shaders, if MilkDrop is running where it CAN do shaders,
-			//   we run all the old presets through (shader) emulation.
-			// This way, during a MilkDrop session, we are always calling either WarpedBlit() or WarpedBlit_NoPixelShaders(),
-			//   and blending always works.
-			strcpy(ver, "ps_4_0_level_9_1"); 
-			break;  
-		case MD2_PS_2_0: strcpy(ver, "ps_4_0_level_9_1"); break;
-		case MD2_PS_2_X: strcpy(ver, "ps_4_0_level_9_3"); break; // we'll try ps_2_a first, LoadShaderFromMemory will try ps_2_b if compilation fails
-		case MD2_PS_3_0: strcpy(ver, "ps_4_0_level_9_3"); break;
-		case MD2_PS_4_0: strcpy(ver, "ps_4_0"); break;
-		default: assert(0); break;
-		}
+    char ver[32];
+    strcpy_s(ver, "ps_0_0");
+    switch (PSVersion)
+    {
+        // Even though the PRESET doesn't use shaders, if MilkDrop is running where it CAN do shaders,
+        //   we run all the old presets through (shader) emulation.
+        // This way, during a MilkDrop session, we are always calling either `WarpedBlit()` or `WarpedBlit_NoPixelShaders()`,
+        //   and blending always works.
+        case MD2_PS_NONE: strcpy_s(ver, "ps_4_0_level_9_1"); break;
+        case MD2_PS_2_0: strcpy_s(ver, "ps_4_0_level_9_1"); break;
+        case MD2_PS_2_X: strcpy_s(ver, "ps_4_0_level_9_3"); break; // try ps_2_a first, `LoadShaderFromMemory()` will try ps_2_b if compilation fails
+        case MD2_PS_3_0: strcpy_s(ver, "ps_4_0_level_9_3"); break;
+        case MD2_PS_4_0: strcpy_s(ver, "ps_4_0"); break;
+        default: assert(0); break;
+    }
 
-    if (!LoadShaderFromMemory( szShadersText, "PS", ver, &si->CT, (void**)&si->ptr, shaderType, bHardErrors && (GetScreenMode()==WINDOWED))) 
+    if (!LoadShaderFromMemory(szShadersText, "PS", ver, &si->CT, (void**)&si->ptr, shaderType, bHardErrors && (GetScreenMode() == WINDOWED)))
         return false;
 
-    // Track down texture & float4 param bindings for this shader.  
+    // Track down texture & float4 param bindings for this shader.
     // Also loads any textures that need loaded.
     si->params.CacheParams(si->CT, bHardErrors);
 
@@ -2674,18 +2681,18 @@ bool CPlugin::LoadShaders(PShaderSet* sh, CState* pState, bool bTick)
 {
     if (m_nMaxPSVersion <= 0)
         return true;
-    
-    // load one of the pixel shaders
+
+    // Load one of the pixel shaders.
     if (!sh->warp.ptr && pState->m_nWarpPSVersion > 0)
     {
         bool bOK = RecompilePShader(pState->m_szWarpShadersText, &sh->warp, SHADER_WARP, false, pState->m_nWarpPSVersion);
-        if (!bOK) 
+        if (!bOK)
         {
-            // switch to fallback shader
+            // Switch to fallback shader.
             m_fallbackShaders_ps.warp.ptr->AddRef();
             m_fallbackShaders_ps.warp.CT->AddRef();
-            memcpy(&sh->warp, &m_fallbackShaders_ps.warp, sizeof(PShaderInfo));
-            // cancel any slow-preset-load
+            memcpy_s(&sh->warp, sizeof(PShaderInfo), &m_fallbackShaders_ps.warp, sizeof(PShaderInfo));
+            // Cancel any slow-preset-load.
             //m_nLoadingPreset = 1000;
         }
 
@@ -2698,11 +2705,11 @@ bool CPlugin::LoadShaders(PShaderSet* sh, CState* pState, bool bTick)
         bool bOK = RecompilePShader(pState->m_szCompShadersText, &sh->comp, SHADER_COMP, false, pState->m_nCompPSVersion);
         if (!bOK)
         {
-            // switch to fallback shader
+            // Switch to fallback shader.
             m_fallbackShaders_ps.comp.ptr->AddRef();
             m_fallbackShaders_ps.comp.CT->AddRef();
             memcpy(&sh->comp, &m_fallbackShaders_ps.comp, sizeof(PShaderInfo));
-            // cancel any slow-preset-load
+            // Cancel any slow-preset-load.
             //m_nLoadingPreset = 1000;
         }
     }
@@ -2713,7 +2720,7 @@ bool CPlugin::LoadShaders(PShaderSet* sh, CState* pState, bool bTick)
 //----------------------------------------------------------------------
 
 bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* szFn, const char* szProfile, 
-                                    CConstantTable** ppConstTable, void** ppShader, int shaderType, bool bHardErrors )
+                                    CConstantTable** ppConstTable, void** ppShader, int shaderType, bool /* bHardErrors */)
 {
     const char szWarpDefines[] = "#define rad _rad_ang.x\n"
                                  "#define ang _rad_ang.y\n"
@@ -2730,64 +2737,68 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
     const char szLastLine[]   = "    _return_value = float4(ret.xyz, _vDiffuse.w);";
 
     char szWhichShader[64];
-    switch(shaderType)
+    switch (shaderType)
     {
-    case SHADER_WARP:  strcpy(szWhichShader, "warp"); break;
-    case SHADER_COMP:  strcpy(szWhichShader, "composite"); break;
-    case SHADER_BLUR:  strcpy(szWhichShader, "blur"); break;
-    case SHADER_OTHER: strcpy(szWhichShader, "(other)"); break;
-    default:           strcpy(szWhichShader, "(unknown)"); break;
+        case SHADER_WARP: strcpy_s(szWhichShader, "warp"); break;
+        case SHADER_COMP: strcpy_s(szWhichShader, "composite"); break;
+        case SHADER_BLUR: strcpy_s(szWhichShader, "blur"); break;
+        case SHADER_OTHER: strcpy_s(szWhichShader, "(other)"); break;
+        default: strcpy_s(szWhichShader, "(unknown)"); break;
     }
 
     ID3DBlob* pShaderByteCode;
     //wchar_t title[64];
-    
+
     *ppShader = NULL;
     *ppConstTable = NULL;
 
     char szShaderText[128000];
     char temp[128000];
-    int writePos = 0;
+    size_t writePos = 0;
 
-    // paste the universal #include
-    strcpy(&szShaderText[writePos], m_szShaderIncludeText);  // first, paste in the contents of 'inputs.fx' before the actual shader text.  Has 13's and 10's.
+    // Paste the universal `#include`.
+    strcpy_s(&szShaderText[writePos], ARRAYSIZE(szShaderText), m_szShaderIncludeText); // first, paste in the contents of "include.fx" before the actual shader text. Has 13's and 10's.
     writePos += m_nShaderIncludeTextLen;
 
-    // paste in any custom #defines for this shader type
-    if (shaderType == SHADER_WARP && szProfile[0]=='p') 
+    // Paste in any custom #defines for this shader type.
+    if (shaderType == SHADER_WARP && szProfile[0] == 'p')
     {
-        strcpy(&szShaderText[writePos], szWarpDefines);
+        strcpy_s(&szShaderText[writePos], ARRAYSIZE(szShaderText) - writePos, szWarpDefines);
         writePos += strlen(szWarpDefines);
     }
-    else if (shaderType == SHADER_COMP && szProfile[0]=='p')
+    else if (shaderType == SHADER_COMP && szProfile[0] == 'p')
     {
-        strcpy(&szShaderText[writePos], szCompDefines);
+        strcpy_s(&szShaderText[writePos], ARRAYSIZE(szShaderText) - writePos, szCompDefines);
         writePos += strlen(szCompDefines);
     }
 
-    // paste in the shader itself - converting LCC's to 13+10's.
-    // avoid lstrcpy b/c it might not handle the linefeed stuff...?
-    int shaderStartPos = writePos;
+    // Paste in the shader itself - converting LCCs to 13+10s.
+    // Avoid `lstrcpy()` because it might not handle the linefeed stuff...?
+    size_t shaderStartPos = writePos;
     {
-        const char *s = szOrigShaderText;
-        char *d = &szShaderText[writePos];
+        const char* s = szOrigShaderText;
+        char* d = &szShaderText[writePos];
         while (*s)
         {
             if (*s == LINEFEED_CONTROL_CHAR)
             {
-                *d++ = 13; writePos++;
-                *d++ = 10; writePos++;
+                *d++ = '\r';
+                writePos++;
+                *d++ = '\n';
+                writePos++;
             }
             else
             {
-                *d++ = *s; writePos++;
+                *d++ = *s;
+                writePos++;
             }
             s++;
         }
-        *d = 0; writePos++;
+        *d = '\0';
+        writePos++;
     }
 
-    // strip out all comments - but cheat a little - start at the shader test.
+    // Strip out all comments - but cheat a little - start at the shader test.
     // (the include file was already stripped of comments)
     StripComments(&szShaderText[shaderStartPos]);
 
@@ -2797,7 +2808,7 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
         {
             char buf[32];
             buf[0] = *p;
-            buf[1] = 0;
+            buf[1] = '\0';
             OutputDebugString(buf);
             if ((rand() % 9) == 0)
                 Sleep(1);
@@ -2806,64 +2817,69 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
         OutputDebugString("\n");
     }/**/
 
-    //note: only do this stuff if type is WARP or COMP shader... not for blur, etc!
-    //FIXME - hints on the inputs / output / samplers etc.
-    //   can go in the menu header, NOT the preset!  =)
-    //then update presets
-    //  -> be sure to update the presets on disk AND THE DEFAULT SHADERS (for loading MD1 presets)
-    //FIXME - then update auth. guide w/new examples,
-    //   and a list of the invisible inputs (and one output) to each shader!
-    //   warp: float2 uv, float2 uv_orig, rad, ang
-    //   comp: float2 uv, rad, ang, float3 hue_shader
-    // test all this string code in Debug mode - make sure nothing bad is happening
+    // Note: Only do this if type is WARP or COMP shader... not for BLUR, etc!
+    // FIXME - hints on the inputs / output / samplers etc.
+    //         can go in the menu header, NOT the preset! =)
+    // then update presets.
+    //   -> be sure to update the presets on disk AND THE DEFAULT SHADERS (for loading MD1 presets)
+    // FIXME - then update auth. guide w/new examples,
+    //         and a list of the invisible inputs (and one output) to each shader!
+    //         warp: float2 uv, float2 uv_orig, rad, ang
+    //         comp: float2 uv, rad, ang, float3 hue_shader
+    // Test all this string code in Debug mode - make sure nothing bad is happening.
 
     /*
-    1. paste warp or comp #defines
-    2. search for "void" + whitespace + szFn + [whitespace] + '(' 
-    3. insert params
-    4. search for [whitespace] + ')'.
-    5. search for final '}' (strrchr)
-    6. back up one char, insert the Last Line, and add '}' and that's it.
+    1. Paste warp or comp #defines
+    2. Search for "void" + whitespace + szFn + [whitespace] + '('
+    3. Insert parameters
+    4. Search for [whitespace] + ')'.
+    5. Search for final '}' (strrchr)
+    6. Back up one char, insert the Last Line, and add '}' and that's it.
     */
-    if ((shaderType == SHADER_WARP || shaderType == SHADER_COMP) && szProfile[0]=='p')
+    if ((shaderType == SHADER_WARP || shaderType == SHADER_COMP) && szProfile[0] == 'p')
     {
         char* p = &szShaderText[shaderStartPos];
-        
-        // seek to 'shader_body' and replace it with spaces
+
+        // Seek to "shader_body" and replace it with spaces.
         while (*p && strncmp(p, "shader_body", 11))
             p++;
-        if (p) 
+        if (p)
         {
-            for (int i=0; i<11; i++)
+            for (int i = 0; i < 11; i++)
                 *p++ = ' ';
         }
 
         if (p)
         {
-            // insert "void PS(...params...)\n"
-            strcpy(temp, p);
-            const char *params = (shaderType==SHADER_WARP) ? szWarpParams : szCompParams;
-            sprintf(p, "void %s( %s )\n", szFn, params);
-            p += strlen(p);
-            strcpy(p, temp);
+            // Insert "void PS(...params...)\n".
+            strcpy_s(temp, p);
+            const char* params = (shaderType == SHADER_WARP) ? szWarpParams : szCompParams;
+            size_t remains = ARRAYSIZE(szShaderText) - (p - &szShaderText[0] + 1) + 1;
+            int length = sprintf_s(p, remains, "void %s( %s )\n", szFn, params);
+            p += length;
+            strcpy_s(p, remains - length, temp);
 
-            // find the starting curly brace
+            // Find the starting curly brace.
             p = strchr(p, '{');
             if (p)
             {
-                // skip over it
+                // Skip over it.
                 p++;
-                // then insert "float3 ret = 0;"
-                strcpy(temp, p);
-                sprintf(p, "%s\n", szFirstLine);
-                p += strlen(p);
-                strcpy(p, temp);
+                // Then insert "float3 ret = 0;".
+                strcpy_s(temp, p);
+                remains = ARRAYSIZE(szShaderText) - (p - &szShaderText[0] + 1) + 1;
+                length = sprintf_s(p, remains, "%s\n", szFirstLine);
+                p += length;
+                strcpy_s(p, remains - length, temp);
 
-                // find the ending curly brace
+                // Find the ending curly brace.
                 p = strrchr(p, '}');
-                // add the last line - "    _return_value = float4(ret.xyz, _vDiffuse.w);"
+                // Add the last line - "    _return_value = float4(ret.xyz, _vDiffuse.w);".
                 if (p)
-                    sprintf(p, " %s\n}\n", szLastLine);
+                {
+                    remains = ARRAYSIZE(szShaderText) - (p - &szShaderText[0] + 1) + 1;
+                    sprintf_s(p, remains, " %s\n}\n", szLastLine);
+                }
             }
         }
 
@@ -2875,14 +2891,13 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
 		    dumpmsg(temp);
             AddError(temp, 8.0f, ERR_PRESET, true);
 */
-		    return false;
+            return false;
         }
     }
-    
-    // now really try to compile it.
 
-	bool failed=false;
-    int len = strlen(szShaderText);
+    // Now really try to compile the shader.
+    bool failed = false;
+    size_t len = strlen(szShaderText);
     //ID3DBlob *pCode, *pErrors;
 #if _DEBUG
     int flags = D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY;
@@ -2891,16 +2906,16 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
 #endif
     if (S_OK != D3DCompile(szShaderText, len, NULL, NULL, NULL, szFn, szProfile, flags, 0, &pShaderByteCode, &m_pShaderCompileErrors))
     {
-      failed = true;
+        failed = true;
     }
 
     if (failed && !strcmp(szProfile, "ps_4_0_level_9_1"))
     {
-      SafeRelease(m_pShaderCompileErrors);
-      if (S_OK == D3DCompile(szShaderText, len, NULL, NULL, NULL, szFn, "ps_4_0_level_9_3", flags, 0, &pShaderByteCode, &m_pShaderCompileErrors))
-      {
-        failed = false;
-      }
+        SafeRelease(m_pShaderCompileErrors);
+        if (S_OK == D3DCompile(szShaderText, len, NULL, NULL, NULL, szFn, "ps_4_0_level_9_3", flags, 0, &pShaderByteCode, &m_pShaderCompileErrors))
+        {
+            failed = false;
+        }
     }
    /* if (D3D_OK != D3DXCompileShader(
         szShaderText,
@@ -2928,44 +2943,44 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
 			}
 		}*/
 
-		if (failed)
-		{
+    if (failed)
+    {
 /*
 			wchar_t temp[1024];
 			swprintf(temp, WASABI_API_LNGSTRINGW(IDS_ERROR_COMPILING_X_X_SHADER), szProfile, szWhichShader);
 			if (m_pShaderCompileErrors && m_pShaderCompileErrors->GetBufferSize() < sizeof(temp) - 256) 
 			{
-				lstrcatW(temp, L"\n\n");
-				lstrcatW(temp, AutoWide((char*)m_pShaderCompileErrors->GetBufferPointer()));
+            //strcat_s(tempw, L"\n\n");
+            wcscat_s(err, AutoWide(reinterpret_cast<char*>(m_pShaderCompileErrors->GetBufferPointer())));
 			}
 */
-			SafeRelease(m_pShaderCompileErrors);
+        SafeRelease(m_pShaderCompileErrors);
 //			dumpmsg(temp);
 // 			if (bHardErrors)
 // 				MessageBoxW(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
 // 			else {
 // 				AddError(temp, 8.0f, ERR_PRESET, true);
 // 			}
-			return false;
-		}
+        return false;
+    }
 
     ID3D11ShaderReflection* pReflection = nullptr;
     if (S_OK != D3DReflect(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), IID_ID3D11ShaderReflection, reinterpret_cast<void**>(&pReflection)))
     {
-      SafeRelease(m_pShaderCompileErrors);
-      SafeRelease(pShaderByteCode);
-      return false;
+        SafeRelease(m_pShaderCompileErrors);
+        SafeRelease(pShaderByteCode);
+        return false;
     }
 
     *ppConstTable = new CConstantTable(pReflection);
 
     HRESULT hr = 1;
-    if (szProfile[0] == 'v') 
+    if (szProfile[0] == 'v')
     {
         hr = GetDevice()->CreateVertexShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), 
                                              reinterpret_cast<ID3D11VertexShader**>(ppShader), (*ppConstTable));
     }
-    else if (szProfile[0] == 'p') 
+    else if (szProfile[0] == 'p')
     {
         hr = GetDevice()->CreatePixelShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), 
                                             reinterpret_cast<ID3D11PixelShader**>(ppShader), (*ppConstTable));
@@ -2983,7 +2998,7 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
             AddError(temp, 6.0f, ERR_PRESET, true);
         }
 */
-		return false;
+        return false;
     }
 
     pShaderByteCode->Release();
@@ -3018,7 +3033,7 @@ bool CPlugin::LoadShaderFromMemory( const char* szOrigShaderText, const char* sz
 //  then if we were blending 2 presets, jump fully to the new preset.
 // Otherwise the old preset wouldn't get all reloaded, and it app would crash
 //  when trying to use its stuff.
-void CPlugin::CleanUpMilkDropDX11(int final_cleanup)
+void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
 {
     if (m_nLoadingPreset != 0)
     {
@@ -3057,7 +3072,7 @@ void CPlugin::CleanUpMilkDropDX11(int final_cleanup)
 
     //SafeRelease(m_pSpriteVertDecl);
     //SafeRelease(m_pWfVertDecl);
-    //SafeRelease(m_pMyVertDecl);
+    //SafeRelease(m_pMilkDropVertDecl);
 
     m_shaders.comp.Clear();
     m_shaders.warp.Clear();
@@ -3166,7 +3181,7 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     // 1. Take care of timing, other paperwork, etc... for new frame.
     if (!redraw)
     {
-        float dt = GetTime() - m_prev_time;
+        //float dt = GetTime() - m_prev_time;
         m_prev_time = GetTime(); // note: m_prev_time is not for general use!
         m_bPresetLockedByCode = (m_UI_mode != UI_REGULAR);
         if (m_bPresetLockedByUser || m_bPresetLockedByCode)
@@ -3187,7 +3202,7 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     // 2. Check for lost or gained keyboard focus.
     // (note: can't use wm_setfocus or wm_killfocus because they don't work w/embedwnd)
 	/*
-	if (GetFrame()==0)
+    if (GetFrame() == 0)
     {
         // NOTE: we skip this if we've already gotten a WM_COMMAND/ID_VIS_RANDOM message
         //       from the skin - if that happened, we're running windowed with a fancy
@@ -3216,25 +3231,24 @@ void CPlugin::MilkDropRenderFrame(int redraw)
             if (m_bHasFocus)
                 break;
             cur = GetParent(cur);
-        }
-        while (cur != NULL && cur != winamp);
+        } while (cur != NULL && cur != winamp);
 
-        if (m_hTextWnd && focus==m_hTextWnd)
+        if (m_hTextWnd && focus == m_hTextWnd)
             m_bHasFocus = 1;
 
-        if (GetFocus()==NULL)
+        if (GetFocus() == NULL)
             m_bHasFocus = 0;
 
         //HWND t1 = GetFocus();
         //HWND t2 = GetPluginWindow();
         //HWND t3 = GetParent(t2);
-        
-        if (m_bHadFocus==1 && m_bHasFocus==0)
+
+        if (m_bHadFocus == 1 && m_bHasFocus == 0)
         {
             //m_bMilkdropScrollLockState = GetKeyState(VK_SCROLL) & 1;
             SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
         }
-        else if (m_bHadFocus==0 && m_bHasFocus==1)
+        else if (m_bHadFocus == 0 && m_bHasFocus == 1)
         {
             m_bOrigScrollLockState = GetKeyState(VK_SCROLL) & 1;
             SetScrollLock(m_bPresetLockedByUser, m_bPreventScollLockHandling);
@@ -3278,153 +3292,153 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-
-void CPlugin::dumpmsg(wchar_t *s)
+void CPlugin::dumpmsg(wchar_t* s)
 {
-    #if _DEBUG
-        OutputDebugStringW(s);
-        if (s[0]) 
-        {
-            int len = wcslen(s);
-            if (s[len-1] != L'\n')
-                OutputDebugStringW(L"\n");
-        }
-    #endif
+#if _DEBUG
+    OutputDebugString(s);
+    if (s[0])
+    {
+        size_t len = wcslen(s);
+        if (s[len - 1] != L'\n')
+            OutputDebugString(L"\n");
+    }
+#endif
 }
 
 void CPlugin::PrevPreset(float fBlendTime)
 {
     if (m_bSequentialPresetOrder)
     {
-		m_nCurrentPreset--;
-		if (m_nCurrentPreset < m_nDirs)
-            m_nCurrentPreset = m_nPresets-1;
+        m_nCurrentPreset--;
+        if (m_nCurrentPreset < m_nDirs)
+            m_nCurrentPreset = m_nPresets - 1;
         if (m_nCurrentPreset >= m_nPresets) // just in case
-			m_nCurrentPreset = m_nDirs;
+            m_nCurrentPreset = m_nDirs;
 
         wchar_t szFile[MAX_PATH];
-        wcscpy(szFile, m_szPresetDir);	// note: m_szPresetDir always ends with '\'
-        wcscat(szFile, m_presets[m_nCurrentPreset].szFilename.c_str());
+        wcscpy_s(szFile, m_szPresetDir); // note: m_szPresetDir always ends with '\'
+        wcscat_s(szFile, m_presets[m_nCurrentPreset].szFilename.c_str());
 
-    	LoadPreset(szFile, fBlendTime);
+        LoadPreset(szFile, fBlendTime);
     }
     else
     {
-        int prev = (m_presetHistoryPos-1 + PRESET_HIST_LEN) % PRESET_HIST_LEN;
+        int prev = (m_presetHistoryPos - 1 + PRESET_HIST_LEN) % PRESET_HIST_LEN;
         if (m_presetHistoryPos != m_presetHistoryBackFence)
         {
             m_presetHistoryPos = prev;
-            LoadPreset( m_presetHistory[m_presetHistoryPos].c_str(), fBlendTime);
+            LoadPreset(m_presetHistory[m_presetHistoryPos].c_str(), fBlendTime);
         }
     }
 }
 
-void CPlugin::NextPreset(float fBlendTime)  // if not retracing our former steps, it will choose a random one.
+// If not retracing former steps, it will choose a random one.
+void CPlugin::NextPreset(float fBlendTime)
 {
     LoadRandomPreset(fBlendTime);
 }
 
 void CPlugin::LoadRandomPreset(float fBlendTime)
 {
-	// make sure file list is ok
-	if (m_nPresets - m_nDirs == 0)
-	{
-		return;
-	}
-	
-    bool bHistoryEmpty = (m_presetHistoryFwdFence==m_presetHistoryBackFence);
+    // Ensure file list is OK.
+    if (m_nPresets - m_nDirs == 0)
+    {
+            return;
+    }
 
-    // if we have history to march back forward through, do that first
+    bool bHistoryEmpty = (m_presetHistoryFwdFence == m_presetHistoryBackFence);
+
+    // If we have history to march back forward through, do that first.
     if (!m_bSequentialPresetOrder)
     {
-        int next = (m_presetHistoryPos+1) % PRESET_HIST_LEN;
+        int next = (m_presetHistoryPos + 1) % PRESET_HIST_LEN;
         if (next != m_presetHistoryFwdFence && !bHistoryEmpty)
         {
             m_presetHistoryPos = next;
-            LoadPreset( m_presetHistory[m_presetHistoryPos].c_str(), fBlendTime);
+            LoadPreset(m_presetHistory[m_presetHistoryPos].c_str(), fBlendTime);
             return;
         }
     }
 
-	// --TEMPORARY--
-	// this comes in handy if you want to mass-modify a batch of presets;
-	// just automatically tweak values in Import, then they immediately get exported to a .MILK in a new dir.
-	/*
-	for (int i=0; i<m_nPresets; i++)
-	{
-		char szPresetFile[512];
-		lstrcpy(szPresetFile, m_szPresetDir);	// note: m_szPresetDir always ends with '\'
-		lstrcat(szPresetFile, m_pPresetAddr[i]);
-		//CState newstate;
-		m_state2.Import(szPresetFile, GetTime());
+    // --TEMPORARY--
+    // This comes in handy to mass-modify a batch of presets;
+    // just automatically tweak values in Import, then they immediately get exported to a .MILK in a new dir.
+    /*
+    for (int i = 0; i < m_nPresets; i++)
+    {
+        wchar_t szPresetFile[512];
+        wcscpy_s(szPresetFile, m_szPresetDir); // note: m_szPresetDir always ends with '\'
+        wcscat_s(szPresetFile, m_pPresetAddr[i]);
+        //CState newstate;
+        m_state2.Import(szPresetFile, GetTime());
 
-		lstrcpy(szPresetFile, "c:\\t7\\");
-		lstrcat(szPresetFile, m_pPresetAddr[i]);
-		m_state2.Export(szPresetFile);
-	}
-	*/
-	// --[END]TEMPORARY--
+        wcscpy_s(szPresetFile, L"c:\\t7\\");
+        wcscat_s(szPresetFile, m_pPresetAddr[i]);
+        m_state2.Export(szPresetFile);
+    }
+    */
+    // --[END]TEMPORARY--
 
-	if (m_bSequentialPresetOrder)
-	{
-		m_nCurrentPreset++;
-		if (m_nCurrentPreset < m_nDirs || m_nCurrentPreset >= m_nPresets)
-			m_nCurrentPreset = m_nDirs;
-	}
-	else
-	{
-		// pick a random file
-		if (!m_bEnableRating || (m_presets[m_nPresets - 1].fRatingCum < 0.1f))// || (m_nRatingReadProgress < m_nPresets))
-		{
-			m_nCurrentPreset = m_nDirs + (warand() % (m_nPresets - m_nDirs));
-		}
-		else
-		{
-			float cdf_pos = (warand() % 14345)/14345.0f*m_presets[m_nPresets - 1].fRatingCum;
+    if (m_bSequentialPresetOrder)
+    {
+        m_nCurrentPreset++;
+        if (m_nCurrentPreset < m_nDirs || m_nCurrentPreset >= m_nPresets)
+            m_nCurrentPreset = m_nDirs;
+    }
+    else
+    {
+        // Pick a random file.
+        if (!m_bEnableRating || (m_presets[m_nPresets - 1].fRatingCum < 0.1f)) // || (m_nRatingReadProgress < m_nPresets))
+        {
+            m_nCurrentPreset = m_nDirs + (warand() % (m_nPresets - m_nDirs));
+        }
+        else
+        {
+            float cdf_pos = (warand() % 14345) / 14345.0f * m_presets[m_nPresets - 1].fRatingCum;
 
-			/*
-			char buf[512];
-			sprintf(buf, "max = %f, rand = %f, \tvalues: ", m_presets[m_nPresets - 1].fRatingCum, cdf_pos);
-			for (int i=m_nDirs; i<m_nPresets; i++)
-			{
-				char buf2[32];
-				sprintf(buf2, "%3.1f ", m_presets[i].fRatingCum);
-				lstrcat(buf, buf2);
-			}
-			dumpmsg(buf);
-			*/
+            /*
+            char buf[512];
+            sprintf_s(buf, "max = %f, rand = %f, \tvalues: ", m_presets[m_nPresets - 1].fRatingCum, cdf_pos);
+            for (int i=m_nDirs; i<m_nPresets; i++)
+            {
+                char buf2[32];
+                sprintf_s(buf2, "%3.1f ", m_presets[i].fRatingCum);
+                wcscat_s(buf, buf2);
+            }
+            dumpmsg(buf);
+            */
 
-			if (cdf_pos < m_presets[m_nDirs].fRatingCum)
-			{
-				m_nCurrentPreset = m_nDirs;
-			}
-			else
-			{
-				int lo = m_nDirs;
-				int hi = m_nPresets;
-				while (lo + 1 < hi)
-				{
-					int mid = (lo+hi)/2;
-					if (m_presets[mid].fRatingCum > cdf_pos)
-						hi = mid;
-					else
-						lo = mid;
-				}
-				m_nCurrentPreset = hi;
-			}
-		}
-	}
+            if (cdf_pos < m_presets[m_nDirs].fRatingCum)
+            {
+                m_nCurrentPreset = m_nDirs;
+            }
+            else
+            {
+                int lo = m_nDirs;
+                int hi = m_nPresets;
+                while (lo + 1 < hi)
+                {
+                    int mid = (lo + hi) / 2;
+                    if (m_presets[mid].fRatingCum > cdf_pos)
+                        hi = mid;
+                    else
+                        lo = mid;
+                }
+                m_nCurrentPreset = hi;
+            }
+        }
+    }
 
-	// m_pPresetAddr[m_nCurrentPreset] points to the preset file to load (w/o the path);
-	// first prepend the path, then load section [preset00] within that file
-	wchar_t szFile[MAX_PATH] = {0};
-	wcscpy(szFile, m_szPresetDir);	// note: m_szPresetDir always ends with '\'
-	wcscat(szFile, m_presets[m_nCurrentPreset].szFilename.c_str());
+    // `m_pPresetAddr[m_nCurrentPreset]` points to the preset file to load (without the path);
+    // first prepend the path, then load section [preset00] within that file.
+    wchar_t szFile[MAX_PATH] = {0};
+    wcscpy_s(szFile, m_szPresetDir); // note: m_szPresetDir always ends with '\'
+    wcscat_s(szFile, m_presets[m_nCurrentPreset].szFilename.c_str());
 
     if (!bHistoryEmpty)
-        m_presetHistoryPos = (m_presetHistoryPos+1) % PRESET_HIST_LEN;
+        m_presetHistoryPos = (m_presetHistoryPos + 1) % PRESET_HIST_LEN;
 
-	LoadPreset(szFile, fBlendTime);
+    LoadPreset(szFile, fBlendTime);
 }
 
 void CPlugin::RandomizeBlendPattern()
@@ -3432,118 +3446,118 @@ void CPlugin::RandomizeBlendPattern()
     if (!m_vertinfo)
         return;
 
-    // note: we now avoid constant uniform blend b/c it's half-speed for shader blending. 
+    // Note: we now avoid constant uniform blend b/c it's half-speed for shader blending.
     //       (both old & new shaders would have to run on every pixel...)
-    int mixtype = 1 + (warand()%3);//warand()%4;
+    int mixtype = 1 + (warand() % 3); //warand()%4;
 
-    if (mixtype==0)
+    if (mixtype == 0)
     {
-        // constant, uniform blend
+        // Constant, uniform blend.
         int nVert = 0;
-	    for (int y=0; y<=m_nGridY; y++)
-	    {
-		    for (int x=0; x<=m_nGridX; x++)
-		    {
+        for (int y = 0; y <= m_nGridY; y++)
+        {
+            for (int x = 0; x <= m_nGridX; x++)
+            {
                 m_vertinfo[nVert].a = 1;
                 m_vertinfo[nVert].c = 0;
-			    nVert++;
+                nVert++;
             }
         }
     }
-    else if (mixtype==1)
+    else if (mixtype == 1)
     {
-        // directional wipe
-        float ang = FRAND*6.28f;
+        // Directional wipe.
+        float ang = FRAND * 6.28f;
         float vx = cosf(ang);
         float vy = sinf(ang);
-        float band = 0.1f + 0.2f*FRAND; // 0.2 is good
-        float inv_band = 1.0f/band;
-    
+        float band = 0.1f + 0.2f * FRAND; // 0.2 is good
+        float inv_band = 1.0f / band;
+
         int nVert = 0;
-	    for (int y=0; y<=m_nGridY; y++)
-	    {
-            float fy = (y/(float)m_nGridY)*m_fAspectY;
-		    for (int x=0; x<=m_nGridX; x++)
-		    {
-                float fx = (x/(float)m_nGridX)*m_fAspectX;
+        for (int y = 0; y <= m_nGridY; y++)
+        {
+            float fy = (y / (float)m_nGridY) * m_fAspectY;
+            for (int x = 0; x <= m_nGridX; x++)
+            {
+                float fx = (x / (float)m_nGridX) * m_fAspectX;
 
                 // at t==0, mix rangse from -10..0
                 // at t==1, mix ranges from   1..11
 
-                float t = (fx-0.5f)*vx + (fy-0.5f)*vy + 0.5f;
-                t = (t-0.5f)/sqrtf(2.0f) + 0.5f;
+                float t = (fx - 0.5f) * vx + (fy - 0.5f) * vy + 0.5f;
+                t = (t - 0.5f) / sqrtf(2.0f) + 0.5f;
 
                 m_vertinfo[nVert].a = inv_band * (1 + band);
-                m_vertinfo[nVert].c = -inv_band + inv_band*t;//(x/(float)m_nGridX - 0.5f)/band;
-			    nVert++;
-		    }
-	    }
+                m_vertinfo[nVert].c = -inv_band + inv_band * t; //(x/(float)m_nGridX - 0.5f)/band;
+                nVert++;
+            }
+        }
     }
-    else if (mixtype==2)
+    else if (mixtype == 2)
     {
-        // plasma transition
-        float band = 0.12f + 0.13f*FRAND;//0.02f + 0.18f*FRAND;
-        float inv_band = 1.0f/band;
+        // Plasma transition.
+        float band = 0.12f + 0.13f * FRAND; //0.02f + 0.18f*FRAND;
+        float inv_band = 1.0f / band;
 
-        // first generate plasma array of height values
-        m_vertinfo[                               0].c = FRAND;
-        m_vertinfo[                        m_nGridX].c = FRAND;
-        m_vertinfo[m_nGridY*(m_nGridX+1)           ].c = FRAND;
-        m_vertinfo[m_nGridY*(m_nGridX+1) + m_nGridX].c = FRAND;
+        // First generate plasma array of height values.
+        m_vertinfo[0].c = FRAND;
+        m_vertinfo[m_nGridX].c = FRAND;
+        m_vertinfo[m_nGridY * (m_nGridX + 1)].c = FRAND;
+        m_vertinfo[m_nGridY * (m_nGridX + 1) + m_nGridX].c = FRAND;
         GenPlasma(0, m_nGridX, 0, m_nGridY, 0.25f);
 
         // then find min,max so we can normalize to [0..1] range and then to the proper 'constant offset' range.
         float minc = m_vertinfo[0].c;
         float maxc = m_vertinfo[0].c;
-        int x,y,nVert;
-    
+        int x, y, nVert;
+
         nVert = 0;
-	    for (y=0; y<=m_nGridY; y++)
-	    {
-		    for (x=0; x<=m_nGridX; x++)
+        for (y = 0; y <= m_nGridY; y++)
+        {
+            for (x = 0; x <= m_nGridX; x++)
             {
                 if (minc > m_vertinfo[nVert].c)
                     minc = m_vertinfo[nVert].c;
                 if (maxc < m_vertinfo[nVert].c)
                     maxc = m_vertinfo[nVert].c;
-			    nVert++;
-		    }
-	    }
+                nVert++;
+            }
+        }
 
-        float mult = 1.0f/(maxc-minc);
+        float mult = 1.0f / (maxc - minc);
         nVert = 0;
-	    for (y=0; y<=m_nGridY; y++)
-	    {
-		    for (x=0; x<=m_nGridX; x++)
+        for (y = 0; y <= m_nGridY; y++)
+        {
+            for (x = 0; x <= m_nGridX; x++)
             {
-                float t = (m_vertinfo[nVert].c - minc)*mult;
+                float t = (m_vertinfo[nVert].c - minc) * mult;
                 m_vertinfo[nVert].a = inv_band * (1 + band);
-                m_vertinfo[nVert].c = -inv_band + inv_band*t;
+                m_vertinfo[nVert].c = -inv_band + inv_band * t;
                 nVert++;
             }
         }
     }
-    else if (mixtype==3)
+    else if (mixtype == 3)
     {
-        // radial blend
-        float band = 0.02f + 0.14f*FRAND + 0.34f*FRAND;
-        float inv_band = 1.0f/band;
-        float dir = (float)((warand()%2)*2 - 1);      // 1=outside-in, -1=inside-out
+        // Radial blend.
+        float band = 0.02f + 0.14f * FRAND + 0.34f * FRAND;
+        float inv_band = 1.0f / band;
+        float dir = (float)((warand() % 2) * 2 - 1); // 1=outside-in, -1=inside-out
 
         int nVert = 0;
-	    for (int y=0; y<=m_nGridY; y++)
-	    {
-            float dy = (y/(float)m_nGridY - 0.5f)*m_fAspectY;
-		    for (int x=0; x<=m_nGridX; x++)
-		    {
-                float dx = (x/(float)m_nGridX - 0.5f)*m_fAspectX;
-                float t = sqrtf(dx*dx + dy*dy)*1.41421f;
-                if (dir==-1)
-                    t = 1-t;
+        for (int y = 0; y <= m_nGridY; y++)
+        {
+            float dy = (y / (float)m_nGridY - 0.5f) * m_fAspectY;
+            for (int x = 0; x <= m_nGridX; x++)
+            {
+                float dx = (x / (float)m_nGridX - 0.5f) * m_fAspectX;
+                float t = sqrtf(dx * dx + dy * dy) * 1.41421f;
+                if (dir == -1)
+                    t = 1 - t;
 
                 m_vertinfo[nVert].a = inv_band * (1 + band);
-                m_vertinfo[nVert].c = -inv_band + inv_band*t;
-			    nVert++;
+                m_vertinfo[nVert].c = -inv_band + inv_band * t;
+                nVert++;
             }
         }
     }
@@ -3551,53 +3565,53 @@ void CPlugin::RandomizeBlendPattern()
 
 void CPlugin::GenPlasma(int x0, int x1, int y0, int y1, float dt)
 {
-    int midx = (x0+x1)/2;
-    int midy = (y0+y1)/2;
-    float t00 = m_vertinfo[y0*(m_nGridX+1) + x0].c;
-    float t01 = m_vertinfo[y0*(m_nGridX+1) + x1].c;
-    float t10 = m_vertinfo[y1*(m_nGridX+1) + x0].c;
-    float t11 = m_vertinfo[y1*(m_nGridX+1) + x1].c;
+    int midx = (x0 + x1) / 2;
+    int midy = (y0 + y1) / 2;
+    float t00 = m_vertinfo[y0 * (m_nGridX + 1) + x0].c;
+    float t01 = m_vertinfo[y0 * (m_nGridX + 1) + x1].c;
+    float t10 = m_vertinfo[y1 * (m_nGridX + 1) + x0].c;
+    float t11 = m_vertinfo[y1 * (m_nGridX + 1) + x1].c;
 
-    if (y1-y0 >= 2)
+    if (y1 - y0 >= 2)
     {
-        if (x0==0)
-            m_vertinfo[midy*(m_nGridX+1) + x0].c = 0.5f*(t00 + t10) + (FRAND*2-1)*dt*m_fAspectY;
-        m_vertinfo[midy*(m_nGridX+1) + x1].c = 0.5f*(t01 + t11) + (FRAND*2-1)*dt*m_fAspectY;
+        if (x0 == 0)
+            m_vertinfo[midy * (m_nGridX + 1) + x0].c = 0.5f * (t00 + t10) + (FRAND * 2 - 1) * dt * m_fAspectY;
+        m_vertinfo[midy * (m_nGridX + 1) + x1].c = 0.5f * (t01 + t11) + (FRAND * 2 - 1) * dt * m_fAspectY;
     }
-    if (x1-x0 >= 2)
+    if (x1 - x0 >= 2)
     {
-        if (y0==0)
-            m_vertinfo[y0*(m_nGridX+1) + midx].c = 0.5f*(t00 + t01) + (FRAND*2-1)*dt*m_fAspectX;
-        m_vertinfo[y1*(m_nGridX+1) + midx].c = 0.5f*(t10 + t11) + (FRAND*2-1)*dt*m_fAspectX;
+        if (y0 == 0)
+            m_vertinfo[y0 * (m_nGridX + 1) + midx].c = 0.5f * (t00 + t01) + (FRAND * 2 - 1) * dt * m_fAspectX;
+        m_vertinfo[y1 * (m_nGridX + 1) + midx].c = 0.5f * (t10 + t11) + (FRAND * 2 - 1) * dt * m_fAspectX;
     }
 
-    if (y1-y0 >= 2 && x1-x0 >= 2)
+    if (y1 - y0 >= 2 && x1 - x0 >= 2)
     {
-        // do midpoint & recurse:
-        t00 = m_vertinfo[midy*(m_nGridX+1) + x0].c;
-        t01 = m_vertinfo[midy*(m_nGridX+1) + x1].c;
-        t10 = m_vertinfo[y0*(m_nGridX+1) + midx].c;
-        t11 = m_vertinfo[y1*(m_nGridX+1) + midx].c;
-        m_vertinfo[midy*(m_nGridX+1) + midx].c = 0.25f*(t10 + t11 + t00 + t01) + (FRAND*2-1)*dt;
+        // Do midpoint and recurse.
+        t00 = m_vertinfo[midy * (m_nGridX + 1) + x0].c;
+        t01 = m_vertinfo[midy * (m_nGridX + 1) + x1].c;
+        t10 = m_vertinfo[y0 * (m_nGridX + 1) + midx].c;
+        t11 = m_vertinfo[y1 * (m_nGridX + 1) + midx].c;
+        m_vertinfo[midy * (m_nGridX + 1) + midx].c = 0.25f * (t10 + t11 + t00 + t01) + (FRAND * 2 - 1) * dt;
 
-        GenPlasma(x0, midx, y0, midy, dt*0.5f);
-        GenPlasma(midx, x1, y0, midy, dt*0.5f);
-        GenPlasma(x0, midx, midy, y1, dt*0.5f);
-        GenPlasma(midx, x1, midy, y1, dt*0.5f);
+        GenPlasma(x0, midx, y0, midy, dt * 0.5f);
+        GenPlasma(midx, x1, y0, midy, dt * 0.5f);
+        GenPlasma(x0, midx, midy, y1, dt * 0.5f);
+        GenPlasma(midx, x1, midy, y1, dt * 0.5f);
     }
 }
 
 void CPlugin::LoadPreset(const wchar_t *szPresetFilename, float fBlendTime)
 {
-	OutputDebugStringW(szPresetFilename);
+	OutputDebugString(szPresetFilename);
 	//OutputDebugString("\n");
-    // clear old error msg...
-//     if (m_nFramesSinceResize > 4)
-//     	ClearErrors(ERR_PRESET);     
+    // Clear old error message.
+    //if (m_nFramesSinceResize > 4)
+    //    ClearErrors(ERR_PRESET);
 
-    // make sure preset still exists.  (might not if they are using the "back"/fwd buttons 
+    // Make sure preset still exists. (might not if they are using the "back"/fwd buttons
     //  in RANDOM preset order and a file was renamed or deleted!)
-    if (GetFileAttributesW(szPresetFilename) == 0xFFFFFFFF)
+    if (GetFileAttributes(szPresetFilename) == 0xFFFFFFFF)
     {
        /* const wchar_t *p = wcsrchr(szPresetFilename, L'\\');
         p = (p) ? p+1 : szPresetFilename;
@@ -3607,23 +3621,22 @@ void CPlugin::LoadPreset(const wchar_t *szPresetFilename, float fBlendTime)
         return;
     }
 
-    if ( !m_bSequentialPresetOrder )
+    if (!m_bSequentialPresetOrder)
     {
         // save preset in the history.  keep in mind - maybe we are searching back through it already!
-        if ( m_presetHistoryFwdFence == m_presetHistoryPos )
+        if (m_presetHistoryFwdFence == m_presetHistoryPos)
         {
-            // we're at the forward frontier; add to history
+            // We're at the forward frontier; add to history.
             m_presetHistory[m_presetHistoryPos] = szPresetFilename;
-            m_presetHistoryFwdFence = (m_presetHistoryFwdFence+1) % PRESET_HIST_LEN;
+            m_presetHistoryFwdFence = (m_presetHistoryFwdFence + 1) % PRESET_HIST_LEN;
 
-            // don't let the two fences touch
+            // Don't let the two fences touch.
             if (m_presetHistoryBackFence == m_presetHistoryFwdFence)
-                m_presetHistoryBackFence = (m_presetHistoryBackFence+1) % PRESET_HIST_LEN;
+                m_presetHistoryBackFence = (m_presetHistoryBackFence + 1) % PRESET_HIST_LEN;
         }
-        else 
+        else
         {
             // we're retracing our steps, either forward or backward...
-
         }
     }
 
@@ -3633,65 +3646,64 @@ void CPlugin::LoadPreset(const wchar_t *szPresetFilename, float fBlendTime)
 
     if (fBlendTime == 0)
     {
-        // do it all NOW!
-	    if (szPresetFilename != m_szCurrentPresetFile) //[sic]
-        wcscpy(m_szCurrentPresetFile, szPresetFilename);
-	    
-	    CState *temp = m_pState;
-	    m_pState = m_pOldState;
-	    m_pOldState = temp;
+        // Do it all NOW!
+        if (szPresetFilename != m_szCurrentPresetFile) // [sic]
+            wcscpy_s(m_szCurrentPresetFile, szPresetFilename);
+
+        CState* temp = m_pState;
+        m_pState = m_pOldState;
+        m_pOldState = temp;
 
         DWORD ApplyFlags = STATE_ALL;
         ApplyFlags ^= (m_bWarpShaderLock ? STATE_WARP : 0);
         ApplyFlags ^= (m_bCompShaderLock ? STATE_COMP : 0);
-        
+
         m_pState->Import(m_szCurrentPresetFile, GetTime(), m_pOldState, ApplyFlags);
-        
-	    if (fBlendTime >= 0.001f) 
+
+        if (fBlendTime >= 0.001f)
         {
             RandomizeBlendPattern();
-		    m_pState->StartBlendFrom(m_pOldState, GetTime(), fBlendTime);
+            m_pState->StartBlendFrom(m_pOldState, GetTime(), fBlendTime);
         }
 
-	    m_fPresetStartTime = GetTime();
-	    m_fNextPresetTime = -1.0f;		// flags UpdateTime() to recompute this
+        m_fPresetStartTime = GetTime();
+        m_fNextPresetTime = -1.0f; // flags UpdateTime() to recompute this
 
         // release stuff from m_OldShaders, then move m_shaders to m_OldShaders, then load the new shaders.
-        SafeRelease( m_OldShaders.comp.ptr );
-        SafeRelease( m_OldShaders.warp.ptr );
-        SafeRelease( m_OldShaders.comp.CT );
-        SafeRelease( m_OldShaders.warp.CT );
+        SafeRelease(m_OldShaders.comp.ptr);
+        SafeRelease(m_OldShaders.warp.ptr);
+        SafeRelease(m_OldShaders.comp.CT);
+        SafeRelease(m_OldShaders.warp.CT);
         m_OldShaders = m_shaders;
         ZeroMemory(&m_shaders, sizeof(PShaderSet));
-    
+
         LoadShaders(&m_shaders, m_pState, false);
 
         OnFinishedLoadingPreset();
     }
-    else 
+    else
     {
         // set ourselves up to load the preset (and esp. compile shaders) a little bit at a time
-        SafeRelease( m_NewShaders.comp.ptr );
-        SafeRelease( m_NewShaders.warp.ptr );
+        SafeRelease(m_NewShaders.comp.ptr);
+        SafeRelease(m_NewShaders.warp.ptr);
         ZeroMemory(&m_NewShaders, sizeof(PShaderSet));
 
         DWORD ApplyFlags = STATE_ALL;
         ApplyFlags ^= (m_bWarpShaderLock ? STATE_WARP : 0);
         ApplyFlags ^= (m_bCompShaderLock ? STATE_COMP : 0);
-	    
+
         m_pNewState->Import(szPresetFilename, GetTime(), m_pOldState, ApplyFlags);
-        
-        m_nLoadingPreset = 1;   // this will cause LoadPresetTick() to get called over the next few frames...
+
+        m_nLoadingPreset = 1; // this will cause LoadPresetTick() to get called over the next few frames...
 
         m_fLoadingPresetBlendTime = fBlendTime;
-        wcscpy(m_szLoadingPreset, szPresetFilename);
+        wcscpy_s(m_szLoadingPreset, szPresetFilename);
     }
 }
 
+// Note: Only used this if the preset loaded *intact* (or mostly intact).
 void CPlugin::OnFinishedLoadingPreset()
 {
-    // note: only used this if you loaded the preset *intact* (or mostly intact)
-
     //SetMenusForPresetVersion( m_pState->m_nWarpPSVersion, m_pState->m_nCompPSVersion );
     m_nPresetsLoadedTotal++; //only increment this on COMPLETION of the load.
 }
@@ -3700,39 +3712,39 @@ void CPlugin::LoadPresetTick()
 {
     if (m_nLoadingPreset == 2 || m_nLoadingPreset == 5)
     {
-        // just loads one shader (warp or comp) then returns.
+        // Just loads one shader (warp or comp) then returns.
         LoadShaders(&m_NewShaders, m_pNewState, true);
     }
     else if (m_nLoadingPreset == 8)
     {
-        // finished loading the shaders - apply the preset!
-      wcscpy(m_szCurrentPresetFile, m_szLoadingPreset);
+        // Finished loading the shaders - apply the preset!
+        wcscpy_s(m_szCurrentPresetFile, m_szLoadingPreset);
         m_szLoadingPreset[0] = 0;
-	    
-	    CState *temp = m_pState;
-	    m_pState = m_pOldState;
-	    m_pOldState = temp;
 
-	    temp = m_pState;
-	    m_pState = m_pNewState;
-	    m_pNewState = temp;
+        CState* temp = m_pState;
+        m_pState = m_pOldState;
+        m_pOldState = temp;
+
+        temp = m_pState;
+        m_pState = m_pNewState;
+        m_pNewState = temp;
 
         RandomizeBlendPattern();
 
-	    //if (fBlendTime >= 0.001f)
-		    m_pState->StartBlendFrom(m_pOldState, GetTime(), m_fLoadingPresetBlendTime);
+        //if (fBlendTime >= 0.001f)
+        m_pState->StartBlendFrom(m_pOldState, GetTime(), m_fLoadingPresetBlendTime);
 
-	    m_fPresetStartTime = GetTime();
-	    m_fNextPresetTime = -1.0f;		// flags UpdateTime() to recompute this
+        m_fPresetStartTime = GetTime();
+        m_fNextPresetTime = -1.0f; // flags UpdateTime() to recompute this
 
         // release stuff from m_OldShaders, then move m_shaders to m_OldShaders, then load the new shaders.
-        SafeRelease( m_OldShaders.comp.ptr );
-        SafeRelease( m_OldShaders.warp.ptr );
+        SafeRelease(m_OldShaders.comp.ptr);
+        SafeRelease(m_OldShaders.warp.ptr);
         m_OldShaders = m_shaders;
         m_shaders = m_NewShaders;
         ZeroMemory(&m_NewShaders, sizeof(PShaderSet));
 
-        // end slow-preset-load mode
+        // End slow-preset-load mode.
         m_nLoadingPreset = 0;
 
         OnFinishedLoadingPreset();
@@ -3744,46 +3756,46 @@ void CPlugin::LoadPresetTick()
 
 void CPlugin::SeekToPreset(wchar_t cStartChar)
 {
-	if (cStartChar >= L'a' && cStartChar <= L'z')
-		cStartChar -= L'a' - L'A';
+    if (cStartChar >= L'a' && cStartChar <= L'z')
+        cStartChar -= L'a' - L'A';
 
-	for (int i = m_nDirs; i < m_nPresets; i++)
-	{
-		wchar_t ch = m_presets[i].szFilename.c_str()[0];
-		if (ch >= L'a' && ch <= L'z')
-			ch -= L'a' - L'A';
-		if (ch == cStartChar)
-		{
-			m_nPresetListCurPos = i;
-			return;
-		}
-	}	
+    for (int i = m_nDirs; i < m_nPresets; i++)
+    {
+        wchar_t ch = m_presets[i].szFilename.c_str()[0];
+        if (ch >= L'a' && ch <= L'z')
+            ch -= L'a' - L'A';
+        if (ch == cStartChar)
+        {
+            m_nPresetListCurPos = i;
+            return;
+        }
+    }
 }
 
 void CPlugin::FindValidPresetDir()
 {
-    swprintf(m_szPresetDir, L"%spresets\\", m_szMilkdrop2Path );
+    swprintf_s(m_szPresetDir, L"%spresets\\", m_szMilkdrop2Path);
     if (GetFileAttributesW(m_szPresetDir) != -1)
         return;
-    wcscpy(m_szPresetDir, m_szMilkdrop2Path);
+    wcscpy_s(m_szPresetDir, m_szMilkdrop2Path);
     if (GetFileAttributesW(m_szPresetDir) != -1)
         return;
-    wcscpy(m_szPresetDir, GetPluginsDirPath());
+    wcscpy_s(m_szPresetDir, GetPluginsDirPath());
     if (GetFileAttributesW(m_szPresetDir) != -1)
         return;
-    wcscpy(m_szPresetDir, L"c:\\program files\\winamp\\");  //getting desperate here
+    wcscpy_s(m_szPresetDir, L"c:\\program files\\winamp\\"); // getting desperate here
     if (GetFileAttributesW(m_szPresetDir) != -1)
         return;
-    wcscpy(m_szPresetDir, L"c:\\program files\\");  //getting desperate here
+    wcscpy_s(m_szPresetDir, L"c:\\program files\\"); // more desperate here
     if (GetFileAttributesW(m_szPresetDir) != -1)
         return;
-    wcscpy(m_szPresetDir, L"c:\\");
+    wcscpy_s(m_szPresetDir, L"c:\\");
 }
 
 char* NextLine(char* p)
 {
-    // p points to the beginning of a line
-    // we'll return a pointer to the first char of the next line
+    // `p` points to the beginning of a line.
+    // Return a pointer to the first character of the next line
     // if we hit a NULL char before that, we'll return NULL.
     if (!p)
         return NULL;
@@ -3795,17 +3807,16 @@ char* NextLine(char* p)
     while (*s == '\r' || *s == '\n')
         s++;
 
-    if (*s==0)
+    if (*s == 0)
         return NULL;
 
     return s;
 }
 
+// NOTE - this is run in a separate thread!!!
 static unsigned int WINAPI __UpdatePresetList(void* lpVoid)
 {
-    // NOTE - this is run in a separate thread!!!
-
-    DWORD flags = (DWORD)lpVoid;
+    UINT_PTR flags = reinterpret_cast<UINT_PTR>(lpVoid);
     bool bForce = (flags & 1) ? true : false;
     bool bTryReselectCurrentPreset = (flags & 2) ? true : false;
 
@@ -3813,46 +3824,45 @@ static unsigned int WINAPI __UpdatePresetList(void* lpVoid)
     ZeroMemory(&fd, sizeof(fd));
     HANDLE h = INVALID_HANDLE_VALUE;
 
-    int nTry = 0;
+    //int nTry = 0;
     bool bRetrying = false;
 
     EnterCriticalSection(&g_cs);
 retry:
 
-	// make sure the path exists; if not, go to winamp plugins dir
-	if (GetFileAttributesW(g_plugin.m_szPresetDir) == -1)
+    // Make sure the path exists; if not, go to Winamp plugins directory.
+    if (GetFileAttributes(g_plugin.m_szPresetDir) == -1)
     {
         //FIXME...
         g_plugin.FindValidPresetDir();
     }
 
-    // if Mask (dir) changed, do a full re-scan;
-    // if not, just finish our old scan.
+    // If Mask (dir) changed, do a full re-scan.
+    // If not, just finish the old scan.
     wchar_t szMask[MAX_PATH];
-	swprintf(szMask, L"%s*.*", g_plugin.m_szPresetDir);  // cuz dirnames could have extensions, etc.
+    swprintf_s(szMask, L"%s*.*", g_plugin.m_szPresetDir); // because directory names could have extensions, etc.
     if (bForce || !g_plugin.m_szUpdatePresetMask[0] || wcscmp(szMask, g_plugin.m_szUpdatePresetMask))
     {
-        // if old dir was "" or the dir changed, reset our search
+        // If old dir was "" or the dir changed, reset our search.
         if (h != INVALID_HANDLE_VALUE)
             FindClose(h);
         h = INVALID_HANDLE_VALUE;
         g_plugin.m_bPresetListReady = false;
-        wcscpy(g_plugin.m_szUpdatePresetMask, szMask);
+        wcscpy_s(g_plugin.m_szUpdatePresetMask, szMask);
         ZeroMemory(&fd, sizeof(fd));
 
         g_plugin.m_nPresets = 0;
-	    g_plugin.m_nDirs    = 0;
+        g_plugin.m_nDirs = 0;
         g_plugin.m_presets.clear();
 
-	    // find first .MILK file
+        // Find first .MILK file
 	    //if( (hFile = _findfirst(szMask, &c_file )) != -1L )		// note: returns filename -without- path
 	    if( (h = FindFirstFileW(g_plugin.m_szUpdatePresetMask, &fd )) == INVALID_HANDLE_VALUE )		// note: returns filename -without- path
         {
-            // --> revert back to plugins dir
-            /*wchar_t buf[1024];
+            // Revert back to plugins directory.
+            /* wchar_t buf[1024];
 		    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILES_OR_DIRS_FOUND_IN_X), g_plugin.m_szPresetDir);
-            g_plugin.AddError(buf, 4.0f, ERR_MISC, true);
-*/
+            g_plugin.AddError(buf, 4.0f, ERR_MISC, true); */
 
             if (bRetrying)
             {
@@ -3868,7 +3878,7 @@ retry:
             goto retry;
         }
 
-       /* g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_SCANNING_PRESETS), 8.0f, ERR_SCANNING_PRESETS, false);*/
+        //g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_SCANNING_PRESETS), 8.0f, ERR_SCANNING_PRESETS, false);
     }
 
     if (g_plugin.m_bPresetListReady)
@@ -3879,34 +3889,34 @@ retry:
         return 0;
     }
 
-    int  nMaxPSVersion = g_plugin.m_nMaxPSVersion;
+    int nMaxPSVersion = g_plugin.m_nMaxPSVersion;
     wchar_t szPresetDir[MAX_PATH];
-    wcscpy(szPresetDir, g_plugin.m_szPresetDir);
+    wcscpy_s(szPresetDir, g_plugin.m_szPresetDir);
 
-	LeaveCriticalSection(&g_cs);
+    LeaveCriticalSection(&g_cs);
 
     PresetList temp_presets;
     int temp_nDirs = 0;
     int temp_nPresets = 0;
-    
+
     // scan for the desired # of presets, this call...
     while (!g_bThreadShouldQuit && h != INVALID_HANDLE_VALUE)
     {
-		bool bSkip = false;
+        bool bSkip = false;
         bool bIsDir = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
         float fRating = 0;
 
-		wchar_t szFilename[512];
-    wcscpy(szFilename, fd.cFileName);
+        wchar_t szFilename[512];
+        wcscpy_s(szFilename, fd.cFileName);
 
-		if (bIsDir)
-		{
-			// skip "." directory
-			if (wcscmp(fd.cFileName, L".")==0)// || lstrlen(ffd.cFileName) < 1)
-				bSkip = true;
-			else
-				swprintf(szFilename, L"*%s", fd.cFileName);
-		}
+        if (bIsDir)
+        {
+            // Skip "." directory.
+            if (wcscmp(fd.cFileName, L".") == 0) //|| wcslen(ffd.cFileName) < 1)
+                bSkip = true;
+            else
+                swprintf_s(szFilename, L"*%s", fd.cFileName);
+        }
         else
         {
             // Skip normal files not ending in ".milk".
@@ -3952,24 +3962,24 @@ retry:
                     // Most presets (unless hand-edited) will have these right at the top.
                     // If not, [at least for fRating] use GetPrivateProfileFloat to search whole file.
                     // Read line 1.
-                    //p = NextLine(p); //fgets(p, sizeof(p)-1, f);
-                    if (!strncmp(p, "MILKDROP_PRESET_VERSION", 23)) 
+                    //p = NextLine(p);//fgets(p, sizeof(p)-1, f);
+                    if (!strncmp(p, "MILKDROP_PRESET_VERSION", 23))
                     {
                         p = NextLine(p); //fgets(p, sizeof(p)-1, f);
                         int ps_version = 2;
-                        if (p && !strncmp(p, "PSVERSION", 9)) 
+                        if (p && !strncmp(p, "PSVERSION", 9))
                         {
-                            sscanf(&p[10], "%d", &ps_version);
+                            sscanf_s(&p[10], "%d", &ps_version);
                             if (ps_version > nMaxPSVersion)
                                 bSkip = true;
                             else
                             {
-                                p = NextLine(p);//fgets(p, sizeof(p)-1, f);
+                                p = NextLine(p); //fgets(p, sizeof(p)-1, f);
                                 bScanForPreset00AndRating = true;
                             }
                         }
                     }
-                    else 
+                    else
                     {
                         // otherwise it's a MilkDrop 1 preset - we can run it.
                         bScanForPreset00AndRating = true;
@@ -3978,14 +3988,14 @@ retry:
                     // scan up to 10 more lines in the file, looking for [preset00] and fRating=...
                     // (this is WAY faster than GetPrivateProfileFloat, when it works!)
                     int reps = (bScanForPreset00AndRating) ? 10 : 0;
-                    for (int z=0; z<reps; z++)
+                    for (int z = 0; z < reps; z++)
                     {
-                        if (p && !strncmp(p, "[preset00]", 10)) 
+                        if (p && !strncmp(p, "[preset00]", 10))
                         {
                             p = NextLine(p);
-                            if (p && !strncmp(p, "fRating=", 8)) 
+                            if (p && !strncmp(p, "fRating=", 8))
                             {
-                                _sscanf_l(&p[8], "%f", g_use_C_locale, &fRating);
+                                _sscanf_s_l(&p[8], "%f", g_use_C_locale, &fRating);
                                 bRatingKnown = true;
                                 break;
                             }
@@ -3996,49 +4006,49 @@ retry:
                     fclose(f);
 
                     if (!bRatingKnown)
-		                fRating = GetPrivateProfileFloatW(L"preset00", L"fRating", 3.0f, szFullPath);
+                        fRating = GetPrivateProfileFloatW(L"preset00", L"fRating", 3.0f, szFullPath);
                     fRating = std::max(0.0f, std::min(5.0f, fRating));
                 }
             }
-		}
-
-		if (!bSkip)
-		{
-            float fPrevPresetRatingCum = 0;
-            if (temp_nPresets > 0)
-                fPrevPresetRatingCum += temp_presets[temp_nPresets-1].fRatingCum;
-
-            PresetInfo x;
-            x.szFilename  = szFilename;
-            x.fRatingThis = fRating;
-            x.fRatingCum  = fPrevPresetRatingCum + fRating;
-            temp_presets.push_back(x);
-
-			temp_nPresets++;
-			if (bIsDir) 
-				temp_nDirs++;
         }
 
-    	if (!FindNextFileW(h, &fd))
+        if (!bSkip)
         {
-        	FindClose(h);
+            float fPrevPresetRatingCum = 0;
+            if (temp_nPresets > 0)
+                fPrevPresetRatingCum += temp_presets[temp_nPresets - 1].fRatingCum;
+
+            PresetInfo x;
+            x.szFilename = szFilename;
+            x.fRatingThis = fRating;
+            x.fRatingCum = fPrevPresetRatingCum + fRating;
+            temp_presets.push_back(x);
+
+            temp_nPresets++;
+            if (bIsDir)
+                temp_nDirs++;
+        }
+
+        if (!FindNextFile(h, &fd))
+        {
+            FindClose(h);
             h = INVALID_HANDLE_VALUE;
 
             break;
         }
 
-        // every so often, add some presets...
-        #define PRESET_UPDATE_INTERVAL 64
-        if (temp_nPresets == 30 || ((temp_nPresets % PRESET_UPDATE_INTERVAL)==0))
+#define PRESET_UPDATE_INTERVAL 64
+        // Every so often, add some presets...
+        if (temp_nPresets == 30 || ((temp_nPresets % PRESET_UPDATE_INTERVAL) == 0))
         {
-	        EnterCriticalSection(&g_cs);
-        
+            EnterCriticalSection(&g_cs);
+
             //g_plugin.m_presets  = temp_presets;
-            for (int i=g_plugin.m_nPresets; i<temp_nPresets; i++)
+            for (int i = g_plugin.m_nPresets; i < temp_nPresets; i++)
                 g_plugin.m_presets.push_back(temp_presets[i]);
             g_plugin.m_nPresets = temp_nPresets;
-            g_plugin.m_nDirs    = temp_nDirs;
-        	
+            g_plugin.m_nDirs = temp_nDirs;
+
             LeaveCriticalSection(&g_cs);
         }
     }
@@ -4051,16 +4061,16 @@ retry:
         return 0;
     }
 
-	EnterCriticalSection(&g_cs);
+    EnterCriticalSection(&g_cs);
 
     //g_plugin.m_presets  = temp_presets;
-    for (int i=g_plugin.m_nPresets; i<temp_nPresets; i++)
+    for (int i = g_plugin.m_nPresets; i < temp_nPresets; i++)
         g_plugin.m_presets.push_back(temp_presets[i]);
     g_plugin.m_nPresets = temp_nPresets;
-    g_plugin.m_nDirs    = temp_nDirs;
-//    g_plugin.m_bPresetListReady = true;
+    g_plugin.m_nDirs = temp_nDirs;
+    //g_plugin.m_bPresetListReady = true;
 
-//    if (g_plugin.m_bPresetListReady && g_plugin.m_nPresets == 0)
+    //if (g_plugin.m_bPresetListReady && g_plugin.m_nPresets == 0)
     if (g_plugin.m_nPresets == 0)
     {
         // no presets OR directories found - weird - but it happens.
@@ -4071,7 +4081,7 @@ retry:
 
         if (bRetrying)
         {
-        	LeaveCriticalSection(&g_cs);
+            LeaveCriticalSection(&g_cs);
             g_bThreadAlive = false;
             _endthreadex(0);
             return 0;
@@ -4083,35 +4093,36 @@ retry:
         goto retry;
     }
 
-//    if (g_plugin.m_bPresetListReady)
+    //if (g_plugin.m_bPresetListReady)
     {
-    	g_plugin.MergeSortPresets(0, g_plugin.m_nPresets-1);
+        g_plugin.MergeSortPresets(0, g_plugin.m_nPresets - 1);
 
         // Update cumulative ratings, since order changed...
         g_plugin.m_presets[0].fRatingCum = g_plugin.m_presets[0].fRatingThis;
         for (int i=0; i<g_plugin.m_nPresets; i++)
             g_plugin.m_presets[i].fRatingCum = g_plugin.m_presets[i-1].fRatingCum + g_plugin.m_presets[i].fRatingThis;
 
-        // clear the "scanning presets" msg
+        // Clear the "Scanning presets..." message.
         //g_plugin.ClearErrors(ERR_SCANNING_PRESETS);
 
-	    // finally, try to re-select the most recently-used preset in the list
-	    g_plugin.m_nPresetListCurPos = 0;
+        // Finally, try to re-select the most recently-used preset in the list.
+        g_plugin.m_nPresetListCurPos = 0;
         if (bTryReselectCurrentPreset)
         {
-	        if (g_plugin.m_szCurrentPresetFile[0])
-	        {
-		        // try to automatically seek to the last preset loaded
-                wchar_t *p = wcsrchr(g_plugin.m_szCurrentPresetFile, L'\\');
-                p = (p) ? (p+1) : g_plugin.m_szCurrentPresetFile;
-		        for (int i=g_plugin.m_nDirs; i<g_plugin.m_nPresets; i++)
-				{
-                    if (wcscmp(p, g_plugin.m_presets[i].szFilename.c_str())==0) {
-				        g_plugin.m_nPresetListCurPos = i; 
+            if (g_plugin.m_szCurrentPresetFile[0])
+            {
+                // Try to automatically seek to the last preset loaded.
+                wchar_t* p = wcsrchr(g_plugin.m_szCurrentPresetFile, L'\\');
+                p = (p) ? (p + 1) : g_plugin.m_szCurrentPresetFile;
+                for (int i = g_plugin.m_nDirs; i < g_plugin.m_nPresets; i++)
+                {
+                    if (wcscmp(p, g_plugin.m_presets[i].szFilename.c_str()) == 0)
+                    {
+                        g_plugin.m_nPresetListCurPos = i;
                         break;
                     }
-				}
-	        }
+                }
+            }
         }
     }
 
@@ -4119,18 +4130,17 @@ retry:
 	g_plugin.m_bPresetListReady = true;
 
     g_bThreadAlive = false;
-//    _endthreadex(0); // calling this here stops destructors from being called for local objects!
+    //_endthreadex(0); // calling this here stops destructors from being called for local objects!
     return 0;
 }
 
+// Note: If directory changed, make sure `bForce` is true!
 void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectCurrentPreset)
 {
-    // note: if dir changed, make sure bForce is true!
-
     if (bForce)
     {
         if (g_bThreadAlive)
-            CancelThread(3000);  // flags it to exit; the param is the # of ms to wait before forcefully killing it
+            CancelThread(3000); // flags it to exit; the param is the # of ms to wait before forcefully killing it
     }
     else
     {
@@ -4140,45 +4150,44 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
             return;
     }
 
-    assert(!g_bThreadAlive); 
+    assert(!g_bThreadAlive);
 
-    // spawn new thread:
-    DWORD flags = (bForce ? 1 : 0) | (bTryReselectCurrentPreset ? 2 : 0);
+    // Spawn new thread.
+    UINT_PTR flags = (bForce ? 1 : 0) | (bTryReselectCurrentPreset ? 2 : 0);
     g_bThreadShouldQuit = false;
     g_bThreadAlive = true;
-    g_hThread = (HANDLE)_beginthreadex(NULL,0,__UpdatePresetList,(void*)flags,0,0);
+    g_hThread = (HANDLE)_beginthreadex(NULL, 0, __UpdatePresetList, reinterpret_cast<void*>(flags), 0, 0);
 
     if (!bBackground) 
     {
-        // crank up priority, wait for it to finish, and then return
-	    SetThreadPriority(g_hThread,THREAD_PRIORITY_HIGHEST); //THREAD_PRIORITY_IDLE,    THREAD_PRIORITY_LOWEST,    THREAD_PRIORITY_NORMAL,    THREAD_PRIORITY_HIGHEST,
+        // Crank up priority, wait for it to finish, and then return.
+        SetThreadPriority(g_hThread, THREAD_PRIORITY_HIGHEST);
 
-        // wait for it to finish
+        // Wait for it to finish.
         while (g_bThreadAlive)
             Sleep(30);
-    
+
         assert(g_hThread != INVALID_HANDLE_VALUE);
         CloseHandle(g_hThread);
         g_hThread = INVALID_HANDLE_VALUE;
     }
     else
     {
-        // it will just run in the background til it finishes.
+        // It will just run in the background til it finishes.
         // however, we want to wait until at least ~32 presets are found (or failure) before returning,
         // so we know we have *something* in the preset list to start with.
+        SetThreadPriority(g_hThread,THREAD_PRIORITY_HIGHEST);
 
-	    SetThreadPriority(g_hThread,THREAD_PRIORITY_HIGHEST); //THREAD_PRIORITY_IDLE,    THREAD_PRIORITY_LOWEST,    THREAD_PRIORITY_NORMAL,    THREAD_PRIORITY_HIGHEST,
-
-        // wait until either the thread exits, or # of presets is >32, before returning.
-        // also make sure you enter the CS whenever you check on it!
+        // Wait until either the thread exits, or number of presets is >32, before returning.
+        // Also enter the CS whenever checking on it!
         // (thread will update preset list every so often, with the newest presets scanned in...)
         while (g_bThreadAlive)
         {
             Sleep(30);
 
-	        EnterCriticalSection(&g_cs);
+            EnterCriticalSection(&g_cs);
             int nPresets = g_plugin.m_nPresets;
-	        LeaveCriticalSection(&g_cs);
+            LeaveCriticalSection(&g_cs);
 
             if (nPresets >= 30)
                 break;
@@ -4186,10 +4195,10 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
 
         if (g_bThreadAlive)
         {
-            // the load still takes a while even at THREAD_PRIORITY_ABOVE_NORMAL,
+            // The load still takes a while even at THREAD_PRIORITY_ABOVE_NORMAL,
             // because it is waiting on the HDD so much...
-            // but the OS is smart, and the CPU stays nice and zippy in other threads =)
-        	SetThreadPriority(g_hThread,THREAD_PRIORITY_ABOVE_NORMAL); //THREAD_PRIORITY_IDLE,    THREAD_PRIORITY_LOWEST,    THREAD_PRIORITY_NORMAL,    THREAD_PRIORITY_HIGHEST,
+            // But the OS is smart, and the CPU stays nice and zippy in other threads =)
+            SetThreadPriority(g_hThread, THREAD_PRIORITY_ABOVE_NORMAL);
         }
     }
 
@@ -4198,199 +4207,196 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
 
 void CPlugin::MergeSortPresets(int left, int right)
 {
-	// note: left..right range is inclusive
-	int nItems = right-left+1;
+    // note: left..right range is inclusive
+    int nItems = right - left + 1;
 
-	if (nItems > 2)
-	{
-		// recurse to sort 2 halves (but don't actually recurse on a half if it only has 1 element)
-		int mid = (left+right)/2;
-		/*if (mid   != left) */ MergeSortPresets(left, mid);
-		/*if (mid+1 != right)*/ MergeSortPresets(mid+1, right);
-				
-		// then merge results
-		int a = left;
-		int b = mid + 1;
-		while (a <= mid && b <= right)
-		{
-			bool bSwap;
+    if (nItems > 2)
+    {
+        // Recurse to sort 2 halves (but don't actually recurse on a half if it only has 1 element).
+        int mid = (left + right) / 2;
+        /*if (mid   != left) */ MergeSortPresets(left, mid);
+        /*if (mid+1 != right)*/ MergeSortPresets(mid + 1, right);
 
-			// merge the sorted arrays; give preference to strings that start with a '*' character
-			int nSpecial = 0;
-			if (m_presets[a].szFilename.c_str()[0] == '*') nSpecial++;
-			if (m_presets[b].szFilename.c_str()[0] == '*') nSpecial++;
+        // Then merge results.
+        int a = left;
+        int b = mid + 1;
+        while (a <= mid && b <= right)
+        {
+            bool bSwap;
 
-			if (nSpecial == 1)
-			{
-				bSwap = (m_presets[b].szFilename.c_str()[0] == '*');
-			}
-			else
-			{
-				bSwap = (mdstrcmpiW(m_presets[a].szFilename.c_str(), m_presets[b].szFilename.c_str()) > 0);
-			}
+            // Merge the sorted arrays; give preference to strings that start with a '*' character.
+            int nSpecial = 0;
+            if (m_presets[a].szFilename.c_str()[0] == '*') nSpecial++;
+            if (m_presets[b].szFilename.c_str()[0] == '*') nSpecial++;
 
-			if (bSwap)
-			{
-				PresetInfo temp = m_presets[b];
-				for (int k=b; k>a; k--)
-					m_presets[k] = m_presets[k-1];
-				m_presets[a] = temp;
-				mid++;
-				b++;
-			}
-			a++;
-		}
-	}
-	else if (nItems == 2)
-	{
-		// sort 2 items; give preference to 'special' strings that start with a '*' character
-		int nSpecial = 0;
-		if (m_presets[left].szFilename.c_str()[0] == '*') nSpecial++;
-		if (m_presets[right].szFilename.c_str()[0] == '*') nSpecial++;
+            if (nSpecial == 1)
+            {
+                bSwap = (m_presets[b].szFilename.c_str()[0] == '*');
+            }
+            else
+            {
+                bSwap = (mdstrcmpiW(m_presets[a].szFilename.c_str(), m_presets[b].szFilename.c_str()) > 0);
+            }
 
-		if (nSpecial == 1)
-		{
-			if (m_presets[right].szFilename.c_str()[0] == '*')
-			{
+            if (bSwap)
+            {
+                PresetInfo temp = m_presets[b];
+                for (int k = b; k > a; k--)
+                    m_presets[k] = m_presets[k - 1];
+                m_presets[a] = temp;
+                mid++;
+                b++;
+            }
+            a++;
+        }
+    }
+    else if (nItems == 2)
+    {
+        // Sort 2 items; give preference to 'special' strings that start with a '*' character.
+        int nSpecial = 0;
+        if (m_presets[left].szFilename.c_str()[0] == '*') nSpecial++;
+        if (m_presets[right].szFilename.c_str()[0] == '*') nSpecial++;
+
+        if (nSpecial == 1)
+        {
+            if (m_presets[right].szFilename.c_str()[0] == '*')
+            {
                 PresetInfo temp = m_presets[left];
-				m_presets[left] = m_presets[right];
-				m_presets[right] = temp;
-			}
-		}
-		else if (mdstrcmpiW(m_presets[left].szFilename.c_str(), m_presets[right].szFilename.c_str()) > 0)
-		{
+                m_presets[left] = m_presets[right];
+                m_presets[right] = temp;
+            }
+        }
+        else if (mdstrcmpiW(m_presets[left].szFilename.c_str(), m_presets[right].szFilename.c_str()) > 0)
+        {
             PresetInfo temp = m_presets[left];
-			m_presets[left] = m_presets[right];
-			m_presets[right] = temp;
-		}
-	}
+            m_presets[left] = m_presets[right];
+            m_presets[right] = temp;
+        }
+    }
 }
 
 void CPlugin::DoCustomSoundAnalysis()
 {
-    memcpy(mdsound.fWave[0], m_sound.fWaveform[0], sizeof(float)*576);
-    memcpy(mdsound.fWave[1], m_sound.fWaveform[1], sizeof(float)*576);
+    memcpy(mdsound.fWave[0], m_sound.fWaveform[0], sizeof(float) * 576);
+    memcpy(mdsound.fWave[1], m_sound.fWaveform[1], sizeof(float) * 576);
 
-    // do our own [UN-NORMALIZED] fft
-	float fWaveLeft[576];
-	int i;
-	for (i=0; i<576; i++) 
+    // Do our own [UN-NORMALIZED] fft.
+    float fWaveLeft[576];
+    for (int i = 0; i < 576; i++)
         fWaveLeft[i] = m_sound.fWaveform[0][i];
 
-	memset(mdsound.fSpecLeft, 0, sizeof(float)*MD_FFT_SAMPLES);
+    memset(mdsound.fSpecLeft, 0, sizeof(float) * MD_FFT_SAMPLES);
 
-	mdfft.time_to_frequency_domain(fWaveLeft, mdsound.fSpecLeft);
-	//for (i=0; i<MY_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i]*fSpecLeft[i] + fSpecTemp[i]*fSpecTemp[i]);
+    mdfft.time_to_frequency_domain(fWaveLeft, mdsound.fSpecLeft);
+    //for (int i = 0; i < MD_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i]*fSpecLeft[i] + fSpecTemp[i]*fSpecTemp[i]);
 
-	// sum spectrum up into 3 bands
-	for (i=0; i<3; i++)
-	{
-		// note: only look at bottom half of spectrum!  (hence divide by 6 instead of 3)
-		int start = MD_FFT_SAMPLES*i/6;
-		int end   = MD_FFT_SAMPLES*(i+1)/6;
-		int j;
+    // Sum spectrum up into 3 bands.
+    for (int i = 0; i < 3; i++)
+    {
+        // Note: only look at bottom half of spectrum!  (hence divide by 6 instead of 3)
+        int start = MD_FFT_SAMPLES * i / 6;
+        int end = MD_FFT_SAMPLES * (i + 1) / 6;
+        int j;
 
-		mdsound.imm[i] = 0;
+        mdsound.imm[i] = 0;
 
-		for (j=start; j<end; j++)
-			mdsound.imm[i] += mdsound.fSpecLeft[j];
-	}
+        for (j = start; j < end; j++)
+            mdsound.imm[i] += mdsound.fSpecLeft[j];
+    }
 
-	// do temporal blending to create attenuated and super-attenuated versions
-	for (i=0; i<3; i++)
-	{
+    // Do temporal blending to create attenuated and super-attenuated versions.
+    for (int i = 0; i < 3; i++)
+    {
         float rate;
 
-		if (mdsound.imm[i] > mdsound.avg[i])
-			rate = 0.2f;
-		else
-			rate = 0.5f;
+        if (mdsound.imm[i] > mdsound.avg[i])
+            rate = 0.2f;
+        else
+            rate = 0.5f;
         rate = AdjustRateToFPS(rate, 30.0f, GetFps());
-        mdsound.avg[i] = mdsound.avg[i]*rate + mdsound.imm[i]*(1-rate);
+        mdsound.avg[i] = mdsound.avg[i] * rate + mdsound.imm[i] * (1 - rate);
 
-		if (GetFrame() < 50)
-			rate = 0.9f;
-		else
-			rate = 0.992f;
+        if (GetFrame() < 50)
+            rate = 0.9f;
+        else
+            rate = 0.992f;
         rate = AdjustRateToFPS(rate, 30.0f, GetFps());
-        mdsound.long_avg[i] = mdsound.long_avg[i]*rate + mdsound.imm[i]*(1-rate);
+        mdsound.long_avg[i] = mdsound.long_avg[i] * rate + mdsound.imm[i] * (1 - rate);
 
-		// also get bass/mid/treble levels *relative to the past*
-		if (fabsf(mdsound.long_avg[i]) < 0.001f)
-			mdsound.imm_rel[i] = 1.0f;
-		else
-			mdsound.imm_rel[i]  = mdsound.imm[i] / mdsound.long_avg[i];
+        // Also get bass/mid/treble levels *relative to the past*.
+        if (fabsf(mdsound.long_avg[i]) < 0.001f)
+            mdsound.imm_rel[i] = 1.0f;
+        else
+            mdsound.imm_rel[i] = mdsound.imm[i] / mdsound.long_avg[i];
 
-		if (fabsf(mdsound.long_avg[i]) < 0.001f)
-			mdsound.avg_rel[i]  = 1.0f;
-		else
-			mdsound.avg_rel[i]  = mdsound.avg[i] / mdsound.long_avg[i];
-	}
-}
-
-void CPlugin::GenWarpPShaderText(char *szShaderText, float decay, bool bWrap)
-{
-    // find the pixel shader body and replace it with custom code.
-
-    strcpy(szShaderText, m_szDefaultWarpPShaderText);
-    char LF = LINEFEED_CONTROL_CHAR;
-    char *p = strrchr( szShaderText, '{' );
-    if (!p) 
-        return;
-    p++;
-    p += sprintf(p, "%c", 1);
-
-    p += sprintf(p, "    // sample previous frame%c", LF);
-    p += sprintf(p, "    ret = tex2D( sampler%s_main, uv ).xyz;%c", bWrap ? "" : "_fc", LF);
-    p += sprintf(p, "    %c", LF);
-    p += sprintf(p, "    // darken (decay) over time%c", LF);
-    p += sprintf(p, "    ret *= %.2f; //or try: ret -= 0.004;%c", decay, LF);
-    //p += sprintf(p, "    %c", LF);
-    //p += sprintf(p, "    ret.w = vDiffuse.w; // pass alpha along - req'd for preset blending%c", LF);
-    p += sprintf(p, "}%c", LF);
-}
-
-void CPlugin::GenCompPShaderText(char *szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert)
-{
-    // find the pixel shader body and replace it with custom code.
-
-    strcpy(szShaderText, m_szDefaultCompPShaderText);
-    char LF = LINEFEED_CONTROL_CHAR;
-    char *p = strrchr( szShaderText, '{' );
-    if (!p) 
-        return;
-    p++;
-    p += sprintf(p, "%c", 1);
-
-    if (ve_alpha > 0.001f) 
-    {
-        int orient_x = (ve_orient %  2) ? -1 : 1;
-        int orient_y = (ve_orient >= 2) ? -1 : 1;
-        p += sprintf(p, "    float2 uv_echo = (uv - 0.5)*%.3f*float2(%d,%d) + 0.5;%c", 1.0f/ve_zoom, orient_x, orient_y, LF);
-        p += sprintf(p, "    ret = lerp( tex2D(sampler_main, uv).xyz, %c", LF);
-        p += sprintf(p, "                tex2D(sampler_main, uv_echo).xyz, %c", LF);
-        p += sprintf(p, "                %.2f %c", ve_alpha, LF);
-        p += sprintf(p, "              ); //video echo%c", LF);
-        p += sprintf(p, "    ret *= %.2f; //gamma%c", brightness, LF);
+        if (fabsf(mdsound.long_avg[i]) < 0.001f)
+            mdsound.avg_rel[i] = 1.0f;
+        else
+            mdsound.avg_rel[i] = mdsound.avg[i] / mdsound.long_avg[i];
     }
-    else 
+}
+
+// Finds the pixel shader body and replaces it with custom code.
+void CPlugin::GenWarpPShaderText(char* szShaderText, float decay, bool bWrap)
+{
+    strcpy_s(szShaderText, MAX_BIGSTRING_LEN, m_szDefaultWarpPShaderText);
+    char LF = LINEFEED_CONTROL_CHAR;
+    char* p = strrchr(szShaderText, '{');
+    if (!p)
+        return;
+    p++;
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "%c", 1);
+
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    // sample previous frame%c", LF);
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret = tex2D( sampler%ls_main, uv ).xyz;%c", bWrap ? L"" : L"_fc", LF);
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    %c", LF);
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    // darken (decay) over time%c", LF);
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret *= %.2f; //or try: ret -= 0.004;%c", decay, LF);
+    //p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    %c", LF);
+    //p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret.w = vDiffuse.w; // pass alpha along - req'd for preset blending%c", LF);
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "}%c", LF);
+}
+
+// Finds the pixel shader body and replaces it with custom code.
+void CPlugin::GenCompPShaderText(char* szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert)
+{
+    strcpy_s(szShaderText, MAX_BIGSTRING_LEN, m_szDefaultCompPShaderText);
+    char LF = LINEFEED_CONTROL_CHAR;
+    char* p = strrchr(szShaderText, '{');
+    if (!p)
+        return;
+    p++;
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "%c", 1);
+
+    if (ve_alpha > 0.001f)
     {
-        p += sprintf(p, "    ret = tex2D(sampler_main, uv).xyz;%c", LF);
-        p += sprintf(p, "    ret *= %.2f; //gamma%c", brightness, LF);
+        int orient_x = (ve_orient % 2) ? -1 : 1;
+        int orient_y = (ve_orient >= 2) ? -1 : 1;
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    float2 uv_echo = (uv - 0.5)*%.3f*float2(%d,%d) + 0.5;%c", 1.0f / ve_zoom, orient_x, orient_y, LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret = lerp( tex2D(sampler_main, uv).xyz, %c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "                tex2D(sampler_main, uv_echo).xyz, %c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "                %.2f %c", ve_alpha, LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "              ); //video echo%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret *= %.2f; //gamma%c", brightness, LF);
+    }
+    else
+    {
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret = tex2D(sampler_main, uv).xyz;%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret *= %.2f; //gamma%c", brightness, LF);
     }
     if (hue_shader >= 1.0f)
-        p += sprintf(p, "    ret *= hue_shader; //old hue shader effect%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret *= hue_shader; //old hue shader effect%c", LF);
     else if (hue_shader > 0.001f)
-        p += sprintf(p, "    ret *= %.2f + %.2f*hue_shader; //old hue shader effect%c", 1-hue_shader, hue_shader, LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret *= %.2f + %.2f*hue_shader; //old hue shader effect%c", 1 - hue_shader, hue_shader, LF);
 
     if (bBrighten)
-        p += sprintf(p, "    ret = sqrt(ret); //brighten%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret = sqrt(ret); //brighten%c", LF);
     if (bDarken)
-        p += sprintf(p, "    ret *= ret; //darken%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret *= ret; //darken%c", LF);
     if (bSolarize)
-        p += sprintf(p, "    ret = ret*(1-ret)*4; //solarize%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret = ret*(1-ret)*4; //solarize%c", LF);
     if (bInvert)
-        p += sprintf(p, "    ret = 1 - ret; //invert%c", LF);
-    //p += sprintf(p, "    ret.w = vDiffuse.w; // pass alpha along - req'd for preset blending%c", LF);
-    p += sprintf(p, "}%c", LF);
+        p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret = 1 - ret; //invert%c", LF);
+    //p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "    ret.w = vDiffuse.w; // pass alpha along - req'd for preset blending%c", LF);
+    p += sprintf_s(p, MAX_BIGSTRING_LEN - (p - &szShaderText[0]), "}%c", LF);
 }

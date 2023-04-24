@@ -45,11 +45,11 @@
 #define PRESET_INIFILE "milkdrop_presets.ini"
 #define DEBUGFILEHEADER "[milkdrop debug file]\n"
 
-// define this to disable expression evaluation:
-//   (...for some reason, evallib kills the debugger)
-#ifdef _DEBUG
-//  #define _NO_EXPR_  //FIXME
-#endif
+// Define this to disable expression evaluation:
+// (...for some reason, evallib kills the debugger)
+//#ifdef _DEBUG
+//#define _NO_EXPR_
+//#endif
 
 #define MAX_GRID_X 192 // 128
 #define MAX_GRID_Y 144 // 96

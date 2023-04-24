@@ -75,8 +75,8 @@ class CPluginShell
     void ToggleHelp();
     void TogglePlaylist();
 
-    void ReadFont(int n);
-    void WriteFont(int n);
+    void ReadFont(const int n);
+    void WriteFont(const int n);
 
     // Configuration panel and Windows messaging processes.
     static LRESULT CALLBACK WindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);

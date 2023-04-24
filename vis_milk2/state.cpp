@@ -54,116 +54,106 @@ void GetFast_CLEAR() { fLastFilePtr = NULL; }
 // `szVarName` cannot have any spaces in it.
 bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChars)
 {
-
-    static int MyLineNum = 0;
+    static int MDLineNum = 0;
     static VarNameList line_varName;
-    static IntList     line_value_bytepos;
+    static IntList line_value_bytepos;
 
-    if (f != fLastFilePtr) 
-    { 
-        fLastFilePtr = f; 
-        MyLineNum = 0; 
+    if (f != fLastFilePtr)
+    {
+        fLastFilePtr = f;
+        MDLineNum = 0;
         line_varName.clear();
         line_value_bytepos.clear();
-        
-        // start from beginning of file
+
+        // Start from beginning of file.
         fseek(f, 0, SEEK_SET);
 
-        // scan each line in the file for "szVarName=value" pairs, and store info about them.
-        #define MAX_VARNAME_LEN 128
+        // Scan each line in the file for "szVarName=value" pairs, and store info about them.
+        constexpr auto MAX_VARNAME_LEN = 128;
         char szThisLineVarName[MAX_VARNAME_LEN];
-        while (1) 
+        while (1)
         {
             char ch;
             int pos = 0;
-            do 
+            do
             {
-                ch = fgetc(f);
-                if (pos < MAX_VARNAME_LEN-3)
+                ch = static_cast<char>(fgetc(f));
+                if (pos < MAX_VARNAME_LEN - 3)
                     szThisLineVarName[pos++] = ch;
-            } 
-            while ( ch != '\r' && 
-                    ch != '\n' && 
-                    ch != ' '  && 
-                    ch != '='  && 
-                    ch != EOF );
+            } while (ch != '\r' && ch != '\n' && ch != ' ' && ch != '=' && ch != EOF);
             if (ch == EOF)
                 break;
-            
-            if (ch == '=' || ch == ' ') 
+
+            if (ch == '=' || ch == ' ')
             {
-                szThisLineVarName[pos-1] = 0;  // replace '=' with a null char.
+                szThisLineVarName[pos - 1] = 0; // replace '=' with a null char.
                 int bytepos = ftell(f);
 
-                //add an entry
+                // Add an entry.
                 line_varName.push_back(szThisLineVarName);
-                line_value_bytepos.push_back( bytepos );
+                line_value_bytepos.push_back(bytepos);
 
-                // eat chars up to linefeed or EOF
+                // Eat characters up to line feed or EOF.
                 /*
-                do 
+                do
                 {
                     ch = fgetc(f);
-                }
-                while (ch != '\r' && ch != '\n' && ch != EOF);
+                } while (ch != '\r' && ch != '\n' && ch != EOF);
                 */
-                fgets(szRet, nMaxRetChars-3, f);  // reads chars up til the next linefeed.
+                fgets(szRet, nMaxRetChars - 3, f); // reads characters up until the next line feed
             }
             if (ch == EOF)
                 break;
-                        
-            // eat any extra linefeed chars. 
-            do 
+
+            // Eat any extra linefeed characters.
+            do
             {
-                ch = fgetc(f);
-            } 
-            while ((ch == '\r' || ch == '\n') && ch != EOF);
+                ch = static_cast<char>(fgetc(f));
+            } while ((ch == '\r' || ch == '\n') && ch != EOF);
             if (ch == EOF)
                 break;
 
-            // back up one char
+            // Back up one character.
             fseek(f, -1, SEEK_CUR);
 
-            // on to next line...
+            // On to next line...
         }
     }
 
-    // if current line isn't the one, check all the others...
-    if (MyLineNum < 0 || (size_t)MyLineNum >= line_varName.size() || strcmp(line_varName[MyLineNum].c_str(), szVarName) != 0)
+    // If current line is not the one, check all the others...
+    if (MDLineNum < 0 || static_cast<size_t>(MDLineNum) >= line_varName.size() || strcmp(line_varName[MDLineNum].c_str(), szVarName) != 0)
     {
-        int N = line_varName.size();
-		int i=0;
-        for (i=0; i<N; i++)
-		{
-			if (strcmp(line_varName[i].c_str(), szVarName) == 0)
-			{
-				MyLineNum = i;
-				break;
-			}
-		}
-        
-        // otherwise, szVarName not found in the file!
-        if (i==N)
+        size_t i = 0;
+        size_t n = line_varName.size();
+        for (; i < n; i++)
+            if (strcmp(line_varName[i].c_str(), szVarName) == 0)
+            {
+                MDLineNum = static_cast<int>(i);
+                break;
+            }
+
+        // Otherwise, szVarName not found in the file!
+        if (i == n)
             return false;
     }
 
-    fseek(f, line_value_bytepos[MyLineNum], SEEK_SET);
+    fseek(f, line_value_bytepos[MDLineNum], SEEK_SET);
 
-    // now we know that we found and ate the '=' sign; return rest of the line.
-    int nChars = 0;
+    // Now know that "=" sign was found and eaten; return rest of the line.
+    //int nChars = 0;
     int pos = 0;
-    while (pos < nMaxRetChars-3)
+    while (pos < nMaxRetChars - 3)
     {
-        char ch = fgetc(f);
-        if (ch == '\r' || ch == '\n' || ch==EOF)
+        char ch = static_cast<char>(fgetc(f));
+        if (ch == '\r' || ch == '\n' || ch == EOF)
             break;
         szRet[pos++] = ch;
     };
     szRet[pos] = 0;
-    //fgets(szRet, nMaxRetChars-3, f);  // reads chars up til the next linefeed.  NAH - it also copies in the linefeed char...
+    //fgets(szRet, nMaxRetChars - 3, f); // reads characters up until the next linefeed. It also copies in the line feed character...
 
     // move to next line
-    MyLineNum++;
+    MDLineNum++;
     //fseek(f, line_value_bytepos[MyLineNum], SEEK_SET);
 
     return true;
@@ -193,10 +183,11 @@ float GetFastFloat(const char* szVarName, float def, FILE* f)
 
 void GetFastString(const char* szVarName, const char* szDef, char* szRetLine, int nMaxChars, FILE* f)
 {
-    if (_GetLineByName(f, szVarName, szRetLine, nMaxChars-1))
+    if (_GetLineByName(f, szVarName, szRetLine, nMaxChars - 1))
         return;
-    // otherwise, copy the default string, being careful not to overflow dest buf.  
-    // (avoid strncpy because it pads with zeroes all the way out to the max size.)
+
+    // Otherwise, copy the default string, being careful not to overflow destination buffer.
+    // Note: Avoid `strncpy()` because it pads with zeroes all the way out to the maximum size.
     int x = 0;
     while (szDef[x] && x < nMaxChars)
     {
@@ -381,380 +372,375 @@ void CState::RegisterBuiltInVariables(int flags)
 
     if (flags & RECOMPILE_WAVE_CODE)
     {
-        for (int i=0; i<MAX_CUSTOM_WAVES; i++)
+        for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
         {
-	        NSEEL_VM_resetvars(m_wave[i].m_pf_eel);
-	        m_wave[i].var_pf_time		= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "time");		// i
-	        m_wave[i].var_pf_fps 		= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "fps");		// i
-	        m_wave[i].var_pf_frame      = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "frame");     // i
-	        m_wave[i].var_pf_progress   = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "progress");  // i
-			int vi;
-			for (vi=0; vi<NUM_Q_VAR; vi++)
+            NSEEL_VM_resetvars(m_wave[i].m_pf_eel);
+            m_wave[i].var_pf_time     = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "time");     // i
+            m_wave[i].var_pf_fps      = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "fps");      // i
+            m_wave[i].var_pf_frame    = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "frame");    // i
+            m_wave[i].var_pf_progress = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "progress"); // i
+            for (int vi = 0; vi < NUM_Q_VAR; vi++)
             {
                 char buf[16];
-                sprintf(buf, "q%d", vi+1);
+                sprintf_s(buf, "q%d", vi + 1);
                 m_wave[i].var_pf_q[vi] = NSEEL_VM_regvar(m_wave[i].m_pf_eel, buf);
             }
-            for (vi=0; vi<NUM_T_VAR; vi++)
+            for (int vi = 0; vi < NUM_T_VAR; vi++)
             {
                 char buf[16];
-                sprintf(buf, "t%d", vi+1);
+                sprintf_s(buf, "t%d", vi + 1);
                 m_wave[i].var_pf_t[vi] = NSEEL_VM_regvar(m_wave[i].m_pf_eel, buf);
             }
-	        m_wave[i].var_pf_bass		= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "bass");		// i
-	        m_wave[i].var_pf_mid		= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "mid");		// i
-	        m_wave[i].var_pf_treb		= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "treb");		// i
-	        m_wave[i].var_pf_bass_att	= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "bass_att");	// i
-	        m_wave[i].var_pf_mid_att	= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "mid_att");	// i
-	        m_wave[i].var_pf_treb_att	= NSEEL_VM_regvar(m_wave[i].m_pf_eel, "treb_att");	// i
-	        m_wave[i].var_pf_r          = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "r");         // i/o
-	        m_wave[i].var_pf_g          = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "g");         // i/o
-	        m_wave[i].var_pf_b          = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "b");         // i/o
-	        m_wave[i].var_pf_a          = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "a");         // i/o
-            m_wave[i].var_pf_samples    = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "samples");   // i/o
+            m_wave[i].var_pf_bass     = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "bass");     // i
+            m_wave[i].var_pf_mid      = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "mid");      // i
+            m_wave[i].var_pf_treb     = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "treb");     // i
+            m_wave[i].var_pf_bass_att = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "bass_att"); // i
+            m_wave[i].var_pf_mid_att  = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "mid_att");  // i
+            m_wave[i].var_pf_treb_att = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "treb_att"); // i
+            m_wave[i].var_pf_r        = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "r");        // i/o
+            m_wave[i].var_pf_g        = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "g");        // i/o
+            m_wave[i].var_pf_b        = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "b");        // i/o
+            m_wave[i].var_pf_a        = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "a");        // i/o
+            m_wave[i].var_pf_samples  = NSEEL_VM_regvar(m_wave[i].m_pf_eel, "samples");  // i/o
 
-	        NSEEL_VM_resetvars(m_wave[i].m_pp_eel);
-	        m_wave[i].var_pp_time		= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "time");		// i
-	        m_wave[i].var_pp_fps 		= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "fps");		// i
-	        m_wave[i].var_pp_frame      = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "frame");     // i
-	        m_wave[i].var_pp_progress   = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "progress");  // i
-            for (vi=0; vi<NUM_Q_VAR; vi++)
+            NSEEL_VM_resetvars(m_wave[i].m_pp_eel);
+            m_wave[i].var_pp_time     = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "time");     // i
+            m_wave[i].var_pp_fps      = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "fps");      // i
+            m_wave[i].var_pp_frame    = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "frame");    // i
+            m_wave[i].var_pp_progress = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "progress"); // i
+            for (int vi = 0; vi < NUM_Q_VAR; vi++)
             {
                 char buf[16];
-                sprintf(buf, "q%d", vi+1);
+                sprintf_s(buf, "q%d", vi + 1);
                 m_wave[i].var_pp_q[vi] = NSEEL_VM_regvar(m_wave[i].m_pp_eel, buf);
             }
-            for (vi=0; vi<NUM_T_VAR; vi++)
+            for (int vi = 0; vi < NUM_T_VAR; vi++)
             {
                 char buf[16];
-                sprintf(buf, "t%d", vi+1);
+                sprintf_s(buf, "t%d", vi + 1);
                 m_wave[i].var_pp_t[vi] = NSEEL_VM_regvar(m_wave[i].m_pp_eel, buf);
             }
-	        m_wave[i].var_pp_bass		= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "bass");		// i
-	        m_wave[i].var_pp_mid		= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "mid");		// i
-	        m_wave[i].var_pp_treb		= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "treb");		// i
-	        m_wave[i].var_pp_bass_att	= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "bass_att");	// i
-	        m_wave[i].var_pp_mid_att	= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "mid_att");	// i
-	        m_wave[i].var_pp_treb_att	= NSEEL_VM_regvar(m_wave[i].m_pp_eel, "treb_att");	// i
-            m_wave[i].var_pp_sample     = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "sample");    // i
-            m_wave[i].var_pp_value1     = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "value1");    // i
-            m_wave[i].var_pp_value2     = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "value2");    // i
-	        m_wave[i].var_pp_x          = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "x");         // i/o
-	        m_wave[i].var_pp_y          = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "y");         // i/o
-	        m_wave[i].var_pp_r          = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "r");         // i/o
-	        m_wave[i].var_pp_g          = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "g");         // i/o
-	        m_wave[i].var_pp_b          = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "b");         // i/o
-	        m_wave[i].var_pp_a          = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "a");         // i/o
+            m_wave[i].var_pp_bass     = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "bass");     // i
+            m_wave[i].var_pp_mid      = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "mid");      // i
+            m_wave[i].var_pp_treb     = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "treb");     // i
+            m_wave[i].var_pp_bass_att = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "bass_att"); // i
+            m_wave[i].var_pp_mid_att  = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "mid_att");  // i
+            m_wave[i].var_pp_treb_att = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "treb_att"); // i
+            m_wave[i].var_pp_sample   = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "sample");   // i
+            m_wave[i].var_pp_value1   = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "value1");   // i
+            m_wave[i].var_pp_value2   = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "value2");   // i
+            m_wave[i].var_pp_x        = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "x");        // i/o
+            m_wave[i].var_pp_y        = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "y");        // i/o
+            m_wave[i].var_pp_r        = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "r");        // i/o
+            m_wave[i].var_pp_g        = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "g");        // i/o
+            m_wave[i].var_pp_b        = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "b");        // i/o
+            m_wave[i].var_pp_a        = NSEEL_VM_regvar(m_wave[i].m_pp_eel, "a");        // i/o
         }
     }
 
     if (flags & RECOMPILE_SHAPE_CODE)
     {
-        for (int i=0; i<MAX_CUSTOM_SHAPES; i++)
+        for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         {
-	        NSEEL_VM_resetvars(m_shape[i].m_pf_eel);
-	        m_shape[i].var_pf_time		= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "time");		// i
-	        m_shape[i].var_pf_fps 		= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "fps");		// i
-	        m_shape[i].var_pf_frame      = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "frame");     // i
-	        m_shape[i].var_pf_progress   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "progress");  // i
-			int vi;
-			for (vi=0; vi<NUM_Q_VAR; vi++)
+            NSEEL_VM_resetvars(m_shape[i].m_pf_eel);
+            m_shape[i].var_pf_time     = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "time");     // i
+            m_shape[i].var_pf_fps      = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "fps");      // i
+            m_shape[i].var_pf_frame    = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "frame");    // i
+            m_shape[i].var_pf_progress = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "progress"); // i
+            for (int vi = 0; vi < NUM_Q_VAR; vi++)
             {
                 char buf[16];
-                sprintf(buf, "q%d", vi+1);
+                sprintf_s(buf, "q%d", vi + 1);
                 m_shape[i].var_pf_q[vi] = NSEEL_VM_regvar(m_shape[i].m_pf_eel, buf);
             }
-            for (vi=0; vi<NUM_T_VAR; vi++)
+            for (int vi = 0; vi < NUM_T_VAR; vi++)
             {
                 char buf[16];
-                sprintf(buf, "t%d", vi+1);
+                sprintf_s(buf, "t%d", vi + 1);
                 m_shape[i].var_pf_t[vi] = NSEEL_VM_regvar(m_shape[i].m_pf_eel, buf);
             }
-	        m_shape[i].var_pf_bass		= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "bass");		// i
-	        m_shape[i].var_pf_mid		= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "mid");		// i
-	        m_shape[i].var_pf_treb		= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "treb");		// i
-	        m_shape[i].var_pf_bass_att	= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "bass_att");	// i
-	        m_shape[i].var_pf_mid_att	= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "mid_att");	// i
-	        m_shape[i].var_pf_treb_att	= NSEEL_VM_regvar(m_shape[i].m_pf_eel, "treb_att");	// i
-	        m_shape[i].var_pf_x          = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "x");         // i/o
-	        m_shape[i].var_pf_y          = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "y");         // i/o
-	        m_shape[i].var_pf_rad        = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "rad");         // i/o
-	        m_shape[i].var_pf_ang        = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "ang");         // i/o
-	        m_shape[i].var_pf_tex_ang    = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "tex_ang");         // i/o
-	        m_shape[i].var_pf_tex_zoom   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "tex_zoom");         // i/o
-	        m_shape[i].var_pf_sides      = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "sides");         // i/o
-	        m_shape[i].var_pf_textured   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "textured");         // i/o
-	        m_shape[i].var_pf_instance   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "instance");         // i/o
-	        m_shape[i].var_pf_instances  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "num_inst");         // i/o
-	        m_shape[i].var_pf_additive   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "additive");         // i/o
-	        m_shape[i].var_pf_thick      = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "thick");         // i/o
-	        m_shape[i].var_pf_r          = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "r");         // i/o
-	        m_shape[i].var_pf_g          = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "g");         // i/o
-	        m_shape[i].var_pf_b          = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "b");         // i/o
-	        m_shape[i].var_pf_a          = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "a");         // i/o
-	        m_shape[i].var_pf_r2         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "r2");         // i/o
-	        m_shape[i].var_pf_g2         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "g2");         // i/o
-	        m_shape[i].var_pf_b2         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "b2");         // i/o
-	        m_shape[i].var_pf_a2         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "a2");         // i/o
-	        m_shape[i].var_pf_border_r   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_r");         // i/o
-	        m_shape[i].var_pf_border_g   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_g");         // i/o
-	        m_shape[i].var_pf_border_b   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_b");         // i/o
-	        m_shape[i].var_pf_border_a   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_a");         // i/o
+            m_shape[i].var_pf_bass      = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "bass");     // i
+            m_shape[i].var_pf_mid       = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "mid");      // i
+            m_shape[i].var_pf_treb      = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "treb");     // i
+            m_shape[i].var_pf_bass_att  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "bass_att"); // i
+            m_shape[i].var_pf_mid_att   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "mid_att");  // i
+            m_shape[i].var_pf_treb_att  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "treb_att"); // i
+            m_shape[i].var_pf_x         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "x");        // i/o
+            m_shape[i].var_pf_y         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "y");        // i/o
+            m_shape[i].var_pf_rad       = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "rad");      // i/o
+            m_shape[i].var_pf_ang       = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "ang");      // i/o
+            m_shape[i].var_pf_tex_ang   = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "tex_ang");  // i/o
+            m_shape[i].var_pf_tex_zoom  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "tex_zoom"); // i/o
+            m_shape[i].var_pf_sides     = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "sides");    // i/o
+            m_shape[i].var_pf_textured  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "textured"); // i/o
+            m_shape[i].var_pf_instance  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "instance"); // i/o
+            m_shape[i].var_pf_instances = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "num_inst"); // i/o
+            m_shape[i].var_pf_additive  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "additive"); // i/o
+            m_shape[i].var_pf_thick     = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "thick");    // i/o
+            m_shape[i].var_pf_r         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "r");        // i/o
+            m_shape[i].var_pf_g         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "g");        // i/o
+            m_shape[i].var_pf_b         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "b");        // i/o
+            m_shape[i].var_pf_a         = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "a");        // i/o
+            m_shape[i].var_pf_r2        = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "r2");       // i/o
+            m_shape[i].var_pf_g2        = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "g2");       // i/o
+            m_shape[i].var_pf_b2        = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "b2");       // i/o
+            m_shape[i].var_pf_a2        = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "a2");       // i/o
+            m_shape[i].var_pf_border_r  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_r"); // i/o
+            m_shape[i].var_pf_border_g  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_g"); // i/o
+            m_shape[i].var_pf_border_b  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_b"); // i/o
+            m_shape[i].var_pf_border_a  = NSEEL_VM_regvar(m_shape[i].m_pf_eel, "border_a"); // i/o
         }
     }
 }
+
 void CState::Default(DWORD ApplyFlags)
 {
-	// DON'T FORGET TO ADD NEW VARIABLES TO BLEND FUNCTION, IMPORT, and EXPORT AS WELL!!!!!!!!
+    // DON'T FORGET TO ADD NEW VARIABLES TO BLEND FUNCTION, IMPORT, and EXPORT AS WELL!!!!!!!!
 
-    if ( (ApplyFlags & STATE_GENERAL) &&    // check for these 3 @ same time,
-         (ApplyFlags & STATE_MOTION) &&     // so a preset switch w/ warp/comp lock
-         (ApplyFlags & STATE_WAVE)        // updates the name, but mash-ups don't.
-        )
+    if ((ApplyFlags & STATE_GENERAL) && // check for these 3 @ same time,
+        (ApplyFlags & STATE_MOTION) &&  // so a preset switch w/ warp/comp lock
+        (ApplyFlags & STATE_WAVE))      // updates the name, but mash-ups don't.
     {
-      wcscpy(m_szDesc, INVALID_PRESET_DESC);
-	    //lstrcpy(m_szSection, "n/a");
+        wcscpy_s(m_szDesc, INVALID_PRESET_DESC);
+        //wcscpy_s(m_szSection, "n/a");
 
         m_fPresetStartTime = -1;
     }
 
-    m_nMinPSVersion   = 0;     
-    m_nMaxPSVersion   = 0;     
+    m_nMinPSVersion = 0;
+    m_nMaxPSVersion = 0;
 
-    m_bBlending				= false;
+    m_bBlending = false;
 
-    // general:
+    // General.
     if (ApplyFlags & STATE_GENERAL)
     {
-        m_fRating				= 3.0f;
-	    m_fDecay				= 0.98f;	// 1.0 = none, 0.95 = heavy decay
-	    m_fGammaAdj				= 2.0f;		// 1.0 = reg; +2.0 = double, +3.0 = triple...
-	    m_fVideoEchoZoom		= 2.0f;
-	    m_fVideoEchoAlpha		= 0.0f;
-	    m_nVideoEchoOrientation	= 0;		// 0-3
-	    m_bRedBlueStereo		= false;
-	    m_bBrighten				= false;
-	    m_bDarken				= false;
-	    m_bTexWrap				= true;
-	    m_bDarkenCenter			= false;
-	    m_bSolarize				= false;
-	    m_bInvert				= false;
-	    m_fShader				= 0.0f;
-	    m_fBlur1Min             = 0.0f;
-	    m_fBlur2Min             = 0.0f;
-	    m_fBlur3Min             = 0.0f;
-	    m_fBlur1Max             = 1.0f;
-	    m_fBlur2Max             = 1.0f;
-	    m_fBlur3Max             = 1.0f;
-	    m_fBlur1EdgeDarken      = 0.25f;
+        m_fRating               = 3.0f;
+        m_fDecay                = 0.98f; // 1.0 = none, 0.95 = heavy decay
+        m_fGammaAdj             = 2.0f;  // 1.0 = reg; +2.0 = double, +3.0 = triple...
+        m_fVideoEchoZoom        = 2.0f;
+        m_fVideoEchoAlpha       = 0.0f;
+        m_nVideoEchoOrientation = 0;     // 0-3
+        m_bRedBlueStereo        = false;
+        m_bBrighten             = false;
+        m_bDarken               = false;
+        m_bTexWrap              = true;
+        m_bDarkenCenter         = false;
+        m_bSolarize             = false;
+        m_bInvert               = false;
+        m_fShader               = 0.0f;
+        m_fBlur1Min             = 0.0f;
+        m_fBlur2Min             = 0.0f;
+        m_fBlur3Min             = 0.0f;
+        m_fBlur1Max             = 1.0f;
+        m_fBlur2Max             = 1.0f;
+        m_fBlur3Max             = 1.0f;
+        m_fBlur1EdgeDarken      = 0.25f;
     }
 
- 
-    // wave:
+    // Wave.
     if (ApplyFlags & STATE_WAVE)
     {
-	    m_nWaveMode				= 0;
-	     m_nOldWaveMode			= -1;
-	    m_bAdditiveWaves		= false;
-	    m_bWaveDots				= false;
-	    m_bWaveThick            = false;
-        m_fWaveAlpha			= 0.8f;
-	    m_fWaveScale			= 1.0f;
-	    m_fWaveSmoothing		= 0.75f;	// 0 = no smoothing, 0.9 = HEAVY smoothing
-	    m_fWaveParam			= 0.0f;
-	    m_bModWaveAlphaByVolume = false;
-	    m_fModWaveAlphaStart	= 0.75f;		// when relative volume hits this level, alpha -> 0
-	    m_fModWaveAlphaEnd		= 0.95f;		// when relative volume hits this level, alpha -> 1
-	    m_fWaveR		= 1.0f;
-	    m_fWaveG		= 1.0f;
-	    m_fWaveB		= 1.0f;
-	    m_fWaveX		= 0.5f;
-	    m_fWaveY		= 0.5f;
-	    m_bMaximizeWaveColor	= true;
-	    m_fMvX				  	= 12.0f;
-	    m_fMvY					= 9.0f;
-	    m_fMvDX                 = 0.0f;
-	    m_fMvDY                 = 0.0f;
-	    m_fMvL				  	= 0.9f;
-	    m_fMvR                  = 1.0f;
-	    m_fMvG                  = 1.0f;
-	    m_fMvB                  = 1.0f;
-	    m_fMvA                  = 1.0f;
+        m_nWaveMode             = 0;
+        m_nOldWaveMode          = -1;
+        m_bAdditiveWaves        = false;
+        m_bWaveDots             = false;
+        m_bWaveThick            = false;
+        m_fWaveAlpha            = 0.8f;
+        m_fWaveScale            = 1.0f;
+        m_fWaveSmoothing        = 0.75f; // 0 = no smoothing, 0.9 = HEAVY smoothing
+        m_fWaveParam            = 0.0f;
+        m_bModWaveAlphaByVolume = false;
+        m_fModWaveAlphaStart    = 0.75f; // when relative volume hits this level, alpha -> 0
+        m_fModWaveAlphaEnd      = 0.95f; // when relative volume hits this level, alpha -> 1
+        m_fWaveR                = 1.0f;
+        m_fWaveG                = 1.0f;
+        m_fWaveB                = 1.0f;
+        m_fWaveX                = 0.5f;
+        m_fWaveY                = 0.5f;
+        m_bMaximizeWaveColor    = true;
+        m_fMvX                  = 12.0f;
+        m_fMvY                  = 9.0f;
+        m_fMvDX                 = 0.0f;
+        m_fMvDY                 = 0.0f;
+        m_fMvL                  = 0.9f;
+        m_fMvR                  = 1.0f;
+        m_fMvG                  = 1.0f;
+        m_fMvB                  = 1.0f;
+        m_fMvA                  = 1.0f;
 
-		int i;
-        for (i=0; i<MAX_CUSTOM_WAVES; i++)
+        for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
         {
-            m_wave[i].enabled = 0;
-            m_wave[i].samples = 512;
-            m_wave[i].sep = 0;
-            m_wave[i].scaling = 1.0f;
-            m_wave[i].smoothing = 0.5f;
-            m_wave[i].r = 1.0f;
-            m_wave[i].g = 1.0f;
-            m_wave[i].b = 1.0f;
-            m_wave[i].a = 1.0f;
-            m_wave[i].bSpectrum = 0;
-            m_wave[i].bUseDots = 0;
+            m_wave[i].enabled    = 0;
+            m_wave[i].samples    = 512;
+            m_wave[i].sep        = 0;
+            m_wave[i].scaling    = 1.0f;
+            m_wave[i].smoothing  = 0.5f;
+            m_wave[i].r          = 1.0f;
+            m_wave[i].g          = 1.0f;
+            m_wave[i].b          = 1.0f;
+            m_wave[i].a          = 1.0f;
+            m_wave[i].bSpectrum  = 0;
+            m_wave[i].bUseDots   = 0;
             m_wave[i].bDrawThick = 0;
-            m_wave[i].bAdditive = 0;
+            m_wave[i].bAdditive  = 0;
         }
-        for (i=0; i<MAX_CUSTOM_SHAPES; i++)
+        for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         {
-            m_shape[i].enabled = 0;
-            m_shape[i].sides   = 4;
-            m_shape[i].additive = 0;
+            m_shape[i].enabled      = 0;
+            m_shape[i].sides        = 4;
+            m_shape[i].additive     = 0;
             m_shape[i].thickOutline = 0;
-            m_shape[i].textured = 0;
-            m_shape[i].instances = 1;
-            m_shape[i].tex_zoom = 1.0f;
-            m_shape[i].tex_ang  = 0.0f;
-            m_shape[i].x = 0.5f;
-            m_shape[i].y = 0.5f;
-            m_shape[i].rad = 0.1f;
-            m_shape[i].ang = 0.0f;
-            m_shape[i].r = 1.0f;
-            m_shape[i].g = 0.0f;
-            m_shape[i].b = 0.0f;
-            m_shape[i].a = 1.0f;
-            m_shape[i].r2 = 0.0f;
-            m_shape[i].g2 = 1.0f;
-            m_shape[i].b2 = 0.0f;
-            m_shape[i].a2 = 0.0f;
-            m_shape[i].border_r = 1.0f;
-            m_shape[i].border_g = 1.0f;
-            m_shape[i].border_b = 1.0f;
-            m_shape[i].border_a = 0.1f;
+            m_shape[i].textured     = 0;
+            m_shape[i].instances    = 1;
+            m_shape[i].tex_zoom     = 1.0f;
+            m_shape[i].tex_ang      = 0.0f;
+            m_shape[i].x            = 0.5f;
+            m_shape[i].y            = 0.5f;
+            m_shape[i].rad          = 0.1f;
+            m_shape[i].ang          = 0.0f;
+            m_shape[i].r            = 1.0f;
+            m_shape[i].g            = 0.0f;
+            m_shape[i].b            = 0.0f;
+            m_shape[i].a            = 1.0f;
+            m_shape[i].r2           = 0.0f;
+            m_shape[i].g2           = 1.0f;
+            m_shape[i].b2           = 0.0f;
+            m_shape[i].a2           = 0.0f;
+            m_shape[i].border_r     = 1.0f;
+            m_shape[i].border_g     = 1.0f;
+            m_shape[i].border_b     = 1.0f;
+            m_shape[i].border_a     = 0.1f;
         }
-        for (i=0; i<MAX_CUSTOM_WAVES; i++)
+        for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
         {
-            m_wave[i].m_szInit[0] = 0;
+            m_wave[i].m_szInit[0]     = 0;
             m_wave[i].m_szPerFrame[0] = 0;
             m_wave[i].m_szPerPoint[0] = 0;
         }
-        for (i=0; i<MAX_CUSTOM_SHAPES; i++)
+        for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         {
-            m_shape[i].m_szInit[0] = 0;
+            m_shape[i].m_szInit[0]     = 0;
             m_shape[i].m_szPerFrame[0] = 0;
             //m_shape[i].m_szPerPoint[0] = 0;
         }
     }
 
-    // motion:
+    // Motion.
     if (ApplyFlags & STATE_MOTION)
     {
-        m_fWarpAnimSpeed		= 1.0f;		// additional timescaling for warp animation
-	    m_fWarpScale			= 1.0f;
-	    m_fZoomExponent			= 1.0f;
-	    m_fZoom			= 1.0f;
-	    m_fRot 			= 0.0f;
-	    m_fRotCX		= 0.5f;
-	    m_fRotCY		= 0.5f;
-	    m_fXPush		= 0.0f;
-	    m_fYPush		= 0.0f;
-	    m_fWarpAmount	= 1.0f;
-	    m_fStretchX     = 1.0f;
-	    m_fStretchY     = 1.0f;
-	    m_fOuterBorderSize = 0.01f;
-	    m_fOuterBorderR	= 0.0f;
-	    m_fOuterBorderG	= 0.0f;
-	    m_fOuterBorderB	= 0.0f;
-	    m_fOuterBorderA	= 0.0f;
-	    m_fInnerBorderSize = 0.01f;
-	    m_fInnerBorderR	= 0.25f;
-	    m_fInnerBorderG	= 0.25f;
-	    m_fInnerBorderB	= 0.25f;
-	    m_fInnerBorderA	= 0.0f;
+        m_fWarpAnimSpeed   = 1.0f; // additional timescaling for warp animation
+        m_fWarpScale       = 1.0f;
+        m_fZoomExponent    = 1.0f;
+        m_fZoom            = 1.0f;
+        m_fRot             = 0.0f;
+        m_fRotCX           = 0.5f;
+        m_fRotCY           = 0.5f;
+        m_fXPush           = 0.0f;
+        m_fYPush           = 0.0f;
+        m_fWarpAmount      = 1.0f;
+        m_fStretchX        = 1.0f;
+        m_fStretchY        = 1.0f;
+        m_fOuterBorderSize = 0.01f;
+        m_fOuterBorderR    = 0.0f;
+        m_fOuterBorderG    = 0.0f;
+        m_fOuterBorderB    = 0.0f;
+        m_fOuterBorderA    = 0.0f;
+        m_fInnerBorderSize = 0.01f;
+        m_fInnerBorderR    = 0.25f;
+        m_fInnerBorderG    = 0.25f;
+        m_fInnerBorderB    = 0.25f;
+        m_fInnerBorderA    = 0.0f;
 
-        // clear all code strings:
+        // Clear all code strings.
         m_szPerFrameInit[0] = 0;
         m_szPerFrameExpr[0] = 0;
         m_szPerPixelExpr[0] = 0;
     }
 
-	// DON'T FORGET TO ADD NEW VARIABLES TO BLEND FUNCTION, IMPORT, and EXPORT AS WELL!!!!!!!!
-	// ALSO BE SURE TO REGISTER THEM ON THE MAIN MENU (SEE MILKDROP.CPP)
+    // DON'T FORGET TO ADD NEW VARIABLES TO BLEND FUNCTION, IMPORT, and EXPORT AS WELL!!!!!!!!
+    // ALSO BE SURE TO REGISTER THEM ON THE MAIN MENU (SEE MILKDROP.CPP)
 
-    // warp shader
+    // Warp shader.
     if (ApplyFlags & STATE_WARP)
     {
         m_szWarpShadersText[0] = 0;
-        m_nWarpPSVersion   = 0;     
+        m_nWarpPSVersion = 0;
     }
-    
+
     // comp shader
     if (ApplyFlags & STATE_COMP)
     {
         m_szCompShadersText[0] = 0;
-        m_nCompPSVersion   = 0;     
+        m_nCompPSVersion = 0;
     }
 
     RandomizePresetVars();
 
-	FreeVarsAndCode();
+    FreeVarsAndCode();
 }
 
 void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
 {
-	CState *s_to = this;
+    CState *s_to = this;
 
-	// bools, ints, and strings instantly change
-
-	s_to->m_fVideoEchoAlphaOld		 = s_from->m_fVideoEchoAlpha.eval(-1);
-	s_to->m_nVideoEchoOrientationOld = s_from->m_nVideoEchoOrientation;
-	s_to->m_nOldWaveMode			 = s_from->m_nWaveMode;
+    // bools, ints, and strings instantly change
+    s_to->m_fVideoEchoAlphaOld       = s_from->m_fVideoEchoAlpha.eval(-1);
+    s_to->m_nVideoEchoOrientationOld = s_from->m_nVideoEchoOrientation;
+    s_to->m_nOldWaveMode             = s_from->m_nWaveMode;
 
 	/*
 	s_to->m_fVideoEchoAlphaOld		 = s_from->m_fVideoEchoAlpha.eval(-1);
 	s_to->m_nVideoEchoOrientationOld = s_from->m_nVideoEchoOrientation;
 
-	s_to->m_nOldWaveMode			= s_from->m_nWaveMode;
-	s_to->m_nWaveMode				= s_from->m_nWaveMode;
-	s_to->m_bAdditiveWaves			= s_from->m_bAdditiveWaves;
-	s_to->m_nVideoEchoOrientation	= s_from->m_nVideoEchoOrientation;
-	s_to->m_fWarpAnimSpeed			= s_from->m_fWarpAnimSpeed;	// would req. 10 phase-matches to blend this one!!!
-	s_to->m_bWaveDots				= s_from->m_bWaveDots;
-	s_to->m_bWaveThick				= s_from->m_bWaveThick;
-	s_to->m_bModWaveAlphaByVolume	= s_from->m_bModWaveAlphaByVolume;
-	s_to->m_bMaximizeWaveColor		= s_from->m_bMaximizeWaveColor;
-	s_to->m_bTexWrap				= s_from->m_bTexWrap;			
-	s_to->m_bDarkenCenter			= s_from->m_bDarkenCenter;
-	s_to->m_bRedBlueStereo			= s_from->m_bRedBlueStereo;
-	s_to->m_bBrighten				= s_from->m_bBrighten;
-	s_to->m_bDarken					= s_from->m_bDarken;
-	s_to->m_bSolarize				= s_from->m_bSolarize;
-	s_to->m_bInvert					= s_from->m_bInvert;
-	s_to->m_fRating					= s_from->m_fRating;
-	*/
+    s_to->m_nOldWaveMode             = s_from->m_nWaveMode;
+    s_to->m_nWaveMode                = s_from->m_nWaveMode;
+    s_to->m_bAdditiveWaves           = s_from->m_bAdditiveWaves;
+    s_to->m_nVideoEchoOrientation    = s_from->m_nVideoEchoOrientation;
+    s_to->m_fWarpAnimSpeed           = s_from->m_fWarpAnimSpeed; // would req. 10 phase-matches to blend this one!!!
+    s_to->m_bWaveDots                = s_from->m_bWaveDots;
+    s_to->m_bWaveThick               = s_from->m_bWaveThick;
+    s_to->m_bModWaveAlphaByVolume    = s_from->m_bModWaveAlphaByVolume;
+    s_to->m_bMaximizeWaveColor       = s_from->m_bMaximizeWaveColor;
+    s_to->m_bTexWrap                 = s_from->m_bTexWrap;
+    s_to->m_bDarkenCenter            = s_from->m_bDarkenCenter;
+    s_to->m_bRedBlueStereo           = s_from->m_bRedBlueStereo;
+    s_to->m_bBrighten                = s_from->m_bBrighten;
+    s_to->m_bDarken                  = s_from->m_bDarken;
+    s_to->m_bSolarize                = s_from->m_bSolarize;
+    s_to->m_bInvert                  = s_from->m_bInvert;
+    s_to->m_fRating                  = s_from->m_fRating;
+    */
 
-	// expr. eval. also copies over immediately (replaces prev.)
-	m_bBlending = true;
-	m_fBlendStartTime = fAnimTime;
-	m_fBlendDuration = fTimespan;
-	
-	/*
-	//for (int e=0; e<MAX_EVALS; e++)
-	{
-		char szTemp[MAX_BIGSTRING_LEN];
+    // expr. eval. also copies over immediately (replaces prev.)
+    m_bBlending       = true;
+    m_fBlendStartTime = fAnimTime;
+    m_fBlendDuration  = fTimespan;
 
-		lstrcpy(szTemp, m_szPerFrameExpr);
-		lstrcpy(m_szPerFrameExpr, s_to->m_szPerFrameExpr);
-		lstrcpy(s_to->m_szPerFrameExpr, szTemp);
+    /*
+    //for (int e = 0; e < MAX_EVALS; e++)
+    {
+        char szTemp[MAX_BIGSTRING_LEN];
 
-		lstrcpy(szTemp, m_szPerPixelExpr);
-		lstrcpy(m_szPerPixelExpr, s_to->m_szPerPixelExpr);
-		lstrcpy(s_to->m_szPerPixelExpr, szTemp);
+        strcpy_s(szTemp, m_szPerFrameExpr);
+        strcpy_s(m_szPerFrameExpr, s_to->m_szPerFrameExpr);
+        strcpy_s(s_to->m_szPerFrameExpr, szTemp);
 
-		lstrcpy(szTemp, m_szPerFrameInit);
-		lstrcpy(m_szPerFrameInit, s_to->m_szPerFrameInit);
-		lstrcpy(s_to->m_szPerFrameInit, szTemp);
-	}
-	RecompileExpressions();
-	s_to->RecompileExpressions();
+        strcpy_s(szTemp, m_szPerPixelExpr);
+        strcpy_s(m_szPerPixelExpr, s_to->m_szPerPixelExpr);
+        strcpy_s(s_to->m_szPerPixelExpr, szTemp);
 
-	lstrcpy(m_szDesc,    s_to->m_szDesc);
-	//lstrcpy(m_szSection, s_to->m_szSection);
-	*/
-	
+        strcpy_s(szTemp, m_szPerFrameInit);
+        strcpy_s(m_szPerFrameInit, s_to->m_szPerFrameInit);
+        strcpy_s(s_to->m_szPerFrameInit, szTemp);
+    }
+    RecompileExpressions();
+    s_to->RecompileExpressions();
+
+    strcpy_s(m_szDesc, s_to->m_szDesc);
+    //strcpy_s(m_szSection, s_to->m_szSection);
+    */
+
 	// CBlendableFloats & SuperValues blend over time 
 	m_fGammaAdj      .StartBlendFrom(&s_from->m_fGammaAdj      , fAnimTime, fTimespan);
 	m_fVideoEchoZoom .StartBlendFrom(&s_from->m_fVideoEchoZoom , fAnimTime, fTimespan);
@@ -840,31 +826,30 @@ void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
 
 }
 
-void WriteCode(FILE* fOut, int i, char* pStr, const char* prefix, bool bPrependApostrophe = false)
+void WriteCode(FILE* fOut, const int /* i */, char* pStr, const char* prefix, const bool bPrependApostrophe = false)
 {
-	char szLineName[32];
-	int line = 1;
-	int start_pos = 0;
-	int char_pos = 0;
+    char szLineName[32];
+    int line = 1;
+    int start_pos = 0;
+    int char_pos = 0;
 
-	while (pStr[start_pos] != 0)
-	{
-		while (	pStr[char_pos] != 0 &&
-				pStr[char_pos] != LINEFEED_CONTROL_CHAR)
-			char_pos++;
+    while (pStr[start_pos] != 0)
+    {
+        while (pStr[char_pos] != 0 && pStr[char_pos] != LINEFEED_CONTROL_CHAR)
+            char_pos++;
 
-		sprintf(szLineName, "%s%d", prefix, line);
+        sprintf_s(szLineName, "%s%d", prefix, line);
 
-		char ch = pStr[char_pos];
-		pStr[char_pos] = 0;
-		//if (!WritePrivateProfileString(szSectionName,szLineName,&pStr[start_pos],szIniFile)) return false;
-        fprintf(fOut, "%s=%s%s\n", szLineName, bPrependApostrophe ? "`" : "", &pStr[start_pos]);
-		pStr[char_pos] = ch;
+        char ch = pStr[char_pos];
+        pStr[char_pos] = 0;
+        //if (!WritePrivateProfileString(szSectionName, szLineName, &pStr[start_pos], szIniFile)) return false;
+        fprintf_s(fOut, "%s=%s%s\n", szLineName, bPrependApostrophe ? "`" : "", &pStr[start_pos]);
+        pStr[char_pos] = ch;
 
-		if (pStr[char_pos] != 0) char_pos++;
-		start_pos = char_pos;
-		line++;
-	}
+        if (pStr[char_pos] != 0) char_pos++;
+        start_pos = char_pos;
+        line++;
+    }
 }
 
 bool CState::Export(const wchar_t* szIniFile)
@@ -882,9 +867,9 @@ bool CState::Export(const wchar_t* szIniFile)
         fprintf(fOut, "PSVERSION_WARP=%d\n",m_nWarpPSVersion);
         fprintf(fOut, "PSVERSION_COMP=%d\n",m_nCompPSVersion);
     }
-    
-    // just for backwards compatibility; MilkDrop 1 can read MilkDrop 2 presets, minus the new features.
-    // (...this section name allows the GetPrivateProfile*() functions to still work on milkdrop 1)
+
+    // Just for backwards compatibility; MilkDrop 1 can read MilkDrop 2 presets, minus the new features.
+    // (...this section name allows the `GetPrivateProfile*()` functions to still work on MilkDrop 1)
 	fprintf(fOut, "[preset00]\n");    
 
 	fprintf(fOut, "%s=%.3f\n", "fRating",                m_fRating);         
@@ -1070,105 +1055,114 @@ void ReadCode(FILE* f, char* pStr, const char* prefix)
         return;
     pStr[0] = '\0';
 
-	// read in & compile arbitrary expressions
-	char szLineName[32];
-	char szLine[MAX_BIGSTRING_LEN];
-	int len;
+    // Read in and compile arbitrary expressions.
+    char szLineName[32];
+    char szLine[MAX_BIGSTRING_LEN];
+    size_t len;
 
-	int line = 1;
-	int char_pos = 0;
-	bool bDone = false;
+    int line = 1;
+    size_t char_pos = 0;
+    bool bDone = false;
 
-	while (!bDone)
-	{
-		sprintf(szLineName, "%s%d", prefix, line); 
+    while (!bDone)
+    {
+        sprintf_s(szLineName, "%s%d", prefix, line);
 
-		GetFastString(szLineName, "~!@#$", szLine, MAX_BIGSTRING_LEN, f);	// fixme
-		len = strlen(szLine);
+        GetFastString(szLineName, "~!@#$", szLine, MAX_BIGSTRING_LEN, f); // FIXME
+        len = strlen(szLine);
 
-		if ((strcmp(szLine, "~!@#$")==0) ||		// if the key was missing,
-			(len >= MAX_BIGSTRING_LEN-1-char_pos-1))			// or if we're out of space
-		{
-			bDone = true;
-		}
-		else 
-		{
-            sprintf(&pStr[char_pos], "%s%c", (szLine[0]=='`') ? &szLine[1] : szLine, LINEFEED_CONTROL_CHAR);
+        if ((strcmp(szLine, "~!@#$") == 0) ||              // if the key was missing,
+            (len >= MAX_BIGSTRING_LEN - 1 - char_pos - 1)) // or if out of space
+        {
+            bDone = true;
+        }
+        else
+        {
+            sprintf_s(&pStr[char_pos], MAX_BIGSTRING_LEN - char_pos, "%s%c", (szLine[0] == '`') ? &szLine[1] : szLine, LINEFEED_CONTROL_CHAR);
             if (szLine[0] == '`')
                 len--;
-		}
-	
-		char_pos += len + 1;
-		line++;
-	}
-	pStr[char_pos++] = 0;	// null-terminate
+        }
 
-	// read in & compile arbitrary expressions
+        char_pos += len + 1;
+        line++;
+    }
+    pStr[char_pos++] = '\0'; // null-terminate
+
+    // Read in and compile arbitrary expressions.
     /*
-    int n2 = 3 + MAX_CUSTOM_WAVES*3 + MAX_CUSTOM_SHAPES*2;
-	for (int n=0; n<n2; n++)
-	{
-		char *pStr;
+    int n2 = 3 + MAX_CUSTOM_WAVES * 3 + MAX_CUSTOM_SHAPES * 2;
+    for (int n = 0; n < n2; n++)
+    {
+        char* pStr;
         char prefix[64];
-		char szLineName[32];
-		char szLine[MAX_BIGSTRING_LEN];
-		int len;
+        char szLineName[32];
+        char szLine[MAX_BIGSTRING_LEN];
+        int len;
 
-		int line = 1;
-		int char_pos = 0;
-		bool bDone = false;
+        int line = 1;
+        int char_pos = 0;
+        bool bDone = false;
 
-		switch(n)
-		{
-		case 0: pStr = m_szPerFrameExpr; strcpy(prefix, "per_frame_"); break;
-		case 1: pStr = m_szPerPixelExpr; strcpy(prefix, "per_pixel_"); break;
-		case 2: pStr = m_szPerFrameInit; strcpy(prefix, "per_frame_init_"); break;
-        default:
-            if (n < 3 + 3*MAX_CUSTOM_WAVES)
-            {
-                int i = (n-3) / 3;
-                int j = (n-3) % 3;
-                switch(j)
+        switch (n)
+        {
+            case 0: pStr = m_szPerFrameExpr; strcpy(prefix, "per_frame_"); break;
+            case 1: pStr = m_szPerPixelExpr; strcpy(prefix, "per_pixel_"); break;
+            case 2: pStr = m_szPerFrameInit; strcpy(prefix, "per_frame_init_"); break;
+            default:
+                if (n < 3 + 3 * MAX_CUSTOM_WAVES)
                 {
-                case 0: pStr = m_wave[i].m_szInit;     sprintf(prefix, "wave_%d_init",      i); break;
-                case 1: pStr = m_wave[i].m_szPerFrame; sprintf(prefix, "wave_%d_per_frame", i); break;
-                case 2: pStr = m_wave[i].m_szPerPoint; sprintf(prefix, "wave_%d_per_point", i); break;
+                    int i = (n - 3) / 3;
+                    int j = (n - 3) % 3;
+                    switch (j)
+                    {
+                        case 0:
+                            pStr = m_wave[i].m_szInit;
+                            sprintf_s(prefix, "wave_%d_init", i);
+                            break;
+                        case 1:
+                            pStr = m_wave[i].m_szPerFrame;
+                            sprintf_s(prefix, "wave_%d_per_frame", i);
+                            break;
+                        case 2:
+                            pStr = m_wave[i].m_szPerPoint;
+                            sprintf_s(prefix, "wave_%d_per_point", i);
+                            break;
+                    }
                 }
+                else
+                {
+                    int i = (n - 3 - 3 * MAX_CUSTOM_WAVES) / 2;
+                    int j = (n - 3 - 3 * MAX_CUSTOM_WAVES) % 2;
+                    switch (j)
+                    {
+                        case 0: pStr = m_shape[i].m_szInit; sprintf_s(prefix, "shape_%d_init", i); break;
+                        case 1: pStr = m_shape[i].m_szPerFrame; sprintf_s(prefix, "shape_%d_per_frame", i); break;
+                    }
+                }
+        }
+
+        while (!bDone)
+        {
+            sprintf_s(szLineName, "%s%d", prefix, line);
+
+            GetPrivateProfileString(szSectionName, szLineName, "~!@#$", szLine, MAX_BIGSTRING_LEN, szIniFile); // fixme
+            len = strlen(szLine);
+
+            if ((strcmp(szLine, "~!@#$") == 0) ||              // if the key was missing,
+                (len >= MAX_BIGSTRING_LEN - 1 - char_pos - 1)) // or if we're out of space
+            {
+                bDone = true;
             }
             else
             {
-                int i = (n-3-3*MAX_CUSTOM_WAVES) / 2;
-                int j = (n-3-3*MAX_CUSTOM_WAVES) % 2;
-                switch(j)
-                {
-                case 0: pStr = m_shape[i].m_szInit;     sprintf(prefix, "shape_%d_init",      i); break;
-                case 1: pStr = m_shape[i].m_szPerFrame; sprintf(prefix, "shape_%d_per_frame", i); break;
-                }
+                sprintf_s(&pStr[char_pos], "%s%c", szLine, LINEFEED_CONTROL_CHAR);
             }
-		}
-		
-		while (!bDone)
-		{
-			sprintf(szLineName, "%s%d", prefix, line); 
 
-			GetPrivateProfileString(szSectionName, szLineName, "~!@#$", szLine, MAX_BIGSTRING_LEN, szIniFile);	// fixme
-			len = strlen(szLine);
-
-			if ((strcmp(szLine, "~!@#$")==0) ||		// if the key was missing,
-				(len >= MAX_BIGSTRING_LEN-1-char_pos-1))			// or if we're out of space
-			{
-				bDone = true;
-			}
-			else 
-			{
-				sprintf(&pStr[char_pos], "%s%c", szLine, LINEFEED_CONTROL_CHAR);
-			}
-		
-			char_pos += len + 1;
-			line++;
-		}
-		pStr[char_pos++] = 0;	// null-terminate
-	}
+            char_pos += len + 1;
+            line++;
+        }
+        pStr[char_pos++] = 0; // null-terminate
+    }
     */
 }
 
@@ -1262,42 +1256,41 @@ int CShape::Import(FILE* f, const wchar_t* szFile, int i)
     return 1;
 }
 
-bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DWORD ApplyFlags)
+bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DWORD ApplyFlags)
 {
-    // if any ApplyFlags are missing, the settings will be copied from pOldState.  =)
-
-    if (!pOldState) 
+    // If any `ApplyFlags` are missing, the settings will be copied from pOldState.
+    if (!pOldState)
         ApplyFlags = STATE_ALL;
-    
-    if (ApplyFlags!=STATE_ALL && this != pOldState)
+
+    if (ApplyFlags != STATE_ALL && this != pOldState)
     {
         assert(pOldState);
-        // in order to copy the old state, we have to byte copy it.
+        // In order to copy the old state, byte copy it.
         memcpy(this, pOldState, sizeof(CState));
-        // clear all the copied code pointers, WITHOUT actually freeing it (since ptrs were copied)
-        // so that the Default() call below won't release pOldState's copied pointers.
-        // [all expressions will be recompiled @ end of this fn, whether we updated them or not]
-        FreeVarsAndCode(false);  
+        // Clear all the copied code pointers, WITHOUT actually freeing it (since pointers were copied)
+        // so that the Default() call below will not release pOldState's copied pointers.
+        // [all expressions will be recompiled at end of this function, whether they were updated them or not]
+        FreeVarsAndCode(false);
     }
 
     // apply defaults for the stuff we will overwrite.
-    Default(ApplyFlags);//RandomizePresetVars();
+    Default(ApplyFlags); //RandomizePresetVars();
 
     GetFast_CLEAR();
 
-    if ( (ApplyFlags & STATE_GENERAL) &&    // check for these 3 @ same time,
-         (ApplyFlags & STATE_MOTION) &&     // so a preset switch w/ warp/comp lock
-         (ApplyFlags & STATE_WAVE)        // updates the name, but mash-ups don't.
-        )
+    if ((ApplyFlags & STATE_GENERAL) && // check for these 3 @ same time,
+        (ApplyFlags & STATE_MOTION) &&  // so a preset switch w/ warp/comp lock
+        (ApplyFlags & STATE_WAVE))      // updates the name, but mash-ups don't.
     {
         m_fPresetStartTime = fTime;
 
-	    // extract a description of the preset from the filename
-	    {
-		    // copy get the filename (without the path)
-		    const wchar_t *p = wcsrchr(szIniFile, '\\');
-		    if (p==NULL) p = szIniFile;
-        wcscpy(m_szDesc, p+1);
+        // Extract a description of the preset from the file name.
+        {
+            // copy get the filename (without the path)
+            const wchar_t* p = wcsrchr(szIniFile, '\\');
+            if (p == NULL)
+                p = szIniFile;
+            wcscpy_s(m_szDesc, p + 1);
 
             // next remove the extension
             RemoveExtension(m_szDesc);
@@ -1309,10 +1302,9 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
     if (err)
         return false;
 
-    int nMilkdropPresetVersion = GetFastInt("MILKDROP_PRESET_VERSION",100,f);
+    int nMilkdropPresetVersion = GetFastInt("MILKDROP_PRESET_VERSION", 100, f);
     //if (ApplyFlags != STATE_ALL)
     //    nMilkdropPresetVersion = CUR_MILKDROP_PRESET_VERSION;  //if we're mashing up, force it up to now
-    
 
     int nWarpPSVersionInFile;
     int nCompPSVersionInFile;
@@ -1335,63 +1327,62 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
     // General.
     if (ApplyFlags & STATE_GENERAL)
     {
-        m_fRating				= GetFastFloat("fRating",m_fRating,f);
-	    m_fDecay                = GetFastFloat("fDecay",m_fDecay.eval(-1),f);
-	    m_fGammaAdj             = GetFastFloat("fGammaAdj" ,m_fGammaAdj.eval(-1),f);
-	    m_fVideoEchoZoom        = GetFastFloat("fVideoEchoZoom",m_fVideoEchoZoom.eval(-1),f);
-	    m_fVideoEchoAlpha       = GetFastFloat("fVideoEchoAlpha",m_fVideoEchoAlpha.eval(-1),f);
-	    m_nVideoEchoOrientation = GetFastInt  ("nVideoEchoOrientation",m_nVideoEchoOrientation,f);
-        m_bRedBlueStereo        = (GetFastInt ("bRedBlueStereo", m_bRedBlueStereo,f) != 0);
-	    m_bBrighten				= (GetFastInt ("bBrighten",m_bBrighten	,f) != 0);
-	    m_bDarken				= (GetFastInt ("bDarken"  ,m_bDarken	,f) != 0);
-	    m_bSolarize				= (GetFastInt ("bSolarize",m_bSolarize	,f) != 0);
-	    m_bInvert				= (GetFastInt ("bInvert"  ,m_bInvert	,f) != 0);
-	    m_fShader               = GetFastFloat("fShader",m_fShader.eval(-1),f);
-        m_fBlur1Min			= GetFastFloat("b1n",    m_fBlur1Min.eval(-1),f);       
-        m_fBlur2Min			= GetFastFloat("b2n",    m_fBlur2Min.eval(-1),f);       
-        m_fBlur3Min			= GetFastFloat("b3n",    m_fBlur3Min.eval(-1),f);       
-        m_fBlur1Max			= GetFastFloat("b1x",    m_fBlur1Max.eval(-1),f);       
-        m_fBlur2Max			= GetFastFloat("b2x",    m_fBlur2Max.eval(-1),f);       
-        m_fBlur3Max			= GetFastFloat("b3x",    m_fBlur3Max.eval(-1),f);       
-        m_fBlur1EdgeDarken  = GetFastFloat("b1ed",   m_fBlur1EdgeDarken.eval(-1),f); 
+        m_fRating               = GetFastFloat("fRating", m_fRating, f);
+        m_fDecay                = GetFastFloat("fDecay", m_fDecay.eval(-1), f);
+        m_fGammaAdj             = GetFastFloat("fGammaAdj", m_fGammaAdj.eval(-1), f);
+        m_fVideoEchoZoom        = GetFastFloat("fVideoEchoZoom", m_fVideoEchoZoom.eval(-1), f);
+        m_fVideoEchoAlpha       = GetFastFloat("fVideoEchoAlpha", m_fVideoEchoAlpha.eval(-1), f);
+        m_nVideoEchoOrientation = GetFastInt("nVideoEchoOrientation", m_nVideoEchoOrientation, f);
+        m_bRedBlueStereo        = (GetFastInt("bRedBlueStereo", m_bRedBlueStereo, f) != 0);
+        m_bBrighten             = (GetFastInt("bBrighten", m_bBrighten, f) != 0);
+        m_bDarken               = (GetFastInt("bDarken", m_bDarken, f) != 0);
+        m_bSolarize             = (GetFastInt("bSolarize", m_bSolarize, f) != 0);
+        m_bInvert               = (GetFastInt("bInvert", m_bInvert, f) != 0);
+        m_fShader               = GetFastFloat("fShader", m_fShader.eval(-1), f);
+        m_fBlur1Min             = GetFastFloat("b1n", m_fBlur1Min.eval(-1), f);
+        m_fBlur2Min             = GetFastFloat("b2n", m_fBlur2Min.eval(-1), f);
+        m_fBlur3Min             = GetFastFloat("b3n", m_fBlur3Min.eval(-1), f);
+        m_fBlur1Max             = GetFastFloat("b1x", m_fBlur1Max.eval(-1), f);
+        m_fBlur2Max             = GetFastFloat("b2x", m_fBlur2Max.eval(-1), f);
+        m_fBlur3Max             = GetFastFloat("b3x", m_fBlur3Max.eval(-1), f);
+        m_fBlur1EdgeDarken      = GetFastFloat("b1ed", m_fBlur1EdgeDarken.eval(-1), f);
     }
 
-    // wave:
+    // Wave.
     if (ApplyFlags & STATE_WAVE)
     {
-	    m_nWaveMode             = GetFastInt  ("nWaveMode",m_nWaveMode,f);
-	    m_bAdditiveWaves		= (GetFastInt ("bAdditiveWaves",m_bAdditiveWaves,f) != 0);
-	    m_bWaveDots		        = (GetFastInt ("bWaveDots",m_bWaveDots,f) != 0);
-	    m_bWaveThick            = (GetFastInt ("bWaveThick",m_bWaveThick,f) != 0);
-	    m_bModWaveAlphaByVolume	= (GetFastInt ("bModWaveAlphaByVolume",m_bModWaveAlphaByVolume,f) != 0);
-	    m_bMaximizeWaveColor    = (GetFastInt ("bMaximizeWaveColor" ,m_bMaximizeWaveColor,f) != 0);
-	    m_fWaveAlpha            = GetFastFloat("fWaveAlpha",m_fWaveAlpha.eval(-1),f);
-	    m_fWaveScale            = GetFastFloat("fWaveScale",m_fWaveScale.eval(-1),f);
-	    m_fWaveSmoothing        = GetFastFloat("fWaveSmoothing",m_fWaveSmoothing.eval(-1),f);
-	    m_fWaveParam            = GetFastFloat("fWaveParam",m_fWaveParam.eval(-1),f);
-	    m_fModWaveAlphaStart    = GetFastFloat("fModWaveAlphaStart",m_fModWaveAlphaStart.eval(-1),f);
-	    m_fModWaveAlphaEnd      = GetFastFloat("fModWaveAlphaEnd",m_fModWaveAlphaEnd.eval(-1),f);
-	    m_fWaveR				= GetFastFloat("wave_r",m_fRot.eval(-1),f);	
-	    m_fWaveG				= GetFastFloat("wave_g",m_fRot.eval(-1),f);	
-	    m_fWaveB				= GetFastFloat("wave_b",m_fRot.eval(-1),f);	
-	    m_fWaveX				= GetFastFloat("wave_x",m_fRot.eval(-1),f);	
-	    m_fWaveY				= GetFastFloat("wave_y",m_fRot.eval(-1),f);	
-	    m_fMvX				= GetFastFloat("nMotionVectorsX",  m_fMvX.eval(-1),f);
-	    m_fMvY           	= GetFastFloat("nMotionVectorsY",  m_fMvY.eval(-1),f);
-	    m_fMvDX				= GetFastFloat("mv_dx",  m_fMvDX.eval(-1),f);
-	    m_fMvDY				= GetFastFloat("mv_dy",  m_fMvDY.eval(-1),f);
-	    m_fMvL				= GetFastFloat("mv_l",   m_fMvL.eval(-1),f);
-	    m_fMvR				= GetFastFloat("mv_r",   m_fMvR.eval(-1),f);	
-	    m_fMvG				= GetFastFloat("mv_g",   m_fMvG.eval(-1),f);	
-	    m_fMvB				= GetFastFloat("mv_b",   m_fMvB.eval(-1),f);	
-	    m_fMvA				= (GetFastInt ("bMotionVectorsOn",false,f) == 0) ? 0.0f : 1.0f; // for backwards compatibility
-	    m_fMvA				= GetFastFloat("mv_a",   m_fMvA.eval(-1),f);	
-		int i;
-		for (i=0; i<MAX_CUSTOM_WAVES; i++)
+        m_nWaveMode             = GetFastInt("nWaveMode", m_nWaveMode, f);
+        m_bAdditiveWaves        = (GetFastInt("bAdditiveWaves", m_bAdditiveWaves, f) != 0);
+        m_bWaveDots             = (GetFastInt("bWaveDots", m_bWaveDots, f) != 0);
+        m_bWaveThick            = (GetFastInt("bWaveThick", m_bWaveThick, f) != 0);
+        m_bModWaveAlphaByVolume = (GetFastInt("bModWaveAlphaByVolume", m_bModWaveAlphaByVolume, f) != 0);
+        m_bMaximizeWaveColor    = (GetFastInt("bMaximizeWaveColor", m_bMaximizeWaveColor, f) != 0);
+        m_fWaveAlpha            = GetFastFloat("fWaveAlpha", m_fWaveAlpha.eval(-1), f);
+        m_fWaveScale            = GetFastFloat("fWaveScale", m_fWaveScale.eval(-1), f);
+        m_fWaveSmoothing        = GetFastFloat("fWaveSmoothing", m_fWaveSmoothing.eval(-1), f);
+        m_fWaveParam            = GetFastFloat("fWaveParam", m_fWaveParam.eval(-1), f);
+        m_fModWaveAlphaStart    = GetFastFloat("fModWaveAlphaStart", m_fModWaveAlphaStart.eval(-1), f);
+        m_fModWaveAlphaEnd      = GetFastFloat("fModWaveAlphaEnd", m_fModWaveAlphaEnd.eval(-1), f);
+        m_fWaveR                = GetFastFloat("wave_r", m_fRot.eval(-1), f);
+        m_fWaveG                = GetFastFloat("wave_g", m_fRot.eval(-1), f);
+        m_fWaveB                = GetFastFloat("wave_b", m_fRot.eval(-1), f);
+        m_fWaveX                = GetFastFloat("wave_x", m_fRot.eval(-1), f);
+        m_fWaveY                = GetFastFloat("wave_y", m_fRot.eval(-1), f);
+        m_fMvX                  = GetFastFloat("nMotionVectorsX", m_fMvX.eval(-1), f);
+        m_fMvY                  = GetFastFloat("nMotionVectorsY", m_fMvY.eval(-1), f);
+        m_fMvDX                 = GetFastFloat("mv_dx", m_fMvDX.eval(-1), f);
+        m_fMvDY                 = GetFastFloat("mv_dy", m_fMvDY.eval(-1), f);
+        m_fMvL                  = GetFastFloat("mv_l", m_fMvL.eval(-1), f);
+        m_fMvR                  = GetFastFloat("mv_r", m_fMvR.eval(-1), f);
+        m_fMvG                  = GetFastFloat("mv_g", m_fMvG.eval(-1), f);
+        m_fMvB                  = GetFastFloat("mv_b", m_fMvB.eval(-1), f);
+        m_fMvA                  = (GetFastInt("bMotionVectorsOn", false, f) == 0) ? 0.0f : 1.0f; // for backwards compatibility
+        m_fMvA                  = GetFastFloat("mv_a", m_fMvA.eval(-1), f);
+        for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
         {
             m_wave[i].Import(f, L"dummy_filename", i);
         }
-        for (i=0; i<MAX_CUSTOM_SHAPES; i++)
+        for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         {
             m_shape[i].Import(f, L"dummy_filename", i);
         }
@@ -1400,30 +1391,30 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
     // motion:
     if (ApplyFlags & STATE_MOTION)
     {
-	    m_fZoom					= GetFastFloat("zoom",m_fZoom.eval(-1),f);	
-	    m_fRot					= GetFastFloat("rot",m_fRot.eval(-1),f);	
-	    m_fRotCX				= GetFastFloat("cx",m_fRotCX.eval(-1),f);	
-	    m_fRotCY				= GetFastFloat("cy",m_fRotCY.eval(-1),f);	
-	    m_fXPush				= GetFastFloat("dx",m_fXPush.eval(-1),f);	
-	    m_fYPush				= GetFastFloat("dy",m_fYPush.eval(-1),f);	
-	    m_fWarpAmount			= GetFastFloat("warp",m_fWarpAmount.eval(-1),f);	
-	    m_fStretchX				= GetFastFloat("sx",m_fStretchX.eval(-1),f);	
-	    m_fStretchY				= GetFastFloat("sy",m_fStretchY.eval(-1),f);	
-        m_bTexWrap			    = (GetFastInt ("bTexWrap", m_bTexWrap,f) != 0);
-	    m_bDarkenCenter			= (GetFastInt ("bDarkenCenter", m_bDarkenCenter,f) != 0);
-	    m_fWarpAnimSpeed        = GetFastFloat("fWarpAnimSpeed",m_fWarpAnimSpeed,f);
-	    m_fWarpScale            = GetFastFloat("fWarpScale",m_fWarpScale.eval(-1),f);
-	    m_fZoomExponent         = GetFastFloat("fZoomExponent",m_fZoomExponent.eval(-1),f);
-	    m_fOuterBorderSize	= GetFastFloat("ob_size",m_fOuterBorderSize.eval(-1),f);	
-	    m_fOuterBorderR		= GetFastFloat("ob_r",   m_fOuterBorderR.eval(-1),f);	
-	    m_fOuterBorderG		= GetFastFloat("ob_g",   m_fOuterBorderG.eval(-1),f);	
-	    m_fOuterBorderB		= GetFastFloat("ob_b",   m_fOuterBorderB.eval(-1),f);	
-	    m_fOuterBorderA		= GetFastFloat("ob_a",   m_fOuterBorderA.eval(-1),f);	
-	    m_fInnerBorderSize	= GetFastFloat("ib_size",m_fInnerBorderSize.eval(-1),f);	
-	    m_fInnerBorderR		= GetFastFloat("ib_r",   m_fInnerBorderR.eval(-1),f);	
-	    m_fInnerBorderG		= GetFastFloat("ib_g",   m_fInnerBorderG.eval(-1),f);	
-	    m_fInnerBorderB		= GetFastFloat("ib_b",   m_fInnerBorderB.eval(-1),f);	
-	    m_fInnerBorderA		= GetFastFloat("ib_a",   m_fInnerBorderA.eval(-1),f);	
+        m_fZoom            = GetFastFloat("zoom", m_fZoom.eval(-1), f);
+        m_fRot             = GetFastFloat("rot", m_fRot.eval(-1), f);
+        m_fRotCX           = GetFastFloat("cx", m_fRotCX.eval(-1), f);
+        m_fRotCY           = GetFastFloat("cy", m_fRotCY.eval(-1), f);
+        m_fXPush           = GetFastFloat("dx", m_fXPush.eval(-1), f);
+        m_fYPush           = GetFastFloat("dy", m_fYPush.eval(-1), f);
+        m_fWarpAmount      = GetFastFloat("warp", m_fWarpAmount.eval(-1), f);
+        m_fStretchX        = GetFastFloat("sx", m_fStretchX.eval(-1), f);
+        m_fStretchY        = GetFastFloat("sy", m_fStretchY.eval(-1), f);
+        m_bTexWrap         = (GetFastInt("bTexWrap", m_bTexWrap, f) != 0);
+        m_bDarkenCenter    = (GetFastInt("bDarkenCenter", m_bDarkenCenter, f) != 0);
+        m_fWarpAnimSpeed   = GetFastFloat("fWarpAnimSpeed", m_fWarpAnimSpeed, f);
+        m_fWarpScale       = GetFastFloat("fWarpScale", m_fWarpScale.eval(-1), f);
+        m_fZoomExponent    = GetFastFloat("fZoomExponent", m_fZoomExponent.eval(-1), f);
+        m_fOuterBorderSize = GetFastFloat("ob_size", m_fOuterBorderSize.eval(-1), f);
+        m_fOuterBorderR    = GetFastFloat("ob_r", m_fOuterBorderR.eval(-1), f);
+        m_fOuterBorderG    = GetFastFloat("ob_g", m_fOuterBorderG.eval(-1), f);
+        m_fOuterBorderB    = GetFastFloat("ob_b", m_fOuterBorderB.eval(-1), f);
+        m_fOuterBorderA    = GetFastFloat("ob_a", m_fOuterBorderA.eval(-1), f);
+        m_fInnerBorderSize = GetFastFloat("ib_size", m_fInnerBorderSize.eval(-1), f);
+        m_fInnerBorderR    = GetFastFloat("ib_r", m_fInnerBorderR.eval(-1), f);
+        m_fInnerBorderG    = GetFastFloat("ib_g", m_fInnerBorderG.eval(-1), f);
+        m_fInnerBorderB    = GetFastFloat("ib_b", m_fInnerBorderB.eval(-1), f);
+        m_fInnerBorderA    = GetFastFloat("ib_a", m_fInnerBorderA.eval(-1), f);
         //m_szPerFrameInit[0] = 0;
         //m_szPerFrameExpr[0] = 0;
         //m_szPerPixelExpr[0] = 0;
@@ -1431,19 +1422,19 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
         ReadCode(f, m_szPerFrameExpr, "per_frame_");
         ReadCode(f, m_szPerPixelExpr, "per_pixel_");
     }
-    
-    // warp shader
+
+    // Warp shader.
     if (ApplyFlags & STATE_WARP)
     {
         //m_szWarpShadersText[0] = 0;
         ReadCode(f, m_szWarpShadersText, "warp_");
-        if (!m_szWarpShadersText[0]) 
+        if (!m_szWarpShadersText[0])
             g_plugin.GenWarpPShaderText(m_szWarpShadersText, m_fDecay.eval(-1), m_bTexWrap);
         m_nWarpPSVersion = nWarpPSVersionInFile;
     }
-    
-    // comp shader
-    if (ApplyFlags & STATE_COMP) 
+
+    // Composite shader.
+    if (ApplyFlags & STATE_COMP)
     {
         //m_szCompShadersText[0] = 0;
         ReadCode(f, m_szCompShadersText, "comp_");
@@ -1454,9 +1445,8 @@ bool CState::Import(const wchar_t *szIniFile, float fTime, CState* pOldState, DW
 
     m_nMaxPSVersion = std::max(m_nWarpPSVersion, m_nCompPSVersion);
     m_nMinPSVersion = std::min(m_nWarpPSVersion, m_nCompPSVersion);
-	
 
-	RecompileExpressions();
+    RecompileExpressions();
 
     fclose(f);
 
@@ -1476,30 +1466,29 @@ void CState::GenDefaultCompShader()
 
 void CState::FreeVarsAndCode(bool bFree)
 {
-	// free the compiled expressions
-	if (m_pf_codehandle)
-	{
-        if (bFree)
-		    NSEEL_code_free(m_pf_codehandle);
-		m_pf_codehandle = NULL;
-	}
-	if (m_pp_codehandle)
-	{
-        if (bFree)
-    		NSEEL_code_free(m_pp_codehandle);
-		m_pp_codehandle = NULL;
-	}
-
-	int i;
-    for (i=0; i<MAX_CUSTOM_WAVES; i++)
+    // Free the compiled expressions.
+    if (m_pf_codehandle)
     {
-	    if (m_wave[i].m_pf_codehandle)
+        if (bFree)
+            NSEEL_code_free(m_pf_codehandle);
+        m_pf_codehandle = NULL;
+    }
+    if (m_pp_codehandle)
+    {
+        if (bFree)
+            NSEEL_code_free(m_pp_codehandle);
+        m_pp_codehandle = NULL;
+    }
+
+    for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
+    {
+        if (m_wave[i].m_pf_codehandle)
         {
             if (bFree)
                 NSEEL_code_free(m_wave[i].m_pf_codehandle);
             m_wave[i].m_pf_codehandle = NULL;
         }
-	    if (m_wave[i].m_pp_codehandle)
+        if (m_wave[i].m_pp_codehandle)
         {
             if (bFree)
                 NSEEL_code_free(m_wave[i].m_pp_codehandle);
@@ -1507,54 +1496,55 @@ void CState::FreeVarsAndCode(bool bFree)
         }
     }
 
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
+    for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
     {
-	    if (m_shape[i].m_pf_codehandle)
+        if (m_shape[i].m_pf_codehandle)
         {
             if (bFree)
                 NSEEL_code_free(m_shape[i].m_pf_codehandle);
             m_shape[i].m_pf_codehandle = NULL;
         }
-	    /*if (m_shape[i].m_pp_codehandle)
+        /*if (m_shape[i].m_pp_codehandle)
         {
             freeCode(m_shape[i].m_pp_codehandle);
             m_shape[i].m_pp_codehandle = NULL;
         }*/
     }
 
-	// free our text version of the expressions? - no!
-	//m_szPerFrameExpr[0] = 0;
-	//m_szPerPixelExpr[0] = 0;
+    // Free text version of the expressions? - no!
+    //m_szPerFrameExpr[0] = 0;
+    //m_szPerPixelExpr[0] = 0;
 
-	// free the old variable names & reregister the built-in variables (since they got nuked too)
-	RegisterBuiltInVariables(0xFFFFFFFF);
+    // Free the old variable names and reregister
+    //   the built-in variables (since they got nuked too).
+    RegisterBuiltInVariables(0xFFFFFFFF);
 }
 
-void CState::StripLinefeedCharsAndComments(char *src, char *dest)
+// Replaces all `LINEFEED_CONTROL_CHAR` characters in `src` with a space in `dest`;
+// also strips out all comments (beginning with '//' and going til end of line).
+// Restriction: `sizeof(dest)` must be ">=" to `sizeof(src)`.
+void CState::StripLinefeedCharsAndComments(char* src, char* dest)
 {
-	// replaces all LINEFEED_CONTROL_CHAR characters in src with a space in dest;
-	// also strips out all comments (beginning with '//' and going til end of line).
-	// Restriction: sizeof(dest) must be >= sizeof(src).
 
-	int i2 = 0;
-	int len = strlen(src);
-	int bComment = false;
-	for (int i=0; i<len; i++)		
-	{
-		if (bComment)
-		{
-			if (src[i] == LINEFEED_CONTROL_CHAR)	
-				bComment = false;
-		}
-		else
-		{
-			if ((src[i] =='\\' && src[i+1] =='\\') || (src[i] =='/' && src[i+1] =='/'))
-				bComment = true;
-			else if (src[i] != LINEFEED_CONTROL_CHAR)
-				dest[i2++] = src[i];
-		}
-	}
-	dest[i2] = 0;
+    int i2 = 0;
+    size_t len = strlen(src);
+    int bComment = false;
+    for (size_t i = 0; i < len; i++)
+    {
+        if (bComment)
+        {
+            if (src[i] == LINEFEED_CONTROL_CHAR)
+                bComment = false;
+        }
+        else
+        {
+            if ((src[i] == '\\' && src[i + 1] == '\\') || (src[i] == '/' && src[i + 1] == '/'))
+                bComment = true;
+            else if (src[i] != LINEFEED_CONTROL_CHAR)
+                dest[i2++] = src[i];
+        }
+    }
+    dest[i2] = 0;
 }
 
 void CState::RecompileExpressions(int flags, int bReInit)
@@ -1567,149 +1557,150 @@ void CState::RecompileExpressions(int flags, int bReInit)
         flags |= RECOMPILE_SHAPE_CODE;
     }
 
-    // free old code handles
+    // Free old code handles.
     if (flags & RECOMPILE_PRESET_CODE)
     {
-	    if (m_pf_codehandle)
-	    {
-		    NSEEL_code_free(m_pf_codehandle);
-		    m_pf_codehandle = NULL;
-	    }
-	    if (m_pp_codehandle)
-	    {
-		    NSEEL_code_free(m_pp_codehandle);
-		    m_pp_codehandle = NULL;
-	    }
+        if (m_pf_codehandle)
+        {
+            NSEEL_code_free(m_pf_codehandle);
+            m_pf_codehandle = NULL;
+        }
+        if (m_pp_codehandle)
+        {
+            NSEEL_code_free(m_pp_codehandle);
+            m_pp_codehandle = NULL;
+        }
     }
     if (flags & RECOMPILE_WAVE_CODE)
     {
-        for (int i=0; i<MAX_CUSTOM_WAVES; i++)
+        for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
         {
-		    if (m_wave[i].m_pf_codehandle)
-		    {
-			    NSEEL_code_free(m_wave[i].m_pf_codehandle);
-			    m_wave[i].m_pf_codehandle = NULL;
-		    }
-		    if (m_wave[i].m_pp_codehandle)
-		    {
-			    NSEEL_code_free(m_wave[i].m_pp_codehandle);
-			    m_wave[i].m_pp_codehandle = NULL;
-		    }
+            if (m_wave[i].m_pf_codehandle)
+            {
+                NSEEL_code_free(m_wave[i].m_pf_codehandle);
+                m_wave[i].m_pf_codehandle = NULL;
+            }
+            if (m_wave[i].m_pp_codehandle)
+            {
+                NSEEL_code_free(m_wave[i].m_pp_codehandle);
+                m_wave[i].m_pp_codehandle = NULL;
+            }
         }
     }
     if (flags & RECOMPILE_SHAPE_CODE)
     {
-        for (int i=0; i<MAX_CUSTOM_SHAPES; i++)
+        for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         {
-		    if (m_shape[i].m_pf_codehandle)
-		    {
-			    NSEEL_code_free(m_shape[i].m_pf_codehandle);
-			    m_shape[i].m_pf_codehandle = NULL;
-		    }
-		    /*if (m_shape[i].m_pp_codehandle)
-		    {
-			    freeCode(m_shape[i].m_pp_codehandle);
-			    m_shape[i].m_pp_codehandle = NULL;
-		    }*/
+            if (m_shape[i].m_pf_codehandle)
+            {
+                NSEEL_code_free(m_shape[i].m_pf_codehandle);
+                m_shape[i].m_pf_codehandle = NULL;
+            }
+            /*if (m_shape[i].m_pp_codehandle)
+            {
+                freeCode(m_shape[i].m_pp_codehandle);
+                m_shape[i].m_pp_codehandle = NULL;
+            }*/
         }
     }
 
-    // if we're recompiling init code, clear vars to zero, and re-register built-in variables.
-	if (bReInit)
-	{
-		RegisterBuiltInVariables(flags);
-	}
-
-	// QUICK FIX: if the code strings ONLY have spaces and linefeeds, erase them, 
-	// because for some strange reason this causes errors in compileCode().
-    int n2 = 3 + MAX_CUSTOM_WAVES*3 + MAX_CUSTOM_SHAPES*2; 
-	for (int n=0; n<n2; n++)
-	{
-		char *pOrig = nullptr;
-		switch(n)
-		{
-		case 0: pOrig = m_szPerFrameExpr; break;
-		case 1: pOrig = m_szPerPixelExpr; break;
-		case 2: pOrig = m_szPerFrameInit; break;
-        default:
-            if (n < 3 + 3*MAX_CUSTOM_WAVES)
-            {
-                int i = (n-3) / 3;
-                int j = (n-3) % 3;
-                switch(j)
-                {
-                case 0: pOrig = m_wave[i].m_szInit;     break;
-                case 1: pOrig = m_wave[i].m_szPerFrame; break;
-                case 2: pOrig = m_wave[i].m_szPerPoint; break;
-                }
-            }
-            else
-            {
-                int i = (n-3-3*MAX_CUSTOM_WAVES) / 2;
-                int j = (n-3-3*MAX_CUSTOM_WAVES) % 2;
-                switch(j)
-                {
-                case 0: pOrig = m_shape[i].m_szInit;     break;
-                case 1: pOrig = m_shape[i].m_szPerFrame; break;
-                }
-            }
-		}
-		char *p = pOrig;
-		while (*p==' ' || *p==LINEFEED_CONTROL_CHAR) p++;
-		if (*p == 0) pOrig[0] = 0;
-	}
-
-    // COMPILE NEW CODE.
-	#ifndef _NO_EXPR_   
+    // Recompiling init code, clear vars to zero, and re-register built-in variables.
+    if (bReInit)
     {
-    	// clear any old error msg.:
-    	//g_plugin.m_fShowUserMessageUntilThisTime = g_plugin.GetTime();	
+        RegisterBuiltInVariables(flags);
+    }
 
-	    char buf[MAX_BIGSTRING_LEN*3];
+    // QUICK FIX: If the code strings ONLY have spaces and line feeds, erase them,
+    // because for some strange reason this causes errors in `compileCode()`.
+    int n2 = 3 + MAX_CUSTOM_WAVES * 3 + MAX_CUSTOM_SHAPES * 2;
+    for (int n = 0; n < n2; n++)
+    {
+        char* pOrig = nullptr;
+        switch (n)
+        {
+            case 0: pOrig = m_szPerFrameExpr; break;
+            case 1: pOrig = m_szPerPixelExpr; break;
+            case 2: pOrig = m_szPerFrameInit; break;
+            default:
+                if (n < 3 + 3 * MAX_CUSTOM_WAVES)
+                {
+                    int i = (n - 3) / 3;
+                    int j = (n - 3) % 3;
+                    switch (j)
+                    {
+                        case 0: pOrig = m_wave[i].m_szInit; break;
+                        case 1: pOrig = m_wave[i].m_szPerFrame; break;
+                        case 2: pOrig = m_wave[i].m_szPerPoint; break;
+                    }
+                }
+                else
+                {
+                    int i = (n - 3 - 3 * MAX_CUSTOM_WAVES) / 2;
+                    int j = (n - 3 - 3 * MAX_CUSTOM_WAVES) % 2;
+                    switch (j)
+                    {
+                        case 0: pOrig = m_shape[i].m_szInit; break;
+                        case 1: pOrig = m_shape[i].m_szPerFrame; break;
+                    }
+                }
+        }
+        char* p = pOrig;
+        while (*p == ' ' || *p == LINEFEED_CONTROL_CHAR)
+            p++;
+        if (*p == 0)
+            pOrig[0] = 0;
+    }
+
+    // Compile new code.
+#ifndef _NO_EXPR_
+    {
+        // Clear any old error msg.
+        //g_plugin.m_fShowUserMessageUntilThisTime = g_plugin.GetTime();
+
+        char buf[MAX_BIGSTRING_LEN * 3];
 
         if (flags & RECOMPILE_PRESET_CODE)
         {
-            // 1. compile AND EXECUTE preset init code
-		    StripLinefeedCharsAndComments(m_szPerFrameInit, buf);
-	        if (buf[0] && bReInit)
-	        {
-		        NSEEL_CODEHANDLE	pf_codehandle_init;	
+            // 1. Compile AND EXECUTE preset initialization code.
+            StripLinefeedCharsAndComments(m_szPerFrameInit, buf);
+            if (buf[0] && bReInit)
+            {
+                NSEEL_CODEHANDLE pf_codehandle_init;
 
 			    if ( ! (pf_codehandle_init = NSEEL_code_compile(m_pf_eel, buf)))
-			    {
+                {
 /*
                     wchar_t buf[1024];
 				    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_PRESET_INIT_CODE), m_szDesc);
                     g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
 */
 
-                    for (int vi=0; vi<NUM_Q_VAR; vi++)
-				        q_values_after_init_code[vi] = 0;
+                    for (int vi = 0; vi < NUM_Q_VAR; vi++)
+                        q_values_after_init_code[vi] = 0;
                     monitor_after_init_code = 0;
-			    }
-			    else
-			    {
-				    // now execute the code, save the values of q1..q32, and clean up the code!
-
+                }
+                else
+                {
+                    // Now execute the code, save the values of q1..q32, and clean up the code!
                     g_plugin.LoadPerFrameEvallibVars(g_plugin.m_pState);
 
-				    NSEEL_code_execute(pf_codehandle_init);
+                    NSEEL_code_execute(pf_codehandle_init);
 
-                    for (int vi=0; vi<NUM_Q_VAR; vi++)
-				        q_values_after_init_code[vi] = *var_pf_q[vi];
+                    for (int vi = 0; vi < NUM_Q_VAR; vi++)
+                        q_values_after_init_code[vi] = *var_pf_q[vi];
                     monitor_after_init_code = *var_pf_monitor;
 
-				    NSEEL_code_free(pf_codehandle_init);
-				    pf_codehandle_init = NULL;
-			    }
-	        }
+                    NSEEL_code_free(pf_codehandle_init);
+                    pf_codehandle_init = NULL;
+                }
+            }
 
-            // 2. compile preset per-frame code
+            // 2. Compile preset per-frame code.
             StripLinefeedCharsAndComments(m_szPerFrameExpr, buf);
-	        if (buf[0])
-	        {
+            if (buf[0])
+            {
 			    if ( ! (m_pf_codehandle = NSEEL_code_compile(m_pf_eel, buf)))
-			    {
+                {
 /*
                     wchar_t buf[1024];
 				    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_PER_FRAME_CODE), m_szDesc);
@@ -1737,15 +1728,15 @@ void CState::RecompileExpressions(int flags, int bReInit)
 
         if (flags & RECOMPILE_WAVE_CODE)
         {
-            for (int i=0; i<MAX_CUSTOM_WAVES; i++)
+            for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
             {
-                // 1. compile AND EXECUTE custom waveform init code
-		        StripLinefeedCharsAndComments(m_wave[i].m_szInit, buf);
-	            if (buf[0] && bReInit)
+                // 1. Compile AND EXECUTE custom waveform initialization code.
+                StripLinefeedCharsAndComments(m_wave[i].m_szInit, buf);
+                if (buf[0] && bReInit)
                 {
-		            #ifndef _NO_EXPR_
-		            {
-		                NSEEL_CODEHANDLE	codehandle_temp;	
+#ifndef _NO_EXPR_
+                    {
+                        NSEEL_CODEHANDLE codehandle_temp;
 			            if ( ! (codehandle_temp = NSEEL_code_compile(m_wave[i].m_pf_eel, buf)))
 			            {
 /*
@@ -1754,39 +1745,38 @@ void CState::RecompileExpressions(int flags, int bReInit)
                             g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
 */
 
-                            for (int vi=0; vi<NUM_Q_VAR; vi++)
+                            for (int vi = 0; vi < NUM_Q_VAR; vi++)
                                 *m_wave[i].var_pf_q[vi] = q_values_after_init_code[vi];
-                            for (int vi=0; vi<NUM_T_VAR; vi++)
-				                m_wave[i].t_values_after_init_code[vi] = 0;
-			            }
-			            else
-			            {
-				            // now execute the code, save the values of t1..t8, and clean up the code!
-                    
+                            for (int vi = 0; vi < NUM_T_VAR; vi++)
+                                m_wave[i].t_values_after_init_code[vi] = 0;
+                        }
+                        else
+                        {
+                            // Now execute the code, save the values of t1..t8, and clean up the code!
                             g_plugin.LoadCustomWavePerFrameEvallibVars(g_plugin.m_pState, i);
-                                // note: q values at this point will actually be same as 
-                                //       q_values_after_init_code[], since no per-frame code
-                                //       has actually been executed yet!
+                            // Note: q values at this point will actually be same as
+                            //       q_values_after_init_code[], since no per-frame code
+                            //       has actually been executed yet!
 
-				            NSEEL_code_execute(codehandle_temp);
+                            NSEEL_code_execute(codehandle_temp);
 
-                            for (int vi=0; vi<NUM_T_VAR; vi++)
-				                m_wave[i].t_values_after_init_code[vi] = *m_wave[i].var_pf_t[vi];
+                            for (int vi = 0; vi < NUM_T_VAR; vi++)
+                                m_wave[i].t_values_after_init_code[vi] = *m_wave[i].var_pf_t[vi];
 
-				            NSEEL_code_free(codehandle_temp);
-				            codehandle_temp = NULL;
-			            }
-		            }
-                    #endif
+                            NSEEL_code_free(codehandle_temp);
+                            codehandle_temp = NULL;
+                        }
+                    }
+#endif
                 }
 
-                // 2. compile custom waveform per-frame code
-		        StripLinefeedCharsAndComments(m_wave[i].m_szPerFrame, buf);
-	            if (buf[0])
+                // 2. Compile custom waveform per-frame code.
+                StripLinefeedCharsAndComments(m_wave[i].m_szPerFrame, buf);
+                if (buf[0])
                 {
-		            #ifndef _NO_EXPR_
+#ifndef _NO_EXPR_
 			            if ( ! (m_wave[i].m_pf_codehandle = NSEEL_code_compile(m_wave[i].m_pf_eel, buf)))
-			            {
+                    {
 /*
                             wchar_t buf[1024];
 				            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_PER_FRAME_CODE), m_szDesc, i);

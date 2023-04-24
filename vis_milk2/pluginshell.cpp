@@ -526,14 +526,15 @@ void CPluginShell::PluginQuit()
     CleanUpDirectX();
 }
 
-wchar_t* BuildSettingName(wchar_t* name, int number)
+wchar_t* BuildSettingName(const wchar_t* name, const int number)
 {
     static wchar_t temp[64];
     swprintf_s(temp, L"%s%d", name, number);
     return temp;
 }
 
-void CPluginShell::ReadFont(int n){
+void CPluginShell::ReadFont(const int /* n */)
+{
 #if 0
     GetPrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_fontinfo[n].szFace, ARRAYSIZE(m_fontinfo[n].szFace), m_szConfigIniFile);
     m_fontinfo[n].nSize = GetPrivateProfileInt(L"settings", BuildSettingName(L"nFontSize", n), m_fontinfo[n].nSize, m_szConfigIniFile);
@@ -576,7 +577,7 @@ void CPluginShell::ReadConfig()
 	GetPrivateProfileString("settings","adapter_devicename_desktop",   "",m_adapter_devicename_desktop   ,sizeof(m_adapter_devicename_desktop)-1,m_szConfigIniFileA);
 	GetPrivateProfileString("settings","adapter_devicename_windowed",  "",m_adapter_devicename_windowed  ,sizeof(m_adapter_devicename_windowed)-1,m_szConfigIniFileA);
 
-	// FONTS
+    // FONTS
     ReadFont(0);
     ReadFont(1);
     ReadFont(2);
@@ -630,7 +631,7 @@ void CPluginShell::ReadConfig()
 #endif
 }
 
-void CPluginShell::WriteFont(int n)
+void CPluginShell::WriteFont(const int /* n */)
 {
 #if 0
 	WritePrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_szConfigIniFile);
