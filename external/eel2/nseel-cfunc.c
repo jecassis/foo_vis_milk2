@@ -1,6 +1,6 @@
 /*
   Expression Evaluator Library (NS-EEL) v2
-  Copyright (C) 2004-2008 Cockos Incorporated
+  Copyright (C) 2004-2013 Cockos Incorporated
   Copyright (C) 1999-2003 Nullsoft, Inc.
   
   nseel-cfunc.c: assembly/C implementation of operator/function templates
@@ -47,8 +47,9 @@ static unsigned int genrand_int32(void)
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     static unsigned int mt[N]; /* the array for the state vector  */
-    static int mti; /* mti==N+1 means mt[N] is not initialized */
+    static unsigned int __idx;
 
+    unsigned int mti = __idx;
 
     if (!mti)
     { 
@@ -65,10 +66,12 @@ static unsigned int genrand_int32(void)
           mt[mti] &= 0xffffffffUL;
           /* for >32 bit machines */
       }
+      __idx = N; // mti = N (from loop)
     }
 
     if (mti >= N) { /* generate N words at one time */
         int kk;
+        __idx = 1;
 
         for (kk=0;kk<N-M;kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
@@ -83,8 +86,10 @@ static unsigned int genrand_int32(void)
 
         mti = 0;
     }
+    else
+      __idx++;
   
-    y = mt[mti++];
+    y = mt[mti];
 
     /* Tempering */
     y ^= (y >> 11);
@@ -98,9 +103,9 @@ static unsigned int genrand_int32(void)
 
 
 //---------------------------------------------------------------------------------------------------------------
-EEL_F NSEEL_CGEN_CALL nseel_int_rand(EEL_F *f)
+EEL_F NSEEL_CGEN_CALL nseel_int_rand(EEL_F f)
 {
-  EEL_F x=floor(*f);
+  EEL_F x=floor(f);
   if (x < 1.0) x=1.0;
  
 #ifdef NSEEL_EEL1_COMPAT_MODE 
@@ -108,24 +113,33 @@ EEL_F NSEEL_CGEN_CALL nseel_int_rand(EEL_F *f)
 #else
   return (EEL_F) (genrand_int32()*(1.0/(double)0xFFFFFFFF)*x);
 #endif
-//  return (EEL_F)(rand()%EEL_F2int(x));
 }
 
 //---------------------------------------------------------------------------------------------------------------
 
 
+#ifndef EEL_TARGET_PORTABLE
 
 #ifdef __ppc__
 #include "asm-nseel-ppc-gcc.c"
+#elif defined(__aarch64__)
+#include "asm-nseel-aarch64-gcc.c"
+#elif defined(__arm__)
+#include "asm-nseel-arm-gcc.c"
+#elif defined(_M_ARM) && _M_ARM  == 7
+  // vc on ARM, tbd
 #else
   #ifdef _MSC_VER
     #ifdef _WIN64
-      //nasm
+      // nasm -f win64 asm-nseel-x64-sse.asm -o asm-nseel-x64.obj
     #else
       #include "asm-nseel-x86-msvc.c"
     #endif
-  #elif !defined(__LP64__)
-  #include "asm-nseel-x86-gcc.c"
+  #elif !defined(__LP64__) && !defined(_WIN64)
+    #define EEL_F_SUFFIX "l"
+    #define FUNCTION_MARKER "\n.byte 0x89,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90\n"
+    #include "asm-nseel-x86-gcc.c"
   #endif
 #endif
 
+#endif
