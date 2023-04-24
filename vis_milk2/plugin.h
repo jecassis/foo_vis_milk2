@@ -571,7 +571,7 @@ class CPlugin : public CPluginShell
     void LoadCustomWavePerFrameEvallibVars(CState* pState, int i);
     void LoadCustomShapePerFrameEvallibVars(CState* pState, int i, int instance);
     void WriteRealtimeConfig(); // called on Finish()
-    void dumpmsg(wchar_t* s);
+    void DumpDebugMessage(wchar_t* s);
     void Randomize();
     void LoadRandomPreset(float fBlendTime);
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);

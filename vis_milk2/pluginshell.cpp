@@ -79,6 +79,7 @@ eScrMode CPluginShell::GetScreenMode() { return m_screenmode; }
 int CPluginShell::GetFrame() { return m_frame; }
 float CPluginShell::GetTime() { return m_time; }
 float CPluginShell::GetFps() { return m_fps; }
+HWND CPluginShell::GetPluginWindow() { if (m_lpDX) return m_lpDX->GetHwnd(); else return NULL; }
 int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else return 0; }
 int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; }
 int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; }
@@ -211,7 +212,7 @@ int CPluginShell::InitDirectX()
     if (!m_lpDX)
     {
         /* wchar_t title[64];
-        MessageBoxW(NULL, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_INIT_DXCONTEXT),
+        MessageBox(NULL, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_INIT_DXCONTEXT),
                     WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64),
                     MB_OK|MB_SETFOREGROUND|MB_TOPMOST); */
         return FALSE;

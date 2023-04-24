@@ -286,7 +286,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         }
         
         sprintf_s(buf, "texmgr: w=%d, h=%d, channels=%d", w_img, h_img, img_color_channels);
-        //g_dumpmsg(buf);
+        //DumpDebugMessage(buf);
 
         m_tex[iSlot].img_w = w_img;
         m_tex[iSlot].img_h = h_img;
@@ -294,7 +294,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         if (img_color_channels != 3)
         {
             // error: not 24-bit!
-            //g_dumpmsg("texmgr: image not 24-bit");
+            //DumpDebugMessage("texmgr: image not 24-bit");
             End_Jpeg_Read();
             return TEXMGR_ERR_IMAGE_NOT_24_BIT;
         }
@@ -303,14 +303,14 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
             (h_img > 2048))   // RG
         {
             // error: too large!
-            //g_dumpmsg("texmgr: image too large");
+            //DumpDebugMessage("texmgr: image too large");
             End_Jpeg_Read();
             return TEXMGR_ERR_IMAGE_TOO_LARGE;
         }
 
         if (!TryCreateDDrawSurface(iSlot, w_img, h_img))
         {
-            //g_dumpmsg("texmgr: unable to create ddraw surface");
+            //DumpDebugMessage("texmgr: unable to create ddraw surface");
             End_Jpeg_Read();
             return TEXMGR_ERR_CREATESURFACE_FAILED;
         }
@@ -320,7 +320,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         unsigned int bpp_tex = m_tex[iSlot].ddpf.dwRGBBitCount;
 
         sprintf_s(buf, "texmgr: created ddraw surface; %d x %d x %d", w_tex, h_tex, bpp_tex);
-        //g_dumpmsg(buf);
+        //DumpDebugMessage(buf);
 
         DDSURFACEDESC2 ddsd;
         ZeroMemory(&ddsd, sizeof(DDSURFACEDESC2));
@@ -328,7 +328,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         
         if (m_tex[iSlot].pSurface->Lock(0, &ddsd, DDLOCK_SURFACEMEMORYPTR|DDLOCK_WAIT|DDLOCK_NOSYSLOCK, 0) != DD_OK)
         {
-            //g_dumpmsg("texmgr: unable to lock ddraw surface");
+            //DumpDebugMessage("texmgr: unable to lock ddraw surface");
             End_Jpeg_Read();
             m_tex[iSlot].pSurface->Release();
             m_tex[iSlot].pSurface = NULL;
@@ -379,7 +379,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
             {
                 char buf[256];
                 sprintf_s(buf, "texmgr: downsampling image from %dx%d to %dx%d and storing in %dx%d texture.", w_img,h_img, new_w_img,new_h_img, w_tex,h_tex);
-                //g_dumpmsg(buf);
+                //DumpDebugMessage(buf);
             }
 
             int downsample_buf[2048*3];
@@ -584,7 +584,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
     if (!RecompileExpressions(iSlot))
         ret |= TEXMGR_WARN_ERROR_IN_REG_CODE;
 
-    //g_dumpmsg("texmgr: success");
+    //DumpDebugMessage("texmgr: success");
 
     return ret;
 }
@@ -698,18 +698,18 @@ bool texmgr::RecompileExpressions(int iSlot)
     {
 #ifndef _NO_EXPR_
         //resetVars(m_tex[iSlot].m_vars);
-        //g_dumpmsg("texmgr: compiling string: ");
-        //g_dumpmsg(buf);
+        //DumpDebugMessage("texmgr: compiling string: ");
+        //DumpDebugMessage(buf);
         if ((m_tex[iSlot].m_codehandle = NSEEL_code_compile(m_tex[iSlot].tex_eel_ctx, buf, 0)) == NULL)
         {
-            //g_dumpmsg(" -error!");
+            //DumpDebugMessage(" -error!");
             //MessageBox(NULL, "error in per-frame code", "MILKDROP ERROR", MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             //sprintf_s(pg->m_szUserMessage, "warning: preset \"%s\": error in 'per_frame' code", m_szDesc);
             //pg->m_fShowUserMessageUntilThisTime = pg->m_fAnimTime + 6.0f;
         }
         else
         {
-            //g_dumpmsg(" -ok!");
+            //DumpDebugMessage(" -ok!");
             //pg->m_fShowUserMessageUntilThisTime = pg->m_fAnimTime; // clear any old error msg.
         }
         //resetVars(NULL);

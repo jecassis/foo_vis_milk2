@@ -456,7 +456,7 @@ void CPlugin::RenderFrame(int bRedraw)
         {
             char buf[64];
             sprintf_s(buf, "fixing time gap of %5.3f seconds", fDeltaT);
-            dumpmsg(buf);
+            DumpDebugMessage(buf);
 
             fDeltaT = 1.0f / m_fps;
         }
@@ -2375,7 +2375,7 @@ void CPlugin::DrawWave(float* fL, float* fR)
     hr = m_lpD3DDev->SetTexture(0, NULL);
     if (hr != D3D_OK) 
     {
-        //dumpmsg("Draw(): ERROR: SetTexture");
+        //DumpDebugMessage("Draw(): ERROR: SetTexture");
         //IdentifyD3DError(hr);
     }
     */

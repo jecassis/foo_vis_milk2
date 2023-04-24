@@ -54,6 +54,7 @@ jobs:
         run: msbuild.exe --% -verbosity:diagnostic -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} "${{ github.workspace }}\foo_vis_milk2_.sln"
       - name: Validate ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
         run: |
+          link.exe /dump /exports /nologo ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')
           Write-Host ((Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
           (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.FileVersion
           (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.ProductVersion
