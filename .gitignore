@@ -159,6 +159,8 @@ CMakeLists.txt
 !/external/eel2/denormal.h
 !/external/eel2/asm-nseel-x86-msvc.c
 !/external/eel2/asm-nseel-x64.obj
+!/external/eel2/eel2.vcxproj
+!/external/eel2/eel2.vcxproj.filters
 /external/unused/
 *.wav
 *.dds
