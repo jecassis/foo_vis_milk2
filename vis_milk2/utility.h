@@ -51,4 +51,6 @@ void SetScrollLock(int bNewState, bool bPreventHandling);
 void RemoveExtension(wchar_t* str);
 void TextToGuidA(char* str, GUID* pGUID);
 
+void NSEEL_VM_resetvars(void* ctx);
+
 #endif

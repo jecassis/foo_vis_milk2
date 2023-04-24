@@ -1667,7 +1667,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
             {
                 NSEEL_CODEHANDLE pf_codehandle_init;
 
-			    if ( ! (pf_codehandle_init = NSEEL_code_compile(m_pf_eel, buf)))
+                if ((pf_codehandle_init = NSEEL_code_compile(m_pf_eel, buf, 0)) == NULL)
                 {
 /*
                     wchar_t buf[1024];
@@ -1699,7 +1699,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
             StripLinefeedCharsAndComments(m_szPerFrameExpr, buf);
             if (buf[0])
             {
-			    if ( ! (m_pf_codehandle = NSEEL_code_compile(m_pf_eel, buf)))
+                if ((m_pf_codehandle = NSEEL_code_compile(m_pf_eel, buf, 0)) == NULL)
                 {
 /*
                     wchar_t buf[1024];
@@ -1713,7 +1713,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
 		    StripLinefeedCharsAndComments(m_szPerPixelExpr, buf);
 	        if (buf[0])
 	        {
-			    if ( ! (m_pp_codehandle = NSEEL_code_compile(m_pv_eel, buf)))
+                if ((m_pp_codehandle = NSEEL_code_compile(m_pv_eel, buf, 0)) == NULL)
 			    {
 /*
                     wchar_t buf[1024];
@@ -1737,7 +1737,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
 #ifndef _NO_EXPR_
                     {
                         NSEEL_CODEHANDLE codehandle_temp;
-			            if ( ! (codehandle_temp = NSEEL_code_compile(m_wave[i].m_pf_eel, buf)))
+                        if ((codehandle_temp = NSEEL_code_compile(m_wave[i].m_pf_eel, buf, 0)) == NULL)
 			            {
 /*
                             wchar_t buf[1024];
@@ -1775,7 +1775,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
                 if (buf[0])
                 {
 #ifndef _NO_EXPR_
-			            if ( ! (m_wave[i].m_pf_codehandle = NSEEL_code_compile(m_wave[i].m_pf_eel, buf)))
+                    if ((m_wave[i].m_pf_codehandle = NSEEL_code_compile(m_wave[i].m_pf_eel, buf, 0)) == NULL)
                     {
 /*
                             wchar_t buf[1024];
@@ -1790,7 +1790,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
 		        StripLinefeedCharsAndComments(m_wave[i].m_szPerPoint, buf);
 	            if (buf[0])
                 {
-			        if ( ! (m_wave[i].m_pp_codehandle = NSEEL_code_compile(m_wave[i].m_pp_eel, buf)))
+                    if ((m_wave[i].m_pp_codehandle = NSEEL_code_compile(m_wave[i].m_pp_eel, buf, 0)) == NULL)
 			        {
 /*
                         wchar_t buf[1024];
@@ -1813,7 +1813,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
 		            #ifndef _NO_EXPR_
 		            {
 		                NSEEL_CODEHANDLE	codehandle_temp;	
-			            if ( ! (codehandle_temp = NSEEL_code_compile(m_shape[i].m_pf_eel, buf)))
+                        if ((codehandle_temp = NSEEL_code_compile(m_shape[i].m_pf_eel, buf, 0)) == NULL)
 			            {
 /*
                             wchar_t buf[1024];
@@ -1852,7 +1852,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
 	            if (buf[0])
                 {
 		            #ifndef _NO_EXPR_
-			            if ( ! (m_shape[i].m_pf_codehandle = NSEEL_code_compile(m_shape[i].m_pf_eel, buf)))
+                    if ((m_shape[i].m_pf_codehandle = NSEEL_code_compile(m_shape[i].m_pf_eel, buf, 0)) == NULL)
 			            {
 /*
                             wchar_t buf[1024];

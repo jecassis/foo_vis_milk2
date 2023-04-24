@@ -9,6 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foo_vis_milk2", "foo_vis_mi
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vis_milk2", "vis_milk2\vis_milk2.vcxproj", "{7EE6F699-4EA5-4409-B212-DCFD192C811B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8} = {893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_SDK", "external\foobar2000\sdk\foobar2000_sdk.vcxproj", "{E8091321-D79D-4575-86EF-064EA1A4A20D}"
 EndProject
@@ -19,6 +22,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_component_client", "external\foobar2000\component_client\foobar2000_component_client.vcxproj", "{71AD2674-065B-48F5-B8B0-E1F9D3892081}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libPPUI", "external\libppui\libppui.vcxproj", "{7729EB82-4069-4414-964B-AD399091A03F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EEL2", "external\eel2\eel2.vcxproj", "{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +89,14 @@ Global
 		{7729EB82-4069-4414-964B-AD399091A03F}.Release|x64.Build.0 = Release|x64
 		{7729EB82-4069-4414-964B-AD399091A03F}.Release|x86.ActiveCfg = Release|Win32
 		{7729EB82-4069-4414-964B-AD399091A03F}.Release|x86.Build.0 = Release|Win32
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Debug|x64.ActiveCfg = Debug|x64
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Debug|x64.Build.0 = Debug|x64
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Debug|x86.ActiveCfg = Debug|Win32
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Debug|x86.Build.0 = Debug|Win32
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Release|x64.ActiveCfg = Release|x64
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Release|x64.Build.0 = Release|x64
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Release|x86.ActiveCfg = Release|Win32
+		{893B9C0E-73CA-4843-A3BC-8A3FF9055FA8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

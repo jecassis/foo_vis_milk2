@@ -45,6 +45,8 @@
 #include <system_error>
 #include <vector>
 
+#include <eel2/ns-eel.h>
+
 #include <CommonStates.h>
 #include <DDSTextureLoader.h>
 #include <DirectXHelpers.h>

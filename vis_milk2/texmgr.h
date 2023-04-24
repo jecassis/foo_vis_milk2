@@ -30,7 +30,7 @@
 #ifndef GEISS_TEXTURE_MANAGER
 #define GEISS_TEXTURE_MANAGER
 
-#include <ns-eel2/ns-eel.h>
+#include <eel2/ns-eel.h>
 #include "md_defines.h"
 #include "d3d11shim.h"
 

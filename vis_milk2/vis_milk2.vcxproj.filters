@@ -12,9 +12,6 @@
     <Filter Include="Shader Files">
       <UniqueIdentifier>{18e1b9a9-b727-4ef1-a443-52bb678849c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NS-EEL 2 Files">
-      <UniqueIdentifier>{ea7fd4df-a21a-4ecd-9f04-504bf69e3dbf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utility Files">
       <UniqueIdentifier>{3e19c0b4-7cfd-4d60-915d-c27bbad1a317}</UniqueIdentifier>
     </Filter>
@@ -68,15 +65,6 @@
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\external\ns-eel2\ns-eel.h">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\external\ns-eel2\ns-eel-addfuncs.h">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\external\ns-eel2\ns-eel-int.h">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\external\nu\AutoWide.h">
       <Filter>Utility Files</Filter>
     </ClInclude>
@@ -121,27 +109,6 @@
     <ClCompile Include="utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-yylex.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-caltab.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-cfunc.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-compiler.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-eval.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-lextab.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\ns-eel2\nseel-ram.c">
-      <Filter>NS-EEL 2 Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="colorps.hlsl">
@@ -162,8 +129,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="..\external\ns-eel2\asm-nseel-x64.asm">
-      <Filter>NS-EEL 2 Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

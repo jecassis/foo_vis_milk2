@@ -96,6 +96,12 @@ void NSEEL_HOSTSTUB_LeaveMutex()
 {
 }
 
+void NSEEL_VM_resetvars(NSEEL_VMCTX ctx)
+{
+    NSEEL_VM_freeRAM(ctx);
+    NSEEL_VM_remove_all_nonreg_vars(ctx);
+}
+
 _locale_t g_use_C_locale = 0;
 
 //extern CSoundData* pg_sound; // declared in "main.cpp"
