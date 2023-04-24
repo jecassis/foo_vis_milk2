@@ -1981,15 +1981,15 @@ void PShaderInfo::Clear()
 CShaderParamsList global_CShaderParams_master_list;
 CShaderParams::CShaderParams()
 {
+    global_CShaderParams_master_list.shrink_to_fit(); // HACK!!! Exception thrown on 7th allocation. [read access violation. _Pnext was 0x4.]
     global_CShaderParams_master_list.push_back(this);
 }
 
 CShaderParams::~CShaderParams()
 {
-    size_t N = global_CShaderParams_master_list.size();
-    for (unsigned int i = 0; i < N; i++)
-        if (global_CShaderParams_master_list[i] == this)
-            global_CShaderParams_master_list.eraseAt(i);
+    for (auto it = global_CShaderParams_master_list.begin(); it != global_CShaderParams_master_list.end();)
+        if (*it == this)
+            global_CShaderParams_master_list.erase(it);
     texsize_params.clear();
 }
 
@@ -2078,20 +2078,19 @@ bool CPlugin::EvictSomeTexture()
     assert(m_textures[biggest_index].texptr);
 
     // Notify all CShaderParams classes that we're releasing a bindable texture!!
-    N = global_CShaderParams_master_list.size();
-    for (i=0; i<N; i++) 
-        global_CShaderParams_master_list[i]->OnTextureEvict( m_textures[biggest_index].texptr );
+    for (auto const& i : global_CShaderParams_master_list)
+        i->OnTextureEvict(m_textures[biggest_index].texptr);
 
     // 2. Erase the texture itself.
     SafeRelease(m_textures[biggest_index].texptr);
-    m_textures.eraseAt(biggest_index);   
+    m_textures.erase(m_textures.begin() + biggest_index);
 
     return true;
 }
 
 std::wstring texture_exts[] = {L"jpg", L"png", L"dds", L"tga", L"bmp", L"dib"};
 const wchar_t szExtsWithSlashes[] = L"jpg|png|dds|etc.";
-typedef Vector<std::wstring> StringVec;
+typedef std::vector<std::wstring> StringVec;
 bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // should be MAX_PATH chars
 {
     static StringVec texfiles;
@@ -3049,9 +3048,8 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
         if (m_textures[i].texptr)
         {
             // Notify all CShaderParams classes that we're releasing a bindable texture!!
-            size_t N = global_CShaderParams_master_list.size();
-            for (size_t j = 0; j < N; j++)
-                global_CShaderParams_master_list[j]->OnTextureEvict(m_textures[i].texptr);
+            for (auto const& j : global_CShaderParams_master_list)
+                j->OnTextureEvict(m_textures[i].texptr);
 
             SafeRelease(m_textures[i].texptr);
         }
@@ -4099,8 +4097,8 @@ retry:
 
         // Update cumulative ratings, since order changed...
         g_plugin.m_presets[0].fRatingCum = g_plugin.m_presets[0].fRatingThis;
-        for (int i=0; i<g_plugin.m_nPresets; i++)
-            g_plugin.m_presets[i].fRatingCum = g_plugin.m_presets[i-1].fRatingCum + g_plugin.m_presets[i].fRatingThis;
+        for (int i = 1; i < g_plugin.m_nPresets; i++)
+            g_plugin.m_presets[i].fRatingCum = g_plugin.m_presets[i - 1].fRatingCum + g_plugin.m_presets[i].fRatingThis;
 
         // Clear the "Scanning presets..." message.
         //g_plugin.ClearErrors(ERR_SCANNING_PRESETS);

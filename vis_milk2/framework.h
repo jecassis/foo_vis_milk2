@@ -38,10 +38,12 @@
 #include <clocale>
 #include <cmath>
 #include <exception>
+#include <list>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <system_error>
+#include <vector>
 
 #include <CommonStates.h>
 #include <DDSTextureLoader.h>

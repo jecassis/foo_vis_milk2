@@ -30,7 +30,7 @@
 #ifndef __NULLSOFT_DX_PLUGIN_SHELL_H__
 #define __NULLSOFT_DX_PLUGIN_SHELL_H__
 
-#include <nu/Vector.h>
+#include <vector>
 #include "defines.h"
 #include "shell_defines.h"
 #include "fft.h"

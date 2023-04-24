@@ -30,7 +30,8 @@
 #ifndef __NULLSOFT_DX_PLUGIN_H__
 #define __NULLSOFT_DX_PLUGIN_H__
 
-#include <nu/Vector.h>
+#include <list>
+#include <vector>
 #include "pluginshell.h"
 #include "md_defines.h"
 //#include "menu.h"
@@ -172,7 +173,7 @@ typedef struct
 
 typedef struct
 {
-    GString    texname;  // just for ref
+    std::wstring texname; // just for ref
     LPCSTR texsize_param;
     int w, h;
 } TexSizeParamInfo;
@@ -187,15 +188,13 @@ typedef struct
 
 typedef struct
 {
-    GString   msg;
+    std::wstring msg;
     bool bBold; // true == red background; false == black background
     float birthTime;
     float expireTime;
     int category;
 } ErrorMsg;
-typedef Vector<ErrorMsg> ErrorMsgList;
-
-typedef Vector<CShaderParams*> CShaderParamsList;
+typedef std::list<ErrorMsg> ErrorMsgList;
 
 class CShaderParams
 {
@@ -207,7 +206,7 @@ class CShaderParams
     LPCSTR q_const_handles[(NUM_Q_VAR + 3) / 4];
     LPCSTR rot_mat[24];
 
-    typedef Vector<TexSizeParamInfo> TexSizeParamInfoList;
+    typedef std::vector<TexSizeParamInfo> TexSizeParamInfoList;
     TexSizeParamInfoList texsize_params;
 
     // sampler stages for various PS texture bindings:
@@ -224,6 +223,7 @@ class CShaderParams
     CShaderParams();
     ~CShaderParams();
 };
+typedef std::vector<CShaderParams*> CShaderParamsList;
 
 class VShaderInfo
 {
@@ -282,12 +282,11 @@ typedef struct
 
 typedef struct
 {
-    GString  szFilename;    // without path
+    std::wstring szFilename; // without path
     float fRatingThis;
     float fRatingCum;
 } PresetInfo;
-typedef Vector<PresetInfo> PresetList;
-
+typedef std::vector<PresetInfo> PresetList;
 
 class CPlugin : public CPluginShell
 {
@@ -382,7 +381,7 @@ class CPlugin : public CPluginShell
     bool RecompileVShader(const char* szShadersText, VShaderInfo* si, int shaderType, bool bHardErrors);
     bool RecompilePShader(const char* szShadersText, PShaderInfo* si, int shaderType, bool bHardErrors, int PSVersion);
     bool EvictSomeTexture();
-        typedef Vector<TexInfo> TexInfoList;
+    typedef std::vector<TexInfo> TexInfoList;
     TexInfoList m_textures;
     bool m_bNeedRescanTexturesDir;
 
@@ -439,7 +438,7 @@ class CPlugin : public CPluginShell
 
     // PRESET HISTORY
 #define PRESET_HIST_LEN (64 + 2)                   // this is 2 more than the DESIRED number to be able to go back
-        GString     m_presetHistory[PRESET_HIST_LEN];   //circular
+    std::wstring m_presetHistory[PRESET_HIST_LEN]; // circular
     int m_presetHistoryPos;
     int m_presetHistoryBackFence;
     int m_presetHistoryFwdFence;
