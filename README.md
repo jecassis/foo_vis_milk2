@@ -4,11 +4,11 @@ Port of Winamp's MilkDrop 2 visualization library from its original DirectX 9 ve
 
 Prerequisites to build the DirectX 11 `foo_vis_milk2.dll` component for foobar2000:
 
-- [foobar2000 SDK](https://www.foobar2000.org/): download version SDK2023-02-22 or later and place the contents in the `external/` folder.
+- [foobar2000 SDK](https://www.foobar2000.org/SDK): download version SDK2023-02-22 or later and place the contents in the `external/` folder.
 - [NS-EEL2](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
 - [DirectXTK](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are fetched using NuGet.
-- [WTL](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are fetched using NuGet.
-- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`milkdrop`](foo_vis_milk2.sln) solution, select a configuration for the `foo_vis_milk2` project, and build.
+- [WTL](https://sourceforge.net/projects/wtl/): the files required to build the DLL are fetched using NuGet.
+- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`milkdrop2`](foo_vis_milk2.sln) solution, select a configuration for the `foo_vis_milk2` project, and build.
 
 Refer to [CI pipeline](.github\workflows\build.yml) jobs for a step-by-step guide on how to build. Only x86 and x64 Intel architecture platforms are functional.
 
