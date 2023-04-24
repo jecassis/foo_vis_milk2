@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -77,13 +77,7 @@
     <ClInclude Include="..\external\ns-eel2\ns-eel-int.h">
       <Filter>NS-EEL 2 Files</Filter>
     </ClInclude>
-    <ClInclude Include="gstring.h">
-      <Filter>Utility Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\external\nu\AutoWide.h">
-      <Filter>Utility Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\external\nu\Vector.h">
       <Filter>Utility Files</Filter>
     </ClInclude>
   </ItemGroup>

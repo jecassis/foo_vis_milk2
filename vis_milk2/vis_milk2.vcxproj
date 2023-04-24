@@ -196,9 +196,7 @@
     <ClInclude Include="..\external\ns-eel2\ns-eel-addfuncs.h" />
     <ClInclude Include="..\external\ns-eel2\ns-eel-int.h" />
     <ClInclude Include="..\external\ns-eel2\ns-eel.h" />
-    <ClInclude Include="gstring.h" />
     <ClInclude Include="..\external\nu\AutoWide.h" />
-    <ClInclude Include="..\external\nu\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
