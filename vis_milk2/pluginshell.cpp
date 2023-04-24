@@ -102,7 +102,7 @@ char* CPluginShell::GetDriverDescription() { static char fake[1] = {0}; return f
 int CPluginShell::InitNonDX11()
 {
 #ifdef TARGET_WINDOWS_DESKTOP
-	timeBeginPeriod(1);
+    timeBeginPeriod(1);
 #endif
     m_fftobj.Init(576, NUM_FREQUENCIES);
     return AllocateMilkDropNonDX11();
@@ -124,7 +124,7 @@ int CPluginShell::AllocateDX11()
     // Invalidate various 'caches' here.
     m_playlist_top_idx = -1; // Invalidating playlist cache forces recompute of playlist width
 
-	return ret;
+    return ret;
 }
 
 void CPluginShell::CleanUpDX11(int final_cleanup)
@@ -139,8 +139,8 @@ void CPluginShell::CleanUpDX11(int final_cleanup)
 
     if (!m_vj_mode)
     {
-		for (int i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
-			SafeRelease(m_d3dx_font[i]);
+        for (int i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+            SafeRelease(m_d3dx_font[i]);
         SafeRelease(m_lpDDSText);
     }
 
@@ -185,7 +185,7 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_windowed);
             break;
         case FULLSCREEN:
-	case FAKE_FULLSCREEN:
+        case FAKE_FULLSCREEN:
             pParams->allow_page_tearing = m_allow_page_tearing_fs;
             pParams->adapter_guid = m_adapter_guid_fullscreen;
             //pParams->multisamp = m_multisample_fullscreen;
@@ -198,7 +198,7 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_desktop);
             break;
     }
-	//pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
+    //pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
 }
 
 int CPluginShell::InitDirectX()
@@ -211,9 +211,9 @@ int CPluginShell::InitDirectX()
     if (!m_lpDX)
     {
         /* wchar_t title[64];
-		MessageBoxW(NULL, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_INIT_DXCONTEXT),
-				    WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64),
-				    MB_OK|MB_SETFOREGROUND|MB_TOPMOST); */
+        MessageBoxW(NULL, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_INIT_DXCONTEXT),
+                    WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64),
+                    MB_OK|MB_SETFOREGROUND|MB_TOPMOST); */
         return FALSE;
     }
 
@@ -225,14 +225,14 @@ int CPluginShell::InitDirectX()
     }
 
     // Initialize graphics.
-	if (!m_lpDX->StartOrRestartDevice())
+    if (!m_lpDX->StartOrRestartDevice())
     {
         // Note: A basic warning message box will have already been given.
-		/* if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
-		{
+        /* if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
+        {
             // Make specific suggestions on how to regain more video memory.
             SuggestHowToFreeSomeMem();
-		} */
+        } */
 
         m_lpDX.reset();
 
@@ -360,73 +360,73 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     //m_szPluginsDirPath:
 
     /*
-	wchar_t *p;
-	if (hWinampWnd
-	    && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETPLUGINDIRECTORYW))
-	    && p != (wchar_t *)1)
-	{
-		swprintf(m_szPluginsDirPath, L"%s\\", p);
-	}
-	else
-	{
+    wchar_t *p;
+    if (hWinampWnd
+        && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETPLUGINDIRECTORYW))
+        && p != (wchar_t *)1)
+    {
+        swprintf(m_szPluginsDirPath, L"%s\\", p);
+    }
+    else
+    {
         // Get path to INI file & read in prefs/settings right away, so DumpMsg works!
-		GetModuleFileNameW(m_hInstance, m_szPluginsDirPath, MAX_PATH);
-		wchar_t *p = m_szPluginsDirPath + wcslen(m_szPluginsDirPath);
-		while (p >= m_szPluginsDirPath && *p != L'\\') p--;
-		if (++p >= m_szPluginsDirPath) *p = 0;
-	}
-	*/
+        GetModuleFileNameW(m_hInstance, m_szPluginsDirPath, MAX_PATH);
+        wchar_t *p = m_szPluginsDirPath + wcslen(m_szPluginsDirPath);
+        while (p >= m_szPluginsDirPath && *p != L'\\') p--;
+        if (++p >= m_szPluginsDirPath) *p = 0;
+    }
+    */
     //	swprintf(m_szPluginsDirPath, L"");
 
     /*
-	if (hWinampWnd
-	    && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))
-	    && p != (wchar_t *)1)
-	{
+    if (hWinampWnd
+        && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))
+        && p != (wchar_t *)1)
+    {
         // load settings as well as coping with moving old settings to a contained folder
-		wchar_t m_szOldConfigIniFile[MAX_PATH] = {0}, temp[MAX_PATH] = {0}, temp2[MAX_PATH] = {0};
-		swprintf(m_szOldConfigIniFile, L"%s\\Plugins\\%s", p, INIFILE);
-		swprintf(m_szConfigIniFile, L"%s\\Plugins\\%s%s", p, SUBDIR, INIFILE);
-		swprintf(temp, L"%s\\Plugins\\%s", p, SUBDIR);
-		swprintf(temp2, L"%s\\Plugins\\", p);
-		CreateDirectoryW(temp, NULL);
+        wchar_t m_szOldConfigIniFile[MAX_PATH] = {0}, temp[MAX_PATH] = {0}, temp2[MAX_PATH] = {0};
+        swprintf(m_szOldConfigIniFile, L"%s\\Plugins\\%s", p, INIFILE);
+        swprintf(m_szConfigIniFile, L"%s\\Plugins\\%s%s", p, SUBDIR, INIFILE);
+        swprintf(temp, L"%s\\Plugins\\%s", p, SUBDIR);
+        swprintf(temp2, L"%s\\Plugins\\", p);
+        CreateDirectoryW(temp, NULL);
 
-		if (PathFileExistsW(m_szOldConfigIniFile) && !PathFileExistsW(m_szConfigIniFile))
-		{
-			MoveFileW(m_szOldConfigIniFile, m_szConfigIniFile);
+        if (PathFileExistsW(m_szOldConfigIniFile) && !PathFileExistsW(m_szConfigIniFile))
+        {
+            MoveFileW(m_szOldConfigIniFile, m_szConfigIniFile);
 
-			wchar_t m_szMsgIniFile[MAX_PATH] = {0}, m_szNewMsgIniFile[MAX_PATH] = {0},
-					m_szImgIniFile[MAX_PATH] = {0}, m_szNewImgIniFile[MAX_PATH] = {0},
-					m_szAdaptersFile[MAX_PATH] = {0}, m_szNewAdaptersFile[MAX_PATH] = {0};
-   			swprintf(m_szMsgIniFile, L"%s%s", temp2, MSG_INIFILE);
-			swprintf(m_szNewMsgIniFile, L"%s%s", temp, MSG_INIFILE);
-			swprintf(m_szImgIniFile, L"%s%s", temp2, IMG_INIFILE);
-			swprintf(m_szNewImgIniFile, L"%s%s", temp, IMG_INIFILE);
-			swprintf(m_szAdaptersFile, L"%s%s", temp2, ADAPTERSFILE);
-			swprintf(m_szNewAdaptersFile, L"%s%s", temp, ADAPTERSFILE);
+            wchar_t m_szMsgIniFile[MAX_PATH] = {0}, m_szNewMsgIniFile[MAX_PATH] = {0},
+                    m_szImgIniFile[MAX_PATH] = {0}, m_szNewImgIniFile[MAX_PATH] = {0},
+                    m_szAdaptersFile[MAX_PATH] = {0}, m_szNewAdaptersFile[MAX_PATH] = {0};
+            swprintf(m_szMsgIniFile, L"%s%s", temp2, MSG_INIFILE);
+            swprintf(m_szNewMsgIniFile, L"%s%s", temp, MSG_INIFILE);
+            swprintf(m_szImgIniFile, L"%s%s", temp2, IMG_INIFILE);
+            swprintf(m_szNewImgIniFile, L"%s%s", temp, IMG_INIFILE);
+            swprintf(m_szAdaptersFile, L"%s%s", temp2, ADAPTERSFILE);
+            swprintf(m_szNewAdaptersFile, L"%s%s", temp, ADAPTERSFILE);
 
-			MoveFileW(m_szImgIniFile, m_szNewImgIniFile);
-			MoveFileW(m_szMsgIniFile, m_szNewMsgIniFile);
-			MoveFileW(m_szAdaptersFile, m_szNewAdaptersFile);
-		}
-	}
-	else
-	{
-		swprintf(m_szConfigIniFile, L"%s%s", m_szPluginsDirPath, INIFILE);
-	}
-	lstrcpyn(m_szConfigIniFileA,AutoCharFn(m_szConfigIniFile),MAX_PATH);
+            MoveFileW(m_szImgIniFile, m_szNewImgIniFile);
+            MoveFileW(m_szMsgIniFile, m_szNewMsgIniFile);
+            MoveFileW(m_szAdaptersFile, m_szNewAdaptersFile);
+        }
+    }
+    else
+    {
+        swprintf(m_szConfigIniFile, L"%s%s", m_szPluginsDirPath, INIFILE);
+    }
+    lstrcpyn(m_szConfigIniFileA,AutoCharFn(m_szConfigIniFile),MAX_PATH);
 
     // PRIVATE CONFIG PANEL SETTINGS
-	m_multisample_fullscreen = D3DMULTISAMPLE_NONE;
-	m_multisample_desktop = D3DMULTISAMPLE_NONE;
-	m_multisample_windowed = D3DMULTISAMPLE_NONE;
-	ZeroMemory(&m_adapter_guid_fullscreen, sizeof(GUID));
-	ZeroMemory(&m_adapter_guid_desktop , sizeof(GUID));
-	ZeroMemory(&m_adapter_guid_windowed , sizeof(GUID));
-	m_adapter_devicename_windowed[0]   = 0;
-	m_adapter_devicename_fullscreen[0] = 0;
-	m_adapter_devicename_desktop[0]    = 0;
-	*/
+    m_multisample_fullscreen = D3DMULTISAMPLE_NONE;
+    m_multisample_desktop = D3DMULTISAMPLE_NONE;
+    m_multisample_windowed = D3DMULTISAMPLE_NONE;
+    ZeroMemory(&m_adapter_guid_fullscreen, sizeof(GUID));
+    ZeroMemory(&m_adapter_guid_desktop , sizeof(GUID));
+    ZeroMemory(&m_adapter_guid_windowed , sizeof(GUID));
+    m_adapter_devicename_windowed[0]   = 0;
+    m_adapter_devicename_fullscreen[0] = 0;
+    m_adapter_devicename_desktop[0]    = 0;
+    */
 
     // PRIVATE RUNTIME SETTINGS
     m_lost_focus = 0;
@@ -556,26 +556,26 @@ void CPluginShell::ReadConfig()
     else if (old_subver < INT_SUBVERSION)
         return;
 
-	//D3DMULTISAMPLE_TYPE m_multisample_fullscreen;
-	//D3DMULTISAMPLE_TYPE m_multisample_desktop;
-	//D3DMULTISAMPLE_TYPE m_multisample_windowed;
-	m_multisample_fullscreen      = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_fullscreen",m_multisample_fullscreen,m_szConfigIniFile);
-	m_multisample_desktop         = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_desktop",m_multisample_desktop,m_szConfigIniFile);
-	m_multisample_windowed        = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_windowed"  ,m_multisample_windowed  ,m_szConfigIniFile);
+    //D3DMULTISAMPLE_TYPE m_multisample_fullscreen;
+    //D3DMULTISAMPLE_TYPE m_multisample_desktop;
+    //D3DMULTISAMPLE_TYPE m_multisample_windowed;
+    m_multisample_fullscreen      = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_fullscreen",m_multisample_fullscreen,m_szConfigIniFile);
+    m_multisample_desktop         = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_desktop",m_multisample_desktop,m_szConfigIniFile);
+    m_multisample_windowed        = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_windowed"  ,m_multisample_windowed  ,m_szConfigIniFile);
 
-	//GUID m_adapter_guid_fullscreen
-	//GUID m_adapter_guid_desktop
-	//GUID m_adapter_guid_windowed
-	char str[256];
-	GetPrivateProfileString("settings","adapter_guid_fullscreen","",str,sizeof(str)-1,m_szConfigIniFileA);
-	TextToGuid(str, &m_adapter_guid_fullscreen);
-	GetPrivateProfileString("settings","adapter_guid_desktop","",str,sizeof(str)-1,m_szConfigIniFileA);
-	TextToGuid(str, &m_adapter_guid_desktop);
-	GetPrivateProfileString("settings","adapter_guid_windowed","",str,sizeof(str)-1,m_szConfigIniFileA);
-	TextToGuid(str, &m_adapter_guid_windowed);
-	GetPrivateProfileString("settings","adapter_devicename_fullscreen","",m_adapter_devicename_fullscreen,sizeof(m_adapter_devicename_fullscreen)-1,m_szConfigIniFileA);
-	GetPrivateProfileString("settings","adapter_devicename_desktop",   "",m_adapter_devicename_desktop   ,sizeof(m_adapter_devicename_desktop)-1,m_szConfigIniFileA);
-	GetPrivateProfileString("settings","adapter_devicename_windowed",  "",m_adapter_devicename_windowed  ,sizeof(m_adapter_devicename_windowed)-1,m_szConfigIniFileA);
+    //GUID m_adapter_guid_fullscreen
+    //GUID m_adapter_guid_desktop
+    //GUID m_adapter_guid_windowed
+    char str[256];
+    GetPrivateProfileString("settings","adapter_guid_fullscreen","",str,sizeof(str)-1,m_szConfigIniFileA);
+    TextToGuid(str, &m_adapter_guid_fullscreen);
+    GetPrivateProfileString("settings","adapter_guid_desktop","",str,sizeof(str)-1,m_szConfigIniFileA);
+    TextToGuid(str, &m_adapter_guid_desktop);
+    GetPrivateProfileString("settings","adapter_guid_windowed","",str,sizeof(str)-1,m_szConfigIniFileA);
+    TextToGuid(str, &m_adapter_guid_windowed);
+    GetPrivateProfileString("settings","adapter_devicename_fullscreen","",m_adapter_devicename_fullscreen,sizeof(m_adapter_devicename_fullscreen)-1,m_szConfigIniFileA);
+    GetPrivateProfileString("settings","adapter_devicename_desktop",   "",m_adapter_devicename_desktop   ,sizeof(m_adapter_devicename_desktop)-1,m_szConfigIniFileA);
+    GetPrivateProfileString("settings","adapter_devicename_windowed",  "",m_adapter_devicename_windowed  ,sizeof(m_adapter_devicename_windowed)-1,m_szConfigIniFileA);
 
     // FONTS
     ReadFont(0);
@@ -620,11 +620,11 @@ void CPluginShell::ReadConfig()
     m_fix_slow_text = GetPrivateProfileInt(L"settings", L"fix_slow_text", m_fix_slow_text, m_szConfigIniFile);
     m_vj_mode = GetPrivateProfileBoolW(L"settings", L"vj_mode", m_vj_mode, m_szConfigIniFile);
 
-	//D3DDISPLAYMODE m_fs_disp_mode
-	m_disp_mode_fs.Width           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_w", m_disp_mode_fs.Width           ,m_szConfigIniFile);
-	m_disp_mode_fs.Height           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_h",m_disp_mode_fs.Height          ,m_szConfigIniFile);
-	m_disp_mode_fs.RefreshRate = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_r",m_disp_mode_fs.RefreshRate,m_szConfigIniFile);
-	m_disp_mode_fs.Format      = (D3DFORMAT)GetPrivateProfileIntW(L"settings",L"disp_mode_fs_f",m_disp_mode_fs.Format     ,m_szConfigIniFile);
+    //D3DDISPLAYMODE m_fs_disp_mode
+    m_disp_mode_fs.Width           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_w", m_disp_mode_fs.Width           ,m_szConfigIniFile);
+    m_disp_mode_fs.Height           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_h",m_disp_mode_fs.Height          ,m_szConfigIniFile);
+    m_disp_mode_fs.RefreshRate = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_r",m_disp_mode_fs.RefreshRate,m_szConfigIniFile);
+    m_disp_mode_fs.Format      = (D3DFORMAT)GetPrivateProfileIntW(L"settings",L"disp_mode_fs_f",m_disp_mode_fs.Format     ,m_szConfigIniFile);
 
     // Note: Do not call CPlugin's `Preinit()` and `ReadConfig()` until
     //       CPluginShell's `PreInit()` (and `ReadConfig()`) finish.
@@ -634,11 +634,11 @@ void CPluginShell::ReadConfig()
 void CPluginShell::WriteFont(const int /* n */)
 {
 #if 0
-	WritePrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_szConfigIniFile);
-	WritePrivateProfileIntW(m_fontinfo[n].bBold,  BuildSettingName(L"bFontBold",n),   m_szConfigIniFile, L"settings");
-	WritePrivateProfileIntW(m_fontinfo[n].bItalic,BuildSettingName(L"bFontItalic",n), m_szConfigIniFile, L"settings");
-	WritePrivateProfileIntW(m_fontinfo[n].nSize,  BuildSettingName(L"nFontSize",n),   m_szConfigIniFile, L"settings");
-	WritePrivateProfileIntW(m_fontinfo[n].bAntiAliased, BuildSettingName(L"bFontAA",n),m_szConfigIniFile, L"settings");
+    WritePrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_szConfigIniFile);
+    WritePrivateProfileIntW(m_fontinfo[n].bBold,  BuildSettingName(L"bFontBold",n),   m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fontinfo[n].bItalic,BuildSettingName(L"bFontItalic",n), m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fontinfo[n].nSize,  BuildSettingName(L"nFontSize",n),   m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fontinfo[n].bAntiAliased, BuildSettingName(L"bFontAA",n),m_szConfigIniFile, L"settings");
 #endif
 }
 
@@ -659,46 +659,46 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
     }
 
     /*
-	if (m_hTextWnd)
-		m_lost_focus = ((GetFocus() != GetPluginWindow()) && (GetFocus() != m_hTextWnd));
-	else
-		m_lost_focus = (GetFocus() != GetPluginWindow());
+    if (m_hTextWnd)
+        m_lost_focus = ((GetFocus() != GetPluginWindow()) && (GetFocus() != m_hTextWnd));
+    else
+        m_lost_focus = (GetFocus() != GetPluginWindow());
 
-	if ((m_screenmode==WINDOWED   && m_hidden) ||
-	    (m_screenmode==FULLSCREEN && m_lost_focus) ||
-	    (m_screenmode==WINDOWED   && m_resizing)
-	   )
-	{
-		Sleep(30);
-		return true;
-	}*/
+    if ((m_screenmode==WINDOWED   && m_hidden) ||
+        (m_screenmode==FULLSCREEN && m_lost_focus) ||
+        (m_screenmode==WINDOWED   && m_resizing)
+       )
+    {
+        Sleep(30);
+        return true;
+    }*/
 
     /*// test for lost device
-	// (this happens when device is fullscreen & user alt-tabs away,
-	//  or when monitor power-saving kicks in)
-	HRESULT hr = m_lpDX->m_lpDevice->TestCooperativeLevel();
-	if (hr == D3DERR_DEVICENOTRESET)
-	{
-		// device WAS lost, and is now ready to be reset (and come back online):
-		CleanUpDX9Stuff(0);
-		if (m_lpDX->m_lpDevice->Reset(&m_lpDX->m_d3dpp) != D3D_OK)
-		{
-			// note: a basic warning messagebox will have already been given.
-			// now suggest specific advice on how to regain more video memory:
+    // (this happens when device is fullscreen & user alt-tabs away,
+    //  or when monitor power-saving kicks in)
+    HRESULT hr = m_lpDX->m_lpDevice->TestCooperativeLevel();
+    if (hr == D3DERR_DEVICENOTRESET)
+    {
+        // device WAS lost, and is now ready to be reset (and come back online):
+        CleanUpDX9Stuff(0);
+        if (m_lpDX->m_lpDevice->Reset(&m_lpDX->m_d3dpp) != D3D_OK)
+        {
+            // note: a basic warning messagebox will have already been given.
+            // now suggest specific advice on how to regain more video memory:
     / *
-			if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
-				SuggestHowToFreeSomeMem();* /
-			return false;  // EXIT THE PLUGIN
-		}
-		if (!AllocateDX9Stuff())
-			return false;  // EXIT THE PLUGIN
-	}
-	else if (hr != D3D_OK)
-	{
-		// device is lost, and not yet ready to come back; sleep.
-		Sleep(30);
-		return true;
-	}
+            if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
+                SuggestHowToFreeSomeMem();* /
+            return false;  // EXIT THE PLUGIN
+        }
+        if (!AllocateDX9Stuff())
+            return false;  // EXIT THE PLUGIN
+    }
+    else if (hr != D3D_OK)
+    {
+        // device is lost, and not yet ready to come back; sleep.
+        Sleep(30);
+        return true;
+    }
     */
 
     DoTime();
@@ -732,7 +732,7 @@ void CPluginShell::DrawAndDisplay(int redraw)
 
 void CPluginShell::EnforceMaxFPS()
 {
-	int max_fps = 60;
+    int max_fps = 60;
 //	switch (m_screenmode)
 //	{
 //	case WINDOWED:        max_fps = m_max_fps_w;  break;
@@ -856,32 +856,32 @@ void CPluginShell::DoTime()
     double new_raw_time = 0.0;
     float elapsed = 0.0f;
 
-	if (m_high_perf_timer_freq.QuadPart != 0)
-	{
+    if (m_high_perf_timer_freq.QuadPart != 0)
+    {
     // Get high-precision time.
     // Precision is usually from 1..6 us (MICROseconds), depending on the CPU speed
     // (higher CPU speeds tend to have better precision).
     // Note: On systems that run Windows XP or later, `QueryPerformanceCounter()`
     //        will always succeed and will thus never return zero.
-		LARGE_INTEGER t;
-		if (!QueryPerformanceCounter(&t))
-		{
-			m_high_perf_timer_freq.QuadPart = 0;   // something went wrong (exception thrown) -> revert to crappy timer
-		}
-		else
-		{
-			new_raw_time = (double)t.QuadPart;
-			elapsed = (float)((new_raw_time - m_last_raw_time)/(double)m_high_perf_timer_freq.QuadPart);
-		}
-	}
+        LARGE_INTEGER t;
+        if (!QueryPerformanceCounter(&t))
+        {
+            m_high_perf_timer_freq.QuadPart = 0;   // something went wrong (exception thrown) -> revert to crappy timer
+        }
+        else
+        {
+            new_raw_time = (double)t.QuadPart;
+            elapsed = (float)((new_raw_time - m_last_raw_time)/(double)m_high_perf_timer_freq.QuadPart);
+        }
+    }
 
-	if (m_high_perf_timer_freq.QuadPart == 0)
-	{
+    if (m_high_perf_timer_freq.QuadPart == 0)
+    {
     //    // Get low-precision time.
     //    // Precision is usually 1 ms (MILLIsecond) for Windows 98, and 10 ms for Windows 2000.
-		new_raw_time = (double)(GetTickCount64()*0.001);
-		elapsed = (float)(new_raw_time - m_last_raw_time);
-	}
+        new_raw_time = (double)(GetTickCount64()*0.001);
+        elapsed = (float)(new_raw_time - m_last_raw_time);
+    }
 
     m_last_raw_time = new_raw_time;
     int slots_to_look_back = (m_high_perf_timer_freq.QuadPart == 0) ? TIME_HIST_SLOTS : TIME_HIST_SLOTS / 2;
@@ -944,13 +944,13 @@ void CPluginShell::DoTime()
     // before it's actually audible.  If we set this to the amount of time it takes to display 1 frame
     // (1/fps), the video and audio should be perfectly synchronized.
 /*
-	if (m_fps < 2.0f)
-		mod1.latencyMs = 500;
-	else if (m_fps > 125.0f)
-		mod1.latencyMs = 8;
-	else
-		mod1.latencyMs = (int)(1000.0f/m_fps*m_lpDX->m_frame_delay + 0.5f);
-		*/
+    if (m_fps < 2.0f)
+        mod1.latencyMs = 500;
+    else if (m_fps > 125.0f)
+        mod1.latencyMs = 8;
+    else
+        mod1.latencyMs = (int)(1000.0f/m_fps*m_lpDX->m_frame_delay + 0.5f);
+        */
 }
 
 // We get 576 samples in from winamp.
@@ -960,41 +960,41 @@ void CPluginShell::DoTime()
 //   since >10 khz doesn't usually contribute much.
 void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 {
-	int i;
+    int i;
 
-	float temp_wave[2][576];
+    float temp_wave[2][576];
 
-	int old_i = 0;
-	for (i=0; i<576; i++)
-	{
-		m_sound.fWaveform[0][i] = (float)((pWaveL[i] ^ 128) - 128);
-		m_sound.fWaveform[1][i] = (float)((pWaveR[i] ^ 128) - 128);
+    int old_i = 0;
+    for (i=0; i<576; i++)
+    {
+        m_sound.fWaveform[0][i] = (float)((pWaveL[i] ^ 128) - 128);
+        m_sound.fWaveform[1][i] = (float)((pWaveR[i] ^ 128) - 128);
 
-		// simulating single frequencies from 200 to 11,025 Hz:
-		//float freq = 1.0f + 11050*(GetFrame() % 100)*0.01f;
-		//m_sound.fWaveform[0][i] = 10*sinf(i*freq*6.28f/44100.0f);
+        // simulating single frequencies from 200 to 11,025 Hz:
+        //float freq = 1.0f + 11050*(GetFrame() % 100)*0.01f;
+        //m_sound.fWaveform[0][i] = 10*sinf(i*freq*6.28f/44100.0f);
 
-		// damp the input into the FFT a bit, to reduce high-frequency noise:
-		temp_wave[0][i] = 0.5f*(m_sound.fWaveform[0][i] + m_sound.fWaveform[0][old_i]);
-		temp_wave[1][i] = 0.5f*(m_sound.fWaveform[1][i] + m_sound.fWaveform[1][old_i]);
-		old_i = i;
-	}
+        // damp the input into the FFT a bit, to reduce high-frequency noise:
+        temp_wave[0][i] = 0.5f*(m_sound.fWaveform[0][i] + m_sound.fWaveform[0][old_i]);
+        temp_wave[1][i] = 0.5f*(m_sound.fWaveform[1][i] + m_sound.fWaveform[1][old_i]);
+        old_i = i;
+    }
 
-	m_fftobj.time_to_frequency_domain(temp_wave[0], m_sound.fSpectrum[0]);
-	m_fftobj.time_to_frequency_domain(temp_wave[1], m_sound.fSpectrum[1]);
+    m_fftobj.time_to_frequency_domain(temp_wave[0], m_sound.fSpectrum[0]);
+    m_fftobj.time_to_frequency_domain(temp_wave[1], m_sound.fSpectrum[1]);
 
-	// sum (left channel) spectrum up into 3 bands
-	// [note: the new ranges do it so that the 3 bands are equally spaced, pitch-wise]
-	float min_freq = 200.0f;
-	float max_freq = 11025.0f;
-	float net_octaves = (logf(max_freq/min_freq) / logf(2.0f));     // 5.7846348455575205777914165223593
-	float octaves_per_band = net_octaves / 3.0f;                    // 1.9282116151858401925971388407864
-	float mult = powf(2.0f, octaves_per_band); // each band's highest freq. divided by its lowest freq.; 3.805831305510122517035102576162
-	// [to verify: min_freq * mult * mult * mult should equal max_freq.]
-	int ch;
-	for (ch=0; ch<2; ch++)
-	{
-		for (i=0; i<3; i++)
+    // sum (left channel) spectrum up into 3 bands
+    // [note: the new ranges do it so that the 3 bands are equally spaced, pitch-wise]
+    float min_freq = 200.0f;
+    float max_freq = 11025.0f;
+    float net_octaves = (logf(max_freq/min_freq) / logf(2.0f));     // 5.7846348455575205777914165223593
+    float octaves_per_band = net_octaves / 3.0f;                    // 1.9282116151858401925971388407864
+    float mult = powf(2.0f, octaves_per_band); // each band's highest freq. divided by its lowest freq.; 3.805831305510122517035102576162
+    // [to verify: min_freq * mult * mult * mult should equal max_freq.]
+    int ch;
+    for (ch=0; ch<2; ch++)
+    {
+        for (i=0; i<3; i++)
         {
             // Old guesswork code for this.
             //   float exp = 2.1f;
@@ -1064,7 +1064,7 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     // multiply by long-term, empirically-determined inverse averages:
     // (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
     //  the average levels were: 0.326781557	0.38087377	0.199888934
-	for (ch=0; ch<2; ch++)
+    for (ch=0; ch<2; ch++)
     {
         m_sound.imm[ch][0] /= 0.326781557f; //0.270f;
         m_sound.imm[ch][1] /= 0.380873770f; //0.343f;
@@ -1072,9 +1072,9 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     }
 
     // do temporal blending to create attenuated and super-attenuated versions
-	for (ch=0; ch<2; ch++)
+    for (ch=0; ch<2; ch++)
     {
-		for (i=0; i<3; i++)
+        for (i=0; i<3; i++)
         {
             // m_sound.avg[i]
             {
@@ -1102,48 +1102,48 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 
 void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
 {
-	// 'pr' is the rectangle that some text will occupy;
-	// a black box will be drawn around it, plus a bit of extra margin space.
+    // 'pr' is the rectangle that some text will occupy;
+    // a black box will be drawn around it, plus a bit of extra margin space.
 
-	if (m_vjd3d9_device)
-		return;
+    if (m_vjd3d9_device)
+        return;
 
-	m_lpDX->m_lpDevice->SetVertexShader(NULL, NULL);
-	m_lpDX->m_lpDevice->SetPixelShader(NULL, NULL);
-	//m_lpDX->m_lpDevice->SetFVF(SIMPLE_VERTEX_FORMAT); // TODO DX11
-	m_lpDX->m_lpDevice->SetTexture(0, NULL);
+    m_lpDX->m_lpDevice->SetVertexShader(NULL, NULL);
+    m_lpDX->m_lpDevice->SetPixelShader(NULL, NULL);
+    //m_lpDX->m_lpDevice->SetFVF(SIMPLE_VERTEX_FORMAT); // TODO DX11
+    m_lpDX->m_lpDevice->SetTexture(0, NULL);
 
   m_lpDX->m_lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
-	//m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	//m_lpDX->m_lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//m_lpDX->m_lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
   m_lpDX->m_lpDevice->SetShader(2);
-	//m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-	//m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-	//m_lpDX->m_lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	//m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-	//m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
+    //m_lpDX->m_lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 
-	// set up a quad
-	SIMPLEVERTEX verts[4];
-	for (int i=0; i<4; i++)
-	{
-		verts[i].x = (i%2==0) ? (float)(-m_lpDX->m_client_width /2  + pr->left)  :
-		             (float)(-m_lpDX->m_client_width /2  + pr->right);
-		verts[i].y = (i/2==0) ? (float)-(-m_lpDX->m_client_height/2 + pr->bottom)  :
-		             (float)-(-m_lpDX->m_client_height/2 + pr->top);
-		verts[i].z = 0;
-		verts[i].Diffuse = (m_screenmode==DESKTOP) ? 0xE0000000 : 0xD0000000;
-	}
+    // set up a quad
+    SIMPLEVERTEX verts[4];
+    for (int i=0; i<4; i++)
+    {
+        verts[i].x = (i%2==0) ? (float)(-m_lpDX->m_client_width /2  + pr->left)  :
+                     (float)(-m_lpDX->m_client_width /2  + pr->right);
+        verts[i].y = (i/2==0) ? (float)-(-m_lpDX->m_client_height/2 + pr->bottom)  :
+                     (float)-(-m_lpDX->m_client_height/2 + pr->top);
+        verts[i].z = 0;
+        verts[i].Diffuse = (m_screenmode==DESKTOP) ? 0xE0000000 : 0xD0000000;
+    }
 
-	m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
+    m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
 
-	// undo unusual state changes:
+    // undo unusual state changes:
   m_lpDX->m_lpDevice->SetDepth(true);
   m_lpDX->m_lpDevice->SetBlendState(false);
-	//m_lpDX->m_lpDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-	//m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 // Aligns waves, using recursive (mipmap-style) least-error matching.
@@ -1162,74 +1162,74 @@ void CPluginShell::AlignWaves()
     if (octaves > MAX_OCTAVES)
         octaves = MAX_OCTAVES;
 
-	int ch;
-	for (ch=0; ch<2; ch++)
-	{
-		// only worry about matching the lower 'nSamples' samples
-		float temp_new[MAX_OCTAVES][576];
-		float temp_old[MAX_OCTAVES][576];
-		static float temp_weight[MAX_OCTAVES][576];
-		static int   first_nonzero_weight[MAX_OCTAVES];
-		static int   last_nonzero_weight[MAX_OCTAVES];
-		int spls[MAX_OCTAVES];
-		int space[MAX_OCTAVES];
+    int ch;
+    for (ch=0; ch<2; ch++)
+    {
+        // only worry about matching the lower 'nSamples' samples
+        float temp_new[MAX_OCTAVES][576];
+        float temp_old[MAX_OCTAVES][576];
+        static float temp_weight[MAX_OCTAVES][576];
+        static int   first_nonzero_weight[MAX_OCTAVES];
+        static int   last_nonzero_weight[MAX_OCTAVES];
+        int spls[MAX_OCTAVES];
+        int space[MAX_OCTAVES];
 
-		memcpy(temp_new[0], m_sound.fWaveform[ch], sizeof(float)*576);
-		memcpy(temp_old[0], &m_oldwave[ch][m_prev_align_offset[ch]], sizeof(float)*nSamples);
-		spls[0] = 576;
-		space[0] = 576 - nSamples;
+        memcpy(temp_new[0], m_sound.fWaveform[ch], sizeof(float)*576);
+        memcpy(temp_old[0], &m_oldwave[ch][m_prev_align_offset[ch]], sizeof(float)*nSamples);
+        spls[0] = 576;
+        space[0] = 576 - nSamples;
 
-		// potential optimization: could reuse (instead of recompute) mip levels for m_oldwave[2][]?
-		int octave;
-		for (octave=1; octave<octaves; octave++)
-		{
-			spls[octave] = spls[octave-1]/2;
-			space[octave] = space[octave-1]/2;
-			for (int n=0; n<spls[octave]; n++)
-			{
-				temp_new[octave][n] = 0.5f*(temp_new[octave-1][n*2] + temp_new[octave-1][n*2+1]);
-				temp_old[octave][n] = 0.5f*(temp_old[octave-1][n*2] + temp_old[octave-1][n*2+1]);
-			}
-		}
+        // potential optimization: could reuse (instead of recompute) mip levels for m_oldwave[2][]?
+        int octave;
+        for (octave=1; octave<octaves; octave++)
+        {
+            spls[octave] = spls[octave-1]/2;
+            space[octave] = space[octave-1]/2;
+            for (int n=0; n<spls[octave]; n++)
+            {
+                temp_new[octave][n] = 0.5f*(temp_new[octave-1][n*2] + temp_new[octave-1][n*2+1]);
+                temp_old[octave][n] = 0.5f*(temp_old[octave-1][n*2] + temp_old[octave-1][n*2+1]);
+            }
+        }
 
-		if (!m_align_weights_ready)
-		{
-			m_align_weights_ready = 1;
-			for (octave=0; octave<octaves; octave++)
-			{
-				int compare_samples = spls[octave] - space[octave];
-				int n;
-				for (n=0; n<compare_samples; n++)
-				{
-					// start with pyramid-shaped pdf, from 0..1..0
-					if (n < compare_samples/2)
-						temp_weight[octave][n] = n*2/(float)compare_samples;
-					else
-						temp_weight[octave][n] = (compare_samples-1 - n)*2/(float)compare_samples;
+        if (!m_align_weights_ready)
+        {
+            m_align_weights_ready = 1;
+            for (octave=0; octave<octaves; octave++)
+            {
+                int compare_samples = spls[octave] - space[octave];
+                int n;
+                for (n=0; n<compare_samples; n++)
+                {
+                    // start with pyramid-shaped pdf, from 0..1..0
+                    if (n < compare_samples/2)
+                        temp_weight[octave][n] = n*2/(float)compare_samples;
+                    else
+                        temp_weight[octave][n] = (compare_samples-1 - n)*2/(float)compare_samples;
 
-					// TWEAK how much the center matters, vs. the edges:
-					temp_weight[octave][n] = (temp_weight[octave][n] - 0.8f)*5.0f + 0.8f;
+                    // TWEAK how much the center matters, vs. the edges:
+                    temp_weight[octave][n] = (temp_weight[octave][n] - 0.8f)*5.0f + 0.8f;
 
-					// clip:
-					if (temp_weight[octave][n]>1) temp_weight[octave][n] = 1;
-					if (temp_weight[octave][n]<0) temp_weight[octave][n] = 0;
-				}
+                    // clip:
+                    if (temp_weight[octave][n]>1) temp_weight[octave][n] = 1;
+                    if (temp_weight[octave][n]<0) temp_weight[octave][n] = 0;
+                }
 
-				n = 0;
-				while (temp_weight[octave][n] == 0 && n < compare_samples)
-					n++;
-				first_nonzero_weight[octave] = n;
+                n = 0;
+                while (temp_weight[octave][n] == 0 && n < compare_samples)
+                    n++;
+                first_nonzero_weight[octave] = n;
 
-				n = compare_samples-1;
-				while (temp_weight[octave][n] == 0 && n >= 0)
-					n--;
-				last_nonzero_weight[octave] = n;
+                n = compare_samples-1;
+                while (temp_weight[octave][n] == 0 && n >= 0)
+                    n--;
+                last_nonzero_weight[octave] = n;
             }
         }
 
         int n1 = 0;
         int n2 = space[octaves - 1];
-		for (octave = octaves-1; octave>=0; octave--)
+        for (octave = octaves-1; octave>=0; octave--)
         {
             // For example:
             //  space[octave] == 4
@@ -1278,14 +1278,14 @@ void CPluginShell::AlignWaves()
         }
     }
 #endif
-	memcpy(m_oldwave[0], m_sound.fWaveform[0], sizeof(float)*576);
-	memcpy(m_oldwave[1], m_sound.fWaveform[1], sizeof(float)*576);
+    memcpy(m_oldwave[0], m_sound.fWaveform[0], sizeof(float)*576);
+    memcpy(m_oldwave[1], m_sound.fWaveform[1], sizeof(float)*576);
     m_prev_align_offset[0] = align_offset[0];
     m_prev_align_offset[1] = align_offset[1];
 
     // finally, apply the results: modify m_sound.fWaveform[2][0..576]
     // by scooting the aligned samples so that they start at m_sound.fWaveform[2][0].
-	for (ch=0; ch<2; ch++)
+    for (ch=0; ch<2; ch++)
         if (align_offset[ch] > 0)
         {
             for (int i = 0; i < nSamples; i++)
