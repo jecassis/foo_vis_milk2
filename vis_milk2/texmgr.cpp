@@ -262,7 +262,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
 
         m_tex[iSlot].img_w = info.Width;
         m_tex[iSlot].img_h = info.Height;
-        */
+    */
 
         m_tex[iSlot].img_w = tex2DDesc.Width;
         m_tex[iSlot].img_h = tex2DDesc.Height;
@@ -370,7 +370,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
 
         // read jpeg in & store in directdraw surface
         // 2. read image into texture
-        if (w_img > w_tex || h_img > h_tex)
+        if (w_img > w_tex || h_img > h_tex)				
         {
             // DOWNSAMPLING VERSION
             unsigned int new_w_img = min(w_tex, w_img);
@@ -566,9 +566,9 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         m_tex[iSlot].pSurface->Unlock(0);
 
         End_Jpeg_Read();
-        */
+    */
     }
-    
+
     m_tex[iSlot].fStartTime = time;
     m_tex[iSlot].nStartFrame = frame;
 
@@ -579,7 +579,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         ret |= TEXMGR_WARN_ERROR_IN_INIT_CODE;
 
     // compile & save per-frame code:
-    strcpy(m_tex[iSlot].m_szExpr, szCode);
+    strcpy_s(m_tex[iSlot].m_szExpr, szCode);
     FreeCode(iSlot);
     if (!RecompileExpressions(iSlot))
         ret |= TEXMGR_WARN_ERROR_IN_REG_CODE;
@@ -593,17 +593,17 @@ void texmgr::KillTex(int iSlot)
 {
     if (iSlot < 0) return;
     if (iSlot >= NUM_TEX) return;
-    
-    // Free old resources:
+
+    // Free old resources.
     if (m_tex[iSlot].pSurface)
     {
-        // first, make sure no other sprites reference this texture!
+        // First, make sure no other sprites reference this texture!
         int refcount = 0;
-        for (int x=0; x<NUM_TEX; x++)
+        for (int x = 0; x < NUM_TEX; x++)
             if (m_tex[x].pSurface == m_tex[iSlot].pSurface)
                 refcount++;
 
-        if (refcount==1)
+        if (refcount == 1)
             m_tex[iSlot].pSurface->Release();
         m_tex[iSlot].pSurface = NULL;
     }
@@ -612,15 +612,15 @@ void texmgr::KillTex(int iSlot)
     FreeCode(iSlot);
 }
 
-// Replaces all LINEFEED_CONTROL_CHAR characters in src with a space in dest;
-// also strips out all comments (beginning with '//' and going til end of line).
+// Replaces all LINEFEED_CONTROL_CHAR characters in source with a space in destination;
+// also strips out all comments (beginning with '//' and going until end of line).
 // Restriction: sizeof(dest) must be >= sizeof(src).
 void texmgr::StripLinefeedCharsAndComments(char* src, char* dest)
 {
     int i2 = 0;
-    int len = strlen(src);
+    size_t len = strlen(src);
     int bComment = false;
-    for (int i = 0; i < len; i++)
+    for (size_t i = 0; i < len; i++)
     {
         if (bComment)
         {
@@ -638,37 +638,36 @@ void texmgr::StripLinefeedCharsAndComments(char* src, char* dest)
     dest[i2] = 0;
 }
 
-bool texmgr::RunInitCode(int iSlot, char *szInitCode)
+bool texmgr::RunInitCode(int iSlot, char* szInitCode)
 {
-    // warning: destroys contents of m_tex[iSlot].m_szExpr,
-    //   so be sure to call RunInitCode before writing or
+    // Warning: destroys contents of `m_tex[iSlot].m_szExpr`,
+    //   so be sure to call `RunInitCode()` before writing or
     //   compiling that string!
-
     FreeCode(iSlot);
     FreeVars(iSlot);
     RegisterBuiltInVariables(iSlot);
 
-    strcpy(m_tex[iSlot].m_szExpr, szInitCode);
+    strcpy_s(m_tex[iSlot].m_szExpr, szInitCode);
     bool ret = RecompileExpressions(iSlot);
 
     // set default values of output variables:
     // (by not setting these every frame, we allow the values to persist from frame-to-frame.)
-    *(m_tex[iSlot].var_x)        = 0.5;
-    *(m_tex[iSlot].var_y)        = 0.5;
-    *(m_tex[iSlot].var_sx)       = 1.0;
-    *(m_tex[iSlot].var_sy)       = 1.0;
-    *(m_tex[iSlot].var_repeatx)  = 1.0;
-    *(m_tex[iSlot].var_repeaty)  = 1.0;
-    *(m_tex[iSlot].var_rot)      = 0.0;
-    *(m_tex[iSlot].var_flipx)    = 0.0;
-    *(m_tex[iSlot].var_flipy)    = 0.0;
-    *(m_tex[iSlot].var_r)        = 1.0;
-    *(m_tex[iSlot].var_g)        = 1.0;
-    *(m_tex[iSlot].var_b)        = 1.0;
-    *(m_tex[iSlot].var_a)        = 1.0;
-    *(m_tex[iSlot].var_blendmode)= 0.0;
-    *(m_tex[iSlot].var_done)     = 0.0;
-    *(m_tex[iSlot].var_burn)     = 1.0;
+    *(m_tex[iSlot].var_x) = 0.5;
+    *(m_tex[iSlot].var_y) = 0.5;
+    *(m_tex[iSlot].var_sx) = 1.0;
+    *(m_tex[iSlot].var_sy) = 1.0;
+    *(m_tex[iSlot].var_repeatx) = 1.0;
+    *(m_tex[iSlot].var_repeaty) = 1.0;
+    *(m_tex[iSlot].var_rot) = 0.0;
+    *(m_tex[iSlot].var_flipx) = 0.0;
+    *(m_tex[iSlot].var_flipy) = 0.0;
+    *(m_tex[iSlot].var_r) = 1.0;
+    *(m_tex[iSlot].var_g) = 1.0;
+    *(m_tex[iSlot].var_b) = 1.0;
+    *(m_tex[iSlot].var_a) = 1.0;
+    *(m_tex[iSlot].var_blendmode) = 0.0;
+    *(m_tex[iSlot].var_done) = 0.0;
+    *(m_tex[iSlot].var_burn) = 1.0;
 
 #ifndef _NO_EXPR_
     if (m_tex[iSlot].m_codehandle)

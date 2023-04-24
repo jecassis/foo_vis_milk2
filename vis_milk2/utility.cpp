@@ -104,7 +104,7 @@ bool WritePrivateProfileIntW(int d, const wchar_t* szKeyName, const wchar_t* szI
     return (WritePrivateProfileString(szSectionName, szKeyName, szValue, szIniFile) != 0);
 }
 
-void SetScrollLock(int bNewState, bool bPreventHandling)
+void SetScrollLock(int /* bNewState */, bool /* bPreventHandling */)
 {
 #if 0
     if(bPreventHandling) return;

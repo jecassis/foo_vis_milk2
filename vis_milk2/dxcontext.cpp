@@ -83,7 +83,7 @@ const GUID avs_guid = {
     10, 12, 16, {255, 123, 1, 1, 66, 99, 69, 12}
 };
 
-BOOL DXContext::Internal_Init(BOOL bFirstInit)
+BOOL DXContext::Internal_Init(BOOL /* bFirstInit */)
 {
     // Screen mode check.
     if (m_current_mode.screenmode != WINDOWED)
@@ -132,7 +132,7 @@ void DXContext::Clear()
 
 void DXContext::RestoreTarget()
 {
-    auto context = m_deviceResources->GetD3DDeviceContext();
+    //auto context = m_deviceResources->GetD3DDeviceContext();
     auto rt = m_deviceResources->GetRenderTarget();
     m_lpDevice->SetRenderTarget(rt);
 }

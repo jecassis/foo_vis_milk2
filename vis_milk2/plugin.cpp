@@ -417,7 +417,7 @@ void CPlugin::MilkDropPreInitialize()
     m_d3dx_title_font_doublesize = NULL;
 
     // RUNTIME SETTINGS THAT MilkDrop ADDED
-    m_prev_time = GetTime() - 0.0333f; // note: this will be updated each frame, at bottom of `MilkDropRenderFrame()`.
+    m_prev_time = GetTime() - 0.0333f; // note: this will be updated each frame, at bottom of `MilkDropRenderFn()`.
     m_bTexSizeWasAutoPow2 = false;
     m_bTexSizeWasAutoExact = false;
     //m_bPresetLockedByUser = false;  NOW SET IN DERIVED SETTINGS
@@ -1140,7 +1140,7 @@ int CPlugin::AllocateMilkDropDX11()
         bool bSuccess = false;
         //DWORD vs_flags = D3DUSAGE_RENDERTARGET;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
         DWORD vs_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
-        bool bRevertedBitDepth = false;
+        //bool bRevertedBitDepth = false;
         do
         {
             SafeRelease(m_lpVS[0]);

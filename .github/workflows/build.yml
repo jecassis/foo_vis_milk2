@@ -55,8 +55,8 @@ jobs:
       - name: Validate ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
         run: |
           Write-Host ((Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
-          (Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.FileVersion
-          (Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.ProductVersion
+          (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.FileVersion
+          (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.ProductVersion
       #- name: Test ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
       #  working-directory: ${{ github.workspace }}
       #  run: |
@@ -69,8 +69,8 @@ jobs:
         with:
           name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}
           path: |
-            ${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll
-            ${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.pdb
+            ${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll
+            ${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.pdb
   package:
     name: Package foobar2000 MilkDrop 2 component
     needs: build

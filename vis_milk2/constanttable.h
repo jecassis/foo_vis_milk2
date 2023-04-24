@@ -57,7 +57,7 @@ class CConstantTable
     }
 
     bool GrabShaderData(ID3D11Device* pDevice);
-    int GetVariablesCount();
+    size_t GetVariablesCount();
     size_t GetBuffersCount() { return m_ConstantBuffers.size(); }
     void GetBuffers(ID3D11Buffer** ppBuffers);
 
@@ -67,7 +67,7 @@ class CConstantTable
     bool SetMatrix(LPCSTR handle, XMMATRIX* matrix);
     bool ApplyChanges(ID3D11DeviceContext* pContext);
 
-    ShaderVariable* GetVariableByIndex(UINT index);
+    ShaderVariable* GetVariableByIndex(size_t index);
     ShaderVariable* GetVariableByName(std::string& strName);
     ShaderBinding* GetBindingByIndex(UINT index);
 

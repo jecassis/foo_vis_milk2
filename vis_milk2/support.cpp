@@ -185,7 +185,7 @@ void MakeProjectionMatrix(
     *pOut = XMMATRIX(w, 0.0f, 0.0f, 0.0f, 0.0f, h, 0.0f, 0.0f, 0.0f, 0.0f, Q, 1.0f, 0.0f, 0.0f, -Q * near_plane, 0.0f);
 }
 
-void GetWinampSongTitle(HWND hWndWinamp, wchar_t* szSongTitle, size_t nSize)
+void GetWinampSongTitle(HWND /* hWndWinamp */, wchar_t* /* szSongTitle */, size_t /* nSize */)
 {
     //wcsncpy_s(szSongTitle, nSize, (wchar_t*)SendMessage(hWndWinamp, WM_WA_IPC, SendMessage(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS), IPC_GETPLAYLISTTITLEW), nSize - 1);
 }

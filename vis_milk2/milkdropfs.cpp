@@ -46,7 +46,7 @@
 // control word to set them and returns TRUE, putting the
 // old control word value in the passback location pointed
 // to by pwOldCW.
-static void MungeFPCW(WORD *pwOldCW)
+static void MungeFPCW(WORD* /* pwOldCW */)
 {
 #if 0
     BOOL ret = FALSE;
@@ -71,15 +71,16 @@ static void MungeFPCW(WORD *pwOldCW)
     if (pwOldCW) *pwOldCW = wSave;
   //  return ret;
 #else
+    unsigned int current_word = 0;
 #ifndef _WIN64
-	_controlfp(_PC_24, _MCW_PC); // single precision (not supported on x64 see MSDN)
+    _controlfp_s(&current_word, _PC_24, _MCW_PC); // single precision (not supported on x64 see MSDN)
 #endif // !_WIN64
-	_controlfp(_RC_NEAR, _MCW_RC); // round to nearest mode
-	_controlfp(_EM_ZERODIVIDE, _EM_ZERODIVIDE);  // disable divide-by-zero
+    _controlfp_s(&current_word, _RC_NEAR, _MCW_RC); // round to nearest mode
+    _controlfp_s(&current_word, _EM_ZERODIVIDE, _EM_ZERODIVIDE); // disable divide-by-zero exception interrupt
 #endif
 }
 
-#if 0
+#ifdef WIN32
 void RestoreFPCW(WORD wSave)
 {
     __asm fldcw wSave
@@ -583,7 +584,7 @@ void CPlugin::RenderFrame(int bRedraw)
         }
 
         // Handle hard cuts here (just after new sound analysis).
-	    static float m_fHardCutThresh;
+        //static float m_fHardCutThresh;
         if (GetFrame() == 0)
             m_fHardCutThresh = m_fHardCutLoudnessThresh * 2.0f;
         if (GetFps() > 1.0f && !m_bHardCutsDisabled && !m_bPresetLockedByUser && !m_bPresetLockedByCode)
@@ -806,8 +807,8 @@ void CPlugin::RenderFrame(int bRedraw)
 
     // Change the render target back to the original setup.
     lpDevice->SetTexture(0, NULL);
-    m_lpDX->RestoreTarget(); //lpDevice->SetRenderTarget( pBackBuffer );
-	 //lpDevice->SetDepthStencilSurface( pZBuffer );
+    m_lpDX->RestoreTarget(); //lpDevice->SetRenderTarget( pBackBuffer );  // BUG!!
+    //lpDevice->SetDepthStencilSurface(pZBuffer);
     SafeRelease(pBackBuffer);
     //SafeRelease(pZBuffer);
 
@@ -891,10 +892,9 @@ void CPlugin::RenderFrame(int bRedraw)
 
 void CPlugin::DrawMotionVectors()
 {
-	// FLEXIBLE MOTION VECTOR FIELD
-	if ((float)*m_pState->var_pf_mv_a >= 0.001f)
-	{
-        //-------------------------------------------------------
+    // FLEXIBLE MOTION VECTOR FIELD
+    if ((float)*m_pState->var_pf_mv_a >= 0.001f)
+    {
         D3D11Shim* lpDevice = GetDevice();
         if (!lpDevice)
             return;
@@ -970,122 +970,120 @@ void CPlugin::DrawMotionVectors()
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 			for (y=0; y<nY; y++)
-			{
-				float fy = (y + 0.25f)/(float)(nY + dy + 0.25f - 1.0f);
+            {
+                float fy = (y + 0.25f) / (float)(nY + dy + 0.25f - 1.0f);
 
-				// now move by offset
-				fy -= dy2;
+                // now move by offset
+                fy -= dy2;
 
-				if (fy > 0.0001f && fy < 0.9999f)
-				{
-					int n = 0;
+                if (fy > 0.0001f && fy < 0.9999f)
+                {
+                    int n = 0;
 					for (x=0; x<nX; x++)
-					{
-						//float fx = (x + 0.25f)/(float)(nX + dx + 0.25f - 1.0f);
-						float fx = (x + 0.25f)/(float)(nX + dx + 0.25f - 1.0f);
+                    {
+                        //float fx = (x + 0.25f)/(float)(nX + dx + 0.25f - 1.0f);
+                        float fx = (x + 0.25f) / (float)(nX + dx + 0.25f - 1.0f);
 
-						// now move by offset
-						fx += dx2;
+                        // now move by offset
+                        fx += dx2;
 
-						if (fx > 0.0001f && fx < 0.9999f)
-						{
-							float fx2, fy2;
-							ReversePropagatePoint(fx, fy, &fx2, &fy2);	// NOTE: THIS IS REALLY A REVERSE-PROPAGATION
-							//fx2 = fx*2 - fx2;
-							//fy2 = fy*2 - fy2;
-							//fx2 = fx + 1.0f/(float)m_nTexSize;
-							//fy2 = 1-(fy + 1.0f/(float)m_nTexSize);
+                        if (fx > 0.0001f && fx < 0.9999f)
+                        {
+                            float fx2, fy2;
+                            ReversePropagatePoint(fx, fy, &fx2, &fy2); // NOTE: THIS IS REALLY A REVERSE-PROPAGATION
+                            //fx2 = fx*2 - fx2;
+                            //fy2 = fy*2 - fy2;
+                            //fx2 = fx + 1.0f/(float)m_nTexSize;
+                            //fy2 = 1-(fy + 1.0f/(float)m_nTexSize);
 
-							// enforce minimum trail lengths:
-							{	
-								float dx = (fx2 - fx);
-								float dy = (fy2 - fy);
-								dx *= len_mult;
-								dy *= len_mult;
-								float len = sqrtf(dx*dx + dy*dy);
+                            // Enforce minimum trail lengths.
+                            {
+                                dx = (fx2 - fx);
+                                dy = (fy2 - fy);
+                                dx *= len_mult;
+                                dy *= len_mult;
+                                float len = sqrtf(dx * dx + dy * dy);
 
-								if (len > min_len)
-								{
+                                if (len > min_len)
+                                {
+                                }
+                                else if (len > 0.00000001f)
+                                {
+                                    len = min_len / len;
+                                    dx *= len;
+                                    dy *= len;
+                                }
+                                else
+                                {
+                                    dx = min_len;
+                                    dy = min_len;
+                                }
 
-								}
-								else if (len > 0.00000001f)
-								{
-									len = min_len/len;
-									dx *= len;
-									dy *= len;
-								}
-								else
-								{
-									dx = min_len;
-									dy = min_len;
-								}
-									
-								fx2 = fx + dx;
-								fy2 = fy + dy;
-							}
-							/**/
+                                fx2 = fx + dx;
+                                fy2 = fy + dy;
+                            }
 
-							v[n].x = fx * 2.0f - 1.0f;
-							v[n].y = fy * 2.0f - 1.0f;
-							v[n+1].x = fx2 * 2.0f - 1.0f;
-							v[n+1].y = fy2 * 2.0f - 1.0f; 
+                            v[n].x = fx * 2.0f - 1.0f;
+                            v[n].y = fy * 2.0f - 1.0f;
+                            v[n + 1].x = fx2 * 2.0f - 1.0f;
+                            v[n + 1].y = fy2 * 2.0f - 1.0f;
 
-							// actually, project it in the reverse direction
-							//v[n+1].x = v[n].x*2.0f - v[n+1].x;// + dx*2; 
-							//v[n+1].y = v[n].y*2.0f - v[n+1].y;// + dy*2; 
-							//v[n].x += dx*2;
-							//v[n].y += dy*2;
+                            // actually, project it in the reverse direction
+                            //v[n+1].x = v[n].x*2.0f - v[n+1].x;// + dx*2;
+                            //v[n+1].y = v[n].y*2.0f - v[n+1].y;// + dy*2;
+                            //v[n].x += dx*2;
+                            //v[n].y += dy*2;
 
-							n += 2;
-						}
-					}
+                            n += 2;
+                        }
+                    }
 
-					// draw it
+                    // Draw it.
 					lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINELIST, n/2, v, sizeof(WFVERTEX));
-				}
-			}
+                }
+            }
 
-      lpDevice->SetBlendState(false);
+            lpDevice->SetBlendState(false);
 			//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-		}
-	}
+    }
+}
 }
 
 bool CPlugin::ReversePropagatePoint(float fx, float fy, float *fx2, float *fy2)
 {
-	//float fy = y/(float)nMotionVectorsY;
-	int   y0 = (int)(fy*m_nGridY);
-	float dy = fy*m_nGridY - y0;
+    //float fy = y/(float)nMotionVectorsY;
+    int   y0 = (int)(fy*m_nGridY);
+    float dy = fy*m_nGridY - y0;
 
-	//float fx = x/(float)nMotionVectorsX;
-	int   x0 = (int)(fx*m_nGridX);
-	float dx = fx*m_nGridX - x0;
+    //float fx = x/(float)nMotionVectorsX;
+    int   x0 = (int)(fx*m_nGridX);
+    float dx = fx*m_nGridX - x0;
 
-	int x1 = x0 + 1;
-	int y1 = y0 + 1;
+    int x1 = x0 + 1;
+    int y1 = y0 + 1;
 
-	if (x0 < 0) return false;
-	if (y0 < 0) return false;
-	//if (x1 < 0) return false;
-	//if (y1 < 0) return false;
-	//if (x0 > m_nGridX) return false;
-	//if (y0 > m_nGridY) return false;
-	if (x1 > m_nGridX) return false;
-	if (y1 > m_nGridY) return false;
+    if (x0 < 0) return false;
+    if (y0 < 0) return false;
+    //if (x1 < 0) return false;
+    //if (y1 < 0) return false;
+    //if (x0 > m_nGridX) return false;
+    //if (y0 > m_nGridY) return false;
+    if (x1 > m_nGridX) return false;
+    if (y1 > m_nGridY) return false;
 
-	float tu, tv;
-	tu  = m_verts[y0*(m_nGridX+1)+x0].tu * (1-dx)*(1-dy);
-	tv  = m_verts[y0*(m_nGridX+1)+x0].tv * (1-dx)*(1-dy);
-	tu += m_verts[y0*(m_nGridX+1)+x1].tu * (dx)*(1-dy);
-	tv += m_verts[y0*(m_nGridX+1)+x1].tv * (dx)*(1-dy);
-	tu += m_verts[y1*(m_nGridX+1)+x0].tu * (1-dx)*(dy);
-	tv += m_verts[y1*(m_nGridX+1)+x0].tv * (1-dx)*(dy);
-	tu += m_verts[y1*(m_nGridX+1)+x1].tu * (dx)*(dy);
-	tv += m_verts[y1*(m_nGridX+1)+x1].tv * (dx)*(dy);
+    float tu, tv;
+    tu  = m_verts[y0*(m_nGridX+1)+x0].tu * (1-dx)*(1-dy);
+    tv  = m_verts[y0*(m_nGridX+1)+x0].tv * (1-dx)*(1-dy);
+    tu += m_verts[y0*(m_nGridX+1)+x1].tu * (dx)*(1-dy);
+    tv += m_verts[y0*(m_nGridX+1)+x1].tv * (dx)*(1-dy);
+    tu += m_verts[y1*(m_nGridX+1)+x0].tu * (1-dx)*(dy);
+    tv += m_verts[y1*(m_nGridX+1)+x0].tv * (1-dx)*(dy);
+    tu += m_verts[y1*(m_nGridX+1)+x1].tu * (dx)*(dy);
+    tv += m_verts[y1*(m_nGridX+1)+x1].tv * (dx)*(dy);
 
-	*fx2 = tu;
-	*fy2 = 1.0f - tv;
-	return true;
+    *fx2 = tu;
+    *fy2 = 1.0f - tv;
+    return true;
 }
 
 void CPlugin::GetSafeBlurMinMax(CState* pState, float* blur_min, float* blur_max)
@@ -1121,25 +1119,23 @@ void CPlugin::GetSafeBlurMinMax(CState* pState, float* blur_min, float* blur_max
     }
 }
 
+// Note: Blur is currently a little funky.  It blurs the *current* frame after warp;
+//         this way, it lines up well with the composite pass.  However, if you switch
+//         presets instantly, to one whose *warp* shader uses the blur texture,
+//         it will be outdated (just for one frame).  Oh well.
+//       This also means that when sampling the blurred textures in the warp shader,
+//         they are one frame old.  This isn't too big a deal.  Getting them to match
+//         up for the composite pass is probably more important.
 void CPlugin::BlurPasses()
 {
-    #if (NUM_BLUR_TEX>0)
+#if (NUM_BLUR_TEX > 0)
+    D3D11Shim* lpDevice = GetDevice();
+    if (!lpDevice)
+        return;
 
-        // Note: Blur is currently a little funky.  It blurs the *current* frame after warp;
-        //         this way, it lines up well with the composite pass.  However, if you switch
-        //         presets instantly, to one whose *warp* shader uses the blur texture,
-        //         it will be outdated (just for one frame).  Oh well.  
-        //       This also means that when sampling the blurred textures in the warp shader, 
-        //         they are one frame old.  This isn't too big a deal.  Getting them to match
-        //         up for the composite pass is probably more important.
-
-        D3D11Shim* lpDevice = GetDevice();
-        if (!lpDevice)
-            return;
-
-        int passes = std::min(NUM_BLUR_TEX, m_nHighestBlurTexUsedThisFrame * 2);
-        if (passes==0)
-            return;
+    int passes = std::min(NUM_BLUR_TEX, m_nHighestBlurTexUsedThisFrame * 2);
+    if (passes == 0)
+        return;
 
         ID3D11Texture2D* pBackBuffer=NULL;//, pZBuffer=NULL;
         lpDevice->GetRenderTarget( &pBackBuffer );
@@ -1323,7 +1319,7 @@ void CPlugin::ComputeGridAlphaValues()
             break;
     }*/
     //fBlend = 1 - fBlend; // <-- THIS IS THE KEY - FLIPS THE ALPHAS AND EVERYTHING ELSE JUST WORKS.
-    bool bBlending = m_pState->m_bBlending;//(fBlend >= 0.0001f && fBlend <= 0.9999f);
+    //bool bBlending = m_pState->m_bBlending; //(fBlend >= 0.0001f && fBlend <= 0.9999f);
 
     // Warp.
     float fWarpTime = GetTime() * m_pState->m_fWarpAnimSpeed;
@@ -1497,7 +1493,7 @@ void CPlugin::ComputeGridAlphaValues()
     }
 }
 
-void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, bool bCullTiles, bool bFlipCulling)
+void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlipAlpha, bool bCullTiles, bool bFlipCulling)
 {
     MungeFPCW(NULL); // single-precision mode and disable exceptions
 
@@ -1547,8 +1543,8 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
     //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, texaddr);
     //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSW, texaddr);
 
-	// decay
-	float fDecay = COLOR_NORM((float)(*m_pState->var_pf_decay));
+    // decay
+    float fDecay = COLOR_NORM((float)(*m_pState->var_pf_decay));
 
 	//if (m_pState->m_bBlending)
 	//	fDecay = fDecay*(fCosineBlend) + (1.0f-fCosineBlend)*((float)(*m_pOldState->var_pf_decay));
@@ -1606,23 +1602,23 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
     int max_prims_per_batch = std::min(lpDevice->GetMaxPrimitiveCount(), static_cast<UINT>(ARRAYSIZE(tempv) / 3)) - 4;
     int primCount = m_nGridX * m_nGridY * 2;
     int src_idx = 0;
-    int prims_sent = 0;
-    while (src_idx < primCount*3)
+    //int prims_sent = 0;
+    while (src_idx < primCount * 3)
     {
         int prims_queued = 0;
-        int i=0;
-        while (prims_queued < max_prims_per_batch && src_idx < primCount*3)
+        int i = 0;
+        while (prims_queued < max_prims_per_batch && src_idx < primCount * 3)
         {
             // copy 3 verts
-            for (int j=0; j<3; j++) 
+            for (int j = 0; j < 3; j++)
             {
-                tempv[i++] = m_verts[ m_indices_list[src_idx++] ];
+                tempv[i++] = m_verts[m_indices_list[src_idx++]];
                 // don't forget to flip sign on Y and factor in the decay color!:
-                tempv[i-1].y *= -1;
-		        //tempv[i-1].Diffuse = (cDecay & 0x00FFFFFF) | (tempv[i-1].Diffuse & 0xFF000000);    
-            tempv[i-1].r = fDecay;
-            tempv[i-1].g = fDecay;
-            tempv[i-1].b = fDecay;
+                tempv[i - 1].y *= -1;
+                //tempv[i-1].Diffuse = (cDecay & 0x00FFFFFF) | (tempv[i-1].Diffuse & 0xFF000000);
+                tempv[i - 1].r = fDecay;
+                tempv[i - 1].g = fDecay;
+                tempv[i - 1].b = fDecay;
             }
             if (bCullTiles)
             {
@@ -1648,27 +1644,27 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
 
     /*
     if (!bCullTiles)
-    { 
+    {
         assert(!bAlphaBlend); //not handled yet
 
-        // draw normally - just a full triangle strip for each half-row of cells
+        // Draw normally - just a full triangle strip for each half-row of cells
         // (even if we are blending, it is between two pre-pixel-shader presets,
         //  so the blend all happens exclusively in the per-vertex equations.)
-	    for (int strip=0; strip<m_nGridY*2; strip++)
-	    {
-		    int index = strip * (m_nGridX+2);
+        for (int strip=0; strip<m_nGridY*2; strip++)
+        {
+            int index = strip * (m_nGridX+2);
 
-		    for (poly=0; poly<m_nGridX+2; poly++)
-		    {
-			    int ref_vert = m_indices_strip[index];
-			    m_verts_temp[poly].x = m_verts[ref_vert].x;
-			    m_verts_temp[poly].y = -m_verts[ref_vert].y;
-			    m_verts_temp[poly].z = m_verts[ref_vert].z;
-			    m_verts_temp[poly].tu = m_verts[ref_vert].tu;
-			    m_verts_temp[poly].tv = m_verts[ref_vert].tv;
-		        //m_verts_temp[poly].Diffuse = cDecay;      this is done just once - see jsut above
-			    index++;
-		    }
+            for (poly=0; poly<m_nGridX+2; poly++)
+            {
+                int ref_vert = m_indices_strip[index];
+                m_verts_temp[poly].x = m_verts[ref_vert].x;
+                m_verts_temp[poly].y = -m_verts[ref_vert].y;
+                m_verts_temp[poly].z = m_verts[ref_vert].z;
+                m_verts_temp[poly].tu = m_verts[ref_vert].tu;
+                m_verts_temp[poly].tv = m_verts[ref_vert].tv;
+                //m_verts_temp[poly].Diffuse = cDecay;      this is done just once - see jsut above
+                index++;
+            }
             lpDevice->DrawPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_nGridX, (void*)m_verts_temp, sizeof(MDVERTEX));
 	    }
     }
@@ -1681,18 +1677,18 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
             nAlphaTestValue = 1-nAlphaTestValue;
 
         int idx[2048];
-	    for (int y=0; y<m_nGridY; y++)
-	    {
+        for (int y=0; y<m_nGridY; y++)
+        {
             // copy verts & flip sign on Y
             int ref_vert = y*(m_nGridX+1);
-		    for (int i=0; i<(m_nGridX+1)*2; i++)
-		    {
-			    m_verts_temp[i].x  =  m_verts[ref_vert].x;
-			    m_verts_temp[i].y  = -m_verts[ref_vert].y;
-			    m_verts_temp[i].z  =  m_verts[ref_vert].z;
-			    m_verts_temp[i].tu =  m_verts[ref_vert].tu;
-			    m_verts_temp[i].tv =  m_verts[ref_vert].tv;
-		        m_verts_temp[i].Diffuse = (cDecay & 0x00FFFFFF) | (m_verts[ref_vert].Diffuse & 0xFF000000);      
+            for (int i=0; i<(m_nGridX+1)*2; i++)
+            {
+                m_verts_temp[i].x  =  m_verts[ref_vert].x;
+                m_verts_temp[i].y  = -m_verts[ref_vert].y;
+                m_verts_temp[i].z  =  m_verts[ref_vert].z;
+                m_verts_temp[i].tu =  m_verts[ref_vert].tu;
+                m_verts_temp[i].tv =  m_verts[ref_vert].tv;
+                m_verts_temp[i].Diffuse = (cDecay & 0x00FFFFFF) | (m_verts[ref_vert].Diffuse & 0xFF000000);
                 ref_vert++;
             }
 
@@ -1703,16 +1699,16 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
             ref_vert = (y)*(m_nGridX+1);
             DWORD d1 = (m_verts[ref_vert           ].Diffuse >> 24);
             DWORD d2 = (m_verts[ref_vert+m_nGridX+1].Diffuse >> 24);
-            if (nAlphaTestValue) 
+            if (nAlphaTestValue)
                 bWasNeeded = (d1 < 255) || (d2 < 255);
             else
                 bWasNeeded = (d1 > 0) || (d2 > 0);
-            for (i=0; i<m_nGridX; i++) 
+            for (i=0; i<m_nGridX; i++)
             {
                 bool bIsNeeded;
                 DWORD d1 = (m_verts[ref_vert+1           ].Diffuse >> 24);
                 DWORD d2 = (m_verts[ref_vert+1+m_nGridX+1].Diffuse >> 24);
-                if (nAlphaTestValue) 
+                if (nAlphaTestValue)
                     bIsNeeded = (d1 < 255) || (d2 < 255);
                 else
                     bIsNeeded = (d1 > 0) || (d2 > 0);
@@ -1730,9 +1726,9 @@ void CPlugin::WarpedBlit_NoShaders(int nPass, bool bAlphaBlend, bool bFlipAlpha,
 
                 nVert++;
                 ref_vert++;
-            }           
+            }
             lpDevice->DrawIndexedPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, (m_nGridX+1)*2, count/3, (void*)idx, D3DFMT_INDEX32, (void*)m_verts_temp, sizeof(MDVERTEX));
-	    }
+        }
     }/**/
 
     lpDevice->SetBlendState(false);
@@ -1744,7 +1740,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
     // if nPass==0, it draws old preset (blending 1 of 2).
     // if nPass==1, it draws new preset (blending 2 of 2, OR done blending)
 
-	MungeFPCW(NULL);	// puts us in single-precision mode & disables exceptions
+    MungeFPCW(NULL); // puts us in single-precision mode & disables exceptions
 
     D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
@@ -1764,16 +1760,16 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
     //bool  bBlending = m_pState->m_bBlending;//(fBlend >= 0.0001f && fBlend <= 0.9999f);
 
 	//lpDevice->SetTexture(0, m_lpVS[0]);
-    lpDevice->SetVertexShader( NULL, NULL );
+    lpDevice->SetVertexShader(NULL, NULL);
     //lpDevice->SetFVF( MDVERTEX_FORMAT );
 
-	// texel alignment
-	float texel_offset_x = 0.5f / (float)m_nTexSizeX;
-	float texel_offset_y = 0.5f / (float)m_nTexSizeY;
+    // Texel alignment.
+    //float texel_offset_x = 0.5f / (float)m_nTexSizeX;
+    //float texel_offset_y = 0.5f / (float)m_nTexSizeY;
 
     int nAlphaTestValue = 0;
     if (bFlipCulling)
-        nAlphaTestValue = 1-nAlphaTestValue;
+        nAlphaTestValue = 1 - nAlphaTestValue;
 
     if (bAlphaBlend)
     {
@@ -1799,21 +1795,21 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
     {
         // PASS 0: draw using *blended per-vertex motion vectors*, but with the OLD warp shader.
         // PASS 1: draw using *blended per-vertex motion vectors*, but with the NEW warp shader.
-        PShaderInfo* si = (pass==0) ? &m_OldShaders.warp : &m_shaders.warp;
-        CState* state = (pass==0) ? m_pOldState : m_pState;
+        PShaderInfo* si = (pass == 0) ? &m_OldShaders.warp : &m_shaders.warp;
+        CState* state = (pass == 0) ? m_pOldState : m_pState;
 
         //lpDevice->SetVertexDeclaration(m_pMyVertDecl);
         lpDevice->SetVertexShader(m_fallbackShaders_vs.warp.ptr, m_fallbackShaders_vs.warp.CT);
-        
-        ApplyShaderParams( &(si->params), si->CT, state );
+
+        ApplyShaderParams(&(si->params), si->CT, state);
 
         lpDevice->SetPixelShader(si->ptr, si->CT);
 
         // Hurl the triangles at the video card.
         // We're going to un-index it, so that we don't stress any crappy (AHEM intel g33)
-        //  drivers out there.  
+        // drivers out there.
         // We divide it into the two halves of the screen (top/bottom) so we can hack
-        //  the 'ang' values along the angle-wrap seam, halfway through the draw.
+        // the 'ang' values along the angle-wrap seam, halfway through the draw.
         // If we're blending, we'll skip any polygon that is all alpha-blended out.
         // This also respects the MaxPrimCount limit of the video card.
         MDVERTEX tempv[1024 * 3];
@@ -1830,7 +1826,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
             int primCount = m_nGridX * m_nGridY * 2 / 2; // in this case, to draw HALF the polys
             int src_idx = 0;
             int src_idx_offset = half * primCount * 3;
-            int prims_sent = 0;
+            //int prims_sent = 0;
             while (src_idx < primCount * 3)
             {
                 int prims_queued = 0;
@@ -1892,7 +1888,7 @@ void CPlugin::DrawCustomShapes()
             {
                 /*
                 int bAdditive = 0;
-                int nSides = 3; //3 + ((int)GetTime() % 8);
+                int nSides = 3;//3 + ((int)GetTime() % 8);
                 int bThickOutline = 0;
                 float x = 0.5f + 0.1f*cosf(GetTime()*0.8f+1);
                 float y = 0.5f + 0.1f*sinf(GetTime()*0.8f+1);
@@ -1903,7 +1899,7 @@ void CPlugin::DrawCustomShapes()
                 float r = 1;
                 float g = 0;
                 float b = 0;
-                float a = 0.4f; //0.1f + 0.1f*sinf(GetTime()*0.31f);
+                float a = 0.4f;//0.1f + 0.1f*sinf(GetTime()*0.31f);
 
                 // outside colors
                 float r2 = 0;
@@ -2018,22 +2014,21 @@ void CPlugin::DrawCustomShapes()
                             v2[j].x = v[j].x;
                             v2[j].y = v[j].y;
                             v2[j].z = v[j].z;
-                            //v2[j].Diffuse = v2[0].Diffuse;
                             COPY_COLOR(v2[j], v2[0]);
                         }
-                    
+
                         int its = ((int)(*pState->m_shape[i].var_pf_thick) != 0) ? 4 : 1;
-		                float x_inc = 2.0f / (float)m_nTexSizeX;
-		                float y_inc = 2.0f / (float)m_nTexSizeY;
+                        float x_inc = 2.0f / (float)m_nTexSizeX;
+                        float y_inc = 2.0f / (float)m_nTexSizeY;
                         for (int it=0; it<its; it++)
                         {
-			                switch(it)
-			                {
-			                case 0: break;
-			                case 1: for (int j=0; j<sides+2; j++) v2[j].x += x_inc; break;		// draw fat dots
-			                case 2: for (int j=0; j<sides+2; j++) v2[j].y += y_inc; break;		// draw fat dots
-			                case 3: for (int j=0; j<sides+2; j++) v2[j].x -= x_inc; break;		// draw fat dots
-			                }
+                            switch(it)
+                            {
+                            case 0: break;
+                            case 1: for (int j=0; j<sides+2; j++) v2[j].x += x_inc; break;        // draw fat dots
+                            case 2: for (int j=0; j<sides+2; j++) v2[j].y += y_inc; break;        // draw fat dots
+                            case 3: for (int j=0; j<sides+2; j++) v2[j].x -= x_inc; break;        // draw fat dots
+                            }
                             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, sides, (void*)&v2[1], sizeof(WFVERTEX));
                         }
                     }
@@ -2111,11 +2106,11 @@ void CPlugin::LoadCustomWavePerFrameEvallibVars(CState* pState, int i)
         *pState->m_wave[i].var_pf_q[vi] = *pState->var_pf_q[vi];
     for (int vi=0; vi<NUM_T_VAR; vi++)
         *pState->m_wave[i].var_pf_t[vi] = pState->m_wave[i].t_values_after_init_code[vi];
-    *pState->m_wave[i].var_pf_r        = pState->m_wave[i].r;
-    *pState->m_wave[i].var_pf_g        = pState->m_wave[i].g;
-    *pState->m_wave[i].var_pf_b        = pState->m_wave[i].b;
-    *pState->m_wave[i].var_pf_a        = pState->m_wave[i].a;
-    *pState->m_wave[i].var_pf_samples  = pState->m_wave[i].samples;
+    *pState->m_wave[i].var_pf_r       = pState->m_wave[i].r;
+    *pState->m_wave[i].var_pf_g       = pState->m_wave[i].g;
+    *pState->m_wave[i].var_pf_b       = pState->m_wave[i].b;
+    *pState->m_wave[i].var_pf_a       = pState->m_wave[i].a;
+    *pState->m_wave[i].var_pf_samples = pState->m_wave[i].samples;
 }
 
 // Does a better-than-linear smooth on a wave. Roughly doubles the number of points.
@@ -2245,10 +2240,10 @@ void CPlugin::DrawCustomWaves()
                     float j_mult = 1.0f / (float)(nSamples - 1);
                     for (int j = 0; j < nSamples; j++)
                     {
-                        float t = j*j_mult;
+                        float t2 = j * j_mult;
                         float value1 = tempdata[0][j];
                         float value2 = tempdata[1][j];
-                        *pState->m_wave[i].var_pp_sample = t;
+                        *pState->m_wave[i].var_pp_sample = t2;
                         *pState->m_wave[i].var_pp_value1 = value1;
                         *pState->m_wave[i].var_pp_value2 = value2;
                         *pState->m_wave[i].var_pp_x = 0.5f + value1;
@@ -2284,10 +2279,10 @@ void CPlugin::DrawCustomWaves()
                     */
 
                     // 3. Smooth it.
-                    WFVERTEX v2[2048];
-                    WFVERTEX *pVerts = v;
-                    if (!pState->m_wave[i].bUseDots) 
+                    WFVERTEX* pVerts = v;
+                    if (!pState->m_wave[i].bUseDots)
                     {
+                        WFVERTEX v2[2048];
                         nSamples = SmoothWave(v, nSamples, v2);
                         pVerts = v2;
                     }
@@ -2301,15 +2296,15 @@ void CPlugin::DrawCustomWaves()
                     float ptsize = (float)((m_nTexSizeX >= 1024) ? 2 : 1) + (pState->m_wave[i].bDrawThick ? 1 : 0);
                     //if (pState->m_wave[i].bUseDots)
                     //    lpDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&ptsize) ); 
-                    // DX11: have not point size, so render quads
+                    // DX11 has not point size, so render quads.
                     if (pState->m_wave[i].bUseDots && ptsize > 1.0)
                     {
-                      float dx = ptsize / (float)m_nTexSizeX;
-                      float dy = ptsize / (float)m_nTexSizeY;
-                      WFVERTEX *v2 = new WFVERTEX[nSamples * 6];
-                      int j = 0;
-                      for (int k = 0; k<nSamples * 6; k += 6)
-                      {
+                        float dx = ptsize / (float)m_nTexSizeX;
+                        float dy = ptsize / (float)m_nTexSizeY;
+                        WFVERTEX* v2 = new WFVERTEX[nSamples * 6];
+                        int j = 0;
+                        for (int k = 0; k < nSamples * 6; k += 6)
+                        {
                         v2[k] = v[j]; v2[k].x -= dx; v2[k].y -= dy;
                         v2[k + 1] = v[j]; v2[k + 1].x += dx; v2[k + 1].y -= dy;
                         v2[k + 2] = v[j]; v2[k + 2].x += dx; v2[k + 2].y += dy;
@@ -2364,7 +2359,6 @@ void CPlugin::DrawWave(float* fL, float* fR)
     lpDevice->SetVertexColor(true);
     //lpDevice->SetFVF( WFVERTEX_FORMAT );
 
-	int i;
     WFVERTEX v1[576 + 1], v2[576 + 1];
 
     /*
@@ -2437,8 +2431,8 @@ void CPlugin::DrawWave(float* fL, float* fR)
     float fWavePosX = cx * 2.0f - 1.0f; // go from 0..1 user-range to -1..1 D3D range
     float fWavePosY = cy * 2.0f - 1.0f;
 
-	float bass_rel   = mdsound.imm[0];
-	float mid_rel    = mdsound.imm[1];
+    //float bass_rel = mdsound.imm[0];
+    //float mid_rel = mdsound.imm[1];
     float treble_rel = mdsound.imm[2];
 
     int sample_offset = 0;
@@ -2491,439 +2485,432 @@ void CPlugin::DrawWave(float* fL, float* fR)
                 {
                     float inv_nverts_minus_one = 1.0f / (float)(nVerts - 1);
 
-				for (i=0; i<nVerts; i++)
-				{
-					float rad = 0.5f + 0.4f*fR[i+sample_offset] + fWaveParam2;
-					float ang = (i)*inv_nverts_minus_one*6.28f + GetTime()*0.2f;
-					if (i < nVerts/10)
-					{
-						float mix = i/(nVerts*0.1f);
-						mix = 0.5f - 0.5f*cosf(mix * 3.1416f);
-						float rad_2 = 0.5f + 0.4f*fR[i + nVerts + sample_offset] + fWaveParam2;
-						rad = rad_2*(1.0f-mix) + rad*(mix);
-					}
-					v[i].x = rad*cosf(ang) *m_fAspectY + fWavePosX;		// 0.75 = adj. for aspect ratio
-					v[i].y = rad*sinf(ang) *m_fAspectX + fWavePosY;
-					//v[i].Diffuse = color;
-				}
-			}
+                    for (int i = 0; i < nVerts; i++)
+                    {
+                        float rad = 0.5f + 0.4f * fR[i + sample_offset] + fWaveParam2;
+                        float ang = (i)*inv_nverts_minus_one * 6.28f + GetTime() * 0.2f;
+                        if (i < nVerts / 10)
+                        {
+                            float mix = i / (nVerts * 0.1f);
+                            mix = 0.5f - 0.5f * cosf(mix * 3.1416f);
+                            float rad_2 = 0.5f + 0.4f * fR[i + nVerts + sample_offset] + fWaveParam2;
+                            rad = rad_2 * (1.0f - mix) + rad * (mix);
+                        }
+                        v[i].x = rad * cosf(ang) * m_fAspectY + fWavePosX; // 0.75 = adj. for aspect ratio
+                        v[i].y = rad * sinf(ang) * m_fAspectX + fWavePosY;
+                        //v[i].Diffuse = color;
+                    }
+                }
 
-			// dupe last vertex to connect the lines; skip if blending
-			if (!m_pState->m_bBlending)
-			{
-				nVerts++;
+                // Duplicate last vertex to connect the lines; skip if blending.
+                if (!m_pState->m_bBlending)
+                {
+                    nVerts++;
 				memcpy(&v[nVerts-1], &v[0], sizeof(WFVERTEX));
-			}
+                }
+                break;
 
-			break;
+            case 1:
+                // x-y osc. that goes around in a spiral, in time
 
-		case 1:
-			// x-y osc. that goes around in a spiral, in time
+                alpha *= 1.25f;
+                if (m_pState->m_bModWaveAlphaByVolume)
+                    alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2]) * 0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime())) / (m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
+                if (alpha < 0) alpha = 0;
+                if (alpha > 1) alpha = 1;
+                //color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
 
-			alpha *= 1.25f;
-			if (m_pState->m_bModWaveAlphaByVolume)
-				alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
-			if (alpha < 0) alpha = 0;
-			if (alpha > 1) alpha = 1;
-			//color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
+                nVerts /= 2;
 
-			nVerts /= 2;	
+                for (int i = 0; i < nVerts; i++)
+                {
+                    float rad = 0.53f + 0.43f * fR[i] + fWaveParam2;
+                    float ang = fL[i + 32] * 1.57f + GetTime() * 2.3f;
+                    v[i].x = rad * cosf(ang) * m_fAspectY + fWavePosX; // 0.75 = adj. for aspect ratio
+                    v[i].y = rad * sinf(ang) * m_fAspectX + fWavePosY;
+                    //v[i].Diffuse = color;//(D3DCOLOR_RGBA_01(cr, cg, cb, alpha*min(1, max(0, fL[i])));
+                }
+                break;
 
-			for (i=0; i<nVerts; i++)
-			{
-				float rad = 0.53f + 0.43f*fR[i] + fWaveParam2;
-				float ang = fL[i+32] * 1.57f + GetTime()*2.3f;
-				v[i].x = rad*cosf(ang) *m_fAspectY + fWavePosX;		// 0.75 = adj. for aspect ratio
-				v[i].y = rad*sinf(ang) *m_fAspectX + fWavePosY;
-				//v[i].Diffuse = color;//(D3DCOLOR_RGBA_01(cr, cg, cb, alpha*min(1, max(0, fL[i])));
-			}
+            case 2:
+            // centered spiro (alpha constant)
+            //    aimed at not being so sound-responsive, but being very "nebula-like"
+            //   difference is that alpha is constant (and faint), and waves a scaled way up
 
-			break;
-			
-		case 2:
-			// centered spiro (alpha constant)
-			//	 aimed at not being so sound-responsive, but being very "nebula-like"
-			//   difference is that alpha is constant (and faint), and waves a scaled way up
+            switch(m_nTexSizeX)
+            {
+                case 256:  alpha *= 0.07f; break;
+                case 512:  alpha *= 0.09f; break;
+                case 1024: alpha *= 0.11f; break;
+                case 2048: alpha *= 0.13f; break;
+            }
 
-			switch(m_nTexSizeX)
-			{
-			case 256:  alpha *= 0.07f; break;
-			case 512:  alpha *= 0.09f; break;
-			case 1024: alpha *= 0.11f; break;
-			case 2048: alpha *= 0.13f; break;
-			}
+            if (m_pState->m_bModWaveAlphaByVolume)
+                alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+            //color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
 
-			if (m_pState->m_bModWaveAlphaByVolume)
-				alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
-			if (alpha < 0) alpha = 0;
-			if (alpha > 1) alpha = 1;
-			//color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
-			
-			for (i=0; i<nVerts; i++)
-			{
-				v[i].x = fR[i   ] *m_fAspectY + fWavePosX;//((pR[i] ^ 128) - 128)/90.0f * ASPECT; // 0.75 = adj. for aspect ratio
-				v[i].y = fL[i+32] *m_fAspectX + fWavePosY;//((pL[i+32] ^ 128) - 128)/90.0f;
-				//v[i].Diffuse = color;
-			}
+            for (int i = 0; i < nVerts; i++)
+            {
+                v[i].x = fR[i] * m_fAspectY + fWavePosX; //((pR[i] ^ 128) - 128)/90.0f * ASPECT; // 0.75 = adj. for aspect ratio
+                v[i].y = fL[i + 32] * m_fAspectX + fWavePosY; //((pL[i+32] ^ 128) - 128)/90.0f;
+                //v[i].Diffuse = color;
+            }
+            break;
 
-			break;
-		case 3:
-			// centered spiro (alpha tied to volume)
-			//	 aimed at having a strong audio-visual tie-in
-			//   colors are always bright (no darks)
+        case 3:
+            // centered spiro (alpha tied to volume)
+            //     aimed at having a strong audio-visual tie-in
+            //   colors are always bright (no darks)
 
-			switch(m_nTexSizeX)
-			{
-			case 256:  alpha = 0.075f; break;
-			case 512:  alpha = 0.150f; break;
-			case 1024: alpha = 0.220f; break;
-			case 2048: alpha = 0.330f; break;
-			}
+            switch(m_nTexSizeX)
+            {
+                case 256:  alpha = 0.075f; break;
+                case 512:  alpha = 0.150f; break;
+                case 1024: alpha = 0.220f; break;
+                case 2048: alpha = 0.330f; break;
+            }
 
-			alpha *= 1.3f;
-			alpha *= powf(treble_rel, 2.0f);
-			if (m_pState->m_bModWaveAlphaByVolume)
-				alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
-			if (alpha < 0) alpha = 0;
-			if (alpha > 1) alpha = 1;
-			//color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
+            alpha *= 1.3f;
+            alpha *= powf(treble_rel, 2.0f);
+            if (m_pState->m_bModWaveAlphaByVolume)
+                alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+            //color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
 
-			for (i=0; i<nVerts; i++)
-			{
-				v[i].x = fR[i   ] *m_fAspectY + fWavePosX;//((pR[i] ^ 128) - 128)/90.0f * ASPECT; // 0.75 = adj. for aspect ratio
-				v[i].y = fL[i+32] *m_fAspectX + fWavePosY;//((pL[i+32] ^ 128) - 128)/90.0f;
-				//v[i].Diffuse = color;
-			}
-			break;
-		case 4:
-			// horizontal "script", left channel
+            for (int i = 0; i < nVerts; i++)
+            {
+                v[i].x = fR[i] * m_fAspectY + fWavePosX; //((pR[i] ^ 128) - 128) / 90.0f * ASPECT; // 0.75 = adj. for aspect ratio
+                v[i].y = fL[i + 32] * m_fAspectX + fWavePosY; //((pL[i + 32] ^ 128) - 128) / 90.0f;
+                //v[i].Diffuse = color;
+            }
+            break;
 
-			if (nVerts > m_nTexSizeX/3) 
-				nVerts = m_nTexSizeX/3;
+        case 4:
+            // Horizontal "script", left channel
+            if (nVerts > m_nTexSizeX/3)
+                nVerts = m_nTexSizeX/3;
 
-			sample_offset = (NUM_WAVEFORM_SAMPLES-nVerts)/2;//mdsound.GoGoAlignatron(nVerts + 25);	// only call this once nVerts is final!
+            sample_offset = (NUM_WAVEFORM_SAMPLES - nVerts) / 2; //mdsound.GoGoAlignatron(nVerts + 25);    // only call this once nVerts is final!
 
-			/*
-			if (treble_rel > treb_thresh_for_wave6)
-			{
-				//alpha = 1.0f;
-				treb_thresh_for_wave6 = treble_rel * 1.025f;
-			}
-			else
-			{
-				alpha *= 0.2f;
-				treb_thresh_for_wave6 *= 0.996f;		// fixme: make this fps-independent
-			}
-			*/
+            /*
+            if (treble_rel > treb_thresh_for_wave6)
+            {
+                //alpha = 1.0f;
+                treb_thresh_for_wave6 = treble_rel * 1.025f;
+            }
+            else
+            {
+                alpha *= 0.2f;
+                treb_thresh_for_wave6 *= 0.996f; // FIXME: make this fps-independent
+            }
+            */
 
-			if (m_pState->m_bModWaveAlphaByVolume)
-				alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
-			if (alpha < 0) alpha = 0;
-			if (alpha > 1) alpha = 1;
-			//color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
+            if (m_pState->m_bModWaveAlphaByVolume)
+                alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+            //color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
 
-			{
-				float w1 = 0.45f + 0.5f*(fWaveParam2*0.5f + 0.5f);		// 0.1 - 0.9
-				float w2 = 1.0f - w1;
+            {
+                float w1 = 0.45f + 0.5f * (fWaveParam2 * 0.5f + 0.5f); // 0.1 - 0.9
+                float w2 = 1.0f - w1;
 
-				float inv_nverts = 1.0f/(float)(nVerts);
+                float inv_nverts = 1.0f / (float)(nVerts);
 
-				for (i=0; i<nVerts; i++)
-				{
-					v[i].x = -1.0f + 2.0f*(i*inv_nverts) + fWavePosX;
-					v[i].y = fL[i+sample_offset]*0.47f + fWavePosY;//((pL[i] ^ 128) - 128)/270.0f;
-					v[i].x += fR[i+25+sample_offset]*0.44f;//((pR[i+25] ^ 128) - 128)/290.0f;
-					//v[i].Diffuse = color;
+                for (int i = 0; i < nVerts; i++)
+                {
+                    v[i].x = -1.0f + 2.0f * (i * inv_nverts) + fWavePosX;
+                    v[i].y = fL[i + sample_offset] * 0.47f + fWavePosY; //((pL[i] ^ 128) - 128) / 270.0f;
+                    v[i].x += fR[i + 25 + sample_offset] * 0.44f;       //((pR[i + 25] ^ 128) - 128) / 290.0f;
+                    //v[i].Diffuse = color;
 
-					// momentum
-					if (i>1)
-					{
-						v[i].x = v[i].x*w2 + w1*(v[i-1].x*2.0f - v[i-2].x);
-						v[i].y = v[i].y*w2 + w1*(v[i-1].y*2.0f - v[i-2].y);
-					}
-				}
+                    // Momentum.
+                    if (i > 1)
+                    {
+                        v[i].x = v[i].x * w2 + w1 * (v[i - 1].x * 2.0f - v[i - 2].x);
+                        v[i].y = v[i].y * w2 + w1 * (v[i - 1].y * 2.0f - v[i - 2].y);
+                    }
+                }
 
-				/*
-				// center on Y
-				float avg_y = 0;
-				for (i=0; i<nVerts; i++) 
-					avg_y += v[i].y;
-				avg_y /= (float)nVerts;
-				avg_y *= 0.5f;		// damp the movement
-				for (i=0; i<nVerts; i++) 
-					v[i].y -= avg_y;
-				*/
-			}
+                /*
+                // center on Y
+                float avg_y = 0;
+                for (int i = 0; i < nVerts; i++)
+                    avg_y += v[i].y;
+                avg_y /= (float)nVerts;
+                avg_y *= 0.5f; // damp the movement
+                for (int i = 0; i < nVerts; i++)
+                    v[i].y -= avg_y;
+                */
+            }
+            break;
 
-			break;
+        case 5:
+            // Weird explosive complex number thingy.
+            switch(m_nTexSizeX)
+            {
+            case 256:  alpha *= 0.07f; break;
+            case 512:  alpha *= 0.09f; break;
+            case 1024: alpha *= 0.11f; break;
+            case 2048: alpha *= 0.13f; break;
+            }
 
-		case 5:
-			// weird explosive complex # thingy
+            if (m_pState->m_bModWaveAlphaByVolume)
+                alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2]) * 0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime())) / (m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+            //color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
 
-			switch(m_nTexSizeX)
-			{
-			case 256:  alpha *= 0.07f; break;
-			case 512:  alpha *= 0.09f; break;
-			case 1024: alpha *= 0.11f; break;
-			case 2048: alpha *= 0.13f; break;
-			}
+            {
+                float cos_rot = cosf(GetTime() * 0.3f);
+                float sin_rot = sinf(GetTime() * 0.3f);
 
-			if (m_pState->m_bModWaveAlphaByVolume)
-				alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
-			if (alpha < 0) alpha = 0;
-			if (alpha > 1) alpha = 1;
-			//color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
-			
-			{
-				float cos_rot = cosf(GetTime()*0.3f);
-				float sin_rot = sinf(GetTime()*0.3f);
+                for (int i = 0; i < nVerts; i++)
+                {
+                    float x0 = (fR[i] * fL[i + 32] + fL[i] * fR[i + 32]);
+                    float y0 = (fR[i] * fR[i] - fL[i + 32] * fL[i + 32]);
+                    v[i].x = (x0 * cos_rot - y0 * sin_rot) * m_fAspectY + fWavePosX;
+                    v[i].y = (x0 * sin_rot + y0 * cos_rot) * m_fAspectX + fWavePosY;
+                    //v[i].Diffuse = color;
+                }
+            }
+            break;
 
-				for (i=0; i<nVerts; i++)
-				{
-					float x0 = (fR[i]*fL[i+32] + fL[i]*fR[i+32]);
-					float y0 = (fR[i]*fR[i] - fL[i+32]*fL[i+32]);
-					v[i].x = (x0*cos_rot - y0*sin_rot)*m_fAspectY + fWavePosX;
-					v[i].y = (x0*sin_rot + y0*cos_rot)*m_fAspectX + fWavePosY;
-					//v[i].Diffuse = color;
-				}
-			}
+        case 6:
+        case 7:
+        case 8:
+            // 6: angle-adjustable left channel, with temporal wave alignment;
+            //   fWaveParam2 controls the angle at which it's drawn
+            //   fWavePosX slides the wave away from the center, transversely.
+            //   fWavePosY does nothing
+            //
+            // 7: same, except there are two channels shown, and
+            //   fWavePosY determines the separation distance.
+            //
+            // 8: same as 6, except using the spectrum analyzer (UNFINISHED)
+            //
+            nVerts /= 2;
 
-			break;
+            if (nVerts > m_nTexSizeX/3)
+                nVerts = m_nTexSizeX/3;
 
-		case 6:
-		case 7:
-		case 8:
-			// 6: angle-adjustable left channel, with temporal wave alignment;
-			//   fWaveParam2 controls the angle at which it's drawn
-			//	 fWavePosX slides the wave away from the center, transversely.
-			//   fWavePosY does nothing
-			//
-			// 7: same, except there are two channels shown, and
-			//   fWavePosY determines the separation distance.
-			// 
-			// 8: same as 6, except using the spectrum analyzer (UNFINISHED)
-			// 
-			nVerts /= 2;
-
-			if (nVerts > m_nTexSizeX/3) 
-				nVerts = m_nTexSizeX/3;
-
-			if (wave==8)
-				nVerts = 256;
-			else
+            if (wave == 8)
+                nVerts = 256;
+            else
 				sample_offset = (NUM_WAVEFORM_SAMPLES-nVerts)/2;//mdsound.GoGoAlignatron(nVerts);	// only call this once nVerts is final!
 
-			if (m_pState->m_bModWaveAlphaByVolume)
-				alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
-			if (alpha < 0) alpha = 0;
-			if (alpha > 1) alpha = 1;
-			//color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
+            if (m_pState->m_bModWaveAlphaByVolume)
+                alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2])*0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime()))/(m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
+            if (alpha < 0) alpha = 0;
+            if (alpha > 1) alpha = 1;
+            //color = D3DCOLOR_RGBA_01(cr, cg, cb, alpha);
 
-			{
-				float ang = 1.57f*fWaveParam2;	// from -PI/2 to PI/2
-				float dx  = cosf(ang);
-				float dy  = sinf(ang);
+            {
+                float ang = 1.57f*fWaveParam2;    // from -PI/2 to PI/2
+                float dx  = cosf(ang);
+                float dy  = sinf(ang);
 
-				float edge_x[2], edge_y[2];
+                float edge_x[2], edge_y[2];
 
-				//edge_x[0] = fWavePosX - dx*3.0f;
-				//edge_y[0] = fWavePosY - dy*3.0f;
-				//edge_x[1] = fWavePosX + dx*3.0f;
-				//edge_y[1] = fWavePosY + dy*3.0f;
-				edge_x[0] = fWavePosX*cosf(ang + 1.57f) - dx*3.0f;
-				edge_y[0] = fWavePosX*sinf(ang + 1.57f) - dy*3.0f;
-				edge_x[1] = fWavePosX*cosf(ang + 1.57f) + dx*3.0f;
-				edge_y[1] = fWavePosX*sinf(ang + 1.57f) + dy*3.0f;
+                //edge_x[0] = fWavePosX - dx*3.0f;
+                //edge_y[0] = fWavePosY - dy*3.0f;
+                //edge_x[1] = fWavePosX + dx*3.0f;
+                //edge_y[1] = fWavePosY + dy*3.0f;
+                edge_x[0] = fWavePosX*cosf(ang + 1.57f) - dx*3.0f;
+                edge_y[0] = fWavePosX*sinf(ang + 1.57f) - dy*3.0f;
+                edge_x[1] = fWavePosX*cosf(ang + 1.57f) + dx*3.0f;
+                edge_y[1] = fWavePosX*sinf(ang + 1.57f) + dy*3.0f;
 
-				for (i=0; i<2; i++)	// for each point defining the line
-				{
-					// clip the point against 4 edges of screen
-					// be a bit lenient (use +/-1.1 instead of +/-1.0) 
-					//	 so the dual-wave doesn't end too soon, after the channels are moved apart
-					for (int j=0; j<4; j++)
-					{
-						float t;
-						bool bClip = false;
+                for (int i = 0; i < 2; i++) // for each point defining the line
+                {
+                    // clip the point against 4 edges of screen
+                    // be a bit lenient (use +/-1.1 instead of +/-1.0)
+                    //     so the dual-wave doesn't end too soon, after the channels are moved apart
+                    for (int j = 0; j < 4; j++)
+                    {
+                        float t = 0.0f;
+                        bool bClip = false;
 
-						switch(j)
-						{
-						case 0:
-							if (edge_x[i] > 1.1f)
-							{
-								t = (1.1f - edge_x[1-i]) / (edge_x[i] - edge_x[1-i]);
-								bClip = true;
-							}
-							break;
-						case 1:
-							if (edge_x[i] < -1.1f)
-							{
-								t = (-1.1f - edge_x[1-i]) / (edge_x[i] - edge_x[1-i]);
-								bClip = true;
-								}
-							break;
-						case 2:
-							if (edge_y[i] > 1.1f)
-							{
-								t = (1.1f - edge_y[1-i]) / (edge_y[i] - edge_y[1-i]);
-								bClip = true;
-							}
-							break;
-						case 3:
-							if (edge_y[i] < -1.1f)
-							{
-								t = (-1.1f - edge_y[1-i]) / (edge_y[i] - edge_y[1-i]);
-								bClip = true;
-							}
-							break;
-						}
+                        switch (j)
+                        {
+                            case 0:
+                                if (edge_x[i] > 1.1f)
+                                {
+                                    t = (1.1f - edge_x[1 - i]) / (edge_x[i] - edge_x[1 - i]);
+                                    bClip = true;
+                                }
+                                break;
+                            case 1:
+                                if (edge_x[i] < -1.1f)
+                                {
+                                    t = (-1.1f - edge_x[1 - i]) / (edge_x[i] - edge_x[1 - i]);
+                                    bClip = true;
+                                }
+                                break;
+                            case 2:
+                                if (edge_y[i] > 1.1f)
+                                {
+                                    t = (1.1f - edge_y[1 - i]) / (edge_y[i] - edge_y[1 - i]);
+                                    bClip = true;
+                                }
+                                break;
+                            case 3:
+                                if (edge_y[i] < -1.1f)
+                                {
+                                    t = (-1.1f - edge_y[1 - i]) / (edge_y[i] - edge_y[1 - i]);
+                                    bClip = true;
+                                }
+                                break;
+                        }
 
-						if (bClip)
-						{
-							float dx = edge_x[i] - edge_x[1-i];
-							float dy = edge_y[i] - edge_y[1-i];
-							edge_x[i] = edge_x[1-i] + dx*t;
-							edge_y[i] = edge_y[1-i] + dy*t;
-						}
-					}
-				}
+                        if (bClip)
+                        {
+                            dx = edge_x[i] - edge_x[1 - i];
+                            dy = edge_y[i] - edge_y[1 - i];
+                            edge_x[i] = edge_x[1 - i] + dx * t;
+                            edge_y[i] = edge_y[1 - i] + dy * t;
+                        }
+                    }
+                }
 
-				dx = (edge_x[1] - edge_x[0]) / (float)nVerts;
-				dy = (edge_y[1] - edge_y[0]) / (float)nVerts;
-				float ang2 = atan2f(dy,dx);
-				float perp_dx = cosf(ang2 + 1.57f);
-				float perp_dy = sinf(ang2 + 1.57f);
+                dx = (edge_x[1] - edge_x[0]) / (float)nVerts;
+                dy = (edge_y[1] - edge_y[0]) / (float)nVerts;
+                float ang2 = atan2f(dy, dx);
+                float perp_dx = cosf(ang2 + 1.57f);
+                float perp_dy = sinf(ang2 + 1.57f);
 
-				if (wave == 6)
-					for (i=0; i<nVerts; i++)
-					{
-						v[i].x = edge_x[0] + dx*i + perp_dx*0.25f*fL[i + sample_offset];
-						v[i].y = edge_y[0] + dy*i + perp_dy*0.25f*fL[i + sample_offset];
-						//v[i].Diffuse = color;
-					}
-				else if (wave == 8)
-					//256 verts
-					for (i=0; i<nVerts; i++)
-					{
-						float f = 0.1f*logf(mdsound.fSpecLeft[i*2] + mdsound.fSpecLeft[i*2+1]);
-						v[i].x = edge_x[0] + dx*i + perp_dx*f;
-						v[i].y = edge_y[0] + dy*i + perp_dy*f;
-						//v[i].Diffuse = color;
-					}
-				else
-				{
-					float sep = powf(fWavePosY*0.5f + 0.5f, 2.0f);
-					for (i=0; i<nVerts; i++)
-					{
-						v[i].x = edge_x[0] + dx*i + perp_dx*(0.25f*fL[i + sample_offset] + sep);
-						v[i].y = edge_y[0] + dy*i + perp_dy*(0.25f*fL[i + sample_offset] + sep);
-						//v[i].Diffuse = color;
-					}
+                if (wave == 6)
+                    for (int i = 0; i < nVerts; i++)
+                    {
+                        v[i].x = edge_x[0] + dx * i + perp_dx * 0.25f * fL[i + sample_offset];
+                        v[i].y = edge_y[0] + dy * i + perp_dy * 0.25f * fL[i + sample_offset];
+                        //v[i].Diffuse = color;
+                    }
+                else if (wave == 8)
+                    // 256 verts.
+                    for (int i = 0; i < nVerts; i++)
+                    {
+                        float f = 0.1f * logf(mdsound.fSpecLeft[i * 2] + mdsound.fSpecLeft[i * 2 + 1]);
+                        v[i].x = edge_x[0] + dx * i + perp_dx * f;
+                        v[i].y = edge_y[0] + dy * i + perp_dy * f;
+                        //v[i].Diffuse = color;
+                    }
+                else
+                {
+                    float sep = powf(fWavePosY * 0.5f + 0.5f, 2.0f);
+                    for (int i = 0; i < nVerts; i++)
+                    {
+                        v[i].x = edge_x[0] + dx * i + perp_dx * (0.25f * fL[i + sample_offset] + sep);
+                        v[i].y = edge_y[0] + dy * i + perp_dy * (0.25f * fL[i + sample_offset] + sep);
+                        //v[i].Diffuse = color;
+                    }
 
-					//D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3D_PRIMITIVE_TOPOLOGY_POINTLIST : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-					//m_lpD3DDev->DrawPrimitive(primtype, D3DFVF_LVERTEX, (LPVOID)v, nVerts, NULL);
+                    //D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3DPT_POINTLIST : D3DPT_LINESTRIP;
+                    //m_lpD3DDev->DrawPrimitive(primtype, D3DFVF_LVERTEX, (LPVOID)v, nVerts, NULL);
 
-					for (i=0; i<nVerts; i++)
-					{
-						v[i+nVerts].x = edge_x[0] + dx*i + perp_dx*(0.25f*fR[i + sample_offset] - sep);
-						v[i+nVerts].y = edge_y[0] + dy*i + perp_dy*(0.25f*fR[i + sample_offset] - sep);
-						//v[i+nVerts].Diffuse = color;
-					}
+                    for (int i = 0; i < nVerts; i++)
+                    {
+                        v[i + nVerts].x = edge_x[0] + dx * i + perp_dx * (0.25f * fR[i + sample_offset] - sep);
+                        v[i + nVerts].y = edge_y[0] + dy * i + perp_dy * (0.25f * fR[i + sample_offset] - sep);
+                        //v[i+nVerts].Diffuse = color;
+                    }
 
-					nBreak = nVerts;
-					nVerts *= 2;
-				}
-			}
+                    nBreak = nVerts;
+                    nVerts *= 2;
+                }
+            }
+            break;
+        }
 
-			break;
-		}
+        if (it == 0)
+        {
+            nVerts1 = nVerts;
+            nBreak1 = nBreak;
+            alpha1 = alpha;
+        }
+        else
+        {
+            nVerts2 = nVerts;
+            nBreak2 = nBreak;
+            alpha2 = alpha;
+        }
+    }
 
-		if (it==0)
-		{
-			nVerts1 = nVerts;
-			nBreak1 = nBreak;
-			alpha1  = alpha;
-		}
-		else
-		{
-			nVerts2 = nVerts;
-			nBreak2 = nBreak;
-			alpha2  = alpha;
-		}
-	}	
+    // v1[] is for the current waveform
+    // v2[] is for the old waveform (from prev. preset - only used if blending)
+    // nVerts1 is the # of vertices in v1
+    // nVerts2 is the # of vertices in v2
+    // nBreak1 is the index of the point at which to break the solid line in v1[] (-1 if no break)
+    // nBreak2 is the index of the point at which to break the solid line in v2[] (-1 if no break)
 
-	// v1[] is for the current waveform
-	// v2[] is for the old waveform (from prev. preset - only used if blending)
-	// nVerts1 is the # of vertices in v1
-	// nVerts2 is the # of vertices in v2
-	// nBreak1 is the index of the point at which to break the solid line in v1[] (-1 if no break)
-	// nBreak2 is the index of the point at which to break the solid line in v2[] (-1 if no break)
+    float mix = CosineInterp(m_pState->m_fBlendProgress);
+    float mix2 = 1.0f - mix;
 
-	float mix = CosineInterp(m_pState->m_fBlendProgress);
-	float mix2 = 1.0f - mix;
+    // blend 2 waveforms
+    if (nVerts2 > 0)
+    {
+        // note: this won't yet handle the case where (nBreak1 > 0 && nBreak2 > 0)
+        //       in this case, code must break wave into THREE segments
+        float m = (nVerts2 - 1) / (float)nVerts1;
+        float x, y;
+        for (int i = 0; i < nVerts1; i++)
+        {
+            float fIdx = i * m;
+            int nIdx = (int)fIdx;
+            float t = fIdx - nIdx;
+            if (nIdx == nBreak2 - 1)
+            {
+                x = v2[nIdx].x;
+                y = v2[nIdx].y;
+                nBreak1 = i + 1;
+            }
+            else
+            {
+                x = v2[nIdx].x * (1 - t) + v2[nIdx + 1].x * (t);
+                y = v2[nIdx].y * (1 - t) + v2[nIdx + 1].y * (t);
+            }
+            v1[i].x = v1[i].x * (mix) + x * (mix2);
+            v1[i].y = v1[i].y * (mix) + y * (mix2);
+        }
+    }
 
-	// blend 2 waveforms
-	if (nVerts2 > 0)
-	{
-		// note: this won't yet handle the case where (nBreak1 > 0 && nBreak2 > 0)
-		//       in this case, code must break wave into THREE segments
-		float m = (nVerts2-1)/(float)nVerts1;
-		float x,y;
-		for (int i=0; i<nVerts1; i++)
-		{
-			float fIdx = i*m;
-			int   nIdx = (int)fIdx;
-			float t = fIdx - nIdx;
-			if (nIdx == nBreak2-1)
-			{
-				x = v2[nIdx].x;
-				y = v2[nIdx].y;
-				nBreak1 = i+1;
-			}
-			else
-			{
-				x = v2[nIdx].x*(1-t) + v2[nIdx+1].x*(t);
-				y = v2[nIdx].y*(1-t) + v2[nIdx+1].y*(t);
-			}
-			v1[i].x = v1[i].x*(mix) + x*(mix2);
-			v1[i].y = v1[i].y*(mix) + y*(mix2);
-		}
-	}
+    // Determine alpha.
+    if (nVerts2 > 0)
+    {
+        alpha1 = alpha1 * (mix) + alpha2 * (1.0f - mix);
+    }
 
-	// determine alpha
-	if (nVerts2 > 0)
-	{
-		alpha1 = alpha1*(mix) + alpha2*(1.0f-mix);
-	}
-
-	// apply color & alpha
+    // Apply color and alpha.
     // ALSO reverse all y values, to stay consistent with the pre-VMS milkdrop,
     //  which DIDN'T:
-	//v1[0].Diffuse = D3DCOLOR_RGBA_01(cr, cg, cb, alpha1);
-  v1[0].a = COLOR_NORM(alpha1);
-  v1[0].r = COLOR_NORM(cr);
-  v1[0].g = COLOR_NORM(cb);
-  v1[0].b = COLOR_NORM(cg);
-  for (i = 0; i<nVerts1; i++)
+    v1[0].a = COLOR_NORM(alpha1);
+    v1[0].r = COLOR_NORM(cr);
+    v1[0].g = COLOR_NORM(cb);
+    v1[0].b = COLOR_NORM(cg);
+    for (int i = 0; i < nVerts1; i++)
     {
-		//v1[i].Diffuse = v1[0].Diffuse;
-    COPY_COLOR(v1[i], v1[0]);
-    v1[i].y = -v1[i].y;
+        COPY_COLOR(v1[i], v1[0]);
+        v1[i].y = -v1[i].y;
     }
-	
+
+    WFVERTEX* pVerts = v1;
+
+    // don't draw wave if (possibly blended) alpha is less than zero.
+    if (alpha1 < 0.004f)
+        goto SKIP_DRAW_WAVE;
 
     // TESSELLATE - smooth the wave, one time.
-    WFVERTEX* pVerts = v1;
-    WFVERTEX vTess[(576+3)*2];
-	// don't draw wave if (possibly blended) alpha is less than zero.
-	if (alpha1 < 0.004f)
-		goto SKIP_DRAW_WAVE;
+    WFVERTEX vTess[(576 + 3) * 2];
     if (1)
     {
         if (nBreak1==-1)
         {
             nVerts1 = SmoothWave(v1, nVerts1, vTess);
         }
-        else 
+        else
         {
             int oldBreak = nBreak1;
             nBreak1 = SmoothWave(v1, nBreak1, vTess);
@@ -2932,34 +2919,34 @@ void CPlugin::DrawWave(float* fL, float* fR)
         pVerts = vTess;
     }
 
-	// draw primitives
-	{
-		//D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3D_PRIMITIVE_TOPOLOGY_POINTLIST : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-		float x_inc = 2.0f / (float)m_nTexSizeX;
-		float y_inc = 2.0f / (float)m_nTexSizeY;
-		int drawing_its = ((*m_pState->var_pf_wave_thick || *m_pState->var_pf_wave_usedots) && (m_nTexSizeX >= 512)) ? 4 : 1;
+    // Draw primitives.
+    {
+        //D3DPRIMITIVETYPE primtype = (*m_pState->var_pf_wave_usedots) ? D3DPT_POINTLIST : D3DPT_LINESTRIP;
+        float x_inc = 2.0f / (float)m_nTexSizeX;
+        float y_inc = 2.0f / (float)m_nTexSizeY;
+        int drawing_its = ((*m_pState->var_pf_wave_thick || *m_pState->var_pf_wave_usedots) && (m_nTexSizeX >= 512)) ? 4 : 1;
 
-		for (int it=0; it<drawing_its; it++)
-		{
-			int j;
+        for (int it=0; it<drawing_its; it++)
+        {
+            int j;
 
-			switch(it)
-			{
-			case 0: break;
-			case 1: for (j=0; j<nVerts1; j++) pVerts[j].x += x_inc; break;		// draw fat dots
-			case 2: for (j=0; j<nVerts1; j++) pVerts[j].y += y_inc; break;		// draw fat dots
-			case 3: for (j=0; j<nVerts1; j++) pVerts[j].x -= x_inc; break;		// draw fat dots
-			}
+            switch (it)
+            {
+                case 0: break;
+                case 1: for (j = 0; j < nVerts1; j++) pVerts[j].x += x_inc; break; // draw fat dots
+                case 2: for (j = 0; j < nVerts1; j++) pVerts[j].y += y_inc; break; // draw fat dots
+                case 3: for (j = 0; j < nVerts1; j++) pVerts[j].x -= x_inc; break; // draw fat dots
+            }
 
-			if (nBreak1 == -1)
-			{
+            if (nBreak1 == -1)
+            {
                 if (*m_pState->var_pf_wave_usedots)
                     lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, nVerts1, (void*)pVerts, sizeof(WFVERTEX));
                 else
                     lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nVerts1-1, (void*)pVerts, sizeof(WFVERTEX));
-			}
-			else
-			{
+            }
+            else
+            {
                 if (*m_pState->var_pf_wave_usedots)
                 {
                     lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, nBreak1, (void*)pVerts, sizeof(WFVERTEX));
@@ -2970,9 +2957,9 @@ void CPlugin::DrawWave(float* fL, float* fR)
                     lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nBreak1-1, (void*)pVerts, sizeof(WFVERTEX));
                     lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, nVerts1-nBreak1-1, (void*)&pVerts[nBreak1], sizeof(WFVERTEX));
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 
 SKIP_DRAW_WAVE:
   lpDevice->SetBlendState(false);
@@ -2986,132 +2973,133 @@ void CPlugin::DrawSprites()
         return;
 
     lpDevice->SetTexture(0, NULL);
-    lpDevice->SetVertexShader( NULL, NULL );
+    lpDevice->SetVertexShader(NULL, NULL);
     lpDevice->SetVertexColor(true);
     //lpDevice->SetFVF( WFVERTEX_FORMAT );
 
-	if (*m_pState->var_pf_darken_center)
-	{
-    lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
+    if (*m_pState->var_pf_darken_center)
+    {
+        lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
 		//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 		//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA);//SRCALPHA);
 		//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-		WFVERTEX v3[6];
-		ZeroMemory(v3, sizeof(WFVERTEX)*6);
+        WFVERTEX v3[6];
+        ZeroMemory(v3, sizeof(WFVERTEX) * 6);
 
-		// colors:
+        // Colors.
 		//v3[0].Diffuse = D3DCOLOR_RGBA_01(0, 0, 0, 3.0f/32.0f);
 		//v3[1].Diffuse = D3DCOLOR_RGBA_01(0, 0, 0, 0.0f/32.0f);
     //v3[2].Diffuse = v3[1].Diffuse;
     //v3[3].Diffuse = v3[1].Diffuse;
     //v3[4].Diffuse = v3[1].Diffuse;
     //v3[5].Diffuse = v3[1].Diffuse;
-    v3[0].r = v3[0].g = v3[0].b = 0.0f; v3[0].a = 3.0f / 32.0f;
-    v3[1].r = v3[1].g = v3[1].b = 0.0f; v3[1].a = 0.0f;
-    COPY_COLOR(v3[2], v3[1]);
-    COPY_COLOR(v3[3], v3[1]);
-    COPY_COLOR(v3[4], v3[1]);
-    COPY_COLOR(v3[5], v3[1]);
+        v3[0].r = v3[0].g = v3[0].b = 0.0f; v3[0].a = 3.0f / 32.0f;
+        v3[1].r = v3[1].g = v3[1].b = 0.0f; v3[1].a = 0.0f;
+        COPY_COLOR(v3[2], v3[1]);
+        COPY_COLOR(v3[3], v3[1]);
+        COPY_COLOR(v3[4], v3[1]);
+        COPY_COLOR(v3[5], v3[1]);
 
-		// positioning:
-		float fHalfSize = 0.05f;
-		v3[0].x = 0.0f; 	
-		v3[1].x = 0.0f - fHalfSize*m_fAspectY; 	
-		v3[2].x = 0.0f; 	
-		v3[3].x = 0.0f + fHalfSize*m_fAspectY; 	
-		v3[4].x = 0.0f; 
-		v3[5].x = v3[1].x;
-		v3[0].y = 0.0f; 	
-		v3[1].y = 0.0f;
-		v3[2].y = 0.0f - fHalfSize; 	
-		v3[3].y = 0.0f;
-		v3[4].y = 0.0f + fHalfSize; 	
-		v3[5].y = v3[1].y;
+        // Positioning.
+        float fHalfSize = 0.05f;
+        v3[0].x = 0.0f;
+        v3[1].x = 0.0f - fHalfSize * m_fAspectY;
+        v3[2].x = 0.0f;
+        v3[3].x = 0.0f + fHalfSize * m_fAspectY;
+        v3[4].x = 0.0f;
+        v3[5].x = v3[1].x;
+        v3[0].y = 0.0f;
+        v3[1].y = 0.0f;
+        v3[2].y = 0.0f - fHalfSize;
+        v3[3].y = 0.0f;
+        v3[4].y = 0.0f + fHalfSize;
+        v3[5].y = v3[1].y;
 		//v3[0].tu = 0;	v3[1].tu = 1;	v3[2].tu = 0;	v3[3].tu = 1;
 		//v3[0].tv = 1;	v3[1].tv = 1;	v3[2].tv = 0;	v3[3].tv = 0;
 
 		lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1, 4, (LPVOID)v3, sizeof(WFVERTEX));
 
-    lpDevice->SetBlendState(false);
+        lpDevice->SetBlendState(false);
 		//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	}
+    }
 
-	// do borders
-	{
-		float fOuterBorderSize = (float)*m_pState->var_pf_ob_size;
-		float fInnerBorderSize = (float)*m_pState->var_pf_ib_size;
+    // Do borders.
+    {
+        float fOuterBorderSize = (float)*m_pState->var_pf_ob_size;
+        float fInnerBorderSize = (float)*m_pState->var_pf_ib_size;
 
-    lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
+        lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
 		//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 		//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA);
 		//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-		for (int it=0; it<2; it++)
-		{
-			WFVERTEX v3[4];
-			ZeroMemory(v3, sizeof(WFVERTEX)*4);
+        for (int it = 0; it < 2; it++)
+        {
+            WFVERTEX v3[4];
+            ZeroMemory(v3, sizeof(WFVERTEX) * 4);
 
-			// colors:
-			float r = (it==0) ? (float)*m_pState->var_pf_ob_r : (float)*m_pState->var_pf_ib_r;
-			float g = (it==0) ? (float)*m_pState->var_pf_ob_g : (float)*m_pState->var_pf_ib_g;
-			float b = (it==0) ? (float)*m_pState->var_pf_ob_b : (float)*m_pState->var_pf_ib_b;
-			float a = (it==0) ? (float)*m_pState->var_pf_ob_a : (float)*m_pState->var_pf_ib_a;
-			if (a > 0.001f)
-			{
+            // colors:
+            float r = (it == 0) ? (float)*m_pState->var_pf_ob_r : (float)*m_pState->var_pf_ib_r;
+            float g = (it == 0) ? (float)*m_pState->var_pf_ob_g : (float)*m_pState->var_pf_ib_g;
+            float b = (it == 0) ? (float)*m_pState->var_pf_ob_b : (float)*m_pState->var_pf_ib_b;
+            float a = (it == 0) ? (float)*m_pState->var_pf_ob_a : (float)*m_pState->var_pf_ib_a;
+            if (a > 0.001f)
+            {
 				//v3[0].Diffuse = D3DCOLOR_RGBA_01(r,g,b,a);
 				//v3[1].Diffuse = v3[0].Diffuse;
 				//v3[2].Diffuse = v3[0].Diffuse;
 				//v3[3].Diffuse = v3[0].Diffuse;
-        v3[0].a = COLOR_NORM(a);
-        v3[0].r = COLOR_NORM(r);
-        v3[0].g = COLOR_NORM(g);
-        v3[0].b = COLOR_NORM(b);
-        COPY_COLOR(v3[1], v3[0]);
-        COPY_COLOR(v3[2], v3[0]);
-        COPY_COLOR(v3[3], v3[0]);
+                v3[0].a = COLOR_NORM(a);
+                v3[0].r = COLOR_NORM(r);
+                v3[0].g = COLOR_NORM(g);
+                v3[0].b = COLOR_NORM(b);
+                COPY_COLOR(v3[1], v3[0]);
+                COPY_COLOR(v3[2], v3[0]);
+                COPY_COLOR(v3[3], v3[0]);
 
-				// positioning:
-				float fInnerRad = (it==0) ? 1.0f - fOuterBorderSize : 1.0f - fOuterBorderSize - fInnerBorderSize;
-				float fOuterRad = (it==0) ? 1.0f                    : 1.0f - fOuterBorderSize;
-				v3[0].x =  fInnerRad;
-				v3[1].x =  fOuterRad; 	
-				v3[2].x =  fOuterRad;
-				v3[3].x =  fInnerRad;
-				v3[0].y =  fInnerRad;
-				v3[1].y =  fOuterRad;
-				v3[2].y = -fOuterRad;
-				v3[3].y = -fInnerRad;
+                // Positioning.
+                float fInnerRad = (it == 0) ? 1.0f - fOuterBorderSize : 1.0f - fOuterBorderSize - fInnerBorderSize;
+                float fOuterRad = (it == 0) ? 1.0f : 1.0f - fOuterBorderSize;
+                v3[0].x =  fInnerRad;
+                v3[1].x =  fOuterRad;
+                v3[2].x =  fOuterRad;
+                v3[3].x =  fInnerRad;
+                v3[0].y =  fInnerRad;
+                v3[1].y =  fOuterRad;
+                v3[2].y = -fOuterRad;
+                v3[3].y = -fInnerRad;
 
-				for (int rot=0; rot<4; rot++)
-				{
+                for (int rot = 0; rot < 4; rot++)
+                {
 		            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1, 2, (LPVOID)v3, sizeof(WFVERTEX));
 
-					// rotate by 90 degrees
-					for (int v=0; v<4; v++)
-					{
-						float t = 1.570796327f;
-						float x = v3[v].x;
-						float y = v3[v].y;
-						v3[v].x = x*cosf(t) - y*sinf(t);
-						v3[v].y = x*sinf(t) + y*cosf(t);
-					}
-				}
-			}
-		}
-    lpDevice->SetBlendState(false);
+                    // Rotate by 90 degrees.
+                    for (int v = 0; v < 4; v++)
+                    {
+                        float t = 1.570796327f;
+                        float x = v3[v].x;
+                        float y = v3[v].y;
+                        v3[v].x = x * cosf(t) - y * sinf(t);
+                        v3[v].y = x * sinf(t) + y * cosf(t);
+                    }
+                }
+            }
+        }
+        lpDevice->SetBlendState(false);
 		//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	}
+    }
 }
 
-void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
+// Draws sprites from system memory to back buffer.
+void CPlugin::DrawUserSprites()
 {
     D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;
 
     lpDevice->SetTexture(0, NULL);
-    lpDevice->SetVertexShader( NULL, NULL );
+    lpDevice->SetVertexShader(NULL, NULL);
     //lpDevice->SetFVF( SPRITEVERTEX_FORMAT );
 
     //lpDevice->SetRenderState(D3DRS_WRAP0, 0);
@@ -3119,7 +3107,7 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
     //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
     //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
 
-    // reset these to the standard safe mode:
+    // Reset these to the standard safe mode.
     lpDevice->SetShader(0);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	//lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
@@ -3145,10 +3133,10 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
 	lpDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTFP_LINEAR );
     */
 
-	for (int iSlot=0; iSlot < NUM_TEX; iSlot++)
-	{
-		if (m_texmgr.m_tex[iSlot].pSurface)
-		{
+    for (int iSlot = 0; iSlot < NUM_TEX; iSlot++)
+    {
+        if (m_texmgr.m_tex[iSlot].pSurface)
+        {
 			int k;
 
 			// set values of input variables:
@@ -3206,7 +3194,7 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
                 D3DSURFACE_DESC desc;
                 pRT->GetDesc(&desc);
                 dest_w = desc.Width;
-                dest_h = desc.Height;                
+                dest_h = desc.Height;
                 pRT->Release();
             }*/
 
@@ -3310,16 +3298,17 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
 				}
 			}
 
-			// blendmodes                                      src alpha:        dest alpha:
-			// 0   blend      r,g,b=modulate     a=opacity     SRCALPHA          INVSRCALPHA
-			// 1   decal      r,g,b=modulate     a=modulate    D3DBLEND_ONE      D3DBLEND_ZERO
-			// 2   additive   r,g,b=modulate     a=modulate    D3DBLEND_ONE      D3DBLEND_ONE
-			// 3   srccolor   r,g,b=no effect    a=no effect   SRCCOLOR          INVSRCCOLOR
-			// 4   colorkey   r,g,b=modulate     a=no effect   
-			switch(blendmode)
-			{
-			case 0:
-			default:
+            // Blend modes                                     src alpha         dest alpha
+            // -------------------------------------------------------------------------------
+            // 0   blend      r,g,b=modulate     a=opacity     SRCALPHA          INVSRCALPHA
+            // 1   decal      r,g,b=modulate     a=modulate    D3DBLEND_ONE      D3DBLEND_ZERO
+            // 2   additive   r,g,b=modulate     a=modulate    D3DBLEND_ONE      D3DBLEND_ONE
+            // 3   srccolor   r,g,b=no effect    a=no effect   SRCCOLOR          INVSRCCOLOR
+            // 4   colorkey   r,g,b=modulate     a=no effect
+            switch (blendmode)
+            {
+                case 0:
+                default:
 				// alpha blend
 
 				/*
@@ -3377,8 +3366,8 @@ void CPlugin::DrawUserSprites()	// from system memory, to back buffer.
         }
         break;
 			case 2:
-				// additive
-        lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
+                    // Additive.
+                    lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
 				//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 				//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ONE);
 				//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
@@ -3568,9 +3557,9 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
             m_nHighestBlurTexUsedThisFrame = std::max(m_nHighestBlurTexUsedThisFrame, ((int)p->m_texcode[i] - (int)TEX_BLUR1) + 1);
     }
 
-    // bind "texsize_XYZ" params
-    int N = p->texsize_params.size();
-    for (int i=0; i<N; i++)
+    // Bind "texsize_XYZ" params.
+    size_t N = p->texsize_params.size();
+    for (unsigned int i = 0; i < N; i++)
     {
         TexSizeParamInfo* q = &(p->texsize_params[i]);
 		XMFLOAT4 v4((float)q->w, (float)q->h, 1.0f / q->w, 1.0f / q->h);
@@ -3578,19 +3567,19 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
     }
 
     float time_since_preset_start = GetTime() - pState->GetPresetStartTime();
-    float time_since_preset_start_wrapped = time_since_preset_start - (int)(time_since_preset_start/10000)*10000;
+    float time_since_preset_start_wrapped = time_since_preset_start - (int)(time_since_preset_start / 10000) * 10000;
     float time = GetTime() - m_fStartTime;
     float progress = (GetTime() - m_fPresetStartTime) / (m_fNextPresetTime - m_fPresetStartTime);
-    float mip_x = logf((float)GetWidth())/logf(2.0f);
-    float mip_y = logf((float)GetWidth())/logf(2.0f);
-    float mip_avg = 0.5f*(mip_x + mip_y);
+    float mip_x = logf((float)GetWidth()) / logf(2.0f);
+    float mip_y = logf((float)GetWidth()) / logf(2.0f);
+    float mip_avg = 0.5f * (mip_x + mip_y);
     float aspect_x = 1;
     float aspect_y = 1;
     if (GetWidth() > GetHeight())
         aspect_y = GetHeight() / (float)GetWidth();
     else
         aspect_x = GetWidth() / (float)GetHeight();
-    
+
     float blur_min[3], blur_max[3];
     GetSafeBlurMinMax(pState, blur_min, blur_max);
 
@@ -3624,16 +3613,16 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
 		}
     }
 
-    // write matrices
-    for (int i=0; i<20; i++)
+    // Write matrices.
+    for (int i = 0; i < 20; i++)
     {
-        if (p->rot_mat[i]) 
+        if (p->rot_mat[i])
         {
-            XMMATRIX mx,my,mz,mxlate,temp;
+            XMMATRIX mx, my, mz, mxlate, temp;
 
-            mx = XMMatrixRotationX(pState->m_rot_base[i].x + pState->m_rot_speed[i].x*time);
-            my = XMMatrixRotationY(pState->m_rot_base[i].y + pState->m_rot_speed[i].y*time);
-            mz = XMMatrixRotationZ(pState->m_rot_base[i].z + pState->m_rot_speed[i].z*time);
+            mx = XMMatrixRotationX(pState->m_rot_base[i].x + pState->m_rot_speed[i].x * time);
+            my = XMMatrixRotationY(pState->m_rot_base[i].y + pState->m_rot_speed[i].y * time);
+            mz = XMMatrixRotationZ(pState->m_rot_base[i].z + pState->m_rot_speed[i].z * time);
             mxlate = XMMatrixTranslation(pState->m_xlate[i].x, pState->m_xlate[i].y, pState->m_xlate[i].z);
 
             temp = XMMatrixMultiply(mx, mxlate);
@@ -3644,20 +3633,20 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
         }
     }
     // the last 4 are totally random, each frame
-    for (int i=20; i<24; i++)
+    for (int i = 20; i < 24; i++)
     {
-        if (p->rot_mat[i]) 
+        if (p->rot_mat[i])
         {
-            XMMATRIX mx,my,mz,mxlate,temp;
+            XMMATRIX mx, my, mz, mxlate, temp;
 
             mx = XMMatrixRotationX(FRAND * 6.28f);
             my = XMMatrixRotationY(FRAND * 6.28f);
             mz = XMMatrixRotationZ(FRAND * 6.28f);
             mxlate = XMMatrixTranslation(FRAND, FRAND, FRAND);
 
-            temp = XMMatrixMultiply( mx, mxlate );
-            temp = XMMatrixMultiply( temp, mz );
-            temp = XMMatrixMultiply( temp, my );
+            temp = XMMatrixMultiply(mx, mxlate);
+            temp = XMMatrixMultiply(temp, mz);
+            temp = XMMatrixMultiply(temp, my);
 
             pCT->SetMatrix(p->rot_mat[i], &temp);
         }
@@ -3698,230 +3687,225 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
     //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
-	float fZoom = 1.0f;
-	SPRITEVERTEX v3[4];
-	ZeroMemory(v3, sizeof(SPRITEVERTEX)*4);
+    float fZoom = 1.0f;
+    SPRITEVERTEX v3[4];
+    ZeroMemory(v3, sizeof(SPRITEVERTEX) * 4);
 
-	// extend the poly we draw by 1 pixel around the viewable image area, 
-	//  in case the video card wraps u/v coords with a +0.5-texel offset 
-	//  (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
+    // extend the poly we draw by 1 pixel around the viewable image area,
+    // in case the video card wraps u/v coords with a +0.5-texel offset
+    // (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
     float fOnePlusInvWidth = 1.0f + 1.0f / static_cast<float>(std::max(1, GetWidth()));
     float fOnePlusInvHeight = 1.0f + 1.0f / static_cast<float>(std::max(1, GetHeight()));
-	v3[0].x = -fOnePlusInvWidth;
-	v3[1].x =  fOnePlusInvWidth;
-	v3[2].x = -fOnePlusInvWidth;
-	v3[3].x =  fOnePlusInvWidth;
-	v3[0].y =  fOnePlusInvHeight;
-	v3[1].y =  fOnePlusInvHeight;
-	v3[2].y = -fOnePlusInvHeight;
-	v3[3].y = -fOnePlusInvHeight;
+    v3[0].x = -fOnePlusInvWidth;
+    v3[1].x = fOnePlusInvWidth;
+    v3[2].x = -fOnePlusInvWidth;
+    v3[3].x = fOnePlusInvWidth;
+    v3[0].y = fOnePlusInvHeight;
+    v3[1].y = fOnePlusInvHeight;
+    v3[2].y = -fOnePlusInvHeight;
+    v3[3].y = -fOnePlusInvHeight;
 
-	//float aspect = GetWidth() / (float)(GetHeight()/(ASPECT)/**4.0f/3.0f*/);
-	float aspect = GetWidth() / (float)(GetHeight()*m_fInvAspectY/**4.0f/3.0f*/);
+    //float aspect = GetWidth() / (float)(GetHeight() / (ASPECT) /* * 4.0f / 3.0f */);
+    float aspect = GetWidth() / (float)(GetHeight() * m_fInvAspectY /* * 4.0f / 3.0f */);
     float x_aspect_mult = 1.0f;
     float y_aspect_mult = 1.0f;
 
-    if (aspect>1)
+    if (aspect > 1)
         y_aspect_mult = aspect;
     else
-        x_aspect_mult = 1.0f/aspect;
+        x_aspect_mult = 1.0f / aspect;
 
-	for (int n=0; n<4; n++) 
+    for (int n = 0; n < 4; n++)
     {
         v3[n].x *= x_aspect_mult;
         v3[n].y *= y_aspect_mult;
     }
-    
-	{
-		float shade[4][3] = { 
-			{ 1.0f, 1.0f, 1.0f },
-			{ 1.0f, 1.0f, 1.0f },
-			{ 1.0f, 1.0f, 1.0f },
-			{ 1.0f, 1.0f, 1.0f } };  // for each vertex, then each comp.
 
-		float fShaderAmount = m_pState->m_fShader.eval(GetTime());
+    {
+        float shade[4][3] = {
+            {1.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 1.0f}
+        }; // for each vertex, then each comp.
 
-		if (fShaderAmount > 0.001f)
-		{
-			for (int i=0; i<4; i++)
-			{
-				shade[i][0] = 0.6f + 0.3f*sinf(GetTime()*30.0f*0.0143f + 3 + i*21 + m_fRandStart[3]);
-				shade[i][1] = 0.6f + 0.3f*sinf(GetTime()*30.0f*0.0107f + 1 + i*13 + m_fRandStart[1]);
-				shade[i][2] = 0.6f + 0.3f*sinf(GetTime()*30.0f*0.0129f + 6 + i*9  + m_fRandStart[2]);
-				float max = ((shade[i][0] > shade[i][1]) ? shade[i][0] : shade[i][1]);
-				if (shade[i][2] > max) max = shade[i][2];
-				for (int k=0; k<3; k++)
-				{
-					shade[i][k] /= max;
-					shade[i][k] = 0.5f + 0.5f*shade[i][k];
-				}
-				for (int k=0; k<3; k++)
-				{
-					shade[i][k] = shade[i][k]*(fShaderAmount) + 1.0f*(1.0f - fShaderAmount);
-				}
-				//v3[i].Diffuse = D3DCOLOR_RGBA_01(shade[i][0],shade[i][1],shade[i][2],1);
-        v3[i].r = COLOR_NORM(shade[i][0]);
-        v3[i].g = COLOR_NORM(shade[i][1]);
-        v3[i].b = COLOR_NORM(shade[i][2]);
-        v3[i].a = 1.0f;
-      }
-		}
+        float fShaderAmount = m_pState->m_fShader.eval(GetTime());
 
-		float fVideoEchoZoom        = (float)(*m_pState->var_pf_echo_zoom);//m_pState->m_fVideoEchoZoom.eval(GetTime());
-		float fVideoEchoAlpha       = (float)(*m_pState->var_pf_echo_alpha);//m_pState->m_fVideoEchoAlpha.eval(GetTime());
-		int   nVideoEchoOrientation = (int)  (*m_pState->var_pf_echo_orient) % 4;//m_pState->m_nVideoEchoOrientation;
-		float fGammaAdj             = (float)(*m_pState->var_pf_gamma);//m_pState->m_fGammaAdj.eval(GetTime());
+        if (fShaderAmount > 0.001f)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                shade[i][0] = 0.6f + 0.3f * sinf(GetTime() * 30.0f * 0.0143f + 3 + i * 21 + m_fRandStart[3]);
+                shade[i][1] = 0.6f + 0.3f * sinf(GetTime() * 30.0f * 0.0107f + 1 + i * 13 + m_fRandStart[1]);
+                shade[i][2] = 0.6f + 0.3f * sinf(GetTime() * 30.0f * 0.0129f + 6 + i * 9 + m_fRandStart[2]);
+                float max = ((shade[i][0] > shade[i][1]) ? shade[i][0] : shade[i][1]);
+                if (shade[i][2] > max)
+                    max = shade[i][2];
+                for (int k = 0; k < 3; k++)
+                {
+                    shade[i][k] /= max;
+                    shade[i][k] = 0.5f + 0.5f * shade[i][k];
+                }
+                for (int k = 0; k < 3; k++)
+                {
+                    shade[i][k] = shade[i][k] * (fShaderAmount) + 1.0f * (1.0f - fShaderAmount);
+                }
+                v3[i].r = COLOR_NORM(shade[i][0]);
+                v3[i].g = COLOR_NORM(shade[i][1]);
+                v3[i].b = COLOR_NORM(shade[i][2]);
+                v3[i].a = 1.0f;
+            }
+        }
+
+        float fVideoEchoZoom = (float)(*m_pState->var_pf_echo_zoom);          //m_pState->m_fVideoEchoZoom.eval(GetTime());
+        float fVideoEchoAlpha = (float)(*m_pState->var_pf_echo_alpha);        //m_pState->m_fVideoEchoAlpha.eval(GetTime());
+        int nVideoEchoOrientation = (int)(*m_pState->var_pf_echo_orient) % 4; //m_pState->m_nVideoEchoOrientation;
+        float fGammaAdj = (float)(*m_pState->var_pf_gamma);                   //m_pState->m_fGammaAdj.eval(GetTime());
 
 		if (m_pState->m_bBlending && 
 			m_pState->m_fVideoEchoAlpha.eval(GetTime()) > 0.01f &&
 			m_pState->m_fVideoEchoAlphaOld > 0.01f &&
-			m_pState->m_nVideoEchoOrientation != m_pState->m_nVideoEchoOrientationOld)
-		{
-			if (m_pState->m_fBlendProgress < m_fSnapPoint)
-			{
-				nVideoEchoOrientation = m_pState->m_nVideoEchoOrientationOld;
-				fVideoEchoAlpha *= 1.0f - 2.0f*CosineInterp(m_pState->m_fBlendProgress);
-			}
-			else
-			{
-				fVideoEchoAlpha *= 2.0f*CosineInterp(m_pState->m_fBlendProgress) - 1.0f;
-			}
-		}
+            m_pState->m_nVideoEchoOrientation != m_pState->m_nVideoEchoOrientationOld)
+        {
+            if (m_pState->m_fBlendProgress < m_fSnapPoint)
+            {
+                nVideoEchoOrientation = m_pState->m_nVideoEchoOrientationOld;
+                fVideoEchoAlpha *= 1.0f - 2.0f * CosineInterp(m_pState->m_fBlendProgress);
+            }
+            else
+            {
+                fVideoEchoAlpha *= 2.0f * CosineInterp(m_pState->m_fBlendProgress) - 1.0f;
+            }
+        }
 
-		if (fVideoEchoAlpha > 0.001f)
-		{
-			// video echo
-      lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ZERO);
+        if (fVideoEchoAlpha > 0.001f)
+        {
+            // video echo
+            lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ONE);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 
-			for (int i=0; i<2; i++)
-			{
-				fZoom = (i==0) ? 1.0f : fVideoEchoZoom;
+            for (int i = 0; i < 2; i++)
+            {
+                fZoom = (i == 0) ? 1.0f : fVideoEchoZoom;
 
-				float temp_lo = 0.5f - 0.5f/fZoom;
-				float temp_hi = 0.5f + 0.5f/fZoom;
-				v3[0].tu = temp_lo;
-				v3[0].tv = temp_hi;
-				v3[1].tu = temp_hi;
-				v3[1].tv = temp_hi;
-				v3[2].tu = temp_lo;
-				v3[2].tv = temp_lo;
-				v3[3].tu = temp_hi;
-				v3[3].tv = temp_lo;
+                float temp_lo = 0.5f - 0.5f / fZoom;
+                float temp_hi = 0.5f + 0.5f / fZoom;
+                v3[0].tu = temp_lo;
+                v3[0].tv = temp_hi;
+                v3[1].tu = temp_hi;
+                v3[1].tv = temp_hi;
+                v3[2].tu = temp_lo;
+                v3[2].tv = temp_lo;
+                v3[3].tu = temp_hi;
+                v3[3].tv = temp_lo;
 
-				// flipping
-				if (i==1)
-				{
-					for (int j=0; j<4; j++)
-					{
-						if (nVideoEchoOrientation % 2)
-							v3[j].tu = 1.0f - v3[j].tu;
-						if (nVideoEchoOrientation >= 2)
-							v3[j].tv = 1.0f - v3[j].tv;
-					}
-				}
+                // flipping
+                if (i == 1)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (nVideoEchoOrientation % 2)
+                            v3[j].tu = 1.0f - v3[j].tu;
+                        if (nVideoEchoOrientation >= 2)
+                            v3[j].tv = 1.0f - v3[j].tv;
+                    }
+                }
 
-				float mix = (i==1) ? fVideoEchoAlpha : 1.0f - fVideoEchoAlpha;
-				for (int k=0; k<4; k++)	
-        {
-					//v3[k].Diffuse = D3DCOLOR_RGBA_01(mix*shade[k][0],mix*shade[k][1],mix*shade[k][2],1);
-          v3[k].r = COLOR_NORM(mix*shade[k][0]);
-          v3[k].g = COLOR_NORM(mix*shade[k][1]);
-          v3[k].b = COLOR_NORM(mix*shade[k][2]);
-          v3[k].a = 1.0f;
-        }
+                float mix = (i == 1) ? fVideoEchoAlpha : 1.0f - fVideoEchoAlpha;
+                for (int k = 0; k < 4; k++)
+                {
+                    v3[k].r = COLOR_NORM(mix * shade[k][0]);
+                    v3[k].g = COLOR_NORM(mix * shade[k][1]);
+                    v3[k].b = COLOR_NORM(mix * shade[k][2]);
+                    v3[k].a = 1.0f;
+                }
 
                 lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
-				if (i==0)
-				{
-          lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
+                if (i == 0)
+                {
+                    lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
 					//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ONE);
 					//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-				}
+                }
 
-				if (fGammaAdj > 0.001f)
-				{
-					// draw layer 'i' a 2nd (or 3rd, or 4th...) time, additively
-					int nRedraws = (int)(fGammaAdj - 0.0001f);
-					float gamma;
+                if (fGammaAdj > 0.001f)
+                {
+                    // draw layer 'i' a 2nd (or 3rd, or 4th...) time, additively
+                    int nRedraws = (int)(fGammaAdj - 0.0001f);
+                    float gamma;
 
-					for (int nRedraw=0; nRedraw < nRedraws; nRedraw++)
-					{
-						if (nRedraw == nRedraws-1)
-							gamma = fGammaAdj - (int)(fGammaAdj - 0.0001f);
-						else
-							gamma = 1.0f;
+                    for (int nRedraw = 0; nRedraw < nRedraws; nRedraw++)
+                    {
+                        if (nRedraw == nRedraws - 1)
+                            gamma = fGammaAdj - (int)(fGammaAdj - 0.0001f);
+                        else
+                            gamma = 1.0f;
 
-						for (int k=0; k<4; k++)
-            {
-							//v3[k].Diffuse = D3DCOLOR_RGBA_01(gamma*mix*shade[k][0],gamma*mix*shade[k][1],gamma*mix*shade[k][2],1);
-              v3[k].r = COLOR_NORM(gamma*mix*shade[k][0]);
-              v3[k].g = COLOR_NORM(gamma*mix*shade[k][1]);
-              v3[k].b = COLOR_NORM(gamma*mix*shade[k][2]);
-              v3[k].a = 1.0f;
-            }
+                        for (int k = 0; k < 4; k++)
+                        {
+                            v3[k].r = COLOR_NORM(gamma * mix * shade[k][0]);
+                            v3[k].g = COLOR_NORM(gamma * mix * shade[k][1]);
+                            v3[k].b = COLOR_NORM(gamma * mix * shade[k][2]);
+                            v3[k].a = 1.0f;
+                        }
                         lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
-					}
-				}
-			}
-		}
-		else
-		{
-			// no video echo
+                    }
+                }
+            }
+        }
+        else
+        {
+            // no video echo
 			v3[0].tu = 0;	v3[1].tu = 1;	v3[2].tu = 0;	v3[3].tu = 1;
 			v3[0].tv = 1;	v3[1].tv = 1;	v3[2].tv = 0;	v3[3].tv = 0;
 
-      lpDevice->SetBlendState(false, D3D11_BLEND_ONE, D3D11_BLEND_ZERO);
+            lpDevice->SetBlendState(false, D3D11_BLEND_ONE, D3D11_BLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ONE);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 
-			// draw it iteratively, solid the first time, and additively after that
-			int nPasses = (int)(fGammaAdj - 0.001f) + 1;
-			float gamma;
+            // draw it iteratively, solid the first time, and additively after that
+            int nPasses = (int)(fGammaAdj - 0.001f) + 1;
+            float gamma;
 
-			for (int nPass=0; nPass < nPasses; nPass++)
-			{
-				if (nPass == nPasses - 1)
-					gamma = fGammaAdj - (float)nPass;
-				else
-					gamma = 1.0f;
+            for (int nPass = 0; nPass < nPasses; nPass++)
+            {
+                if (nPass == nPasses - 1)
+                    gamma = fGammaAdj - (float)nPass;
+                else
+                    gamma = 1.0f;
 
-				for (int k=0; k<4; k++)
-        {
-					//v3[k].Diffuse = D3DCOLOR_RGBA_01(gamma*shade[k][0],gamma*shade[k][1],gamma*shade[k][2],1);
-          v3[k].r = COLOR_NORM(gamma*shade[k][0]);
-          v3[k].g = COLOR_NORM(gamma*shade[k][1]);
-          v3[k].b = COLOR_NORM(gamma*shade[k][2]);
-          v3[k].a = 1.0f;
-        }
+                for (int k = 0; k < 4; k++)
+                {
+                    v3[k].r = COLOR_NORM(gamma * shade[k][0]);
+                    v3[k].g = COLOR_NORM(gamma * shade[k][1]);
+                    v3[k].b = COLOR_NORM(gamma * shade[k][2]);
+                    v3[k].a = 1.0f;
+                }
                 lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
-				if (nPass==0)
-				{
-          lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
+                if (nPass == 0)
+                {
+                    lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
 					//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 					//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ONE);
 					//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-				}
-			}
-		}
+                }
+            }
+        }
 
-		SPRITEVERTEX v3[4];
-		ZeroMemory(v3, sizeof(SPRITEVERTEX)*4);
-        float fOnePlusInvWidth = 1.0f + 1.0f / static_cast<float>(std::max(1, GetWidth()));
-        float fOnePlusInvHeight = 1.0f + 1.0f / static_cast<float>(std::max(1, GetHeight()));
-		v3[0].x = -fOnePlusInvWidth;
-		v3[1].x =  fOnePlusInvWidth;
-		v3[2].x = -fOnePlusInvWidth;
-		v3[3].x =  fOnePlusInvWidth;
-		v3[0].y =  fOnePlusInvHeight;
-		v3[1].y =  fOnePlusInvHeight;
-		v3[2].y = -fOnePlusInvHeight;
-		v3[3].y = -fOnePlusInvHeight;
+        ZeroMemory(v3, sizeof(SPRITEVERTEX) * 4);
+        v3[0].x = -fOnePlusInvWidth;
+        v3[1].x = fOnePlusInvWidth;
+        v3[2].x = -fOnePlusInvWidth;
+        v3[3].x = fOnePlusInvWidth;
+        v3[0].y = fOnePlusInvHeight;
+        v3[1].y = fOnePlusInvHeight;
+        v3[2].y = -fOnePlusInvHeight;
+        v3[3].y = -fOnePlusInvHeight;
 		//for (int i=0; i<4; i++) v3[i].Diffuse = D3DCOLOR_RGBA_01(1,1,1,1);
 		for (int i=0; i<4; i++) { v3[i].r = v3[i].g = v3[i].b = v3[i].a = 1.0; }
 
@@ -3929,18 +3913,18 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 			(GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR ) &&
 			(GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/
 			)
-		{
-			// square root filter
+        {
+            // square root filter
 
 			//lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);       //?
 			//lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT); //?
 
-			lpDevice->SetTexture(0, NULL);
-      lpDevice->SetVertexColor(true);
+            lpDevice->SetTexture(0, NULL);
+            lpDevice->SetVertexColor(true);
 			//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-			// first, a perfect invert
-      lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);
+            // first, a perfect invert
+            lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_INVDESTCOLOR);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
@@ -4019,11 +4003,11 @@ void CPlugin::ShowToUser_NoShaders()//int bRedraw, int nPassOverride)
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 			
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
-		}
+        }
 
-    lpDevice->SetBlendState(false);
+        lpDevice->SetBlendState(false);
 		//lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	}
+    }
 }
 
 void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, bool bCullTiles, bool bFlipCulling)//int bRedraw, int nPassOverride, bool bFlipAlpha)
@@ -4038,9 +4022,9 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
     lpDevice->SetBlendState(false);
     //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-	float fZoom = 1.0f;
+    //float fZoom = 1.0f;
 
-	float aspect = GetWidth() / (float)(GetHeight()*m_fInvAspectY/**4.0f/3.0f*/);
+	float aspect = GetWidth() / (float)(GetHeight() * m_fInvAspectY /* * 4.0f / 3.0f */);
     float x_aspect_mult = 1.0f;
     float y_aspect_mult = 1.0f;
 
@@ -4069,34 +4053,36 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
             shade[i][2] = 0.6f + 0.3f * sinf(GetTime() * 30.0f * 0.0129f + 6 + i * 9 + m_fRandStart[2]);
             float max = ((shade[i][0] > shade[i][1]) ? shade[i][0] : shade[i][1]);
 			if (shade[i][2] > max) max = shade[i][2];
-			for (int k=0; k<3; k++)
-			{
-				shade[i][k] /= max;
-				shade[i][k] = 0.5f + 0.5f*shade[i][k];
-			}
-            // note: we now pass the raw hue shader colors down; the shader can only use a certain % if it wants.
-			//for (k=0; k<3; k++)
-			//	shade[i][k] = shade[i][k]*(fShaderAmount) + 1.0f*(1.0f - fShaderAmount);
-			//m_comp_verts[i].Diffuse = D3DCOLOR_RGBA_01(shade[i][0],shade[i][1],shade[i][2],1);
-		}
-
-        // interpolate the 4 colors & apply to all the verts
-        for (int j=0; j<FCGSY; j++) 
-        {
-            for (int i=0; i<FCGSX; i++) 
+            for (int k = 0; k < 3; k++)
             {
-                MDVERTEX* p = &m_comp_verts[i + j*FCGSX];
-                float x = p->x*0.5f + 0.5f;
-                float y = p->y*0.5f + 0.5f; 
+                shade[i][k] /= max;
+                shade[i][k] = 0.5f + 0.5f * shade[i][k];
+            }
+            // Note: we now pass the raw hue shader colors down; the shader can only use a certain % if it wants.
+            //for (k=0; k<3; k++)
+            //    shade[i][k] = shade[i][k]*(fShaderAmount) + 1.0f*(1.0f - fShaderAmount);
+            //m_comp_verts[i].Diffuse = D3DCOLOR_RGBA_01(shade[i][0],shade[i][1],shade[i][2],1);
+        }
 
-                float col[3] = { 1, 1, 1 };
-                if (fShaderAmount > 0.001f) 
+        // Interpolate the 4 colors & apply to all the verts.
+        for (int j = 0; j < FCGSY; j++)
+        {
+            for (int i = 0; i < FCGSX; i++)
+            {
+                MDVERTEX* p = &m_comp_verts[i + j * FCGSX];
+                float x = p->x * 0.5f + 0.5f;
+                float y = p->y * 0.5f + 0.5f;
+
+                float col[3] = {1, 1, 1};
+                if (fShaderAmount > 0.001f)
                 {
-                    for (int c=0; c<3; c++) 
-                        col[c] = shade[0][c]*(  x)*(  y) + 
-                                 shade[1][c]*(1-x)*(  y) + 
-                                 shade[2][c]*(  x)*(1-y) + 
-                                 shade[3][c]*(1-x)*(1-y);
+                    // clang-format off
+                    for (int c = 0; c < 3; c++)
+                        col[c] = shade[0][c] * (x) * (y) +
+                                 shade[1][c] * (1 - x) * (y) +
+                                 shade[2][c] * (x) * (1 - y) +
+                                 shade[3][c] * (1 - x) * (1 - y);
+                    // clang-format on
                 }
 
                 // TO DO: improve interp here?
@@ -4104,7 +4090,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
                 // if blending, also set up the alpha values - pull them from the alphas used for the Warped Blit
                 double alpha = 1;
-                if (m_pState->m_bBlending) 
+                if (m_pState->m_bBlending)
                 {
                     x *= (m_nGridX + 1);
                     y *= (m_nGridY + 1);
@@ -4114,21 +4100,21 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
                     int ny = (int)y;
                     double dx = x - nx;
                     double dy = y - ny;
-                    double alpha00 = (m_verts[(ny  )*(m_nGridX+1) + (nx  )].a * 255);
-                    double alpha01 = (m_verts[(ny  )*(m_nGridX+1) + (nx+1)].a * 255);
-                    double alpha10 = (m_verts[(ny+1)*(m_nGridX+1) + (nx  )].a * 255);
-                    double alpha11 = (m_verts[(ny+1)*(m_nGridX+1) + (nx+1)].a * 255);
-                    alpha = alpha00*(1-dx)*(1-dy) + 
-                            alpha01*(  dx)*(1-dy) + 
-                            alpha10*(1-dx)*(  dy) + 
-                            alpha11*(  dx)*(  dy);
+                    // clang-format off
+                    double alpha00 = (m_verts[(ny) * (m_nGridX + 1) + (nx)].a * 255);
+                    double alpha01 = (m_verts[(ny) * (m_nGridX + 1) + (nx + 1)].a * 255);
+                    double alpha10 = (m_verts[(ny + 1) * (m_nGridX + 1) + (nx)].a * 255);
+                    double alpha11 = (m_verts[(ny + 1) * (m_nGridX + 1) + (nx + 1)].a * 255);
+                    alpha = alpha00 * (1 - dx) * (1 - dy) +
+                            alpha01 * (dx) * (1 - dy) +
+                            alpha10 * (1 - dx) * (dy) +
+                            alpha11 * (dx) * (dy);
+                    // clang-format on
                     alpha /= 255.0f;
                     //if (bFlipAlpha)
                     //    alpha = 1-alpha;
-
                     //alpha = (m_verts[y*(m_nGridX+1) + x].Diffuse >> 24) / 255.0f;
                 }
-                //p->Diffuse = D3DCOLOR_RGBA_01(col[0],col[1],col[2],alpha);
                 p->r = col[0];
                 p->g = col[1];
                 p->b = col[2];
@@ -4161,15 +4147,15 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
       lpDevice->SetBlendState(false);
         //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-    // Now do the final composite blit, fullscreen; 
+    // Now do the final composite blit, fullscreen;
     //  or do it twice, alpha-blending, if we're blending between two sets of shaders.
 
     int pass = nPass;
     {
         // PASS 0: draw using *blended per-vertex motion vectors*, but with the OLD comp shader.
         // PASS 1: draw using *blended per-vertex motion vectors*, but with the NEW comp shader.
-        PShaderInfo* si = (pass==0) ? &m_OldShaders.comp : &m_shaders.comp;
-        CState* state = (pass==0) ? m_pOldState : m_pState;
+        PShaderInfo* si = (pass == 0) ? &m_OldShaders.comp : &m_shaders.comp;
+        CState* state = (pass == 0) ? m_pOldState : m_pState;
 
         //lpDevice->SetVertexDeclaration(m_pMyVertDecl);
         lpDevice->SetVertexShader(m_fallbackShaders_vs.comp.ptr, m_fallbackShaders_vs.comp.CT);
@@ -4386,20 +4372,20 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 		}
 	}
 
-	WORD indices[7*15*6];
-	i = 0;	
-	for (y=0; y<7; y++)
-	{
-		for (x=0; x<15; x++)
-		{
-			indices[i++] = y*16 + x;
-			indices[i++] = y*16 + x + 1;
-			indices[i++] = y*16 + x + 16;
-			indices[i++] = y*16 + x + 1;
-			indices[i++] = y*16 + x + 16;
-			indices[i++] = y*16 + x + 17;
-		}
-	}
+	WORD indices[7 * 15 * 6];
+    i = 0;
+    for (y = 0; y < 7; y++)
+    {
+        for (x = 0; x < 15; x++)
+        {
+            indices[i++] = static_cast<WORD>(y * 16 + x);
+            indices[i++] = static_cast<WORD>(y * 16 + x + 1);
+            indices[i++] = static_cast<WORD>(y * 16 + x + 16);
+            indices[i++] = static_cast<WORD>(y * 16 + x + 1);
+            indices[i++] = static_cast<WORD>(y * 16 + x + 16);
+            indices[i++] = static_cast<WORD>(y * 16 + x + 17);
+        }
+    }
 
     // final flip on y
     //for (i=0; i<128; i++)
@@ -4413,28 +4399,28 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         // colors
         {
             float t;
-			
-			if (m_supertext.bIsSongTitle)
-				t = powf(fProgress, 0.3f)*1.0f;
-			else
-				t = CosineInterp(std::min(1.0f, (fProgress/m_supertext.fFadeTime)));
-			
-			if (it==0)
-				//v3[0].Diffuse = D3DCOLOR_RGBA_01(t,t,t,t);
-        v3[0].r = v3[0].g = v3[0].b = v3[0].a = t;
-			else
-      {
-				//v3[0].Diffuse = D3DCOLOR_RGBA_01(t*m_supertext.nColorR/255.0f,t*m_supertext.nColorG/255.0f,t*m_supertext.nColorB/255.0f,t);
-        v3[0].r = COLOR_NORM(t*m_supertext.nColorR / 255.0f);
-        v3[0].g = COLOR_NORM(t*m_supertext.nColorG / 255.0f);
-        v3[0].b = COLOR_NORM(t*m_supertext.nColorB / 255.0f);
-        v3[0].a = t;
-      }
 
-			for (i=1; i<128; i++)
-        COPY_COLOR(v3[i], v3[0]);
+            if (m_supertext.bIsSongTitle)
+                t = powf(fProgress, 0.3f) * 1.0f;
+            else
+                t = CosineInterp(std::min(1.0f, (fProgress / m_supertext.fFadeTime)));
+
+            if (it == 0)
+				//v3[0].Diffuse = D3DCOLOR_RGBA_01(t,t,t,t);
+                v3[0].r = v3[0].g = v3[0].b = v3[0].a = t;
+            else
+            {
+				//v3[0].Diffuse = D3DCOLOR_RGBA_01(t*m_supertext.nColorR/255.0f,t*m_supertext.nColorG/255.0f,t*m_supertext.nColorB/255.0f,t);
+                v3[0].r = COLOR_NORM(t * m_supertext.nColorR / 255.0f);
+                v3[0].g = COLOR_NORM(t * m_supertext.nColorG / 255.0f);
+                v3[0].b = COLOR_NORM(t * m_supertext.nColorB / 255.0f);
+                v3[0].a = t;
+            }
+
+            for (i = 1; i < 128; i++)
+                COPY_COLOR(v3[i], v3[0]);
 				//v3[i].Diffuse = v3[0].Diffuse;
-		}
+        }
 
         // nudge down & right for shadow, up & left for solid text
         float offset_x = 0, offset_y = 0;
@@ -4458,7 +4444,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
         if (it == 0)
         {
-      lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_INV_SRC_COLOR);
+            lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_INV_SRC_COLOR);
 			//lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ZERO);//SRCALPHA);
 			//lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
         }

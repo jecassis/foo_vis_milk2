@@ -72,27 +72,20 @@ extern int g_szHelp_W;
 // Resides in `vms_desktop.dll/lib`.
 void getItemData(int x);
 
-CPluginShell::CPluginShell()
-{
-    // this should remain empty!
-}
+CPluginShell::CPluginShell() { /* This should remain empty! */ }
+CPluginShell::~CPluginShell() { /* This should remain empty! */ }
 
-CPluginShell::~CPluginShell()
-{
-    // this should remain empty!
-}
-
-eScrMode CPluginShell::GetScreenMode() { return m_screenmode; };
-int CPluginShell::GetFrame() { return m_frame; };
-float CPluginShell::GetTime() { return m_time; };
-float CPluginShell::GetFps() { return m_fps; };
-int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else return 0; };
-int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; };
-int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; };
-int CPluginShell::GetCanvasMarginY() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height) / 2; else return 0; };
-HINSTANCE CPluginShell::GetInstance() { return m_hInstance; };
-wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; };
-wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; };
+eScrMode CPluginShell::GetScreenMode() { return m_screenmode; }
+int CPluginShell::GetFrame() { return m_frame; }
+float CPluginShell::GetTime() { return m_time; }
+float CPluginShell::GetFps() { return m_fps; }
+int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else return 0; }
+int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; }
+int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; }
+int CPluginShell::GetCanvasMarginY() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height) / 2; else return 0; }
+HINSTANCE CPluginShell::GetInstance() { return m_hInstance; }
+wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; }
+wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; }
 char* CPluginShell::GetConfigIniFileA() { return m_szConfigIniFileA; }
 int CPluginShell::GetFontHeight(eFontIndex idx) { if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_fontinfo[idx].nSize; else return 0; };
 int CPluginShell::GetBitDepth() { return m_lpDX->GetBitDepth(); };
@@ -103,8 +96,8 @@ D3DFORMAT CPluginShell::GetBackBufFormat() { if (m_lpDX) return m_lpDX->m_curren
 D3DFORMAT CPluginShell::GetBackBufZFormat() { if (m_lpDX) return m_lpDX->GetZFormat(); else return D3DFMT_UNKNOWN; };
 #endif
 IUnknown* CPluginShell::GetFont(eFontIndex idx) { if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_d3dx_font[idx]; else return NULL; };
-char* CPluginShell::GetDriverFilename() { static char fake[1] = {0}; return fake; };
-char* CPluginShell::GetDriverDescription() { static char fake[1] = {0}; return fake; };
+char* CPluginShell::GetDriverFilename() { static char fake[1] = {0}; return fake; }
+char* CPluginShell::GetDriverDescription() { static char fake[1] = {0}; return fake; }
 
 int CPluginShell::InitNonDX11()
 {
@@ -507,7 +500,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     return TRUE;
 }
 
-int CPluginShell::PluginInitialize(int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio)
+int CPluginShell::PluginInitialize(int /* iPosX */, int /* iPosY */, int iWidth, int iHeight, float /* pixelRatio */)
 {
     m_disp_mode_fs.Width = iWidth;
     m_disp_mode_fs.Height = iHeight;
@@ -536,31 +529,31 @@ void CPluginShell::PluginQuit()
 wchar_t* BuildSettingName(wchar_t* name, int number)
 {
     static wchar_t temp[64];
-    swprintf(temp, L"%s%d", name, number);
+    swprintf_s(temp, L"%s%d", name, number);
     return temp;
 }
 
 void CPluginShell::ReadFont(int n){
 #if 0
-	GetPrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_fontinfo[n].szFace,sizeof(m_fontinfo[n].szFace), m_szConfigIniFile);
-	m_fontinfo[n].nSize   = GetPrivateProfileIntW(L"settings",BuildSettingName(L"nFontSize",n),m_fontinfo[n].nSize  ,m_szConfigIniFile);
-	m_fontinfo[n].bBold   = GetPrivateProfileIntW(L"settings",BuildSettingName(L"bFontBold",n),m_fontinfo[n].bBold  ,m_szConfigIniFile);
-	m_fontinfo[n].bItalic = GetPrivateProfileIntW(L"settings",BuildSettingName(L"bFontItalic",n),m_fontinfo[n].bItalic,m_szConfigIniFile);
-	m_fontinfo[n].bAntiAliased = GetPrivateProfileIntW(L"settings",BuildSettingName(L"bFontAA",n),m_fontinfo[n].bItalic,m_szConfigIniFile);
+    GetPrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_fontinfo[n].szFace, ARRAYSIZE(m_fontinfo[n].szFace), m_szConfigIniFile);
+    m_fontinfo[n].nSize = GetPrivateProfileInt(L"settings", BuildSettingName(L"nFontSize", n), m_fontinfo[n].nSize, m_szConfigIniFile);
+    m_fontinfo[n].bBold = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontBold", n), m_fontinfo[n].bBold, m_szConfigIniFile);
+    m_fontinfo[n].bItalic = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontItalic", n), m_fontinfo[n].bItalic, m_szConfigIniFile);
+    m_fontinfo[n].bAntiAliased = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontAA", n), m_fontinfo[n].bItalic, m_szConfigIniFile);
 #endif
 }
 
 void CPluginShell::ReadConfig()
 {
 #if 0
-	int old_ver    = GetPrivateProfileIntW(L"settings",L"version"   ,-1,m_szConfigIniFile);
-	int old_subver = GetPrivateProfileIntW(L"settings",L"subversion",-1,m_szConfigIniFile);
+    int old_ver = GetPrivateProfileInt(L"settings", L"version", -1, m_szConfigIniFile);
+    int old_subver = GetPrivateProfileInt(L"settings", L"subversion", -1, m_szConfigIniFile);
 
-	// nuke old settings from prev. version:
-	if (old_ver < INT_VERSION)
-		return;
-	else if (old_subver < INT_SUBVERSION)
-		return;
+    // Nuke old settings from previous version.
+    if (old_ver < INT_VERSION)
+        return;
+    else if (old_subver < INT_SUBVERSION)
+        return;
 
 	//D3DMULTISAMPLE_TYPE m_multisample_fullscreen;
 	//D3DMULTISAMPLE_TYPE m_multisample_desktop;
@@ -584,47 +577,47 @@ void CPluginShell::ReadConfig()
 	GetPrivateProfileString("settings","adapter_devicename_windowed",  "",m_adapter_devicename_windowed  ,sizeof(m_adapter_devicename_windowed)-1,m_szConfigIniFileA);
 
 	// FONTS
-	READ_FONT(0);
-	READ_FONT(1);
-	READ_FONT(2);
-	READ_FONT(3);
+    ReadFont(0);
+    ReadFont(1);
+    ReadFont(2);
+    ReadFont(3);
 #if (NUM_EXTRA_FONTS >= 1)
-	READ_FONT(4);
+    ReadFont(4);
 #endif
 #if (NUM_EXTRA_FONTS >= 2)
-	READ_FONT(5);
+    ReadFont(5);
 #endif
 #if (NUM_EXTRA_FONTS >= 3)
-	READ_FONT(6);
+    ReadFont(6);
 #endif
 #if (NUM_EXTRA_FONTS >= 4)
-	READ_FONT(7);
+    ReadFont(7);
 #endif
 #if (NUM_EXTRA_FONTS >= 5)
-	READ_FONT(8);
+    ReadFont(8);
 #endif
 
-	m_start_fullscreen     = GetPrivateProfileIntW(L"settings",L"start_fullscreen",m_start_fullscreen,m_szConfigIniFile);
-	m_start_desktop        = GetPrivateProfileIntW(L"settings",L"start_desktop"   ,m_start_desktop   ,m_szConfigIniFile);
-	m_fake_fullscreen_mode = GetPrivateProfileIntW(L"settings",L"fake_fullscreen_mode",m_fake_fullscreen_mode,m_szConfigIniFile);
-	m_max_fps_fs           = GetPrivateProfileIntW(L"settings",L"max_fps_fs",m_max_fps_fs,m_szConfigIniFile);
-	m_max_fps_dm           = GetPrivateProfileIntW(L"settings",L"max_fps_dm",m_max_fps_dm,m_szConfigIniFile);
-	m_max_fps_w            = GetPrivateProfileIntW(L"settings",L"max_fps_w" ,m_max_fps_w ,m_szConfigIniFile);
-	m_show_press_f1_msg    = GetPrivateProfileIntW(L"settings",L"show_press_f1_msg",m_show_press_f1_msg,m_szConfigIniFile);
-	m_allow_page_tearing_w = GetPrivateProfileIntW(L"settings",L"allow_page_tearing_w",m_allow_page_tearing_w,m_szConfigIniFile);
-	m_allow_page_tearing_fs= GetPrivateProfileIntW(L"settings",L"allow_page_tearing_fs",m_allow_page_tearing_fs,m_szConfigIniFile);
-	m_allow_page_tearing_dm= GetPrivateProfileIntW(L"settings",L"allow_page_tearing_dm",m_allow_page_tearing_dm,m_szConfigIniFile);
-	m_minimize_winamp      = GetPrivateProfileIntW(L"settings",L"minimize_winamp",m_minimize_winamp,m_szConfigIniFile);
-	m_desktop_show_icons   = GetPrivateProfileIntW(L"settings",L"desktop_show_icons",m_desktop_show_icons,m_szConfigIniFile);
-	m_desktop_textlabel_boxes = GetPrivateProfileIntW(L"settings",L"desktop_textlabel_boxes",m_desktop_textlabel_boxes,m_szConfigIniFile);
-	m_desktop_manual_icon_scoot = GetPrivateProfileIntW(L"settings",L"desktop_manual_icon_scoot",m_desktop_manual_icon_scoot,m_szConfigIniFile);
-	m_desktop_555_fix      = GetPrivateProfileIntW(L"settings",L"desktop_555_fix",m_desktop_555_fix,m_szConfigIniFile);
-	m_dualhead_horz        = GetPrivateProfileIntW(L"settings",L"dualhead_horz",m_dualhead_horz,m_szConfigIniFile);
-	m_dualhead_vert        = GetPrivateProfileIntW(L"settings",L"dualhead_vert",m_dualhead_vert,m_szConfigIniFile);
-	m_save_cpu             = GetPrivateProfileIntW(L"settings",L"save_cpu",m_save_cpu,m_szConfigIniFile);
-	m_skin                 = GetPrivateProfileIntW(L"settings",L"skin",m_skin,m_szConfigIniFile);
-	m_fix_slow_text        = GetPrivateProfileIntW(L"settings",L"fix_slow_text",m_fix_slow_text,m_szConfigIniFile);
-	m_vj_mode              = GetPrivateProfileBoolW(L"settings",L"vj_mode",m_vj_mode,m_szConfigIniFile);
+    m_start_fullscreen = GetPrivateProfileInt(L"settings", L"start_fullscreen", m_start_fullscreen, m_szConfigIniFile);
+    m_start_desktop = GetPrivateProfileInt(L"settings", L"start_desktop", m_start_desktop, m_szConfigIniFile);
+    m_fake_fullscreen_mode = GetPrivateProfileInt(L"settings", L"fake_fullscreen_mode", m_fake_fullscreen_mode, m_szConfigIniFile);
+    m_max_fps_fs = GetPrivateProfileInt(L"settings", L"max_fps_fs", m_max_fps_fs, m_szConfigIniFile);
+    m_max_fps_dm = GetPrivateProfileInt(L"settings", L"max_fps_dm", m_max_fps_dm, m_szConfigIniFile);
+    m_max_fps_w = GetPrivateProfileInt(L"settings", L"max_fps_w", m_max_fps_w, m_szConfigIniFile);
+    m_show_press_f1_msg = GetPrivateProfileInt(L"settings", L"show_press_f1_msg", m_show_press_f1_msg, m_szConfigIniFile);
+    m_allow_page_tearing_w = GetPrivateProfileInt(L"settings", L"allow_page_tearing_w", m_allow_page_tearing_w, m_szConfigIniFile);
+    m_allow_page_tearing_fs = GetPrivateProfileInt(L"settings", L"allow_page_tearing_fs", m_allow_page_tearing_fs, m_szConfigIniFile);
+    m_allow_page_tearing_dm = GetPrivateProfileInt(L"settings", L"allow_page_tearing_dm", m_allow_page_tearing_dm, m_szConfigIniFile);
+    m_minimize_winamp = GetPrivateProfileInt(L"settings", L"minimize_winamp", m_minimize_winamp, m_szConfigIniFile);
+    m_desktop_show_icons = GetPrivateProfileInt(L"settings", L"desktop_show_icons", m_desktop_show_icons, m_szConfigIniFile);
+    m_desktop_textlabel_boxes = GetPrivateProfileInt(L"settings", L"desktop_textlabel_boxes", m_desktop_textlabel_boxes, m_szConfigIniFile);
+    m_desktop_manual_icon_scoot = GetPrivateProfileInt(L"settings", L"desktop_manual_icon_scoot", m_desktop_manual_icon_scoot, m_szConfigIniFile);
+    m_desktop_555_fix = GetPrivateProfileInt(L"settings", L"desktop_555_fix", m_desktop_555_fix, m_szConfigIniFile);
+    m_dualhead_horz = GetPrivateProfileInt(L"settings", L"dualhead_horz", m_dualhead_horz, m_szConfigIniFile);
+    m_dualhead_vert = GetPrivateProfileInt(L"settings", L"dualhead_vert", m_dualhead_vert, m_szConfigIniFile);
+    m_save_cpu = GetPrivateProfileInt(L"settings", L"save_cpu", m_save_cpu, m_szConfigIniFile);
+    m_skin = GetPrivateProfileInt(L"settings", L"skin", m_skin, m_szConfigIniFile);
+    m_fix_slow_text = GetPrivateProfileInt(L"settings", L"fix_slow_text", m_fix_slow_text, m_szConfigIniFile);
+    m_vj_mode = GetPrivateProfileBoolW(L"settings", L"vj_mode", m_vj_mode, m_szConfigIniFile);
 
 	//D3DDISPLAYMODE m_fs_disp_mode
 	m_disp_mode_fs.Width           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_w", m_disp_mode_fs.Width           ,m_szConfigIniFile);
@@ -632,9 +625,8 @@ void CPluginShell::ReadConfig()
 	m_disp_mode_fs.RefreshRate = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_r",m_disp_mode_fs.RefreshRate,m_szConfigIniFile);
 	m_disp_mode_fs.Format      = (D3DFORMAT)GetPrivateProfileIntW(L"settings",L"disp_mode_fs_f",m_disp_mode_fs.Format     ,m_szConfigIniFile);
 
-	// note: we don't call MyReadConfig() yet, because we
-	// want to completely finish CPluginShell's preinit (and ReadConfig)
-	// before calling CPlugin's preinit and ReadConfig.
+    // Note: Do not call CPlugin's `Preinit()` and `ReadConfig()` until
+    //       CPluginShell's `PreInit()` (and `ReadConfig()`) finish.
 #endif
 }
 
@@ -748,127 +740,128 @@ void CPluginShell::EnforceMaxFPS()
 //	case DESKTOP:         max_fps = m_max_fps_dm; break;
 //	}
 
-	if (max_fps <= 0)
-		return;
+    if (max_fps <= 0)
+        return;
 
-	float fps_lo = (float)max_fps;
-	float fps_hi = (float)max_fps;
+    float fps_lo = (float)max_fps;
+    float fps_hi = (float)max_fps;
 
-	if (m_save_cpu)
-	{
-		// Find the optimal lo/hi bounds for the fps
-		// that will result in a maximum difference,
-		// in the time for a single frame, of 0.003 seconds -
-		// the assumed granularity for Sleep(1) -
+    if (m_save_cpu)
+    {
+        // Find the optimal lo/hi bounds for the fps
+        // that will result in a maximum difference,
+        // in the time for a single frame, of 0.003 seconds -
+        // the assumed granularity for Sleep(1) -
 
-		// Using this range of acceptable fps
-		// will allow us to do (sloppy) fps limiting
-		// using only Sleep(1), and never the
-		// second half of it: Sleep(0) in a tight loop,
-		// which sucks up the CPU (whereas Sleep(1)
-		// leaves it idle).
+        // Using this range of acceptable fps
+        // will allow us to do (sloppy) fps limiting
+        // using only Sleep(1), and never the
+        // second half of it: Sleep(0) in a tight loop,
+        // which sucks up the CPU (whereas Sleep(1)
+        // leaves it idle).
 
-		// The original equation:
-		//   1/(max_fps*t1) = 1/(max*fps/t1) - 0.003
-		// where:
-		//   t1 > 0
-		//   max_fps*t1 is the upper range for fps
-		//   max_fps/t1 is the lower range for fps
+        // The original equation:
+        //   1/(max_fps*t1) = 1/(max*fps/t1) - 0.003
+        // where:
+        //   t1 > 0
+        //   max_fps*t1 is the upper range for fps
+        //   max_fps/t1 is the lower range for fps
 
-		float a = 1;
-		float b = -0.003f * max_fps;
-		float c = -1.0f;
-		float det = b*b - 4*a*c;
-		if (det>0)
-		{
-			float t1 = (-b + sqrtf(det)) / (2*a);
-			//float t2 = (-b - sqrtf(det)) / (2*a);
+        float a = 1;
+        float b = -0.003f * max_fps;
+        float c = -1.0f;
+        float det = b * b - 4 * a * c;
+        if (det > 0)
+        {
+            float t1 = (-b + sqrtf(det)) / (2*a);
+            //float t2 = (-b - sqrtf(det)) / (2*a);
 
-			if (t1 > 1.0f)
-			{
-				fps_lo = max_fps / t1;
-				fps_hi = max_fps * t1;
-				// verify: now [1.0f/fps_lo - 1.0f/fps_hi] should equal 0.003 seconds.
-				// note: allowing tolerance to go beyond these values for
-				// fps_lo and fps_hi would gain nothing.
-			}
-		}
-	}
+            if (t1 > 1.0f)
+            {
+                fps_lo = max_fps / t1;
+                fps_hi = max_fps * t1;
+                // verify: now [1.0f/fps_lo - 1.0f/fps_hi] should equal 0.003 seconds.
+                // note: allowing tolerance to go beyond these values for
+                // fps_lo and fps_hi would gain nothing.
+            }
+        }
+    }
 
-	if (m_high_perf_timer_freq.QuadPart > 0)
-	{
-		LARGE_INTEGER t;
-		QueryPerformanceCounter(&t);
+    if (m_high_perf_timer_freq.QuadPart > 0)
+    {
+        LARGE_INTEGER t;
+        QueryPerformanceCounter(&t);
 
-		if (m_prev_end_of_frame.QuadPart != 0)
-		{
-			int ticks_to_wait_lo = (int)((float)m_high_perf_timer_freq.QuadPart / (float)fps_hi);
-			int ticks_to_wait_hi = (int)((float)m_high_perf_timer_freq.QuadPart / (float)fps_lo);
-			int done = 0;
-			int loops = 0;
-			do
-			{
-				QueryPerformanceCounter(&t);
+        if (m_prev_end_of_frame.QuadPart != 0)
+        {
+            int ticks_to_wait_lo = (int)((float)m_high_perf_timer_freq.QuadPart / (float)fps_hi);
+            int ticks_to_wait_hi = (int)((float)m_high_perf_timer_freq.QuadPart / (float)fps_lo);
+            int done = 0;
+            //int loops = 0;
+            do
+            {
+                QueryPerformanceCounter(&t);
 
-				__int64 t2 = t.QuadPart - m_prev_end_of_frame.QuadPart;
-				if (t2 > 2147483000)
-					done = 1;
-				if (t.QuadPart < m_prev_end_of_frame.QuadPart)    // time wrap
-					done = 1;
+                __int64 t2 = t.QuadPart - m_prev_end_of_frame.QuadPart;
+                if (t2 > 2147483000)
+                    done = 1;
+                if (t.QuadPart < m_prev_end_of_frame.QuadPart) // time wrap
+                    done = 1;
 
-				// this is sloppy - if your freq. is high, this can overflow (to a (-) int) in just a few minutes
-				// but it's ok, we have protection for that above.
-				int ticks_passed = (int)(t.QuadPart - m_prev_end_of_frame.QuadPart);
-				if (ticks_passed >= ticks_to_wait_lo)
-					done = 1;
+                // This is sloppy - if your freq. is high, this can overflow (to a (-) int) in just a few minutes
+                // but it's ok, we have protection for that above.
+                int ticks_passed = (int)(t.QuadPart - m_prev_end_of_frame.QuadPart);
+                if (ticks_passed >= ticks_to_wait_lo)
+                    done = 1;
 
-				if (!done)
-				{
-					// if > 0.01s left, do Sleep(1), which will actually sleep some
-					//   steady amount of up to 3 ms (depending on the OS),
-					//   and do so in a nice way (cpu meter drops; laptop battery spared).
-					// otherwise, do a few Sleep(0)'s, which just give up the timeslice,
-					//   but don't really save cpu or battery, but do pass a tiny
-					//   amount of time.
+                if (!done)
+                {
+                    // if > 0.01s left, do Sleep(1), which will actually sleep some
+                    //   steady amount of up to 3 ms (depending on the OS),
+                    //   and do so in a nice way (cpu meter drops; laptop battery spared).
+                    // otherwise, do a few Sleep(0)'s, which just give up the timeslice,
+                    //   but don't really save cpu or battery, but do pass a tiny
+                    //   amount of time.
 
-					//if (ticks_left > (int)m_high_perf_timer_freq.QuadPart/500)
-					if (ticks_to_wait_hi - ticks_passed > (int)m_high_perf_timer_freq.QuadPart/100)
-						Sleep(5);
-					else if (ticks_to_wait_hi - ticks_passed > (int)m_high_perf_timer_freq.QuadPart/1000)
-						Sleep(1);
-					else
-						for (int i=0; i<10; i++)
-							Sleep(0);  // causes thread to give up its timeslice
-				}
-			}
-			while (!done);
-		}
+                    //if (ticks_left > (int)m_high_perf_timer_freq.QuadPart / 500)
+                    if (ticks_to_wait_hi - ticks_passed > (int)m_high_perf_timer_freq.QuadPart / 100)
+                        Sleep(5);
+                    else if (ticks_to_wait_hi - ticks_passed > (int)m_high_perf_timer_freq.QuadPart / 1000)
+                        Sleep(1);
+                    else
+                        for (int i = 0; i < 10; i++)
+                            Sleep(0); // causes thread to give up its timeslice
+                }
+            } while (!done);
+        }
 
-		m_prev_end_of_frame = t;
-	}
-	else
-	{
-		Sleep(1000/max_fps);
-	}
+        m_prev_end_of_frame = t;
+    }
+    else
+    {
+        Sleep(1000 / max_fps);
+    }
 }
 
 void CPluginShell::DoTime()
 {
-	if (m_frame==0)
-	{
-		m_fps = 30;
-		m_time = 0;
-		m_time_hist_pos = 0;
-	}
+    if (m_frame == 0)
+    {
+        m_fps = 30;
+        m_time = 0;
+        m_time_hist_pos = 0;
+    }
 
-	double new_raw_time;
-	float elapsed;
+    double new_raw_time = 0.0;
+    float elapsed = 0.0f;
 
 	if (m_high_perf_timer_freq.QuadPart != 0)
 	{
-		// get high-precision time
-		// precision: usually from 1..6 us (MICROseconds), depending on the cpu speed.
-		// (higher cpu speeds tend to have better precision here)
+    // Get high-precision time.
+    // Precision is usually from 1..6 us (MICROseconds), depending on the CPU speed
+    // (higher CPU speeds tend to have better precision).
+    // Note: On systems that run Windows XP or later, `QueryPerformanceCounter()`
+    //        will always succeed and will thus never return zero.
 		LARGE_INTEGER t;
 		if (!QueryPerformanceCounter(&t))
 		{
@@ -883,75 +876,72 @@ void CPluginShell::DoTime()
 
 	if (m_high_perf_timer_freq.QuadPart == 0)
 	{
-		// get low-precision time
-		// precision: usually 1 ms (MILLIsecond) for win98, and 10 ms for win2k.
+    //    // Get low-precision time.
+    //    // Precision is usually 1 ms (MILLIsecond) for Windows 98, and 10 ms for Windows 2000.
 		new_raw_time = (double)(GetTickCount64()*0.001);
 		elapsed = (float)(new_raw_time - m_last_raw_time);
 	}
 
-	m_last_raw_time = new_raw_time;
-	int slots_to_look_back = (m_high_perf_timer_freq.QuadPart==0) ? TIME_HIST_SLOTS : TIME_HIST_SLOTS/2;
+    m_last_raw_time = new_raw_time;
+    int slots_to_look_back = (m_high_perf_timer_freq.QuadPart == 0) ? TIME_HIST_SLOTS : TIME_HIST_SLOTS / 2;
 
-	m_time += 1.0f/m_fps;
+    m_time += 1.0f / m_fps;
 
-	// timekeeping goals:
-	//    1. keep 'm_time' increasing SMOOTHLY: (smooth animation depends on it)
-	//          m_time += 1.0f/m_fps;     // where m_fps is a bit damped
-	//    2. keep m_time_hist[] 100% accurate (except for filtering out pauses),
-	//       so that when we look take the difference between two entries,
-	//       we get the real amount of time that passed between those 2 frames.
-	//          m_time_hist[i] = m_last_raw_time + elapsed_corrected;
+    // Timekeeping goals:
+    //   1. Keep `m_time` increasing SMOOTHLY (smooth animation depends on it):
+    //        m_time += 1.0f / m_fps; // where `m_fps` is a bit damped
+    //   2. Keep m_time_hist[] 100% accurate (except for filtering out pauses),
+    //      so that taking the difference between two entries, results in the
+    //      real amount of time that passed between those 2 frames:
+    //        m_time_hist[i] = m_last_raw_time + elapsed_corrected;
+    if (m_frame > TIME_HIST_SLOTS)
+    {
+        if (m_fps < 60.0f)
+            slots_to_look_back = (int)(slots_to_look_back * (0.1f + 0.9f * (m_fps / 60.0f)));
 
-	if (m_frame > TIME_HIST_SLOTS)
-	{
-		if (m_fps < 60.0f)
-			slots_to_look_back = (int)(slots_to_look_back*(0.1f + 0.9f*(m_fps/60.0f)));
+        if (elapsed > 5.0f / m_fps || elapsed > 1.0f || elapsed < 0)
+            elapsed = 1.0f / 30.0f;
 
-		if (elapsed > 5.0f/m_fps || elapsed > 1.0f || elapsed < 0)
-			elapsed = 1.0f / 30.0f;
+        float old_hist_time = m_time_hist[(m_time_hist_pos - slots_to_look_back + TIME_HIST_SLOTS) % TIME_HIST_SLOTS];
+        float new_hist_time = m_time_hist[(m_time_hist_pos - 1 + TIME_HIST_SLOTS) % TIME_HIST_SLOTS] + elapsed;
 
-		float old_hist_time = m_time_hist[(m_time_hist_pos - slots_to_look_back + TIME_HIST_SLOTS) % TIME_HIST_SLOTS];
-		float new_hist_time = m_time_hist[(m_time_hist_pos - 1 + TIME_HIST_SLOTS) % TIME_HIST_SLOTS]
-		                      + elapsed;
+        m_time_hist[m_time_hist_pos] = new_hist_time;
+        m_time_hist_pos = (m_time_hist_pos + 1) % TIME_HIST_SLOTS;
 
-		m_time_hist[m_time_hist_pos] = new_hist_time;
-		m_time_hist_pos = (m_time_hist_pos+1) % TIME_HIST_SLOTS;
+        float new_fps = slots_to_look_back / (float)(new_hist_time - old_hist_time);
+        float damping = (m_high_perf_timer_freq.QuadPart == 0) ? 0.93f : 0.87f;
 
-		float new_fps = slots_to_look_back / (float)(new_hist_time - old_hist_time);
-		float damping = (m_high_perf_timer_freq.QuadPart==0) ? 0.93f : 0.87f;
+        // Damp heavily, so that crappy timer precision doesn't make animation jerky.
+        if (fabsf(m_fps - new_fps) > 3.0f)
+            m_fps = new_fps;
+        else
+            m_fps = damping * m_fps + (1 - damping) * new_fps;
+    }
+    else
+    {
+        float damping = (m_high_perf_timer_freq.QuadPart == 0) ? 0.8f : 0.6f;
 
-		// damp heavily, so that crappy timer precision doesn't make animation jerky
-		if (fabsf(m_fps - new_fps) > 3.0f)
-			m_fps = new_fps;
-		else
-			m_fps = damping*m_fps + (1-damping)*new_fps;
-	}
-	else
-	{
-		float damping = (m_high_perf_timer_freq.QuadPart==0) ? 0.8f : 0.6f;
+        if (m_frame < 2)
+            elapsed = 1.0f / 30.0f;
+        else if (elapsed > 1.0f || elapsed < 0)
+            elapsed = 1.0f / m_fps;
 
-		if (m_frame < 2)
-			elapsed = 1.0f / 30.0f;
-		else if (elapsed > 1.0f || elapsed < 0)
-			elapsed = 1.0f / m_fps;
+        float old_hist_time = m_time_hist[0];
+        float new_hist_time = m_time_hist[(m_time_hist_pos - 1 + TIME_HIST_SLOTS) % TIME_HIST_SLOTS] + elapsed;
 
-		float old_hist_time = m_time_hist[0];
-		float new_hist_time = m_time_hist[(m_time_hist_pos - 1 + TIME_HIST_SLOTS) % TIME_HIST_SLOTS]
-		                      + elapsed;
+        m_time_hist[m_time_hist_pos] = new_hist_time;
+        m_time_hist_pos = (m_time_hist_pos + 1) % TIME_HIST_SLOTS;
 
-		m_time_hist[m_time_hist_pos] = new_hist_time;
-		m_time_hist_pos = (m_time_hist_pos+1) % TIME_HIST_SLOTS;
+        if (m_frame > 0)
+        {
+            float new_fps = (m_frame) / (new_hist_time - old_hist_time);
+            m_fps = damping * m_fps + (1 - damping) * new_fps;
+        }
+    }
 
-		if (m_frame > 0)
-		{
-			float new_fps = (m_frame) / (new_hist_time - old_hist_time);
-			m_fps = damping*m_fps + (1-damping)*new_fps;
-		}
-	}
-
-	// Synchronize the audio and video by telling Winamp how many milliseconds we want the audio data,
-	// before it's actually audible.  If we set this to the amount of time it takes to display 1 frame
-	// (1/fps), the video and audio should be perfectly synchronized.
+    // Synchronize the audio and video by telling Winamp how many milliseconds we want the audio data,
+    // before it's actually audible.  If we set this to the amount of time it takes to display 1 frame
+    // (1/fps), the video and audio should be perfectly synchronized.
 /*
 	if (m_fps < 2.0f)
 		mod1.latencyMs = 500;
@@ -962,14 +952,13 @@ void CPluginShell::DoTime()
 		*/
 }
 
-void CPluginShell::AnalyzeNewSound(unsigned char *pWaveL, unsigned char *pWaveR)
+// We get 576 samples in from winamp.
+// the output of the fft has 'num_frequencies' samples,
+//   and represents the frequency range 0 hz - 22,050 hz.
+// usually, plugins only use half of this output (the range 0 hz - 11,025 hz),
+//   since >10 khz doesn't usually contribute much.
+void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 {
-	// we get 576 samples in from winamp.
-	// the output of the fft has 'num_frequencies' samples,
-	//   and represents the frequency range 0 hz - 22,050 hz.
-	// usually, plugins only use half of this output (the range 0 hz - 11,025 hz),
-	//   since >10 khz doesn't usually contribute much.
-
 	int i;
 
 	float temp_wave[2][576];
@@ -1005,109 +994,109 @@ void CPluginShell::AnalyzeNewSound(unsigned char *pWaveL, unsigned char *pWaveR)
 	for (ch=0; ch<2; ch++)
 	{
 		for (i=0; i<3; i++)
-		{
-			// old guesswork code for this:
-			//   float exp = 2.1f;
-			//   int start = (int)(NUM_FREQUENCIES*0.5f*powf(i/3.0f, exp));
-			//   int end   = (int)(NUM_FREQUENCIES*0.5f*powf((i+1)/3.0f, exp));
-			// results:
-			//          old range:      new range (ideal):
-			//   bass:  0-1097          200-761
-			//   mids:  1097-4705       761-2897
-			//   treb:  4705-11025      2897-11025
-			int start = (int)(NUM_FREQUENCIES * min_freq*powf(mult, (float)i)/11025.0f);
-			int end   = (int)(NUM_FREQUENCIES * min_freq*powf(mult, (float)(i+1))/11025.0f);
-			if (start < 0) start = 0;
-			if (end > NUM_FREQUENCIES) end = NUM_FREQUENCIES;
+        {
+            // Old guesswork code for this.
+            //   float exp = 2.1f;
+            //   int start = (int)(NUM_FREQUENCIES*0.5f*powf(i/3.0f, exp));
+            //   int end   = (int)(NUM_FREQUENCIES*0.5f*powf((i+1)/3.0f, exp));
+            // results:
+            //          old range:      new range (ideal):
+            //   bass:  0-1097          200-761
+            //   mids:  1097-4705       761-2897
+            //   treb:  4705-11025      2897-11025
+            int start = (int)(NUM_FREQUENCIES * min_freq * powf(mult, (float)i) / 11025.0f);
+            int end = (int)(NUM_FREQUENCIES * min_freq * powf(mult, (float)(i + 1)) / 11025.0f);
+            if (start < 0) start = 0;
+            if (end > NUM_FREQUENCIES) end = NUM_FREQUENCIES;
 
-			m_sound.imm[ch][i] = 0;
-			for (int j=start; j<end; j++)
-				m_sound.imm[ch][i] += m_sound.fSpectrum[ch][j];
-			m_sound.imm[ch][i] /= (float)(end-start);
-		}
-	}
+            m_sound.imm[ch][i] = 0;
+            for (int j = start; j < end; j++)
+                m_sound.imm[ch][i] += m_sound.fSpectrum[ch][j];
+            m_sound.imm[ch][i] /= (float)(end - start);
+        }
+    }
 
-	// some code to find empirical long-term averages for imm[0..2]:
-	/*{
-	    static float sum[3];
-	    static int count = 0;
+    // Some code to find empirical long-term averages for `imm[0..2]`.
+    /*{
+        static float sum[3];
+        static int count = 0;
 
-	    #define FRAMES_PER_SONG 300     // should be at least 200!
+        #define FRAMES_PER_SONG 300     // should be at least 200!
 
-	    if (m_frame < FRAMES_PER_SONG)
-	    {
-	        sum[0] = sum[1] = sum[2] = 0;
-	        count = 0;
-	    }
-	    else
-	    {
-	        if (m_frame%FRAMES_PER_SONG == 0)
-	        {
-	            char buf[256];
-	            sprintf(buf, "%.4f, %.4f, %.4f     (%d samples / ~%d songs)\n",
-	                sum[0]/(float)(count),
-	                sum[1]/(float)(count),
-	                sum[2]/(float)(count),
-	                count,
-	                count/(FRAMES_PER_SONG-10)
-	            );
-	            OutputDebugString(buf);
+        if (m_frame < FRAMES_PER_SONG)
+        {
+            sum[0] = sum[1] = sum[2] = 0;
+            count = 0;
+        }
+        else
+        {
+            if (m_frame%FRAMES_PER_SONG == 0)
+            {
+                char buf[256];
+                sprintf_s(buf, "%.4f, %.4f, %.4f     (%d samples / ~%d songs)\n",
+                    sum[0]/(float)(count),
+                    sum[1]/(float)(count),
+                    sum[2]/(float)(count),
+                    count,
+                    count/(FRAMES_PER_SONG-10)
+                );
+                OutputDebugString(buf);
 
-	            // skip to next song
-	            PostMessage(m_hWndWinamp,WM_COMMAND,40048,0);
-	        }
-	        else if (m_frame%FRAMES_PER_SONG == 5)
-	        {
-	            // then advance to 0-2 minutes into the song:
-	            PostMessage(m_hWndWinamp,WM_USER,(20 + (warand()%65) + (rand()%65))*1000,106);
-	        }
-	        else if (m_frame%FRAMES_PER_SONG >= 10)
-	        {
-	            sum[0] += m_sound.imm[0];
-	            sum[1] += m_sound.imm[1];
-	            sum[2] += m_sound.imm[2];
-	            count++;
-	        }
-	    }
-	}*/
+                // skip to next song
+                PostMessage(m_hWndWinamp,WM_COMMAND,40048,0);
+            }
+            else if (m_frame%FRAMES_PER_SONG == 5)
+            {
+                // then advance to 0-2 minutes into the song:
+                PostMessage(m_hWndWinamp,WM_USER,(20 + (warand()%65) + (rand()%65))*1000,106);
+            }
+            else if (m_frame%FRAMES_PER_SONG >= 10)
+            {
+                sum[0] += m_sound.imm[0];
+                sum[1] += m_sound.imm[1];
+                sum[2] += m_sound.imm[2];
+                count++;
+            }
+        }
+    }*/
 
-	// multiply by long-term, empirically-determined inverse averages:
-	// (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
-	//  the average levels were: 0.326781557	0.38087377	0.199888934
+    // multiply by long-term, empirically-determined inverse averages:
+    // (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
+    //  the average levels were: 0.326781557	0.38087377	0.199888934
 	for (ch=0; ch<2; ch++)
-	{
-		m_sound.imm[ch][0] /= 0.326781557f;//0.270f;
-		m_sound.imm[ch][1] /= 0.380873770f;//0.343f;
-		m_sound.imm[ch][2] /= 0.199888934f;//0.295f;
-	}
+    {
+        m_sound.imm[ch][0] /= 0.326781557f; //0.270f;
+        m_sound.imm[ch][1] /= 0.380873770f; //0.343f;
+        m_sound.imm[ch][2] /= 0.199888934f; //0.295f;
+    }
 
-	// do temporal blending to create attenuated and super-attenuated versions
+    // do temporal blending to create attenuated and super-attenuated versions
 	for (ch=0; ch<2; ch++)
-	{
+    {
 		for (i=0; i<3; i++)
-		{
-			// m_sound.avg[i]
-			{
-				float avg_mix;
-				if (m_sound.imm[ch][i] > m_sound.avg[ch][i])
-					avg_mix = AdjustRateToFPS(0.2f, 14.0f, m_fps);
-				else
-					avg_mix = AdjustRateToFPS(0.5f, 14.0f, m_fps);
-				m_sound.avg[ch][i] = m_sound.avg[ch][i]*avg_mix + m_sound.imm[ch][i]*(1-avg_mix);
-			}
+        {
+            // m_sound.avg[i]
+            {
+                float avg_mix;
+                if (m_sound.imm[ch][i] > m_sound.avg[ch][i])
+                    avg_mix = AdjustRateToFPS(0.2f, 14.0f, m_fps);
+                else
+                    avg_mix = AdjustRateToFPS(0.5f, 14.0f, m_fps);
+                m_sound.avg[ch][i] = m_sound.avg[ch][i] * avg_mix + m_sound.imm[ch][i] * (1 - avg_mix);
+            }
 
-			// m_sound.med_avg[i]
-			// m_sound.long_avg[i]
-			{
-				float med_mix  = 0.91f;//0.800f + 0.11f*powf(t, 0.4f);    // primarily used for velocity_damping
-				float long_mix = 0.96f;//0.800f + 0.16f*powf(t, 0.2f);    // primarily used for smoke plumes
-				med_mix  = AdjustRateToFPS(med_mix, 14.0f, m_fps);
-				long_mix = AdjustRateToFPS(long_mix, 14.0f, m_fps);
-				m_sound.med_avg[ch][i]  =  m_sound.med_avg[ch][i]*(med_mix) + m_sound.imm[ch][i]*(1-med_mix);
-				m_sound.long_avg[ch][i] = m_sound.long_avg[ch][i]*(long_mix) + m_sound.imm[ch][i]*(1-long_mix);
-			}
-		}
-	}
+            // m_sound.med_avg[i]
+            // m_sound.long_avg[i]
+            {
+                float med_mix = 0.91f;  //0.800f + 0.11f*powf(t, 0.4f); // primarily used for velocity_damping
+                float long_mix = 0.96f; //0.800f + 0.16f*powf(t, 0.2f); // primarily used for smoke plumes
+                med_mix = AdjustRateToFPS(med_mix, 14.0f, m_fps);
+                long_mix = AdjustRateToFPS(long_mix, 14.0f, m_fps);
+                m_sound.med_avg[ch][i] = m_sound.med_avg[ch][i] * (med_mix) + m_sound.imm[ch][i] * (1 - med_mix);
+                m_sound.long_avg[ch][i] = m_sound.long_avg[ch][i] * (long_mix) + m_sound.imm[ch][i] * (1 - long_mix);
+            }
+        }
+    }
 }
 
 void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
@@ -1156,24 +1145,21 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
 	//m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
+// Aligns waves, using recursive (mipmap-style) least-error matching.
+// Note: `NUM_WAVEFORM_SAMPLES` must be between 32 and 576.
 void CPluginShell::AlignWaves()
 {
-	// align waves, using recursive (mipmap-style) least-error matching
-	// note: NUM_WAVEFORM_SAMPLES must be between 32 and 576.
-
-	int align_offset[2] = { 0, 0 };
+    int align_offset[2] = {0, 0};
 
 #if (NUM_WAVEFORM_SAMPLES < 576) // [don't let this code bloat our DLL size if it's not going to be used]
-
-	int nSamples = NUM_WAVEFORM_SAMPLES;
-
+    int nSamples = NUM_WAVEFORM_SAMPLES;
 #define MAX_OCTAVES 10
 
-	int octaves = (int)floorf(logf((float)(576-nSamples))/logf(2.0f));
-	if (octaves < 4)
-		return;
-	if (octaves > MAX_OCTAVES)
-		octaves = MAX_OCTAVES;
+    int octaves = (int)floorf(logf((float)(576 - nSamples)) / logf(2.0f));
+    if (octaves < 4)
+        return;
+    if (octaves > MAX_OCTAVES)
+        octaves = MAX_OCTAVES;
 
 	int ch;
 	for (ch=0; ch<2; ch++)
@@ -1237,73 +1223,73 @@ void CPluginShell::AlignWaves()
 				while (temp_weight[octave][n] == 0 && n >= 0)
 					n--;
 				last_nonzero_weight[octave] = n;
-			}
-		}
+            }
+        }
 
-		int n1 = 0;
-		int n2 = space[octaves-1];
+        int n1 = 0;
+        int n2 = space[octaves - 1];
 		for (octave = octaves-1; octave>=0; octave--)
-		{
-			// for example:
-			//  space[octave] == 4
-			//  spls[octave] == 36
-			//  (so we test 32 samples, w/4 offsets)
-			int compare_samples = spls[octave]-space[octave];
+        {
+            // For example:
+            //  space[octave] == 4
+            //  spls[octave] == 36
+            //  (so we test 32 samples, w/4 offsets)
+            //int compare_samples = spls[octave] - space[octave];
 
-			int lowest_err_offset = -1;
-			float lowest_err_amount = 0;
-			for (int n=n1; n<n2; n++)
-			{
-				float err_sum = 0;
-				//for (int i=0; i<compare_samples; i++)
-				for (int i=first_nonzero_weight[octave]; i<=last_nonzero_weight[octave]; i++)
-				{
-					float x = (temp_new[octave][i+n] - temp_old[octave][i]) * temp_weight[octave][i];
-					if (x>0)
-						err_sum += x;
-					else
-						err_sum -= x;
-				}
+            int lowest_err_offset = -1;
+            float lowest_err_amount = 0;
+            for (int n = n1; n < n2; n++)
+            {
+                float err_sum = 0;
+                //for (int i=0; i<compare_samples; i++)
+                for (int i = first_nonzero_weight[octave]; i <= last_nonzero_weight[octave]; i++)
+                {
+                    float x = (temp_new[octave][i + n] - temp_old[octave][i]) * temp_weight[octave][i];
+                    if (x > 0)
+                        err_sum += x;
+                    else
+                        err_sum -= x;
+                }
 
-				if (lowest_err_offset == -1 || err_sum < lowest_err_amount)
-				{
-					lowest_err_offset = n;
-					lowest_err_amount = err_sum;
-				}
-			}
+                if (lowest_err_offset == -1 || err_sum < lowest_err_amount)
+                {
+                    lowest_err_offset = n;
+                    lowest_err_amount = err_sum;
+                }
+            }
 
-			// now use 'lowest_err_offset' to guide bounds of search in next octave:
-			//  space[octave] == 8
-			//  spls[octave] == 72
-			//     -say 'lowest_err_offset' was 2
-			//     -that corresponds to samples 4 & 5 of the next octave
-			//     -also, expand about this by 2 samples?  YES.
-			//  (so we'd test 64 samples, w/8->4 offsets)
-			if (octave > 0)
-			{
-				n1 = lowest_err_offset*2  -1;
-				n2 = lowest_err_offset*2+2+1;
-				if (n1 < 0) n1=0;
-				if (n2 > space[octave-1]) n2 = space[octave-1];
-			}
-			else
-				align_offset[ch] = lowest_err_offset;
-		}
-	}
+            // Now use `lowest_err_offset` to guide bounds of search in next octave:
+            //  space[octave] == 8
+            //  spls[octave] == 72
+            //     -say `lowest_err_offset` was 2
+            //     -that corresponds to samples 4 & 5 of the next octave
+            //     -also, expand about this by 2 samples?  YES.
+            //  (so we'd test 64 samples, w/8->4 offsets)
+            if (octave > 0)
+            {
+                n1 = lowest_err_offset * 2 - 1;
+                n2 = lowest_err_offset * 2 + 2 + 1;
+                if (n1 < 0) n1 = 0;
+                if (n2 > space[octave - 1]) n2 = space[octave - 1];
+            }
+            else
+                align_offset[ch] = lowest_err_offset;
+        }
+    }
 #endif
 	memcpy(m_oldwave[0], m_sound.fWaveform[0], sizeof(float)*576);
 	memcpy(m_oldwave[1], m_sound.fWaveform[1], sizeof(float)*576);
-	m_prev_align_offset[0] = align_offset[0];
-	m_prev_align_offset[1] = align_offset[1];
+    m_prev_align_offset[0] = align_offset[0];
+    m_prev_align_offset[1] = align_offset[1];
 
-	// finally, apply the results: modify m_sound.fWaveform[2][0..576]
-	// by scooting the aligned samples so that they start at m_sound.fWaveform[2][0].
+    // finally, apply the results: modify m_sound.fWaveform[2][0..576]
+    // by scooting the aligned samples so that they start at m_sound.fWaveform[2][0].
 	for (ch=0; ch<2; ch++)
-		if (align_offset[ch]>0)
-		{
-			for (int i=0; i<nSamples; i++)
-				m_sound.fWaveform[ch][i] = m_sound.fWaveform[ch][i+align_offset[ch]];
-			// zero the rest out, so it's visually evident that these samples are now bogus:
-			memset(&m_sound.fWaveform[ch][nSamples], 0, (576-nSamples)*sizeof(float));
-		}
+        if (align_offset[ch] > 0)
+        {
+            for (int i = 0; i < nSamples; i++)
+                m_sound.fWaveform[ch][i] = m_sound.fWaveform[ch][i + align_offset[ch]];
+            // zero the rest out, so it's visually evident that these samples are now bogus:
+            memset(&m_sound.fWaveform[ch][nSamples], 0, (576 - nSamples) * sizeof(float));
+        }
 }
