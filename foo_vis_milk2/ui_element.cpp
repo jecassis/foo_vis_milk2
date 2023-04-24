@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "config.h"
-#include "vis.h"
+#include "steptimer.h"
+
+#include <vis_milk2/plugin.h>
+
+CPlugin g_plugin;
+
+extern void ExitVis() noexcept;
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default
 //extern "C" {
@@ -17,7 +23,7 @@ static const GUID guid_milk2 = {
     0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}
 }; // {204B0345-4DF5-4B47-ADD3-989F811BD9A5}
 
-std::unique_ptr<Vis> g_vis;
+//std::unique_ptr<Vis> g_vis;
 
 class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl<milk2_ui_element_instance>
 {
@@ -71,10 +77,6 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point) { ToggleFullScreen(); }
 
-    void ToggleFullScreen() { static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window()); }
-    void BuildWaves();
-    void UpdateChannelMode();
-
     milk2_config m_config;
     visualisation_stream_v3::ptr m_vis_stream;
 
@@ -83,7 +85,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     double m_last_time = 0.0;
     bool m_IsInitialized = false;
 
-    Vis* vis;
+    //Vis* vis;
     bool s_in_sizemove;
     bool s_in_suspend;
     bool s_minimized;
@@ -96,6 +98,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     enum milk2_ui_menu_id
     {
         IDM_TOGGLE_FULLSCREEN = 1,
+        IDM_CURRENT_PRESET,
         IDM_NEXT_PRESET,
         IDM_PREVIOUS_PRESET,
         IDM_LOCK_PRESET,
@@ -118,6 +121,63 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
         //IDM_REFRESH_RATE_LIMIT_60
     };
 
+    // Initialization and management
+    bool Initialize(HWND window, int width, int height);
+
+    // Basic visualization loop
+    void Tick();
+
+    // Device status
+    void OnDeviceLost();
+    void OnDeviceRestored();
+
+    void PrevPreset();
+    void NextPreset();
+    bool LoadPreset(int select);
+    void RandomPreset();
+    void LockPreset(bool lockUnlock);
+    bool IsPresetLock();
+    std::wstring GetCurrentPreset();
+    bool GetPresets(std::vector<std::string>& presets);
+    int GetActivePreset();
+    char* WideToUTF8(const wchar_t* WFilename);
+
+    // Window Messages
+    void OnActivated();
+    void OnDeactivated();
+    void OnSuspending();
+    void OnResuming();
+    void OnWindowMoved();
+    void OnDisplayChange();
+    void OnWindowSizeChanged(int width, int height);
+
+    // Properties
+    void GetDefaultSize(int& width, int& height) const noexcept;
+    void SetPwd(std::string pwd) noexcept;
+    void UpdateChannelMode();
+    void ToggleFullScreen();
+
+
+    void Update(DX::StepTimer const& timer);
+    HRESULT Render();
+    void BuildWaves();
+
+    void Clear();
+
+    void CreateDeviceDependentResources();
+    void CreateWindowSizeDependentResources();
+
+    // MilkDrop status
+    bool m_milk2 = false;
+
+    // Rendering loop timer
+    DX::StepTimer m_timer;
+
+    // Component paths
+    std::string m_pwd;
+        
+    unsigned char waves[2][576];
+
   protected:
     const ui_element_instance_callback_ptr m_callback;
 };
@@ -130,7 +190,7 @@ milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr conf
     s_minimized = false;
 
     set_configuration(config);
-    g_vis = std::make_unique<Vis>();
+    m_pwd = ".\\";
 }
 
 ui_element_config::ptr milk2_ui_element_instance::g_get_default_configuration()
@@ -142,7 +202,8 @@ ui_element_config::ptr milk2_ui_element_instance::g_get_default_configuration()
     //return ui_element_config::g_create_empty(g_get_guid());
 }
 
-void milk2_ui_element_instance::set_configuration(ui_element_config::ptr p_data) {
+void milk2_ui_element_instance::set_configuration(ui_element_config::ptr p_data)
+{
     ui_element_config_parser parser(p_data);
     milk2_config config;
     config.parse(parser);
@@ -152,7 +213,8 @@ void milk2_ui_element_instance::set_configuration(ui_element_config::ptr p_data)
     //UpdateRefreshRateLimit();
 }
 
-ui_element_config::ptr milk2_ui_element_instance::get_configuration() {
+ui_element_config::ptr milk2_ui_element_instance::get_configuration()
+{
     ui_element_config_builder builder;
     m_config.build(builder);
     return builder.finish(g_get_guid());
@@ -175,13 +237,13 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     std::string::size_type t = base_path.rfind('\\');
     if (t != std::string::npos)
         base_path.erase(t + 1);
-    g_vis->SetPwd(base_path);
+    SetPwd(base_path);
 
-    SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_vis.get()));
+    //SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_vis.get()));
 
     HRESULT hr = S_OK;
     int w, h;
-    g_vis->GetDefaultSize(w, h);
+    GetDefaultSize(w, h);
 
     //CRect rd = {0, 0, static_cast<LONG>(w), static_cast<LONG>(h)};
     CRect r{};
@@ -191,7 +253,7 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
         w = r.right - r.left;
         h = r.bottom - r.top;
     }
-    g_vis->Initialize(get_wnd(), w, h);
+    Initialize(get_wnd(), w, h);
 #ifdef _DEBUG
     //console::formatter() << core_api::get_my_file_name() << ": Could not initialize MilkDrop";
     console::formatter() << core_api::get_my_file_name() << ": OnCreate2 " << r.right << ", " << r.left << ", " << r.top << ", " << r.bottom;
@@ -222,31 +284,29 @@ void milk2_ui_element_instance::OnDestroy()
 
     if (m_IsInitialized)
     {
-        g_vis->OnDeviceLost();
-        g_vis.reset();
+        OnDeviceLost();
+        //g_vis.reset();
         m_IsInitialized = false;
     }
 }
 
 void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 {
-//#ifdef _DEBUG
-//    console::formatter() << core_api::get_my_file_name() << ": OnTimer";
-//#endif
+    //#ifdef _DEBUG
+    //    console::formatter() << core_api::get_my_file_name() << ": OnTimer";
+    //#endif
     KillTimer(ID_REFRESH_TIMER);
     Invalidate();
 }
 
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
-//#ifdef _DEBUG
-//    console::formatter() << core_api::get_my_file_name() << ": OnPaint";
-//#endif
-    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (vis) //s_in_sizemove && vis
-    {
-        vis->Tick(); //g_vis->Tick();
-    }
+    //#ifdef _DEBUG
+    //    console::formatter() << core_api::get_my_file_name() << ": OnPaint";
+    //#endif
+    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (m_milk2) //s_in_sizemove && vis
+        Tick();
     else
     {
         PAINTSTRUCT ps;
@@ -272,11 +332,8 @@ void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 
 void milk2_ui_element_instance::OnMove(CPoint ptPos)
 {
-    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (vis)
-    {
-        vis->OnWindowMoved();
-    }
+    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    OnWindowMoved();
 }
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
@@ -284,25 +341,25 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 #ifdef _DEBUG
     console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
 #endif
-    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (nType == SIZE_MINIMIZED)
     {
         if (!s_minimized)
         {
             s_minimized = true;
-            if (!s_in_suspend && vis)
-                vis->OnSuspending();
+            if (!s_in_suspend && m_milk2)
+                OnSuspending();
             s_in_suspend = true;
         }
     }
     else if (s_minimized)
     {
         s_minimized = false;
-        if (s_in_suspend && vis)
-            vis->OnResuming();
+        if (s_in_suspend && m_milk2)
+            OnResuming();
         s_in_suspend = false;
     }
-    else if (!s_in_sizemove && vis)
+    else if (!s_in_sizemove && m_milk2)
     {
         //HRESULT hr = S_OK;
         //RECT r;
@@ -316,7 +373,7 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
             width = 128;
         if (height < 128)
             height = 128;
-        vis->OnWindowSizeChanged(size.cx, size.cy);
+        OnWindowSizeChanged(size.cx, size.cy);
     }
 }
 
@@ -338,27 +395,27 @@ void milk2_ui_element_instance::OnEnterSizeMove()
 void milk2_ui_element_instance::OnExitSizeMove()
 {
     s_in_sizemove = false;
-    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (vis)
+    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (m_milk2)
     {
         CRect r;
         WIN32_OP_D(GetClientRect(&r));
-        vis->OnWindowSizeChanged(r.right - r.left, r.bottom - r.top);
+        OnWindowSizeChanged(r.right - r.left, r.bottom - r.top);
     }
 }
 
 void milk2_ui_element_instance::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 {
-    auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (vis)
+    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
+    if (m_milk2)
     {
         if (bActive)
         {
-            vis->OnActivated();
+            OnActivated();
         }
         else
         {
-            vis->OnDeactivated();
+            OnDeactivated();
         }
     }
 }
@@ -392,6 +449,8 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
         //point = m_list.GetContextMenuPoint(point);
         CMenu menu;
         WIN32_OP_D(menu.CreatePopupMenu());
+        menu.AppendMenu(MF_GRAYED, IDM_CURRENT_PRESET, GetCurrentPreset().c_str());
+        menu.AppendMenu(MF_SEPARATOR);
         menu.AppendMenu(MF_STRING, IDM_NEXT_PRESET, TEXT("Next Preset"));
         menu.AppendMenu(MF_STRING, IDM_PREVIOUS_PRESET, TEXT("Previous Preset"));
         menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
@@ -438,56 +497,102 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
                 ToggleFullScreen();
                 break;
             case IDM_NEXT_PRESET:
-                vis->NextPreset();
+                NextPreset();
                 break;
             case IDM_PREVIOUS_PRESET:
-                vis->PrevPreset();
+                PrevPreset();
                 break;
             case IDM_LOCK_PRESET:
                 m_config.m_bPresetLockedByUser = !m_config.m_bPresetLockedByUser;
-                vis->LockPreset(m_config.m_bPresetLockedByUser);
+                LockPreset(m_config.m_bPresetLockedByUser);
                 break;
             case IDM_SHUFFLE_PRESET:
-                vis->RandomPreset();
+                RandomPreset();
                 break;
             case IDM_ENABLE_DOWNMIX:
                 m_config.m_bEnableDownmix = !m_config.m_bEnableDownmix;
                 UpdateChannelMode();
                 break;
-            //case IDM_HW_RENDERING_ENABLED:
-            //    m_config.m_hw_rendering_enabled = !m_config.m_hw_rendering_enabled;
-            //    DiscardDeviceResources();
-            //    break;
-            //case IDM_RESAMPLE_ENABLED:
-            //    m_config.m_resample_enabled = !m_config.m_resample_enabled;
-            //    break;
-            //case IDM_WINDOW_DURATION_50:
-            //    m_config.m_window_duration_millis = 50;
-            //    break;
-            //case IDM_WINDOW_DURATION_100:
-            //    m_config.m_window_duration_millis = 100;
-            //    break;
-            //case IDM_ZOOM_50:
-            //    m_config.m_zoom_percent = 50;
-            //    break;
-            //case IDM_ZOOM_75:
-            //    m_config.m_zoom_percent = 75;
-            //    break;
-            //case IDM_ZOOM_100:
-            //    m_config.m_zoom_percent = 100;
-            //    break;
-            //case IDM_REFRESH_RATE_LIMIT_20:
-            //    m_config.m_refresh_rate_limit_hz = 20;
-            //    UpdateRefreshRateLimit();
-            //    break;
-            //case IDM_REFRESH_RATE_LIMIT_60:
-            //    m_config.m_refresh_rate_limit_hz = 60;
-            //    UpdateRefreshRateLimit();
-            //    break;
+                //case IDM_HW_RENDERING_ENABLED:
+                //    m_config.m_hw_rendering_enabled = !m_config.m_hw_rendering_enabled;
+                //    DiscardDeviceResources();
+                //    break;
+                //case IDM_RESAMPLE_ENABLED:
+                //    m_config.m_resample_enabled = !m_config.m_resample_enabled;
+                //    break;
+                //case IDM_WINDOW_DURATION_50:
+                //    m_config.m_window_duration_millis = 50;
+                //    break;
+                //case IDM_WINDOW_DURATION_100:
+                //    m_config.m_window_duration_millis = 100;
+                //    break;
+                //case IDM_ZOOM_50:
+                //    m_config.m_zoom_percent = 50;
+                //    break;
+                //case IDM_ZOOM_75:
+                //    m_config.m_zoom_percent = 75;
+                //    break;
+                //case IDM_ZOOM_100:
+                //    m_config.m_zoom_percent = 100;
+                //    break;
+                //case IDM_REFRESH_RATE_LIMIT_20:
+                //    m_config.m_refresh_rate_limit_hz = 20;
+                //    UpdateRefreshRateLimit();
+                //    break;
+                //case IDM_REFRESH_RATE_LIMIT_60:
+                //    m_config.m_refresh_rate_limit_hz = 60;
+                //    UpdateRefreshRateLimit();
+                //    break;
         }
 
         Invalidate();
     }
+}
+
+// Initialize the Direct3D resources required to run.
+bool milk2_ui_element_instance::Initialize(HWND window, int width, int height)
+{
+    swprintf_s(g_plugin.m_szPluginsDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
+    swprintf_s(g_plugin.m_szConfigIniFile, L"%hs%ls", const_cast<char*>(m_pwd.c_str()), INIFILE);
+
+    if (FALSE == g_plugin.PluginPreInitialize(window, NULL))
+        return false;
+
+    if (FALSE == g_plugin.PluginInitialize(0, 0, width, height, static_cast<float>(width) / static_cast<float>(height)))
+        return false;
+
+    m_milk2 = true;
+    return true;
+}
+
+#pragma region Frame Update
+// Executes the basic game loop.
+void milk2_ui_element_instance::Tick()
+{
+    m_timer.Tick([&]() { Update(m_timer); });
+
+    Render();
+}
+
+// Updates the world.
+void milk2_ui_element_instance::Update(DX::StepTimer const& timer)
+{
+}
+#pragma endregion
+
+#pragma region Frame Render
+// Draws the scene.
+HRESULT milk2_ui_element_instance::Render()
+{
+    // Do not try to render anything before the first `Update()`.
+    if (m_timer.GetFrameCount() == 0)
+    {
+        return S_OK;
+    }
+
+    Clear();
+
+    return g_plugin.PluginRender(waves[0], waves[1]);
 }
 
 void milk2_ui_element_instance::BuildWaves()
@@ -511,16 +616,17 @@ void milk2_ui_element_instance::BuildWaves()
     {
         dt = min_time;
         use_fake = true;
-    } else if (dt > max_time)
+    }
+    else if (dt > max_time)
         dt = max_time;
 
     audio_chunk_impl chunk;
     if (use_fake || !m_vis_stream->get_chunk_absolute(chunk, time - dt, dt))
     {
         //m_vis_stream->make_fake_chunk_absolute(chunk, time - dt, dt);
-        for (uint32_t i = 0; i < 576u; ++i)
+        for (uint32_t i = 0; i < 576U; ++i)
         {
-            g_vis->waves[0][i] = g_vis->waves[1][i] = 0u;
+            waves[0][i] = waves[1][i] = 0U;
         }
         return;
     }
@@ -533,11 +639,173 @@ void milk2_ui_element_instance::BuildWaves()
     size_t top = std::min(count / channels, static_cast<size_t>(576));
     for (size_t i = 0; i < top; ++i)
     {
-        g_vis->waves[0][i] = static_cast<unsigned char>(audio_data[i * channels] * 255.0f);
+        waves[0][i] = static_cast<unsigned char>(audio_data[i * channels] * 255.0f);
         if (channels >= 2)
-            g_vis->waves[1][i] = static_cast<unsigned char>(audio_data[i * channels + 1] * 255.0f);
+            waves[1][i] = static_cast<unsigned char>(audio_data[i * channels + 1] * 255.0f);
     }
 }
+
+// Helper method to clear the back buffers.
+void milk2_ui_element_instance::Clear()
+{
+}
+#pragma endregion
+
+#pragma region Message Handlers
+// Message handlers
+void milk2_ui_element_instance::OnActivated()
+{
+}
+
+void milk2_ui_element_instance::OnDeactivated()
+{
+}
+
+void milk2_ui_element_instance::OnSuspending()
+{
+}
+
+void milk2_ui_element_instance::OnResuming()
+{
+    m_timer.ResetElapsedTime();
+}
+
+void milk2_ui_element_instance::OnWindowMoved()
+{
+}
+
+void milk2_ui_element_instance::OnDisplayChange()
+{
+}
+
+void milk2_ui_element_instance::OnWindowSizeChanged(int width, int height)
+{
+    g_plugin.OnUserResizeWindow();
+
+    CreateWindowSizeDependentResources();
+}
+#pragma endregion
+
+// Properties
+void milk2_ui_element_instance::GetDefaultSize(int& width, int& height) const noexcept
+{
+    width = 640;
+    height = 480;
+}
+
+void milk2_ui_element_instance::SetPwd(std::string pwd) noexcept
+{
+    m_pwd.assign(pwd);
+}
+
+void milk2_ui_element_instance::ToggleFullScreen()
+{
+    static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
+}
+
+void milk2_ui_element_instance::NextPreset()
+{
+    g_plugin.NextPreset(1.0f);
+}
+
+void milk2_ui_element_instance::PrevPreset()
+{
+    g_plugin.PrevPreset(1.0f);
+}
+
+bool milk2_ui_element_instance::LoadPreset(int select)
+{
+    //g_plugin.m_nCurrentPreset = select + g_plugin.m_nDirs;
+
+    //wchar_t szFile[MAX_PATH] = {0};
+    //wcscpy_s(szFile, g_plugin.m_szPresetDir); // Note: m_szPresetDir always ends with '\'
+    //wcscat_s(szFile, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str());
+
+    //g_plugin.LoadPreset(szFile, 1.0f);
+    return true;
+}
+
+std::wstring milk2_ui_element_instance::GetCurrentPreset()
+{
+    return g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename;
+}
+
+void milk2_ui_element_instance::LockPreset(bool lockUnlock)
+{
+    g_plugin.m_bPresetLockedByUser = lockUnlock;
+}
+
+bool milk2_ui_element_instance::IsPresetLock()
+ {
+    return g_plugin.m_bPresetLockedByUser;
+}
+
+void milk2_ui_element_instance::RandomPreset()
+{
+    g_plugin.LoadRandomPreset(1.0f);
+}
+
+bool milk2_ui_element_instance::GetPresets(std::vector<std::string>& presets)
+{
+    if (!m_milk2)
+        return false;
+
+    while (!g_plugin.m_bPresetListReady)
+    {
+    }
+
+    for (int i = 0; i < g_plugin.m_nPresets - g_plugin.m_nDirs; ++i)
+    {
+        PresetInfo& Info = g_plugin.m_presets[i + g_plugin.m_nDirs];
+        presets.push_back(WideToUTF8(Info.szFilename.c_str()));
+    }
+
+    return true;
+}
+
+int milk2_ui_element_instance::GetActivePreset()
+{
+    //if (m_milk2)
+    //{
+    //    int CurrentPreset = g_plugin.m_nCurrentPreset;
+    //    CurrentPreset -= g_plugin.m_nDirs;
+    //    return CurrentPreset;
+    //}
+
+    return -1;
+}
+
+char* milk2_ui_element_instance::WideToUTF8(const wchar_t* WFilename)
+{
+    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
+    char* utf8Name = new char[SizeNeeded];
+    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
+    return utf8Name;
+}
+
+#pragma region Direct3D Resources
+// These are the resources that depend on the device.
+void milk2_ui_element_instance::CreateDeviceDependentResources()
+{
+}
+
+// Allocate all memory resources that change on a window SizeChanged event.
+void milk2_ui_element_instance::CreateWindowSizeDependentResources()
+{
+}
+
+void milk2_ui_element_instance::OnDeviceLost()
+{
+    g_plugin.PluginQuit();
+}
+
+void milk2_ui_element_instance::OnDeviceRestored()
+{
+    CreateDeviceDependentResources();
+
+    CreateWindowSizeDependentResources();
+}
+#pragma endregion
 
 void milk2_ui_element_instance::UpdateChannelMode()
 {
@@ -551,10 +819,9 @@ class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element_i
 
 // Service factory publishes the class.
 static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
+} // namespace
 
 void ExitVis() noexcept
 {
     //PostQuitMessage(0);
 }
-
-} // namespace
