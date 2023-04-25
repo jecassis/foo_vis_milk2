@@ -84,6 +84,7 @@ int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else r
 int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; }
 int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; }
 int CPluginShell::GetCanvasMarginY() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height) / 2; else return 0; }
+HWND CPluginShell::GetWinampWindow() { return m_hWndWinamp; }
 HINSTANCE CPluginShell::GetInstance() { return m_hInstance; }
 wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; }
 wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; }
@@ -795,6 +796,9 @@ void CPluginShell::DrawAndDisplay(int redraw)
     m_right_edge = cx - TEXT_MARGIN - GetCanvasMarginX();
 
     MilkDropRenderFrame(redraw);
+    //RenderBuiltInTextMsgs();
+    MilkDropRenderUI(&m_upper_left_corner_y, &m_upper_right_corner_y, &m_lower_left_corner_y, &m_lower_right_corner_y, m_left_edge, m_right_edge);
+    //RenderPlaylist();
 
     m_lpDX->Show();
 }

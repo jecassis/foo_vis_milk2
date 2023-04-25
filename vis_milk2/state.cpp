@@ -1668,11 +1668,10 @@ void CState::RecompileExpressions(int flags, int bReInit)
 
                 if ((pf_codehandle_init = NSEEL_code_compile(m_pf_eel, buf, 0)) == NULL)
                 {
-/*
-                    wchar_t buf[1024];
-				    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_PRESET_INIT_CODE), m_szDesc);
-                    g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
+                    wchar_t err[1024], fmt[256];
+                    LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_PRESET_INIT_CODE, fmt, 256);
+                    swprintf_s(err, fmt, m_szDesc);
+                    g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
 
                     for (int vi = 0; vi < NUM_Q_VAR; vi++)
                         q_values_after_init_code[vi] = 0;
@@ -1700,28 +1699,26 @@ void CState::RecompileExpressions(int flags, int bReInit)
             {
                 if ((m_pf_codehandle = NSEEL_code_compile(m_pf_eel, buf, 0)) == NULL)
                 {
-/*
-                    wchar_t buf[1024];
-				    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_PER_FRAME_CODE), m_szDesc);
-                    g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
-			    }
-	        }
+                    wchar_t err[1024], fmt[256];
+                    LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_PER_FRAME_CODE, fmt, 256);
+                    swprintf_s(err, fmt, m_szDesc);
+                    g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
+                }
+            }
 
-            // 3. compile preset per-pixel code
-		    StripLinefeedCharsAndComments(m_szPerPixelExpr, buf);
-	        if (buf[0])
-	        {
+            // 3. Compile preset per-pixel code.
+            StripLinefeedCharsAndComments(m_szPerPixelExpr, buf);
+            if (buf[0])
+            {
                 if ((m_pp_codehandle = NSEEL_code_compile(m_pv_eel, buf, 0)) == NULL)
-			    {
-/*
-                    wchar_t buf[1024];
-				    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_PER_VERTEX_CODE), m_szDesc);
-                    g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
-			    }
-	        }
-	        
+                {
+                    wchar_t err[1024], fmt[256];
+                    LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_PER_VERTEX_CODE, fmt, 256);
+                    swprintf_s(err, fmt, m_szDesc);
+                    g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
+                }
+            }
+
             //resetVars(NULL);
         }
 
@@ -1737,12 +1734,11 @@ void CState::RecompileExpressions(int flags, int bReInit)
                     {
                         NSEEL_CODEHANDLE codehandle_temp;
                         if ((codehandle_temp = NSEEL_code_compile(m_wave[i].m_pf_eel, buf, 0)) == NULL)
-			            {
-/*
-                            wchar_t buf[1024];
-				            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_INIT_CODE), m_szDesc, i);
-                            g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
+                        {
+                            wchar_t err[1024], fmt[256];
+                            LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_INIT_CODE, fmt, 256);
+                            swprintf_s(err, fmt, m_szDesc, i);
+                            g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
 
                             for (int vi = 0; vi < NUM_Q_VAR; vi++)
                                 *m_wave[i].var_pf_q[vi] = q_values_after_init_code[vi];
@@ -1776,106 +1772,101 @@ void CState::RecompileExpressions(int flags, int bReInit)
 #ifndef _NO_EXPR_
                     if ((m_wave[i].m_pf_codehandle = NSEEL_code_compile(m_wave[i].m_pf_eel, buf, 0)) == NULL)
                     {
-/*
-                            wchar_t buf[1024];
-				            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_PER_FRAME_CODE), m_szDesc, i);
-                            g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
-			            }
-                    #endif
+                        wchar_t err[1024], fmt[256];
+                        LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_PER_FRAME_CODE, fmt, 256);
+                        swprintf_s(err, fmt, m_szDesc, i);
+                        g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
+                    }
+#endif
                 }
 
-                // 3. compile custom waveform per-point code
-		        StripLinefeedCharsAndComments(m_wave[i].m_szPerPoint, buf);
-	            if (buf[0])
+                // 3. Compile custom waveform per-point code.
+                StripLinefeedCharsAndComments(m_wave[i].m_szPerPoint, buf);
+                if (buf[0])
                 {
                     if ((m_wave[i].m_pp_codehandle = NSEEL_code_compile(m_wave[i].m_pp_eel, buf, 0)) == NULL)
-			        {
-/*
-                        wchar_t buf[1024];
-				        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_PER_POINT_CODE), m_szDesc, i);
-                        g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
-			        }
+                    {
+                        wchar_t err[1024], fmt[256];
+                        LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_WAVE_X_PER_POINT_CODE, fmt, 256);
+                        swprintf_s(err, fmt, m_szDesc, i);
+                        g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
+                    }
                 }
             }
         }
 
         if (flags & RECOMPILE_SHAPE_CODE)
         {
-            for (int i=0; i<MAX_CUSTOM_SHAPES; i++)
+            for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
             {
-                // 1. compile AND EXECUTE custom shape init code
-		        StripLinefeedCharsAndComments(m_shape[i].m_szInit, buf);
-	            if (buf[0] && bReInit)
+                // 1. Compile AND EXECUTE custom shape initialization code.
+                StripLinefeedCharsAndComments(m_shape[i].m_szInit, buf);
+                if (buf[0] && bReInit)
                 {
-		            #ifndef _NO_EXPR_
-		            {
-		                NSEEL_CODEHANDLE	codehandle_temp;	
+#ifndef _NO_EXPR_
+                    {
+                        NSEEL_CODEHANDLE codehandle_temp;
                         if ((codehandle_temp = NSEEL_code_compile(m_shape[i].m_pf_eel, buf, 0)) == NULL)
-			            {
-/*
-                            wchar_t buf[1024];
-				            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_SHAPE_X_INIT_CODE), m_szDesc, i);
-                            g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
+                        {
+                            wchar_t err[1024], fmt[256];
+                            LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_SHAPE_X_INIT_CODE, fmt, 256);
+                            swprintf_s(err, fmt, m_szDesc, i);
+                            g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
 
-                            for (int vi=0; vi<NUM_Q_VAR; vi++)
+                            for (int vi = 0; vi < NUM_Q_VAR; vi++)
                                 *m_shape[i].var_pf_q[vi] = q_values_after_init_code[vi];
-                            for (int vi=0; vi<NUM_T_VAR; vi++)
-				                m_shape[i].t_values_after_init_code[vi] = 0;
-			            }
-			            else
-			            {
-				            // now execute the code, save the values of q1..q8, and clean up the code!
-                    
+                            for (int vi = 0; vi < NUM_T_VAR; vi++)
+                                m_shape[i].t_values_after_init_code[vi] = 0;
+                        }
+                        else
+                        {
+                            // Now execute the code, save the values of q1..q8, and clean up the code!
                             g_plugin.LoadCustomShapePerFrameEvallibVars(g_plugin.m_pState, i, 0);
-                                // note: q values at this point will actually be same as 
-                                //       q_values_after_init_code[], since no per-frame code
-                                //       has actually been executed yet!
+                            // note: q values at this point will actually be same as
+                            //       q_values_after_init_code[], since no per-frame code
+                            //       has actually been executed yet!
 
-				            NSEEL_code_execute(codehandle_temp);
+                            NSEEL_code_execute(codehandle_temp);
 
-                            for (int vi=0; vi<NUM_T_VAR; vi++)
+                            for (int vi = 0; vi < NUM_T_VAR; vi++)
                                 m_shape[i].t_values_after_init_code[vi] = *m_shape[i].var_pf_t[vi];
 
-				            NSEEL_code_free(codehandle_temp);
-				            codehandle_temp = NULL;
-			            }
-		            }
-		            #endif
+                            NSEEL_code_free(codehandle_temp);
+                            codehandle_temp = NULL;
+                        }
+                    }
+#endif
                 }
 
-                // 2. compile custom shape per-frame code
-		        StripLinefeedCharsAndComments(m_shape[i].m_szPerFrame, buf);
-	            if (buf[0])
+                // 2. Compile custom shape per-frame code.
+                StripLinefeedCharsAndComments(m_shape[i].m_szPerFrame, buf);
+                if (buf[0])
                 {
-		            #ifndef _NO_EXPR_
+#ifndef _NO_EXPR_
                     if ((m_shape[i].m_pf_codehandle = NSEEL_code_compile(m_shape[i].m_pf_eel, buf, 0)) == NULL)
-			            {
-/*
-                            wchar_t buf[1024];
-				            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_WARNING_PRESET_X_ERROR_IN_SHAPE_X_PER_FRAME_CODE), m_szDesc, i);
-                            g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
-			            }
-		            #endif
+                    {
+                        wchar_t err[1024], fmt[256];
+                        LoadString(g_plugin.GetInstance(), IDS_WARNING_PRESET_X_ERROR_IN_SHAPE_X_PER_FRAME_CODE, fmt, 256);
+                        swprintf_s(err, fmt, m_szDesc, i);
+                        g_plugin.AddError(err, 6.0f, ERR_PRESET, true);
+                    }
+#endif
                 }
 
                 /*
-                // 3. compile custom shape per-point code
-		        StripLinefeedCharsAndComments(m_shape[i].m_szPerPoint, buf);
-	            if (buf[0])
+                // 3. Compile custom shape per-point code.
+                StripLinefeedCharsAndComments(m_shape[i].m_szPerPoint, buf);
+                if (buf[0])
                 {
                     resetVars(m_shape[i].m_pp_vars);
-		            #ifndef _NO_EXPR_
-			            if ( ! (m_shape[i].m_pp_codehandle = compileCode(buf)))
-			            {
-				            sprintf(g_plugin.m_szUserMessage, "warning: preset \"%s\": error in shape %d per-point code", m_szDesc, i);
-				            g_plugin.m_fShowUserMessageUntilThisTime = g_plugin.GetTime() + 6.0f;
-                            g_plugin.m_bUserMessageIsError = true;
-			            }
-		            #endif
+#ifndef _NO_EXPR_
+                    if ((m_shape[i].m_pp_codehandle = compileCode(buf)) == NULL)
+                    {
+                        sprintf_s(g_plugin.m_szUserMessage, "[Warning] preset \"%s\": error in shape %d per-point code", m_szDesc, i);
+                        g_plugin.m_fShowUserMessageUntilThisTime = g_plugin.GetTime() + 6.0f;
+                        g_plugin.m_bUserMessageIsError = true;
+                    }
+#endif
                     resetVars(NULL);
                 }
                 */

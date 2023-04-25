@@ -130,7 +130,7 @@ class CPluginShell
     virtual int AllocateMilkDropDX11() = 0;
     virtual void CleanUpMilkDropDX11(int final_cleanup) = 0;
     virtual void MilkDropRenderFrame(int redraw) = 0;
-    //virtual void MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR) = 0;
+    virtual void MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR) = 0;
     //virtual LRESULT MilkDropWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam) = 0;
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
     //virtual void OnAltK(){}; // does not *have* to be implemented

@@ -44,6 +44,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
         MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
         MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
+        MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_ACTIVATEAPP(OnActivateApp)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
         MSG_WM_CONTEXTMENU(OnContextMenu)
@@ -74,6 +75,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void OnEnterSizeMove();
     void OnExitSizeMove();
     BOOL OnEraseBkgnd(CDCHandle dc);
+    BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
     void OnActivateApp(BOOL bActive, DWORD dwThreadID);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnContextMenu(CWindow wnd, CPoint point);
@@ -378,6 +380,27 @@ BOOL milk2_ui_element_instance::OnEraseBkgnd(CDCHandle dc)
     CBrush brush;
     WIN32_OP_D(brush.CreateSolidBrush(m_callback->query_std_color(ui_color_background)) != NULL);
     WIN32_OP_D(dc.FillRect(&r, brush));
+    return TRUE;
+}
+
+BOOL milk2_ui_element_instance::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
+{
+    typedef struct
+    {
+        wchar_t error[1024];
+    } ErrorCopy;
+
+    MILK2_CONSOLE_LOG("OnCopyData");
+    switch (pcds->dwData)
+    {
+        case 0x09: // PRINT STDOUT
+            {
+                LPCTSTR lpszString = (LPCTSTR)((ErrorCopy*)(pcds->lpData))->error;
+                MILK2_CONSOLE_LOG(WideToUTF8(lpszString));
+                break;
+            }
+    }
+
     return TRUE;
 }
 

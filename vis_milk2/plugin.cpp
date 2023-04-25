@@ -3291,6 +3291,1211 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     LeaveCriticalSection(&g_cs);
 }
 
+void CPlugin::AddError(wchar_t* szMsg, float fDuration, ErrorCategory category, bool bBold)
+{
+    if (category == ERR_NOTIFY)
+        ClearErrors(category);
+
+    assert(category != ERR_ALL);
+    ErrorMsg x;
+    x.msg = szMsg;
+    x.birthTime = GetTime();
+    x.expireTime = GetTime() + fDuration;
+    x.category = category;
+    x.bBold = bBold;
+    m_errors.push_back(x);
+}
+
+void CPlugin::ClearErrors(int category) // 0 = all categories
+{
+    for (ErrorMsgList::iterator it = m_errors.begin(); it != m_errors.end();)
+        if (category == ERR_ALL || it->category == category)
+        {
+            it = m_errors.erase(it);
+        }
+        else
+            ++it;
+}
+
+// Draws text messages directly to the back buffer.
+// When drawing text into one of the four corners,
+// draw the text at the current 'y' value for that corner
+// (one of the first 4 params to this function),
+// and then adjust that 'y' value so that the next time
+// text is drawn in that corner, it gets drawn above/below
+// the previous text (instead of overtop of it).
+// When drawing into the upper or lower LEFT corners,
+// left-align the text to 'xL'.
+// When drawing into the upper or lower RIGHT corners,
+// right-align the text to 'xR'.
+// Note: Try to keep the bounding rectangles on the text small;
+//       the smaller the area that has to be locked (to draw the text),
+//       the faster it will be.
+// Note: To have some text be on the screen often that will not be
+//       changing every frame, consider the poor folks whose video cards
+//       hate that; in that case should probably draw the text just once,
+//       to a texture, and then display the texture each frame. This is
+//       how the help screen is done; see "pluginshell.cpp" for example.
+void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_corner_y*/, int* /*lower_left_corner_y*/, int* /*lower_right_corner_y*/, int /*xL*/, int /*xR*/)
+{
+#if 0
+    D2D1_RECT_F r{};
+    wchar_t buf[512]{};
+    TextStyle* pFont = GetFont(DECORATIVE_FONT);
+    int h = GetFontHeight(DECORATIVE_FONT);
+
+    // 1. Render text in upper-right corner EXCEPT USER MESSAGE.
+    //    The User Message goes last because it draws a box under itself
+    //    and it should be visible over everything else (usually an error message).
+    {
+        // a) Preset name.
+        if (m_bShowPresetInfo)
+        {
+            SelectFont(DECORATIVE_FONT);
+            swprintf_s(buf, L"%s ", (m_nLoadingPreset != 0) ? m_pNewState->m_szDesc : m_pState->m_szDesc);
+            MilkDropTextOut_Shadow(buf, m_presetName, 0xFFFFFFFF, MTO_UPPER_RIGHT);
+        }
+        else
+        {
+            if (m_presetName.IsVisible())
+            {
+                m_presetName.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_presetName);
+            }
+        }
+
+        // b) Preset rating.
+        if (m_bShowRating || GetTime() < m_fShowRatingUntilThisTime)
+        {
+            // See also: `SetCurrentPresetRating()` in "milkdrop.cpp"
+            SelectFont(DECORATIVE_FONT);
+            swprintf_s(buf, L" %s: %d ", WASABI_API_LNGSTRINGW(IDS_RATING), (int)m_pState->m_fRating);
+            if (!m_bEnableRating)
+                wcscat_s(buf, WASABI_API_LNGSTRINGW(IDS_DISABLED));
+            MilkDropTextOut_Shadow(buf, m_presetRating, 0xFFFFFFFF, MTO_UPPER_RIGHT);
+        }
+        else
+        {
+            if (m_presetRating.IsVisible())
+            {
+                m_presetRating.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_presetRating);
+            }
+        }
+
+        // c) FPS display.
+        if (m_bShowFPS)
+        {
+            SelectFont(DECORATIVE_FONT);
+            swprintf_s(buf, L"%s: %4.2f ", WASABI_API_LNGSTRINGW(IDS_FPS),
+                       GetFps()); // leave extra space at end, so italicized fonts do not get clipped
+            MilkDropTextOut_Shadow(buf, m_fpsDisplay, 0xFFFFFFFF, MTO_UPPER_RIGHT);
+        }
+        else
+        {
+            if (m_fpsDisplay.IsVisible())
+            {
+                m_fpsDisplay.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_fpsDisplay);
+            }
+        }
+
+        // d) Debug information.
+        if (m_bShowDebugInfo)
+        {
+            SelectFont(SIMPLE_FONT);
+            swprintf_s(buf, L" %s: %6.4f ", WASABI_API_LNGSTRINGW(IDS_PF_MONITOR), static_cast<float>(*m_pState->var_pf_monitor));
+            MilkDropTextOut_Shadow(buf, m_debugInfo, 0xFFFFFFFF, MTO_UPPER_RIGHT);
+        }
+        else
+        {
+            if (m_debugInfo.IsVisible())
+            {
+                m_debugInfo.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_debugInfo);
+            }
+        }
+
+        // NOTE: Custom timed message comes at the end!!
+    }
+
+    // 2. Render text in lower-right corner.
+    {
+        // "waitstring" tooltip.
+        if (m_waitstring.bActive && m_bShowMenuToolTips && m_waitstring.szToolTip[0])
+        {
+            DrawTooltip(m_waitstring.szToolTip, xR, *lower_right_corner_y);
+        }
+        else
+        {
+            ClearTooltip();
+        }
+    }
+
+    // 3. Render text in lower-left corner.
+    {
+        // Render song title in lower-left corner.
+        if (m_bShowSongTitle)
+        {
+            wchar_t buf4[512] = {0};
+            SelectFont(DECORATIVE_FONT);
+            GetWinampSongTitle(GetWinampWindow(), buf4, ARRAYSIZE(buf4)); // defined in "support.h/cpp"
+            MilkDropTextOut_Shadow(buf4, m_songTitle, 0xFFFFFFFF, MTO_LOWER_LEFT);
+        }
+        else
+        {
+            if (m_songTitle.IsVisible())
+            {
+                m_songTitle.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_songTitle);
+            }
+        }
+
+        // Render song time and length above that.
+        if (m_bShowSongTime || m_bShowSongLen)
+        {
+            wchar_t buf2[511] = {0};
+            wchar_t buf3[512] = {0}; // add extra space to end, so italicized fonts do not get clipped
+            GetWinampSongPosAsText(GetWinampWindow(), buf); // defined in "support.h/cpp"
+            GetWinampSongLenAsText(GetWinampWindow(), buf2); // defined in "support.h/cpp"
+            if (m_bShowSongTime && m_bShowSongLen)
+            {
+                // Only show playing position and track length if it is playing (buffer is valid).
+                if (buf[0])
+                    swprintf_s(buf3, L"%s / %s ", buf, buf2);
+                else
+                    wcsncpy_s(buf3, buf2, ARRAYSIZE(buf2));
+            }
+            else if (m_bShowSongTime)
+                wcsncpy_s(buf3, buf, ARRAYSIZE(buf2));
+            else
+                wcsncpy_s(buf3, buf2, ARRAYSIZE(buf2));
+
+            SelectFont(DECORATIVE_FONT);
+            MilkDropTextOut_Shadow(buf3, m_songStats, 0xFFFFFFFF, MTO_LOWER_LEFT);
+        }
+        else
+        {
+            if (m_songStats.IsVisible())
+            {
+                m_songStats.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_songStats);
+            }
+        }
+    }
+
+    // 4. Render text in upper-left corner.
+    {
+        //wchar_t buf0[64000] = {0}; // must fit the longest strings (code strings are 32768 chars)
+        //                           // and leave extra space for &->&&, and [,[,& insertion
+        //char buf0A[64000] = {0};
+
+        SelectFont(SIMPLE_FONT);
+
+        // Loading presets, menus, etc.
+#ifdef DX9_MILKDROP
+        if (m_waitstring.bActive)
+        {
+            // 1. Draw the prompt string.
+            MilkDropTextOut(m_waitstring.szPrompt, m_waitText, MTO_UPPER_LEFT, true);
+
+            // Extra instructions.
+            bool bIsWarp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) &&
+                           !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit warp shader ]");
+            bool bIsComp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) &&
+                           !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit composite shader ]");
+            if (bIsWarp || bIsComp)
+            {
+                if (m_bShowShaderHelp)
+                {
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESS_F9_TO_HIDE_SHADER_QREF), m_waitText, MTO_UPPER_LEFT, true);
+                }
+                else
+                {
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESS_F9_TO_SHOW_SHADER_QREF), m_waitText, MTO_UPPER_LEFT, true);
+                }
+                *upper_left_corner_y += h * 2 / 3;
+
+                if (m_bShowShaderHelp)
+                {
+                    // Draw dark box based on longest line and number of lines...
+                    r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
+                    CTextManager::GetInstance().DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r,
+                                                            DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false,
+                                                            0xFF000000);
+                    D2D1_RECT_F darkbox = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y - 2),
+                                                      static_cast<FLOAT>(xL + r.right - r.left),
+                                                      static_cast<FLOAT>(*upper_left_corner_y + (r.bottom - r.top) * 13 + 2));
+                    DrawDarkTranslucentBox(&darkbox);
+                    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, 0xD0 / 255.0f);
+                    m_waitText.SetTextBox(bgColor, darkbox);
+
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING616), m_waitText, MTO_UPPER_LEFT, false);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING617), m_waitText, MTO_UPPER_LEFT, false);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING618), m_waitText, MTO_UPPER_LEFT, false);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING619), m_waitText, MTO_UPPER_LEFT, false);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING620), m_waitText, MTO_UPPER_LEFT, false);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING621), m_waitText, MTO_UPPER_LEFT, false);
+                    if (bIsWarp)
+                    {
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING622), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING623), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING624), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING625), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING626), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING627), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING628), m_waitText, MTO_UPPER_LEFT, false);
+                    }
+                    else if (bIsComp)
+                    {
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING629), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING630), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING631), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING632), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING633), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING634), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING635), m_waitText, MTO_UPPER_LEFT, false);
+                    }
+                    *upper_left_corner_y += h * 2 / 3;
+                }
+            }
+            else if (m_UI_mode == UI_SAVEAS && (m_bWarpShaderLock || m_bCompShaderLock))
+            {
+                //wchar_t buf[256] = {0};
+                int shader_msg_id = IDS_COMPOSITE_SHADER_LOCKED;
+                if (m_bWarpShaderLock && m_bCompShaderLock)
+                    shader_msg_id = IDS_WARP_AND_COMPOSITE_SHADERS_LOCKED;
+                else if (m_bWarpShaderLock && !m_bCompShaderLock)
+                    shader_msg_id = IDS_WARP_SHADER_LOCKED;
+                else
+                    shader_msg_id = IDS_COMPOSITE_SHADER_LOCKED;
+
+                WASABI_API_LNGSTRINGW_BUF(shader_msg_id, buf, 256);
+                MilkDropTextOut_Box(buf, m_waitText, MTO_UPPER_LEFT, 0xFFFFFFFF, true, 0xFF000000);
+                *upper_left_corner_y += h * 2 / 3;
+            }
+            else
+                *upper_left_corner_y += h * 2 / 3;
+
+            // 2. Reformat the waitstring text for display.
+            int bBrackets = m_waitstring.nSelAnchorPos != -1 && m_waitstring.nSelAnchorPos != static_cast<int>(m_waitstring.nCursorPos);
+            int bCursorBlink = (!bBrackets && ((int)(GetTime() * 270.0f) % 100 > 50)); //((GetFrame() % 3) >= 2)
+
+            wcscpy_s(buf0, m_waitstring.szText);
+            strcpy_s(buf0A, reinterpret_cast<char*>(m_waitstring.szText));
+
+            int temp_cursor_pos = m_waitstring.nCursorPos;
+            int temp_anchor_pos = m_waitstring.nSelAnchorPos;
+
+            if (bBrackets)
+            {
+                if (m_waitstring.bDisplayAsCode)
+                {
+                    // Insert "[]" around the selection.
+                    int start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
+                    int end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
+                    int len = strlen(buf0A);
+                    int i;
+
+                    for (i = len; i > end; i--)
+                        buf0A[i + 1] = buf0A[i];
+                    buf0A[end + 1] = ']';
+                    len++;
+
+                    for (i = len; i >= start; i--)
+                        buf0A[i + 1] = buf0A[i];
+                    buf0A[start] = '[';
+                    len++;
+                }
+                else
+                {
+                    // Insert "[]" around the selection.
+                    int start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
+                    int end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
+                    int len = wcslen(buf0);
+                    int i;
+
+                    for (i = len; i > end; i--)
+                        buf0[i + 1] = buf0[i];
+                    buf[end + 1] = L']';
+                    len++;
+
+                    for (i = len; i >= start; i--)
+                        buf0[i + 1] = buf0[i];
+                    buf0[start] = L'[';
+                    len++;
+                }
+            }
+            else
+            {
+                // Underline the current cursor position by rapidly toggling the character with an underscore.
+                if (m_waitstring.bDisplayAsCode)
+                {
+                    if (bCursorBlink)
+                    {
+                        if (buf0A[temp_cursor_pos] == '\0')
+                        {
+                            buf0A[temp_cursor_pos] = '_';
+                            buf0A[temp_cursor_pos + 1] = '\0';
+                        }
+                        else if (buf0A[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
+                        {
+                            for (int i = strlen(buf0A); i >= temp_cursor_pos; i--)
+                                buf0A[i + 1] = buf0A[i];
+                            buf0A[temp_cursor_pos] = '_';
+                        }
+                        else if (buf0A[temp_cursor_pos] == '_')
+                            buf0A[temp_cursor_pos] = ' ';
+                        else // it's a space or symbol or alphanumeric.
+                            buf0A[temp_cursor_pos] = '_';
+                    }
+                    else
+                    {
+                        if (buf0A[temp_cursor_pos] == '\0')
+                        {
+                            buf0A[temp_cursor_pos] = ' ';
+                            buf0A[temp_cursor_pos + 1] = '\0';
+                        }
+                        else if (buf0A[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
+                        {
+                            for (int i = strlen(buf0A); i >= temp_cursor_pos; i--)
+                                buf0A[i + 1] = buf0A[i];
+                            buf0A[temp_cursor_pos] = ' ';
+                        }
+                        //else if (buf[temp_cursor_pos] == '_')
+                        //    do nothing
+                        //else // it's a space or symbol or alphanumeric.
+                        //    do nothing
+                    }
+                }
+                else
+                {
+                    if (bCursorBlink)
+                    {
+                        if (buf0[temp_cursor_pos] == L'\0')
+                        {
+                            buf0[temp_cursor_pos] = L'_';
+                            buf0[temp_cursor_pos + 1] = L'\0';
+                        }
+                        else if (buf0[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
+                        {
+                            for (int i = wcslen(buf0); i >= temp_cursor_pos; i--)
+                                buf0[i + 1] = buf0[i];
+                            buf0[temp_cursor_pos] = L'_';
+                        }
+                        else if (buf0[temp_cursor_pos] == L'_')
+                            buf0[temp_cursor_pos] = L' ';
+                        else // it's a space or symbol or alphanumeric.
+                            buf0[temp_cursor_pos] = L'_';
+                    }
+                    else
+                    {
+                        if (buf0[temp_cursor_pos] == L'\0')
+                        {
+                            buf0[temp_cursor_pos] = L' ';
+                            buf0[temp_cursor_pos + 1] = L'\0';
+                        }
+                        else if (buf0[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
+                        {
+                            for (int i = wcslen(buf0); i >= temp_cursor_pos; i--)
+                                buf0[i + 1] = buf0[i];
+                            buf0[temp_cursor_pos] = L' ';
+                        }
+                        //else if (buf[temp_cursor_pos] == '_')
+                        //    do nothing
+                        //else // it's a space or symbol or alphanumeric.
+                        //    do nothing
+                    }
+                }
+            }
+
+            D2D1_RECT_F rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR),
+                                           static_cast<FLOAT>(*lower_left_corner_y));
+            rect.top += PLAYLIST_INNER_MARGIN;
+            rect.left += PLAYLIST_INNER_MARGIN;
+            rect.right -= PLAYLIST_INNER_MARGIN;
+            rect.bottom -= PLAYLIST_INNER_MARGIN;
+
+            // Then draw the edit string.
+            if (m_waitstring.bDisplayAsCode)
+            {
+                char buf2[8192] = {0};
+                int top_of_page_pos = 0;
+
+                // Compute `top_of_page_pos` so that the line the cursor is on will show.
+                // Also compute dimensions of the black rectangle.
+                {
+                    unsigned int start = 0;
+                    unsigned int pos = 0;
+                    float ypixels = 0.0f;
+                    int page = 1;
+                    int exit_on_next_page = 0;
+
+                    D2D1_RECT_F box = rect;
+                    box.right = box.left;
+                    box.bottom = box.top;
+
+                    while (buf0A[pos] != '\0') // for each line of text... (note that it might wrap)
+                    {
+                        start = pos;
+                        while (buf0A[pos] != LINEFEED_CONTROL_CHAR && buf0A[pos] != '\0')
+                            pos++;
+
+                        char ch = buf0A[pos];
+                        buf0A[pos] = '\0';
+                        sprintf_s(
+                            buf2, "   %sX",
+                            &buf0A[start]); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
+                        D2D1_RECT_F r2 = rect;
+                        r2.bottom = 4096.0f;
+                        r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
+                        CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2,
+                                                                DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
+                        float fH = r2.bottom - r2.top;
+                        ypixels += fH;
+                        buf0A[pos] = ch;
+
+                        if (start > m_waitstring.nCursorPos) // make sure 'box' gets updated for each line on this page
+                            exit_on_next_page = 1;
+
+                        if (ypixels > rect.bottom - rect.top) // this line belongs on the next page
+                        {
+                            if (exit_on_next_page)
+                            {
+                                buf0A[start] = 0; // so text stops where the box stops, when we draw the text
+                                break;
+                            }
+
+                            ypixels = fH;
+                            top_of_page_pos = start;
+                            page++;
+
+                            box = rect;
+                            box.right = box.left;
+                            box.bottom = box.top;
+                        }
+                        box.bottom += fH;
+                        box.right = std::max(box.right, box.left + r2.right - r2.left);
+
+                        if (buf0A[pos] == 0)
+                            break;
+                        pos++;
+                    }
+
+                    // Use `r2` to draw a dark box.
+                    box.top -= PLAYLIST_INNER_MARGIN;
+                    box.left -= PLAYLIST_INNER_MARGIN;
+                    box.right += PLAYLIST_INNER_MARGIN;
+                    box.bottom += PLAYLIST_INNER_MARGIN;
+                    //DrawDarkTranslucentBox(&box);
+                    *upper_left_corner_y += static_cast<int>(box.bottom - box.top + PLAYLIST_INNER_MARGIN * 3.0f);
+                    swprintf_s(m_waitstring.szToolTip, WASABI_API_LNGSTRINGW(IDS_PAGE_X), page);
+                }
+
+                // Display multiline (replace all character 13s with a CR)
+                {
+                    unsigned int start = top_of_page_pos;
+                    unsigned int pos = top_of_page_pos;
+
+                    while (buf0A[pos] != '\0')
+                    {
+                        while (buf0A[pos] != LINEFEED_CONTROL_CHAR && buf0A[pos] != '\0')
+                            pos++;
+
+                        char ch = buf0A[pos];
+                        buf0A[pos] = '\0';
+                        sprintf_s(buf2, "   %s ", &buf0A[start]);
+                        DWORD color = MENU_COLOR;
+                        if (m_waitstring.nCursorPos >= start && m_waitstring.nCursorPos <= pos)
+                            color = MENU_HILITE_COLOR;
+                        rect.top += CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &rect,
+                                                                            0 /*| DT_WORDBREAK*/, color, false);
+                        buf0A[pos] = ch;
+
+                        if (rect.top > rect.bottom)
+                            break;
+
+                        if (buf0A[pos] != '\0')
+                            pos++;
+                        start = pos;
+                    }
+                }
+                // note: *upper_left_corner_y is updated above, when the dark box is drawn.
+            }
+            else
+            {
+                wchar_t buf2[8192] = {0};
+
+                // Display on one line.
+                D2D1_RECT_F box = rect;
+                box.bottom = 4096.0f;
+                swprintf_s(buf2, L"    %sX",
+                           buf0); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
+                CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &box, DT_CALCRECT, MENU_COLOR, false);
+
+                // Use r2 to draw a dark box.
+                box.top -= PLAYLIST_INNER_MARGIN;
+                box.left -= PLAYLIST_INNER_MARGIN;
+                box.right += PLAYLIST_INNER_MARGIN;
+                box.bottom += PLAYLIST_INNER_MARGIN;
+                DrawDarkTranslucentBox(&box);
+                *upper_left_corner_y += static_cast<int>(box.bottom - box.top + PLAYLIST_INNER_MARGIN * 3.0f);
+
+                swprintf_s(buf2, L"    %s ", buf0);
+                CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &rect, 0, MENU_COLOR, false);
+            }
+        }
+        else if (m_UI_mode == UI_MENU)
+        {
+            assert(m_pCurMenu);
+
+            D2D1_RECT_F darkbox{};
+            m_pCurMenu->DrawMenu(r, xR, *lower_right_corner_y, 1, &darkbox);
+            *upper_left_corner_y += static_cast<int>(darkbox.bottom - darkbox.top + PLAYLIST_INNER_MARGIN * 3.0f);
+
+            darkbox.right += PLAYLIST_INNER_MARGIN * 2.0f;
+            darkbox.bottom += PLAYLIST_INNER_MARGIN * 2.0f;
+            DrawDarkTranslucentBox(&darkbox);
+
+            r.top += PLAYLIST_INNER_MARGIN;
+            r.left += PLAYLIST_INNER_MARGIN;
+            r.right += PLAYLIST_INNER_MARGIN;
+            r.bottom += PLAYLIST_INNER_MARGIN;
+            m_pCurMenu->DrawMenu(r, xR, *lower_right_corner_y);
+        }
+        else if (m_UI_mode == UI_UPGRADE_PIXEL_SHADER)
+        {
+            RECT rect = {0};
+            SetRect(&rect, xL, *upper_left_corner_y, xR, *lower_left_corner_y);
+
+            if (m_pState->m_nWarpPSVersion >= m_nMaxPSVersion && m_pState->m_nCompPSVersion >= m_nMaxPSVersion)
+            {
+                assert(m_pState->m_nMaxPSVersion == m_nMaxPSVersion);
+                wchar_t buf[1024] = {0};
+                swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_USES_HIGHEST_PIXEL_SHADER_VERSION), m_nMaxPSVersion);
+                rect.top +=
+                    m_text.DrawTextW(GetFont(SIMPLE_FONT), buf, -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), -1, &rect,
+                                             DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            }
+            else
+            {
+                if (m_pState->m_nMinPSVersion != m_pState->m_nMaxPSVersion)
+                {
+                    switch (m_pState->m_nMinPSVersion)
+                    {
+                        case MD2_PS_NONE:
+                            rect.top +=
+                                m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), -1,
+                                                 &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), -1,
+                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        case MD2_PS_2_0:
+                            rect.top +=
+                                m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), -1,
+                                                 &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), -1,
+                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        case MD2_PS_2_X:
+                            rect.top +=
+                                m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), -1,
+                                                 &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), -1,
+                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        case MD2_PS_3_0:
+                            assert(false);
+                            break;
+                        default:
+                            assert(0);
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (m_pState->m_nMinPSVersion)
+                    {
+                        case MD2_PS_NONE:
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS),
+                                                         -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
+                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        case MD2_PS_2_0:
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), -1,
+                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
+                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        case MD2_PS_2_X:
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), -1,
+                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
+                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        case MD2_PS_3_0:
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), -1,
+                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
+                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
+                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            break;
+                        default:
+                            assert(0);
+                            break;
+                    }
+                }
+            }
+            *upper_left_corner_y = rect.top;
+        }
+        else if (m_UI_mode == UI_LOAD_DEL)
+        {
+            RECT rect;
+            SetRect(&rect, xL, *upper_left_corner_y, xR, *lower_left_corner_y);
+            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_ARE_YOU_SURE_YOU_WANT_TO_DELETE_PRESET), -1, &rect,
+                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_TO_DELETE), m_presets[m_nPresetListCurPos].szFilename.c_str());
+            rect.top +=
+                m_text.DrawTextW(GetFont(SIMPLE_FONT), buf, -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            *upper_left_corner_y = rect.top;
+        }
+        else if (m_UI_mode == UI_SAVE_OVERWRITE)
+        {
+            RECT rect;
+            SetRect(&rect, xL, *upper_left_corner_y, xR, *lower_left_corner_y);
+            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_FILE_ALREADY_EXISTS_OVERWRITE_IT), -1, &rect,
+                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_FILE_IN_QUESTION_X_MILK), m_waitstring.szText);
+            rect.top +=
+                m_text.DrawTextW(GetFont(SIMPLE_FONT), buf, -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            if (m_bWarpShaderLock)
+                rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_WARP_SHADER_WAS_LOCKED),
+                                             -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
+            if (m_bCompShaderLock)
+                rect.top +=
+                    m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_COMPOSITE_SHADER_WAS_LOCKED), -1,
+                                     &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
+            *upper_left_corner_y = rect.top;
+        }
+        else if (m_UI_mode == UI_MASHUP)
+        {
+            if (m_nPresets - m_nDirs == 0)
+            {
+                // Note: This error message is repeated in "milkdropfs.cpp" in `LoadRandomPreset()`.
+                wchar_t buf[1024];
+                swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILE_FOUND_IN_X_MILK), m_szPresetDir);
+                AddError(buf, 6.0f, ERR_MISC, true);
+                m_UI_mode = UI_REGULAR;
+            }
+            else
+            {
+                UpdatePresetList(); // make sure list is completely ready
+
+                // Quick checks.
+                for (int mash = 0; mash < MASH_SLOTS; mash++)
+                {
+                    // Check validity.
+                    if (m_nMashPreset[mash] < m_nDirs)
+                        m_nMashPreset[mash] = m_nDirs;
+                    if (m_nMashPreset[mash] >= m_nPresets)
+                        m_nMashPreset[mash] = m_nPresets - 1;
+
+                    // Apply changes, if it's time.
+                    if (m_nLastMashChangeFrame[mash] + MASH_APPLY_DELAY_FRAMES + 1 == GetFrame())
+                    {
+                        // Import just a fragment of a preset!!
+                        DWORD ApplyFlags = 0;
+                        switch (mash)
+                        {
+                            case 0:
+                                ApplyFlags = STATE_GENERAL;
+                                break;
+                            case 1:
+                                ApplyFlags = STATE_MOTION;
+                                break;
+                            case 2:
+                                ApplyFlags = STATE_WAVE;
+                                break;
+                            case 3:
+                                ApplyFlags = STATE_WARP;
+                                break;
+                            case 4:
+                                ApplyFlags = STATE_COMP;
+                                break;
+                        }
+
+                        wchar_t szFile[MAX_PATH];
+                        swprintf_s(szFile, L"%s%s", m_szPresetDir, m_presets[m_nMashPreset[mash]].szFilename.c_str());
+
+                        m_pState->Import(szFile, GetTime(), m_pState, ApplyFlags);
+
+                        if (ApplyFlags & STATE_WARP)
+                            SafeRelease(m_shaders.warp.ptr);
+                        if (ApplyFlags & STATE_COMP)
+                            SafeRelease(m_shaders.comp.ptr);
+                        LoadShaders(&m_shaders, m_pState, false);
+
+                        SetMenusForPresetVersion(m_pState->m_nWarpPSVersion, m_pState->m_nCompPSVersion);
+                    }
+                }
+
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT1), MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT2), MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT3), MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT4), MTO_UPPER_LEFT, true);
+                *upper_left_corner_y += PLAYLIST_INNER_MARGIN;
+
+                RECT rect;
+                SetRect(&rect, xL, *upper_left_corner_y, xR, *lower_left_corner_y);
+                rect.top += PLAYLIST_INNER_MARGIN;
+                rect.left += PLAYLIST_INNER_MARGIN;
+                rect.right -= PLAYLIST_INNER_MARGIN;
+                rect.bottom -= PLAYLIST_INNER_MARGIN;
+
+                int lines_available = (rect.bottom - rect.top - PLAYLIST_INNER_MARGIN * 2) / GetFontHeight(SIMPLE_FONT);
+                lines_available -= MASH_SLOTS;
+
+                if (lines_available < 10)
+                {
+                    // Force it.
+                    rect.bottom = rect.top + GetFontHeight(SIMPLE_FONT) * 10 + 1;
+                    lines_available = 10;
+                }
+                if (lines_available > 16)
+                    lines_available = 16;
+
+                if (m_bUserPagedDown)
+                {
+                    m_nMashPreset[m_nMashSlot] += lines_available;
+                    if (m_nMashPreset[m_nMashSlot] >= m_nPresets)
+                        m_nMashPreset[m_nMashSlot] = m_nPresets - 1;
+                    m_bUserPagedDown = false;
+                }
+                if (m_bUserPagedUp)
+                {
+                    m_nMashPreset[m_nMashSlot] -= lines_available;
+                    if (m_nMashPreset[m_nMashSlot] < m_nDirs)
+                        m_nMashPreset[m_nMashSlot] = m_nDirs;
+                    m_bUserPagedUp = false;
+                }
+
+                int i;
+                int first_line = m_nMashPreset[m_nMashSlot] - (m_nMashPreset[m_nMashSlot] % lines_available);
+                int last_line = first_line + lines_available;
+                wchar_t str[512], str2[512];
+
+                if (last_line > m_nPresets)
+                    last_line = m_nPresets;
+
+                // Tooltip.
+                if (m_bShowMenuToolTips)
+                {
+                    wchar_t buf[256];
+                    swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PAGE_X_OF_X), m_nMashPreset[m_nMashSlot] / lines_available + 1,
+                               (m_nPresets + lines_available - 1) / lines_available);
+                    DrawTooltip(buf, xR, *lower_right_corner_y);
+                }
+
+                RECT orig_rect = rect;
+
+                RECT box;
+                box.top = rect.top;
+                box.left = rect.left;
+                box.right = rect.left;
+                box.bottom = rect.top;
+
+                int mashNames[MASH_SLOTS] = {
+                    IDS_MASHUP_GENERAL_POSTPROC, IDS_MASHUP_MOTION_EQUATIONS, IDS_MASHUP_WAVEFORMS_SHAPES,
+                    IDS_MASHUP_WARP_SHADER,      IDS_MASHUP_COMP_SHADER,
+                };
+
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    box = orig_rect;
+                    int w = 0;
+                    int h = 0;
+
+                    int start_y = orig_rect.top;
+                    for (int mash = 0; mash < MASH_SLOTS; mash++)
+                    {
+                        int idx = m_nMashPreset[mash];
+
+                        wchar_t buf[1024];
+                        swprintf_s(buf, L"%s%s", WASABI_API_LNGSTRINGW(mashNames[mash]), m_presets[idx].szFilename.c_str());
+                        RECT r2 = orig_rect;
+                        r2.top += h;
+                        h += m_text.DrawTextW(GetFont(SIMPLE_FONT), buf, -1, &r2,
+                                              DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0),
+                                              (mash == m_nMashSlot) ? PLAYLIST_COLOR_HILITE_TRACK : PLAYLIST_COLOR_NORMAL, false);
+                        w = std::max(w, r2.right - r2.left);
+                    }
+                    if (pass == 0)
+                    {
+                        box.right = box.left + w;
+                        box.bottom = box.top + h;
+                        DrawDarkTranslucentBox(&box);
+                    }
+                    else
+                        orig_rect.top += h;
+                }
+
+                orig_rect.top += GetFontHeight(SIMPLE_FONT) + PLAYLIST_INNER_MARGIN;
+
+                box = orig_rect;
+                box.right = box.left;
+                box.bottom = box.top;
+
+                // Draw a directory listing box right after...
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    //if (pass == 1)
+                    //    GetFont(SIMPLE_FONT)->Begin();
+
+                    rect = orig_rect;
+                    for (i = first_line; i < last_line; i++)
+                    {
+                        // Remove the extension before displaying the filename. Also pad with spaces.
+                        //wcscpy_s(str, m_pPresetAddr[i]);
+                        bool bIsDir = (m_presets[i].szFilename.c_str()[0] == '*');
+                        bool bIsRunning = false;
+                        bool bIsSelected = (i == m_nMashPreset[m_nMashSlot]);
+
+                        if (bIsDir)
+                        {
+                            // Directory.
+                            if (wcscmp(m_presets[i].szFilename.c_str() + 1, L"..") == 0)
+                                swprintf_s(str2, L" [ %s ] (%s) ", m_presets[i].szFilename.c_str() + 1,
+                                           WASABI_API_LNGSTRINGW(IDS_PARENT_DIRECTORY));
+                            else
+                                swprintf_s(str2, L" [ %s ] ", m_presets[i].szFilename.c_str() + 1);
+                        }
+                        else
+                        {
+                            // Preset file.
+                            wcscpy_s(str, m_presets[i].szFilename.c_str());
+                            RemoveExtension(str);
+                            swprintf_s(str2, L" %s ", str);
+
+                            if (wcscmp(m_presets[m_nMashPreset[m_nMashSlot]].szFilename.c_str(), str) == 0)
+                                bIsRunning = true;
+                        }
+
+                        if (bIsRunning && m_bPresetLockedByUser)
+                            wcscat_s(str2, WASABI_API_LNGSTRINGW(IDS_LOCKED));
+
+                        DWORD color = bIsDir ? DIR_COLOR : PLAYLIST_COLOR_NORMAL;
+                        if (bIsRunning)
+                            color = bIsSelected ? PLAYLIST_COLOR_BOTH : PLAYLIST_COLOR_PLAYING_TRACK;
+                        else if (bIsSelected)
+                            color = PLAYLIST_COLOR_HILITE_TRACK;
+
+                        RECT r2 = rect;
+                        rect.top +=
+                            m_text.DrawTextW(GetFont(SIMPLE_FONT), str2, -1, &r2,
+                                             DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), color, false);
+
+                        if (pass == 0) // calculating dark box
+                        {
+                            box.right = std::max(box.right, box.left + r2.right - r2.left);
+                            box.bottom += r2.bottom - r2.top;
+                        }
+                    }
+
+                    //if (pass == 1)
+                    //    GetFont(SIMPLE_FONT)->End();
+
+                    if (pass == 0) // calculating dark box
+                    {
+                        box.top -= PLAYLIST_INNER_MARGIN;
+                        box.left -= PLAYLIST_INNER_MARGIN;
+                        box.right += PLAYLIST_INNER_MARGIN;
+                        box.bottom += PLAYLIST_INNER_MARGIN;
+                        DrawDarkTranslucentBox(&box);
+                        *upper_left_corner_y = box.bottom + PLAYLIST_INNER_MARGIN;
+                    }
+                    else
+                        orig_rect.top += box.bottom - box.top;
+                }
+
+                orig_rect.top += PLAYLIST_INNER_MARGIN;
+            }
+        }
+        else
+#endif
+            if (m_UI_mode == UI_LOAD)
+        {
+            if (m_nPresets == 0)
+            {
+                // Note: This error message is repeated in "milkdropfs.cpp" in `LoadRandomPreset()`.
+                wchar_t buf2[1024];
+                swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILE_FOUND_IN_X_MILK), m_szPresetDir);
+                AddError(buf2, 6.0f, ERR_MISC, true);
+                m_UI_mode = UI_REGULAR;
+            }
+            else
+            {
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_LOAD_WHICH_PRESET_PLUS_COMMANDS), m_loadPresetInstruction, MTO_UPPER_LEFT, true);
+
+                wchar_t buf2[MAX_PATH + 64];
+                swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_DIRECTORY_OF_X), m_szPresetDir);
+                MilkDropTextOut(buf2, m_loadPresetDir, MTO_UPPER_LEFT, true);
+
+                *upper_left_corner_y += h / 2;
+
+                D2D1_RECT_F rect = {
+                    static_cast<FLOAT>(xL),
+                    static_cast<FLOAT>(*upper_left_corner_y),
+                    static_cast<FLOAT>(xR),
+                    static_cast<FLOAT>(*lower_left_corner_y),
+                };
+                rect.top += PLAYLIST_INNER_MARGIN;
+                rect.left += PLAYLIST_INNER_MARGIN;
+                rect.right -= PLAYLIST_INNER_MARGIN;
+                rect.bottom -= PLAYLIST_INNER_MARGIN;
+
+                int lines_available = static_cast<int>(rect.bottom - rect.top - PLAYLIST_INNER_MARGIN * 2.0f) / GetFontHeight(SIMPLE_FONT);
+
+                if (lines_available < 1)
+                {
+                    // Force it.
+                    rect.bottom = rect.top + GetFontHeight(SIMPLE_FONT) + 1;
+                    lines_available = 1;
+                }
+                if (lines_available > MAX_PRESETS_PER_PAGE)
+                    lines_available = MAX_PRESETS_PER_PAGE;
+
+                if (m_bUserPagedDown)
+                {
+                    m_nPresetListCurPos += lines_available;
+                    if (m_nPresetListCurPos >= m_nPresets)
+                        m_nPresetListCurPos = m_nPresets - 1;
+
+                    // Remember this preset's name so the next time they hit 'L' it jumps straight to it.
+                    //wcscpy_s(m_szLastPresetSelected, m_presets[m_nPresetListCurPos].szFilename.c_str());
+
+                    m_bUserPagedDown = false;
+                }
+
+                if (m_bUserPagedUp)
+                {
+                    m_nPresetListCurPos -= lines_available;
+                    if (m_nPresetListCurPos < 0)
+                        m_nPresetListCurPos = 0;
+
+                    // Remember this preset's name so the next time they hit 'L' it jumps straight to it
+                    //wcscpy_s(m_szLastPresetSelected, m_presets[m_nPresetListCurPos].szFilename.c_str());
+
+                    m_bUserPagedUp = false;
+                }
+
+                int first_line = m_nPresetListCurPos - (m_nPresetListCurPos % lines_available);
+                int last_line = first_line + lines_available;
+
+                if (last_line > m_nPresets)
+                    last_line = m_nPresets;
+
+                // Tooltip.
+                if (m_bShowMenuToolTips)
+                {
+                    swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_PAGE_X_OF_X), m_nPresetListCurPos / lines_available + 1,
+                               (m_nPresets + lines_available - 1) / lines_available);
+                    DrawTooltip(buf2, xR, *lower_right_corner_y);
+                }
+                else
+                {
+                    ClearTooltip();
+                }
+
+                D2D1_RECT_F orig_rect = rect;
+
+                D2D1_RECT_F box;
+                box.top = static_cast<FLOAT>(rect.top);
+                box.left = static_cast<FLOAT>(rect.left);
+                box.right = static_cast<FLOAT>(rect.left);
+                box.bottom = static_cast<FLOAT>(rect.top);
+
+                wchar_t str[512], str2[512];
+                int nFontHeight = GetFontHeight(SIMPLE_FONT);
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    rect = orig_rect;
+                    for (int i = first_line; i < last_line; i++)
+                    {
+                        D2D1_RECT_F r2 = rect;
+
+                        if (pass == 0)
+                        {
+                            // Remove the extension before displaying the filename. Also pad with spaces.
+                            //wcscpy_s(str, m_pPresetAddr[i]);
+                            bool bIsDir = (m_presets[i].szFilename.c_str()[0] == '*');
+                            bool bIsRunning = (i == m_nCurrentPreset); //false;
+                            bool bIsSelected = (i == m_nPresetListCurPos);
+
+                            if (bIsDir)
+                            {
+                                // Directory.
+                                if (wcscmp(m_presets[i].szFilename.c_str() + 1, L"..") == 0)
+                                    swprintf_s(str2, L" [ %s ] (%s) ", m_presets[i].szFilename.c_str() + 1,
+                                               WASABI_API_LNGSTRINGW(IDS_PARENT_DIRECTORY));
+                                else
+                                    swprintf_s(str2, L" [ %s ] ", m_presets[i].szFilename.c_str() + 1);
+                            }
+                            else
+                            {
+                                // Preset file.
+                                wcscpy_s(str, m_presets[i].szFilename.c_str());
+                                RemoveExtension(str);
+                                swprintf_s(str2, L" %s ", str);
+
+                                //if (lstrcmp(m_pState->m_szDesc, str)==0)
+                                //    bIsRunning = true;
+                            }
+
+                            if (bIsRunning && m_bPresetLockedByUser)
+                                wcscat_s(str2, WASABI_API_LNGSTRINGW(IDS_LOCKED));
+
+                            DWORD color = bIsDir ? DIR_COLOR : PLAYLIST_COLOR_NORMAL;
+                            if (bIsRunning)
+                                color = bIsSelected ? PLAYLIST_COLOR_BOTH : PLAYLIST_COLOR_PLAYING_TRACK;
+                            else if (bIsSelected)
+                                color = PLAYLIST_COLOR_HILITE_TRACK;
+
+                            D2D1_COLOR_F fColor = D2D1::ColorF(color, GetAlpha(color));
+                            m_loadPresetItem[i].Initialize();
+                            m_loadPresetItem[i].SetAlignment(AlignNear, AlignNear);
+                            m_loadPresetItem[i].SetTextColor(fColor);
+                            m_loadPresetItem[i].SetTextOpacity(fColor.a);
+                            m_loadPresetItem[i].SetContainer(r2);
+                            m_loadPresetItem[i].SetVisible(true);
+                            m_loadPresetItem[i].SetText(str2);
+                            m_loadPresetItem[i].SetTextStyle(GetFont(SIMPLE_FONT));
+                            m_loadPresetItem[i].SetTextShadow(false);
+                            CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2,
+                                                                    DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color,
+                                                                    false);
+                        }
+                        else
+                        {
+                            m_loadPresetItem[i].SetContainer(r2);
+                            int nHeight =
+                                CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2,
+                                                                        DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
+                            FLOAT fHeight = static_cast<FLOAT>(std::max(nFontHeight, nHeight));
+                            rect.top += fHeight;
+                            CTextManager::GetInstance().RegisterElement(&m_loadPresetItem[i]);
+
+                            // Calculate dark box rectangle
+                            box.right = std::max(box.right, box.left + r2.right - r2.left);
+                            box.bottom += fHeight; //r2.bottom - r2.top;
+                        }
+                    }
+
+                    if (pass == 1) // calculate dark box rectangle
+                    {
+                        DWORD boxColor = 0xD0000000;
+                        box.top -= PLAYLIST_INNER_MARGIN;
+                        box.left -= PLAYLIST_INNER_MARGIN;
+                        box.right += PLAYLIST_INNER_MARGIN;
+                        box.bottom += PLAYLIST_INNER_MARGIN;
+                        DrawDarkTranslucentBox(&box);
+                        m_loadPresetItem[0].SetTextBox(D2D1::ColorF(boxColor, GetAlpha(boxColor)), box);
+                        *upper_left_corner_y = static_cast<int>(box.bottom + PLAYLIST_INNER_MARGIN);
+                    }
+                }
+            }
+        }
+        else if (m_UI_mode == UI_REGULAR && !m_waitstring.bActive)
+        {
+            if (m_loadPresetInstruction.IsVisible())
+            {
+                m_loadPresetInstruction.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_loadPresetInstruction);
+            }
+            if (m_loadPresetDir.IsVisible())
+            {
+                m_loadPresetDir.SetVisible(false);
+                CTextManager::GetInstance().UnregisterElement(&m_loadPresetDir);
+            }
+            for (int i = 0; i < MAX_PRESETS_PER_PAGE; ++i)
+                if (m_loadPresetItem[i].IsVisible())
+                {
+                    m_loadPresetItem[i].SetVisible(false);
+                    CTextManager::GetInstance().UnregisterElement(&m_loadPresetItem[i]);
+                }
+        }
+    }
+#endif
+
+    // 5. Render *remaining* text to upper-right corner.
+    {
+        // e) Custom timed message.
+        if (!m_bWarningsDisabled2)
+        {
+#ifndef _FOOBAR
+            SelectFont(SIMPLE_FONT);
+            float t = GetTime();
+            for (ErrorMsgList::iterator it = m_errors.begin(); it != m_errors.end();)
+            {
+                if (t >= it->birthTime && t < it->expireTime)
+                {
+                    _snwprintf_s(buf, _TRUNCATE, L"%s ", it->msg.c_str());
+                    float age_rel = (t - it->birthTime) / (it->expireTime - it->birthTime);
+                    DWORD cr = static_cast<DWORD>(200 - 199 * powf(age_rel, 4));
+                    DWORD cg = 0; //static_cast<DWORD>(136 - 135 * powf(age_rel, 1));
+                    DWORD cb = 0;
+                    DWORD z = 0xFF000000 | (cr << 16) | (cg << 8) | cb;
+                    MilkDropTextOut_Box(buf, it->text, MTO_UPPER_RIGHT, 0xFFFFFFFF, true, it->bBold ? z : 0xFF000000);
+                    ++it;
+                }
+                else
+                {
+                    if (it->text.IsVisible())
+                    {
+                        it->text.SetVisible(false);
+                        CTextManager::GetInstance().UnregisterElement(&it->text);
+                    }
+                    it = m_errors.erase(it);
+                }
+            }
+#else
+            ErrorCopy msg;
+            COPYDATASTRUCT cds{};
+            cds.dwData = 0x09; // PRINT_CONSOLE
+            cds.cbData = sizeof(msg);
+            cds.lpData = &msg;
+            float t = GetTime();
+            for (ErrorMsgList::iterator it = m_errors.begin(); it != m_errors.end();)
+            {
+                if (t >= it->birthTime && t < it->expireTime)
+                {
+                    _snwprintf_s(msg.error, 1024, L"%s ", it->msg.c_str());
+                    SendMessage(GetWinampWindow(), WM_COPYDATA, (WPARAM)(HWND)GetWinampWindow(), (LPARAM)(LPVOID)&cds);
+                    it->expireTime = 0.0f;
+                    ++it;
+                }
+                else
+                {
+                    it = m_errors.erase(it);
+                }
+            }
+#endif
+        }
+    }
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

@@ -186,15 +186,31 @@ typedef struct
     UINT bindPoint;
 } SamplerInfo;
 
+enum ErrorCategory
+{
+    ERR_ALL = 0,
+    ERR_INIT = 1, // specifically, loading a preset
+    ERR_PRESET = 2, // specifically, loading a preset
+    ERR_MISC = 3,
+    ERR_NOTIFY = 4, // a simple notification - not an error at all. ("shuffle is now ON." etc.)
+                    // note: each NOTIFY msg clears all the old NOTIFY messages!
+    ERR_SCANNING_PRESETS = 5,
+};
+
 typedef struct
 {
     std::wstring msg;
     bool bBold; // true == red background; false == black background
     float birthTime;
     float expireTime;
-    int category;
+    ErrorCategory category;
 } ErrorMsg;
 typedef std::list<ErrorMsg> ErrorMsgList;
+
+typedef struct
+{
+    wchar_t error[1024];
+} ErrorCopy;
 
 class CShaderParams
 {
@@ -463,17 +479,10 @@ class CPlugin : public CPluginShell
     //float m_fShowUserMessageUntilThisTime;
     //char m_szUserMessage[512];
     //bool m_bUserMessageIsError;
-        
-#define ERR_ALL    0
-#define ERR_INIT   1  // specifically, loading a preset
-#define ERR_PRESET 2  // specifically, loading a preset
-#define ERR_MISC   3
-#define ERR_NOTIFY 4  // a simple notification - not an error at all. ("shuffle is now ON." etc.)
-                      // NOTE: each NOTIFY msg clears all the old NOTIFY messages!
-#define ERR_SCANNING_PRESETS 5
+
     ErrorMsgList m_errors;
-    void AddError(wchar_t* szMsg, float fDuration, int category=ERR_ALL, bool bBold=true);
-    //void ClearErrors(int category=ERR_ALL); // 0=all categories
+    void AddError(wchar_t* szMsg, float fDuration, ErrorCategory category = ERR_ALL, bool bBold = true);
+    void ClearErrors(int category = ERR_ALL);
 
     char m_szDebugMessage[512];
     wchar_t m_szSongTitle[512];
@@ -633,7 +642,7 @@ class CPlugin : public CPluginShell
     virtual int AllocateMilkDropDX11();
     virtual void CleanUpMilkDropDX11(int final_cleanup);
     virtual void MilkDropRenderFrame(int redraw);
-    //virtual void MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR);
+    virtual void MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR);
     //virtual LRESULT MilkDropWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     //virtual void OnAltK();
