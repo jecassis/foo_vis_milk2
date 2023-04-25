@@ -88,10 +88,18 @@
     <None Include="packages.config">
       <Filter>Configuration Files</Filter>
     </None>
+    <None Include="..\vis_milk2\help.bin">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="foo_vis_milk2.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\vis_milk2\milkdrop.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

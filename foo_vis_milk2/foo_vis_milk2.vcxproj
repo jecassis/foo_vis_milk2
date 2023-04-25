@@ -410,6 +410,7 @@
     <None Include="..\tools\clang-format-all.ps1" />
     <None Include="..\tools\clang-format-all.sh" />
     <None Include="packages.config" />
+    <None Include="..\vis_milk2\help.bin" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\eel2\eel2.vcxproj">
@@ -433,6 +434,9 @@
     <ProjectReference Include="..\vis_milk2\vis_milk2.vcxproj">
       <Project>{7ee6f699-4ea5-4409-b212-dcfd192c811b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\vis_milk2\milkdrop.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
