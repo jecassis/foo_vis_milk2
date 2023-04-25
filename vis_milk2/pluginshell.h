@@ -201,15 +201,15 @@ class CPluginShell
     HFONT m_font_desktop;
 
     // PRIVATE CONFIG PANEL SETTINGS
-    //D3DMULTISAMPLE_TYPE m_multisample_fullscreen;
-    //D3DMULTISAMPLE_TYPE m_multisample_desktop;
-    //D3DMULTISAMPLE_TYPE m_multisample_windowed;
-    GUID m_adapter_guid_fullscreen;
-    GUID m_adapter_guid_desktop;
-    GUID m_adapter_guid_windowed;
-    wchar_t m_adapter_devicename_fullscreen[256];  // these are also necessary sometimes,
-    wchar_t m_adapter_devicename_desktop[256];     //  for example, when a laptop (single adapter)
-    wchar_t m_adapter_devicename_windowed[256];    //  drives two displays!  DeviceName will be \\.\Display1 and \\.\Display2 or something.
+    DXGI_SAMPLE_DESC m_multisample_fullscreen;
+    DXGI_SAMPLE_DESC m_multisample_desktop;
+    DXGI_SAMPLE_DESC m_multisample_windowed;
+    LUID m_adapter_guid_fullscreen;
+    LUID m_adapter_guid_desktop;
+    LUID m_adapter_guid_windowed;
+    wchar_t m_adapter_devicename_fullscreen[256];
+    wchar_t m_adapter_devicename_desktop[256];
+    wchar_t m_adapter_devicename_windowed[256];
 
     // PRIVATE RUNTIME SETTINGS
     int m_lost_focus; // ~mostly for fullscreen mode
@@ -217,11 +217,11 @@ class CPluginShell
     int m_resizing;   // ~mostly for windowed mode
     int m_show_help;
     int m_show_playlist;
-    int m_playlist_pos;          // current selection on (plugin's) playlist menu
-    int m_playlist_pageups;      // can be + or -
-    int m_playlist_top_idx;      // used to track when our little playlist cache (m_playlist) needs updated.
-    int m_playlist_btm_idx;      // used to track when our little playlist cache (m_playlist) needs updated.
-    int m_playlist_width_pixels; // considered invalid whenever 'm_playlist_top_idx' is -1.
+    LRESULT m_playlist_pos;        // current selection on (plugin's) playlist menu
+    int m_playlist_pageups;        // can be + or -
+    int m_playlist_top_idx;        // used to track when our little playlist cache (m_playlist) needs updated.
+    int m_playlist_btm_idx;        // used to track when our little playlist cache (m_playlist) needs updated.
+    float m_playlist_width_pixels; // considered invalid whenever 'm_playlist_top_idx' is -1.
     wchar_t m_playlist[MAX_SONGS_PER_PAGE][256]; // considered invalid whenever 'm_playlist_top_idx' is -1.
     int m_exiting;
     int m_upper_left_corner_y;

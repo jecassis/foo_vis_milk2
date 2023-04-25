@@ -741,61 +741,61 @@ void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
     //strcpy_s(m_szSection, s_to->m_szSection);
     */
 
-	// CBlendableFloats & SuperValues blend over time 
-	m_fGammaAdj      .StartBlendFrom(&s_from->m_fGammaAdj      , fAnimTime, fTimespan);
-	m_fVideoEchoZoom .StartBlendFrom(&s_from->m_fVideoEchoZoom , fAnimTime, fTimespan);
-	m_fVideoEchoAlpha.StartBlendFrom(&s_from->m_fVideoEchoAlpha, fAnimTime, fTimespan);
-	m_fDecay         .StartBlendFrom(&s_from->m_fDecay         , fAnimTime, fTimespan);
-	m_fWaveAlpha     .StartBlendFrom(&s_from->m_fWaveAlpha     , fAnimTime, fTimespan);
-	m_fWaveScale     .StartBlendFrom(&s_from->m_fWaveScale     , fAnimTime, fTimespan);
-	m_fWaveSmoothing .StartBlendFrom(&s_from->m_fWaveSmoothing , fAnimTime, fTimespan);
-	m_fWaveParam     .StartBlendFrom(&s_from->m_fWaveParam     , fAnimTime, fTimespan);
-	m_fWarpScale     .StartBlendFrom(&s_from->m_fWarpScale     , fAnimTime, fTimespan);
-	m_fZoomExponent  .StartBlendFrom(&s_from->m_fZoomExponent  , fAnimTime, fTimespan);
-	m_fShader        .StartBlendFrom(&s_from->m_fShader        , fAnimTime, fTimespan);
-	m_fModWaveAlphaStart.StartBlendFrom(&s_from->m_fModWaveAlphaStart, fAnimTime, fTimespan);
-	m_fModWaveAlphaEnd  .StartBlendFrom(&s_from->m_fModWaveAlphaEnd, fAnimTime, fTimespan);
+    // CBlendableFloats & SuperValues blend over time
+    m_fGammaAdj.StartBlendFrom(&s_from->m_fGammaAdj, fAnimTime, fTimespan);
+    m_fVideoEchoZoom.StartBlendFrom(&s_from->m_fVideoEchoZoom, fAnimTime, fTimespan);
+    m_fVideoEchoAlpha.StartBlendFrom(&s_from->m_fVideoEchoAlpha, fAnimTime, fTimespan);
+    m_fDecay.StartBlendFrom(&s_from->m_fDecay, fAnimTime, fTimespan);
+    m_fWaveAlpha.StartBlendFrom(&s_from->m_fWaveAlpha, fAnimTime, fTimespan);
+    m_fWaveScale.StartBlendFrom(&s_from->m_fWaveScale, fAnimTime, fTimespan);
+    m_fWaveSmoothing.StartBlendFrom(&s_from->m_fWaveSmoothing, fAnimTime, fTimespan);
+    m_fWaveParam.StartBlendFrom(&s_from->m_fWaveParam, fAnimTime, fTimespan);
+    m_fWarpScale.StartBlendFrom(&s_from->m_fWarpScale, fAnimTime, fTimespan);
+    m_fZoomExponent.StartBlendFrom(&s_from->m_fZoomExponent, fAnimTime, fTimespan);
+    m_fShader.StartBlendFrom(&s_from->m_fShader, fAnimTime, fTimespan);
+    m_fModWaveAlphaStart.StartBlendFrom(&s_from->m_fModWaveAlphaStart, fAnimTime, fTimespan);
+    m_fModWaveAlphaEnd.StartBlendFrom(&s_from->m_fModWaveAlphaEnd, fAnimTime, fTimespan);
 
-	m_fZoom		.StartBlendFrom(&s_from->m_fZoom		, fAnimTime, fTimespan);
-	m_fRot 		.StartBlendFrom(&s_from->m_fRot 		, fAnimTime, fTimespan);
-	m_fRotCX	.StartBlendFrom(&s_from->m_fRotCX		, fAnimTime, fTimespan);
-	m_fRotCY	.StartBlendFrom(&s_from->m_fRotCY		, fAnimTime, fTimespan);
-	m_fXPush	.StartBlendFrom(&s_from->m_fXPush		, fAnimTime, fTimespan);
-	m_fYPush	.StartBlendFrom(&s_from->m_fYPush		, fAnimTime, fTimespan);
-	m_fWarpAmount.StartBlendFrom(&s_from->m_fWarpAmount,fAnimTime, fTimespan);
-	m_fStretchX .StartBlendFrom(&s_from->m_fStretchX	, fAnimTime, fTimespan);
-	m_fStretchY .StartBlendFrom(&s_from->m_fStretchY	, fAnimTime, fTimespan);
-	m_fWaveR	.StartBlendFrom(&s_from->m_fWaveR		, fAnimTime, fTimespan);
-	m_fWaveG	.StartBlendFrom(&s_from->m_fWaveG		, fAnimTime, fTimespan);
-	m_fWaveB	.StartBlendFrom(&s_from->m_fWaveB		, fAnimTime, fTimespan);
-	m_fWaveX	.StartBlendFrom(&s_from->m_fWaveX		, fAnimTime, fTimespan);
-	m_fWaveY	.StartBlendFrom(&s_from->m_fWaveY		, fAnimTime, fTimespan);
-	m_fOuterBorderSize	.StartBlendFrom(&s_from->m_fOuterBorderSize	, fAnimTime, fTimespan);
-	m_fOuterBorderR		.StartBlendFrom(&s_from->m_fOuterBorderR	, fAnimTime, fTimespan);
-	m_fOuterBorderG		.StartBlendFrom(&s_from->m_fOuterBorderG	, fAnimTime, fTimespan);
-	m_fOuterBorderB		.StartBlendFrom(&s_from->m_fOuterBorderB	, fAnimTime, fTimespan);
-	m_fOuterBorderA		.StartBlendFrom(&s_from->m_fOuterBorderA	, fAnimTime, fTimespan);
-	m_fInnerBorderSize	.StartBlendFrom(&s_from->m_fInnerBorderSize	, fAnimTime, fTimespan);
-	m_fInnerBorderR		.StartBlendFrom(&s_from->m_fInnerBorderR	, fAnimTime, fTimespan);
-	m_fInnerBorderG		.StartBlendFrom(&s_from->m_fInnerBorderG	, fAnimTime, fTimespan);
-	m_fInnerBorderB		.StartBlendFrom(&s_from->m_fInnerBorderB	, fAnimTime, fTimespan);
-	m_fInnerBorderA		.StartBlendFrom(&s_from->m_fInnerBorderA	, fAnimTime, fTimespan);
-	m_fMvX				.StartBlendFrom(&s_from->m_fMvX				, fAnimTime, fTimespan);
-	m_fMvY				.StartBlendFrom(&s_from->m_fMvY				, fAnimTime, fTimespan);
-	m_fMvDX				.StartBlendFrom(&s_from->m_fMvDX			, fAnimTime, fTimespan);
-	m_fMvDY				.StartBlendFrom(&s_from->m_fMvDY			, fAnimTime, fTimespan);
-	m_fMvL				.StartBlendFrom(&s_from->m_fMvL				, fAnimTime, fTimespan);
-	m_fMvR				.StartBlendFrom(&s_from->m_fMvR				, fAnimTime, fTimespan);
-	m_fMvG				.StartBlendFrom(&s_from->m_fMvG				, fAnimTime, fTimespan);
-	m_fMvB				.StartBlendFrom(&s_from->m_fMvB				, fAnimTime, fTimespan);
-	m_fMvA				.StartBlendFrom(&s_from->m_fMvA				, fAnimTime, fTimespan);
-    m_fBlur1Min         .StartBlendFrom(&s_from->m_fBlur1Min        , fAnimTime, fTimespan);
-    m_fBlur2Min         .StartBlendFrom(&s_from->m_fBlur2Min        , fAnimTime, fTimespan);
-    m_fBlur3Min         .StartBlendFrom(&s_from->m_fBlur3Min        , fAnimTime, fTimespan);
-    m_fBlur1Max         .StartBlendFrom(&s_from->m_fBlur1Max        , fAnimTime, fTimespan);
-    m_fBlur2Max         .StartBlendFrom(&s_from->m_fBlur2Max        , fAnimTime, fTimespan);
-    m_fBlur3Max         .StartBlendFrom(&s_from->m_fBlur3Max        , fAnimTime, fTimespan);
-    m_fBlur1EdgeDarken  .StartBlendFrom(&s_from->m_fBlur1EdgeDarken , fAnimTime, fTimespan);
+    m_fZoom.StartBlendFrom(&s_from->m_fZoom, fAnimTime, fTimespan);
+    m_fRot.StartBlendFrom(&s_from->m_fRot, fAnimTime, fTimespan);
+    m_fRotCX.StartBlendFrom(&s_from->m_fRotCX, fAnimTime, fTimespan);
+    m_fRotCY.StartBlendFrom(&s_from->m_fRotCY, fAnimTime, fTimespan);
+    m_fXPush.StartBlendFrom(&s_from->m_fXPush, fAnimTime, fTimespan);
+    m_fYPush.StartBlendFrom(&s_from->m_fYPush, fAnimTime, fTimespan);
+    m_fWarpAmount.StartBlendFrom(&s_from->m_fWarpAmount, fAnimTime, fTimespan);
+    m_fStretchX.StartBlendFrom(&s_from->m_fStretchX, fAnimTime, fTimespan);
+    m_fStretchY.StartBlendFrom(&s_from->m_fStretchY, fAnimTime, fTimespan);
+    m_fWaveR.StartBlendFrom(&s_from->m_fWaveR, fAnimTime, fTimespan);
+    m_fWaveG.StartBlendFrom(&s_from->m_fWaveG, fAnimTime, fTimespan);
+    m_fWaveB.StartBlendFrom(&s_from->m_fWaveB, fAnimTime, fTimespan);
+    m_fWaveX.StartBlendFrom(&s_from->m_fWaveX, fAnimTime, fTimespan);
+    m_fWaveY.StartBlendFrom(&s_from->m_fWaveY, fAnimTime, fTimespan);
+    m_fOuterBorderSize.StartBlendFrom(&s_from->m_fOuterBorderSize, fAnimTime, fTimespan);
+    m_fOuterBorderR.StartBlendFrom(&s_from->m_fOuterBorderR, fAnimTime, fTimespan);
+    m_fOuterBorderG.StartBlendFrom(&s_from->m_fOuterBorderG, fAnimTime, fTimespan);
+    m_fOuterBorderB.StartBlendFrom(&s_from->m_fOuterBorderB, fAnimTime, fTimespan);
+    m_fOuterBorderA.StartBlendFrom(&s_from->m_fOuterBorderA, fAnimTime, fTimespan);
+    m_fInnerBorderSize.StartBlendFrom(&s_from->m_fInnerBorderSize, fAnimTime, fTimespan);
+    m_fInnerBorderR.StartBlendFrom(&s_from->m_fInnerBorderR, fAnimTime, fTimespan);
+    m_fInnerBorderG.StartBlendFrom(&s_from->m_fInnerBorderG, fAnimTime, fTimespan);
+    m_fInnerBorderB.StartBlendFrom(&s_from->m_fInnerBorderB, fAnimTime, fTimespan);
+    m_fInnerBorderA.StartBlendFrom(&s_from->m_fInnerBorderA, fAnimTime, fTimespan);
+    m_fMvX.StartBlendFrom(&s_from->m_fMvX, fAnimTime, fTimespan);
+    m_fMvY.StartBlendFrom(&s_from->m_fMvY, fAnimTime, fTimespan);
+    m_fMvDX.StartBlendFrom(&s_from->m_fMvDX, fAnimTime, fTimespan);
+    m_fMvDY.StartBlendFrom(&s_from->m_fMvDY, fAnimTime, fTimespan);
+    m_fMvL.StartBlendFrom(&s_from->m_fMvL, fAnimTime, fTimespan);
+    m_fMvR.StartBlendFrom(&s_from->m_fMvR, fAnimTime, fTimespan);
+    m_fMvG.StartBlendFrom(&s_from->m_fMvG, fAnimTime, fTimespan);
+    m_fMvB.StartBlendFrom(&s_from->m_fMvB, fAnimTime, fTimespan);
+    m_fMvA.StartBlendFrom(&s_from->m_fMvA, fAnimTime, fTimespan);
+    m_fBlur1Min.StartBlendFrom(&s_from->m_fBlur1Min, fAnimTime, fTimespan);
+    m_fBlur2Min.StartBlendFrom(&s_from->m_fBlur2Min, fAnimTime, fTimespan);
+    m_fBlur3Min.StartBlendFrom(&s_from->m_fBlur3Min, fAnimTime, fTimespan);
+    m_fBlur1Max.StartBlendFrom(&s_from->m_fBlur1Max, fAnimTime, fTimespan);
+    m_fBlur2Max.StartBlendFrom(&s_from->m_fBlur2Max, fAnimTime, fTimespan);
+    m_fBlur3Max.StartBlendFrom(&s_from->m_fBlur3Max, fAnimTime, fTimespan);
+    m_fBlur1EdgeDarken.StartBlendFrom(&s_from->m_fBlur1EdgeDarken, fAnimTime, fTimespan);
 
     // If motion vectors were transparent before, don't morph the # in X and Y - just
     // start in the right place, and fade them in.
@@ -861,89 +861,89 @@ bool CState::Export(const wchar_t* szIniFile)
     // IMPORTANT: THESE MUST BE THE FIRST TWO LINES.  Otherwise it is assumed to be a MilkDrop 1-era preset.
     if (m_nMaxPSVersion > 0)
     {
-        fprintf(fOut, "MILKDROP_PRESET_VERSION=%d\n", CUR_MILKDROP_PRESET_VERSION);
-        fprintf(fOut, "PSVERSION=%d\n"     ,m_nMaxPSVersion);  // the max
-        fprintf(fOut, "PSVERSION_WARP=%d\n",m_nWarpPSVersion);
-        fprintf(fOut, "PSVERSION_COMP=%d\n",m_nCompPSVersion);
+        fprintf_s(fOut, "MILKDROP_PRESET_VERSION=%d\n", CUR_MILKDROP_PRESET_VERSION);
+        fprintf_s(fOut, "PSVERSION=%d\n", m_nMaxPSVersion); // the maximum
+        fprintf_s(fOut, "PSVERSION_WARP=%d\n", m_nWarpPSVersion);
+        fprintf_s(fOut, "PSVERSION_COMP=%d\n", m_nCompPSVersion);
     }
 
     // Just for backwards compatibility; MilkDrop 1 can read MilkDrop 2 presets, minus the new features.
     // (...this section name allows the `GetPrivateProfile*()` functions to still work on MilkDrop 1)
-	fprintf(fOut, "[preset00]\n");    
+    fprintf_s(fOut, "[preset00]\n");
 
-	fprintf(fOut, "%s=%.3f\n", "fRating",                m_fRating);         
-	fprintf(fOut, "%s=%.3f\n", "fGammaAdj",              m_fGammaAdj.eval(-1));         
-	fprintf(fOut, "%s=%.3f\n", "fDecay",                 m_fDecay.eval(-1));            
-	fprintf(fOut, "%s=%.3f\n", "fVideoEchoZoom",         m_fVideoEchoZoom.eval(-1));    
-	fprintf(fOut, "%s=%.3f\n", "fVideoEchoAlpha",        m_fVideoEchoAlpha.eval(-1));   
-	fprintf(fOut, "%s=%d\n", "nVideoEchoOrientation",  m_nVideoEchoOrientation);      
+    fprintf_s(fOut, "%s=%.3f\n", "fRating", m_fRating);
+    fprintf_s(fOut, "%s=%.3f\n", "fGammaAdj", m_fGammaAdj.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fDecay", m_fDecay.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fVideoEchoZoom", m_fVideoEchoZoom.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fVideoEchoAlpha", m_fVideoEchoAlpha.eval(-1));
+    fprintf_s(fOut, "%s=%d\n", "nVideoEchoOrientation", m_nVideoEchoOrientation);
 
-	fprintf(fOut, "%s=%d\n", "nWaveMode",              m_nWaveMode);                  
-	fprintf(fOut, "%s=%d\n", "bAdditiveWaves",         m_bAdditiveWaves);             
-	fprintf(fOut, "%s=%d\n", "bWaveDots",              m_bWaveDots);                  
-	fprintf(fOut, "%s=%d\n", "bWaveThick",             m_bWaveThick);                  
-	fprintf(fOut, "%s=%d\n", "bModWaveAlphaByVolume",  m_bModWaveAlphaByVolume);      
-	fprintf(fOut, "%s=%d\n", "bMaximizeWaveColor",     m_bMaximizeWaveColor);         
-	fprintf(fOut, "%s=%d\n", "bTexWrap",               m_bTexWrap			);         
-	fprintf(fOut, "%s=%d\n", "bDarkenCenter",          m_bDarkenCenter		);         
-	fprintf(fOut, "%s=%d\n", "bRedBlueStereo",         m_bRedBlueStereo     );
-	fprintf(fOut, "%s=%d\n", "bBrighten",              m_bBrighten			);         
-	fprintf(fOut, "%s=%d\n", "bDarken",                m_bDarken			);         
-	fprintf(fOut, "%s=%d\n", "bSolarize",              m_bSolarize			);         
-	fprintf(fOut, "%s=%d\n", "bInvert",                m_bInvert			);         
+    fprintf_s(fOut, "%s=%d\n", "nWaveMode", m_nWaveMode);
+    fprintf_s(fOut, "%s=%d\n", "bAdditiveWaves", m_bAdditiveWaves);
+    fprintf_s(fOut, "%s=%d\n", "bWaveDots", m_bWaveDots);
+    fprintf_s(fOut, "%s=%d\n", "bWaveThick", m_bWaveThick);
+    fprintf_s(fOut, "%s=%d\n", "bModWaveAlphaByVolume", m_bModWaveAlphaByVolume);
+    fprintf_s(fOut, "%s=%d\n", "bMaximizeWaveColor", m_bMaximizeWaveColor);
+    fprintf_s(fOut, "%s=%d\n", "bTexWrap", m_bTexWrap);
+    fprintf_s(fOut, "%s=%d\n", "bDarkenCenter", m_bDarkenCenter);
+    fprintf_s(fOut, "%s=%d\n", "bRedBlueStereo", m_bRedBlueStereo);
+    fprintf_s(fOut, "%s=%d\n", "bBrighten", m_bBrighten);
+    fprintf_s(fOut, "%s=%d\n", "bDarken", m_bDarken);
+    fprintf_s(fOut, "%s=%d\n", "bSolarize", m_bSolarize);
+    fprintf_s(fOut, "%s=%d\n", "bInvert", m_bInvert);
 
-	fprintf(fOut, "%s=%.3f\n", "fWaveAlpha",             m_fWaveAlpha.eval(-1)); 		  
-	fprintf(fOut, "%s=%.3f\n", "fWaveScale",             m_fWaveScale.eval(-1));        
-	fprintf(fOut, "%s=%.3f\n", "fWaveSmoothing",         m_fWaveSmoothing.eval(-1));    
-	fprintf(fOut, "%s=%.3f\n", "fWaveParam",             m_fWaveParam.eval(-1));        
-	fprintf(fOut, "%s=%.3f\n", "fModWaveAlphaStart",     m_fModWaveAlphaStart.eval(-1));
-	fprintf(fOut, "%s=%.3f\n", "fModWaveAlphaEnd",       m_fModWaveAlphaEnd.eval(-1));  
-	fprintf(fOut, "%s=%.3f\n", "fWarpAnimSpeed",         m_fWarpAnimSpeed);             
-	fprintf(fOut, "%s=%.3f\n", "fWarpScale",             m_fWarpScale.eval(-1));        
-	fprintf(fOut, "%s=%.5f\n", "fZoomExponent",          m_fZoomExponent.eval(-1));     
-	fprintf(fOut, "%s=%.3f\n", "fShader",                m_fShader.eval(-1));           
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveAlpha", m_fWaveAlpha.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveScale", m_fWaveScale.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveSmoothing", m_fWaveSmoothing.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveParam", m_fWaveParam.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fModWaveAlphaStart", m_fModWaveAlphaStart.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fModWaveAlphaEnd", m_fModWaveAlphaEnd.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fWarpAnimSpeed", m_fWarpAnimSpeed);
+    fprintf_s(fOut, "%s=%.3f\n", "fWarpScale", m_fWarpScale.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "fZoomExponent", m_fZoomExponent.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fShader", m_fShader.eval(-1));
 
-	fprintf(fOut, "%s=%.5f\n", "zoom",                   m_fZoom      .eval(-1));       
-	fprintf(fOut, "%s=%.5f\n", "rot",                    m_fRot       .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "cx",                     m_fRotCX     .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "cy",                     m_fRotCY     .eval(-1));       
-	fprintf(fOut, "%s=%.5f\n", "dx",                     m_fXPush     .eval(-1));       
-	fprintf(fOut, "%s=%.5f\n", "dy",                     m_fYPush     .eval(-1));       
-	fprintf(fOut, "%s=%.5f\n", "warp",                   m_fWarpAmount.eval(-1));       
-	fprintf(fOut, "%s=%.5f\n", "sx",                     m_fStretchX  .eval(-1));       
-	fprintf(fOut, "%s=%.5f\n", "sy",                     m_fStretchY  .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "wave_r",                 m_fWaveR     .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "wave_g",                 m_fWaveG     .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "wave_b",                 m_fWaveB     .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "wave_x",                 m_fWaveX     .eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "wave_y",                 m_fWaveY     .eval(-1));       
+    fprintf_s(fOut, "%s=%.5f\n", "zoom", m_fZoom.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "rot", m_fRot.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "cx", m_fRotCX.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "cy", m_fRotCY.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "dx", m_fXPush.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "dy", m_fYPush.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "warp", m_fWarpAmount.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "sx", m_fStretchX.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "sy", m_fStretchY.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_r", m_fWaveR.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_g", m_fWaveG.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_b", m_fWaveB.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_x", m_fWaveX.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_y", m_fWaveY.eval(-1));
 
-	fprintf(fOut, "%s=%.3f\n", "ob_size",             m_fOuterBorderSize.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ob_r",                m_fOuterBorderR.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ob_g",                m_fOuterBorderG.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ob_b",                m_fOuterBorderB.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ob_a",                m_fOuterBorderA.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ib_size",             m_fInnerBorderSize.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ib_r",                m_fInnerBorderR.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ib_g",                m_fInnerBorderG.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ib_b",                m_fInnerBorderB.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "ib_a",                m_fInnerBorderA.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "nMotionVectorsX",     m_fMvX.eval(-1));         
-	fprintf(fOut, "%s=%.3f\n", "nMotionVectorsY",     m_fMvY.eval(-1));         
-	fprintf(fOut, "%s=%.3f\n", "mv_dx",               m_fMvDX.eval(-1));         
-	fprintf(fOut, "%s=%.3f\n", "mv_dy",               m_fMvDY.eval(-1));         
-	fprintf(fOut, "%s=%.3f\n", "mv_l",                m_fMvL.eval(-1));         
-	fprintf(fOut, "%s=%.3f\n", "mv_r",                m_fMvR.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "mv_g",                m_fMvG.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "mv_b",                m_fMvB.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "mv_a",                m_fMvA.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b1n",                 m_fBlur1Min.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b2n",                 m_fBlur2Min.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b3n",                 m_fBlur3Min.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b1x",                 m_fBlur1Max.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b2x",                 m_fBlur2Max.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b3x",                 m_fBlur3Max.eval(-1));       
-	fprintf(fOut, "%s=%.3f\n", "b1ed",                m_fBlur1EdgeDarken.eval(-1));       
+    fprintf_s(fOut, "%s=%.3f\n", "ob_size", m_fOuterBorderSize.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_r", m_fOuterBorderR.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_g", m_fOuterBorderG.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_b", m_fOuterBorderB.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_a", m_fOuterBorderA.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_size", m_fInnerBorderSize.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_r", m_fInnerBorderR.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_g", m_fInnerBorderG.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_b", m_fInnerBorderB.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_a", m_fInnerBorderA.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "nMotionVectorsX", m_fMvX.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "nMotionVectorsY", m_fMvY.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_dx", m_fMvDX.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_dy", m_fMvDY.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_l", m_fMvL.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_r", m_fMvR.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_g", m_fMvG.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_b", m_fMvB.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_a", m_fMvA.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b1n", m_fBlur1Min.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b2n", m_fBlur2Min.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b3n", m_fBlur3Min.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b1x", m_fBlur1Max.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b2x", m_fBlur2Max.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b3x", m_fBlur3Max.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "b1ed", m_fBlur1EdgeDarken.eval(-1));
 
     int i = 0;
     for (i = 0; i < MAX_CUSTOM_WAVES; i++)
@@ -1265,7 +1265,7 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
     {
         assert(pOldState);
         // In order to copy the old state, byte copy it.
-        memcpy(this, pOldState, sizeof(CState));
+        memcpy_s(this, sizeof(CState), pOldState, sizeof(CState));
         // Clear all the copied code pointers, WITHOUT actually freeing it (since pointers were copied)
         // so that the Default() call below will not release pOldState's copied pointers.
         // [all expressions will be recompiled at end of this function, whether they were updated them or not]

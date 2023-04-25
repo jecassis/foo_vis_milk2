@@ -183,20 +183,20 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
         case WINDOWED:
             pParams->allow_page_tearing = m_allow_page_tearing_w;
             pParams->adapter_guid = m_adapter_guid_windowed;
-            //pParams->multisamp = m_multisample_windowed;
+            pParams->multisamp = m_multisample_windowed;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_windowed);
             break;
         case FULLSCREEN:
         case FAKE_FULLSCREEN:
             pParams->allow_page_tearing = m_allow_page_tearing_fs;
             pParams->adapter_guid = m_adapter_guid_fullscreen;
-            //pParams->multisamp = m_multisample_fullscreen;
+            pParams->multisamp = m_multisample_fullscreen;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
             break;
         case DESKTOP:
             pParams->allow_page_tearing = m_allow_page_tearing_dm;
             pParams->adapter_guid = m_adapter_guid_desktop;
-            //pParams->multisamp = m_multisample_desktop;
+            pParams->multisamp = m_multisample_desktop;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_desktop);
             break;
     }
@@ -1033,12 +1033,10 @@ void CPluginShell::DoTime()
 //   since >10 khz doesn't usually contribute much.
 void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 {
-    int i;
-
     float temp_wave[2][576];
 
     int old_i = 0;
-    for (i=0; i<576; i++)
+    for (int i = 0; i < 576; i++)
     {
         m_sound.fWaveform[0][i] = (float)((pWaveL[i] ^ 128) - 128);
         m_sound.fWaveform[1][i] = (float)((pWaveR[i] ^ 128) - 128);
@@ -1048,8 +1046,8 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
         //m_sound.fWaveform[0][i] = 10*sinf(i*freq*6.28f/44100.0f);
 
         // damp the input into the FFT a bit, to reduce high-frequency noise:
-        temp_wave[0][i] = 0.5f*(m_sound.fWaveform[0][i] + m_sound.fWaveform[0][old_i]);
-        temp_wave[1][i] = 0.5f*(m_sound.fWaveform[1][i] + m_sound.fWaveform[1][old_i]);
+        temp_wave[0][i] = 0.5f * (m_sound.fWaveform[0][i] + m_sound.fWaveform[0][old_i]);
+        temp_wave[1][i] = 0.5f * (m_sound.fWaveform[1][i] + m_sound.fWaveform[1][old_i]);
         old_i = i;
     }
 
@@ -1060,14 +1058,13 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     // [note: the new ranges do it so that the 3 bands are equally spaced, pitch-wise]
     float min_freq = 200.0f;
     float max_freq = 11025.0f;
-    float net_octaves = (logf(max_freq/min_freq) / logf(2.0f));     // 5.7846348455575205777914165223593
-    float octaves_per_band = net_octaves / 3.0f;                    // 1.9282116151858401925971388407864
+    float net_octaves = (logf(max_freq / min_freq) / logf(2.0f)); // 5.7846348455575205777914165223593
+    float octaves_per_band = net_octaves / 3.0f;                  // 1.9282116151858401925971388407864
     float mult = powf(2.0f, octaves_per_band); // each band's highest freq. divided by its lowest freq.; 3.805831305510122517035102576162
     // [to verify: min_freq * mult * mult * mult should equal max_freq.]
-    int ch;
-    for (ch=0; ch<2; ch++)
+    for (int ch = 0; ch < 2; ch++)
     {
-        for (i=0; i<3; i++)
+        for (int i = 0; i < 3; i++)
         {
             // Old guesswork code for this.
             //   float exp = 2.1f;
@@ -1137,7 +1134,7 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     // multiply by long-term, empirically-determined inverse averages:
     // (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
     //  the average levels were: 0.326781557	0.38087377	0.199888934
-    for (ch=0; ch<2; ch++)
+    for (int ch = 0; ch < 2; ch++)
     {
         m_sound.imm[ch][0] /= 0.326781557f; //0.270f;
         m_sound.imm[ch][1] /= 0.380873770f; //0.343f;
@@ -1145,9 +1142,9 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     }
 
     // do temporal blending to create attenuated and super-attenuated versions
-    for (ch=0; ch<2; ch++)
+    for (int ch = 0; ch < 2; ch++)
     {
-        for (i=0; i<3; i++)
+        for (int i = 0; i < 3; i++)
         {
             // m_sound.avg[i]
             {
@@ -1196,14 +1193,12 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
 
     // Set up a quad.
     SIMPLEVERTEX verts[4];
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < 4; i++)
     {
-        verts[i].x = (i%2==0) ? (float)(-m_lpDX->m_client_width /2  + pr->left)  :
-                     (float)(-m_lpDX->m_client_width /2  + pr->right);
-        verts[i].y = (i/2==0) ? (float)-(-m_lpDX->m_client_height/2 + pr->bottom)  :
-                     (float)-(-m_lpDX->m_client_height/2 + pr->top);
+        verts[i].x = (i % 2 == 0) ? (float)(-m_lpDX->m_client_width / 2 + pr->left) : (float)(-m_lpDX->m_client_width / 2 + pr->right);
+        verts[i].y = (i / 2 == 0) ? (float)-(-m_lpDX->m_client_height / 2 + pr->bottom) : (float)-(-m_lpDX->m_client_height / 2 + pr->top);
         verts[i].z = 0;
-        verts[i].Diffuse = (m_screenmode==DESKTOP) ? 0xE0000000 : 0xD0000000;
+        verts[i].Diffuse = (m_screenmode == DESKTOP) ? 0xE0000000 : 0xD0000000;
     }
 
     m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
@@ -1223,7 +1218,7 @@ void CPluginShell::AlignWaves()
 
 #if (NUM_WAVEFORM_SAMPLES < 576) // [don't let this code bloat our DLL size if it's not going to be used]
     int nSamples = NUM_WAVEFORM_SAMPLES;
-#define MAX_OCTAVES 10
+    constexpr auto MAX_OCTAVES = 10;
 
     int octaves = (int)floorf(logf((float)(576 - nSamples)) / logf(2.0f));
     if (octaves < 4)
@@ -1231,74 +1226,71 @@ void CPluginShell::AlignWaves()
     if (octaves > MAX_OCTAVES)
         octaves = MAX_OCTAVES;
 
-    int ch;
-    for (ch=0; ch<2; ch++)
+    for (int ch = 0; ch < 2; ch++)
     {
-        // only worry about matching the lower 'nSamples' samples
+        // Only worry about matching the lower `nSamples` samples.
         float temp_new[MAX_OCTAVES][576];
         float temp_old[MAX_OCTAVES][576];
         static float temp_weight[MAX_OCTAVES][576];
-        static int   first_nonzero_weight[MAX_OCTAVES];
-        static int   last_nonzero_weight[MAX_OCTAVES];
+        static int first_nonzero_weight[MAX_OCTAVES];
+        static int last_nonzero_weight[MAX_OCTAVES];
         int spls[MAX_OCTAVES];
         int space[MAX_OCTAVES];
 
-        memcpy(temp_new[0], m_sound.fWaveform[ch], sizeof(float)*576);
-        memcpy(temp_old[0], &m_oldwave[ch][m_prev_align_offset[ch]], sizeof(float)*nSamples);
+        memcpy_s(temp_new[0], sizeof(temp_new[0]), m_sound.fWaveform[ch], sizeof(float) * 576);
+        memcpy_s(temp_old[0], sizeof(temp_old[0]), &m_oldwave[ch][m_prev_align_offset[ch]], sizeof(float) * nSamples);
         spls[0] = 576;
         space[0] = 576 - nSamples;
 
-        // potential optimization: could reuse (instead of recompute) mip levels for m_oldwave[2][]?
-        int octave;
-        for (octave=1; octave<octaves; octave++)
+        // Potential optimization: Could reuse (instead of recompute) MIP levels for `m_oldwave[2][]`?
+        for (int octave = 1; octave < octaves; octave++)
         {
-            spls[octave] = spls[octave-1]/2;
-            space[octave] = space[octave-1]/2;
-            for (int n=0; n<spls[octave]; n++)
+            spls[octave] = spls[octave - 1] / 2;
+            space[octave] = space[octave - 1] / 2;
+            for (int n = 0; n < spls[octave]; n++)
             {
-                temp_new[octave][n] = 0.5f*(temp_new[octave-1][n*2] + temp_new[octave-1][n*2+1]);
-                temp_old[octave][n] = 0.5f*(temp_old[octave-1][n*2] + temp_old[octave-1][n*2+1]);
+                temp_new[octave][n] = 0.5f * (temp_new[octave - 1][n * 2] + temp_new[octave - 1][n * 2 + 1]);
+                temp_old[octave][n] = 0.5f * (temp_old[octave - 1][n * 2] + temp_old[octave - 1][n * 2 + 1]);
             }
         }
 
         if (!m_align_weights_ready)
         {
             m_align_weights_ready = 1;
-            for (octave=0; octave<octaves; octave++)
+            for (int octave = 0; octave < octaves; octave++)
             {
                 int compare_samples = spls[octave] - space[octave];
-                int n;
-                for (n=0; n<compare_samples; n++)
+                for (int n = 0; n < compare_samples; n++)
                 {
-                    // start with pyramid-shaped pdf, from 0..1..0
-                    if (n < compare_samples/2)
-                        temp_weight[octave][n] = n*2/(float)compare_samples;
+                    // Start with pyramid-shaped PDF, from 0..1..0.
+                    if (n < compare_samples / 2)
+                        temp_weight[octave][n] = n * 2 / (float)compare_samples;
                     else
-                        temp_weight[octave][n] = (compare_samples-1 - n)*2/(float)compare_samples;
+                        temp_weight[octave][n] = (compare_samples - 1 - n) * 2 / (float)compare_samples;
 
-                    // TWEAK how much the center matters, vs. the edges:
-                    temp_weight[octave][n] = (temp_weight[octave][n] - 0.8f)*5.0f + 0.8f;
+                    // Tweak how much the center matters vs. the edges.
+                    temp_weight[octave][n] = (temp_weight[octave][n] - 0.8f) * 5.0f + 0.8f;
 
-                    // clip:
-                    if (temp_weight[octave][n]>1) temp_weight[octave][n] = 1;
-                    if (temp_weight[octave][n]<0) temp_weight[octave][n] = 0;
+                    // Clip.
+                    if (temp_weight[octave][n] > 1) temp_weight[octave][n] = 1;
+                    if (temp_weight[octave][n] < 0) temp_weight[octave][n] = 0;
                 }
 
-                n = 0;
-                while (temp_weight[octave][n] == 0 && n < compare_samples)
-                    n++;
-                first_nonzero_weight[octave] = n;
+                int p = 0;
+                while (temp_weight[octave][p] == 0 && p < compare_samples)
+                    p++;
+                first_nonzero_weight[octave] = p;
 
-                n = compare_samples-1;
-                while (temp_weight[octave][n] == 0 && n >= 0)
-                    n--;
-                last_nonzero_weight[octave] = n;
+                p = compare_samples - 1;
+                while (temp_weight[octave][p] == 0 && p >= 0)
+                    p--;
+                last_nonzero_weight[octave] = p;
             }
         }
 
         int n1 = 0;
         int n2 = space[octaves - 1];
-        for (octave = octaves-1; octave>=0; octave--)
+        for (int octave = octaves - 1; octave >= 0; octave--)
         {
             // For example:
             //  space[octave] == 4
@@ -1347,14 +1339,14 @@ void CPluginShell::AlignWaves()
         }
     }
 #endif
-    memcpy(m_oldwave[0], m_sound.fWaveform[0], sizeof(float)*576);
-    memcpy(m_oldwave[1], m_sound.fWaveform[1], sizeof(float)*576);
+    memcpy_s(m_oldwave[0], sizeof(m_oldwave[0]), m_sound.fWaveform[0], sizeof(float) * 576);
+    memcpy_s(m_oldwave[1], sizeof(m_oldwave[1]), m_sound.fWaveform[1], sizeof(float) * 576);
     m_prev_align_offset[0] = align_offset[0];
     m_prev_align_offset[1] = align_offset[1];
 
     // finally, apply the results: modify m_sound.fWaveform[2][0..576]
     // by scooting the aligned samples so that they start at m_sound.fWaveform[2][0].
-    for (ch=0; ch<2; ch++)
+    for (int ch = 0; ch < 2; ch++)
         if (align_offset[ch] > 0)
         {
             for (int i = 0; i < nSamples; i++)
