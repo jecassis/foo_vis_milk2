@@ -404,6 +404,7 @@
     <None Include="..\.github\workflows\build.yml" />
     <None Include="..\.gitignore" />
     <None Include="..\.vsconfig" />
+    <None Include="..\CHANGELOG.md" />
     <None Include="..\nuget.config" />
     <None Include="..\README.md" />
     <None Include="..\tools\clang-format-all.ps1" />

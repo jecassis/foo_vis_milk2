@@ -484,7 +484,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_nTextWndHeight = 0;
     m_bTextWindowClassRegistered = false;
     //m_vjd3d9 = NULL;
-    m_vjd3d9_device = NULL;
+    //m_vjd3d9_device = NULL;
 
     //-----
 
@@ -534,7 +534,7 @@ wchar_t* BuildSettingName(const wchar_t* name, const int number)
     return temp;
 }
 
-void CPluginShell::ReadFont(const int /* n */)
+void CPluginShell::ReadFont(const int /*n*/)
 {
 #if 0
     GetPrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_fontinfo[n].szFace, ARRAYSIZE(m_fontinfo[n].szFace), m_szConfigIniFile);
@@ -557,26 +557,20 @@ void CPluginShell::ReadConfig()
     else if (old_subver < INT_SUBVERSION)
         return;
 
-    //D3DMULTISAMPLE_TYPE m_multisample_fullscreen;
-    //D3DMULTISAMPLE_TYPE m_multisample_desktop;
-    //D3DMULTISAMPLE_TYPE m_multisample_windowed;
-    m_multisample_fullscreen      = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_fullscreen",m_multisample_fullscreen,m_szConfigIniFile);
-    m_multisample_desktop         = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_desktop",m_multisample_desktop,m_szConfigIniFile);
-    m_multisample_windowed        = (D3DMULTISAMPLE_TYPE)GetPrivateProfileIntW(L"settings",L"multisample_windowed"  ,m_multisample_windowed  ,m_szConfigIniFile);
+    m_multisample_fullscreen = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_fullscreen", m_multisample_fullscreen.Count, m_szConfigIniFile)), 0U};
+    m_multisample_desktop = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_desktop", m_multisample_desktop.Count, m_szConfigIniFile)), 0U};
+    m_multisample_windowed = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_windowed", m_multisample_windowed.Count, m_szConfigIniFile)), 0U};
 
-    //GUID m_adapter_guid_fullscreen
-    //GUID m_adapter_guid_desktop
-    //GUID m_adapter_guid_windowed
     char str[256];
-    GetPrivateProfileString("settings","adapter_guid_fullscreen","",str,sizeof(str)-1,m_szConfigIniFileA);
-    TextToGuid(str, &m_adapter_guid_fullscreen);
-    GetPrivateProfileString("settings","adapter_guid_desktop","",str,sizeof(str)-1,m_szConfigIniFileA);
-    TextToGuid(str, &m_adapter_guid_desktop);
-    GetPrivateProfileString("settings","adapter_guid_windowed","",str,sizeof(str)-1,m_szConfigIniFileA);
-    TextToGuid(str, &m_adapter_guid_windowed);
-    GetPrivateProfileString("settings","adapter_devicename_fullscreen","",m_adapter_devicename_fullscreen,sizeof(m_adapter_devicename_fullscreen)-1,m_szConfigIniFileA);
-    GetPrivateProfileString("settings","adapter_devicename_desktop",   "",m_adapter_devicename_desktop   ,sizeof(m_adapter_devicename_desktop)-1,m_szConfigIniFileA);
-    GetPrivateProfileString("settings","adapter_devicename_windowed",  "",m_adapter_devicename_windowed  ,sizeof(m_adapter_devicename_windowed)-1,m_szConfigIniFileA);
+    GetPrivateProfileStringA("settings", "adapter_guid_fullscreen", "", str, sizeof(str), m_szConfigIniFileA);
+    TextToLuidA(str, &m_adapter_guid_fullscreen);
+    GetPrivateProfileStringA("settings", "adapter_guid_desktop", "", str, sizeof(str), m_szConfigIniFileA);
+    TextToLuidA(str, &m_adapter_guid_desktop);
+    GetPrivateProfileStringA("settings", "adapter_guid_windowed", "", str, sizeof(str), m_szConfigIniFileA);
+    TextToLuidA(str, &m_adapter_guid_windowed);
+    GetPrivateProfileString(L"settings", L"adapter_devicename_fullscreen", L"", m_adapter_devicename_fullscreen, ARRAYSIZE(m_adapter_devicename_fullscreen), m_szConfigIniFile);
+    GetPrivateProfileString(L"settings", L"adapter_devicename_desktop", L"", m_adapter_devicename_desktop, ARRAYSIZE(m_adapter_devicename_desktop), m_szConfigIniFile);
+    GetPrivateProfileString(L"settings", L"adapter_devicename_windowed", L"", m_adapter_devicename_windowed, ARRAYSIZE(m_adapter_devicename_windowed), m_szConfigIniFile);
 
     // FONTS
     ReadFont(0);
@@ -621,25 +615,25 @@ void CPluginShell::ReadConfig()
     m_fix_slow_text = GetPrivateProfileInt(L"settings", L"fix_slow_text", m_fix_slow_text, m_szConfigIniFile);
     m_vj_mode = GetPrivateProfileBoolW(L"settings", L"vj_mode", m_vj_mode, m_szConfigIniFile);
 
-    //D3DDISPLAYMODE m_fs_disp_mode
-    m_disp_mode_fs.Width           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_w", m_disp_mode_fs.Width           ,m_szConfigIniFile);
-    m_disp_mode_fs.Height           = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_h",m_disp_mode_fs.Height          ,m_szConfigIniFile);
-    m_disp_mode_fs.RefreshRate = GetPrivateProfileIntW(L"settings",L"disp_mode_fs_r",m_disp_mode_fs.RefreshRate,m_szConfigIniFile);
-    m_disp_mode_fs.Format      = (D3DFORMAT)GetPrivateProfileIntW(L"settings",L"disp_mode_fs_f",m_disp_mode_fs.Format     ,m_szConfigIniFile);
+    m_disp_mode_fs.Width = GetPrivateProfileInt(L"settings", L"disp_mode_fs_w", m_disp_mode_fs.Width, m_szConfigIniFile);
+    m_disp_mode_fs.Height = GetPrivateProfileInt(L"settings", L"disp_mode_fs_h", m_disp_mode_fs.Height, m_szConfigIniFile);
+    GetPrivateProfileStringA("settings", "disp_mode_fs_r", "60000/1000", str, sizeof(str), m_szConfigIniFileA);
+    sscanf_s(str, "%d/%d", &m_disp_mode_fs.RefreshRate.Numerator, &m_disp_mode_fs.RefreshRate.Denominator);
+    m_disp_mode_fs.Format = static_cast<DXGI_FORMAT>(GetPrivateProfileInt(L"settings", L"disp_mode_fs_f", m_disp_mode_fs.Format, m_szConfigIniFile));
 
     // Note: Do not call CPlugin's `Preinit()` and `ReadConfig()` until
     //       CPluginShell's `PreInit()` (and `ReadConfig()`) finish.
 #endif
 }
 
-void CPluginShell::WriteFont(const int /* n */)
+void CPluginShell::WriteFont(const int /*n*/)
 {
 #if 0
-    WritePrivateProfileStringW(L"settings",BuildSettingName(L"szFontFace",n),m_fontinfo[n].szFace,m_szConfigIniFile);
-    WritePrivateProfileIntW(m_fontinfo[n].bBold,  BuildSettingName(L"bFontBold",n),   m_szConfigIniFile, L"settings");
-    WritePrivateProfileIntW(m_fontinfo[n].bItalic,BuildSettingName(L"bFontItalic",n), m_szConfigIniFile, L"settings");
-    WritePrivateProfileIntW(m_fontinfo[n].nSize,  BuildSettingName(L"nFontSize",n),   m_szConfigIniFile, L"settings");
-    WritePrivateProfileIntW(m_fontinfo[n].bAntiAliased, BuildSettingName(L"bFontAA",n),m_szConfigIniFile, L"settings");
+    WritePrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_szConfigIniFile);
+    WritePrivateProfileIntW(m_fontinfo[n].bBold, BuildSettingName(L"bFontBold", n), m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fontinfo[n].bItalic, BuildSettingName(L"bFontItalic", n), m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fontinfo[n].nSize, BuildSettingName(L"nFontSize", n), m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fontinfo[n].bAntiAliased, BuildSettingName(L"bFontAA", n), m_szConfigIniFile, L"settings");
 #endif
 }
 
@@ -649,8 +643,7 @@ void CPluginShell::WriteFont(const int /* n */)
 
 int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //, unsigned char *pSpecL, unsigned char *pSpecR)
 {
-    // return FALSE here to tell Winamp to terminate the plugin
-
+    // Return `FALSE' here to tell Winamp to terminate the plugin.
     if (!m_lpDX || !m_lpDX->m_ready)
     {
         // note: 'm_ready' will go false when a device reset fatally fails
@@ -717,8 +710,8 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
 
 void CPluginShell::DrawAndDisplay(int redraw)
 {
-    int cx = m_vjd3d9_device ? m_nTextWndWidth : m_lpDX->m_client_width;
-    int cy = m_vjd3d9_device ? m_nTextWndHeight : m_lpDX->m_client_height;
+    int cx = m_lpDX->m_client_width;
+    int cy = m_lpDX->m_client_height;
     m_upper_left_corner_y = TEXT_MARGIN + GetCanvasMarginY();
     m_upper_right_corner_y = TEXT_MARGIN + GetCanvasMarginY();
     m_lower_left_corner_y = cy - TEXT_MARGIN - GetCanvasMarginY();
@@ -1101,32 +1094,28 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     }
 }
 
+// Parameter `pr` is the rectangle that some text will occupy;
+// a black box will be drawn around it, plus a bit of extra margin space.
 void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
 {
-    // 'pr' is the rectangle that some text will occupy;
-    // a black box will be drawn around it, plus a bit of extra margin space.
-
-    if (m_vjd3d9_device)
-        return;
-
     m_lpDX->m_lpDevice->SetVertexShader(NULL, NULL);
     m_lpDX->m_lpDevice->SetPixelShader(NULL, NULL);
     //m_lpDX->m_lpDevice->SetFVF(SIMPLE_VERTEX_FORMAT); // TODO DX11
     m_lpDX->m_lpDevice->SetTexture(0, NULL);
 
-  m_lpDX->m_lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
+    m_lpDX->m_lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-  m_lpDX->m_lpDevice->SetShader(2);
+    m_lpDX->m_lpDevice->SetShader(2);
     //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
     //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
     //m_lpDX->m_lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
     //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 
-    // set up a quad
+    // Set up a quad.
     SIMPLEVERTEX verts[4];
     for (int i=0; i<4; i++)
     {
@@ -1140,9 +1129,9 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
 
     m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
 
-    // undo unusual state changes:
-  m_lpDX->m_lpDevice->SetDepth(true);
-  m_lpDX->m_lpDevice->SetBlendState(false);
+    // Undo unusual state changes.
+    m_lpDX->m_lpDevice->SetDepth(true);
+    m_lpDX->m_lpDevice->SetBlendState(false);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }

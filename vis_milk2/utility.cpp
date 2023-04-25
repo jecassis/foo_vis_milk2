@@ -107,7 +107,8 @@ bool WritePrivateProfileIntW(int d, const wchar_t* szKeyName, const wchar_t* szI
 void SetScrollLock(int /* bNewState */, bool /* bPreventHandling */)
 {
 #if 0
-    if(bPreventHandling) return;
+    if (bPreventHandling)
+        return;
 
     if (bNewState != (GetKeyState(VK_SCROLL) & 1))
     {

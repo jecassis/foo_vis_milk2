@@ -12,66 +12,30 @@ Prerequisites to build the DirectX 11 `foo_vis_milk2.dll` component for foobar20
 
 Refer to the [build pipeline](.github/workflows/build.yml) jobs for a step-by-step guide on how to build. _Only x86 and x64 Intel architecture platforms are functional._
 
+See [CHANGELOG](CHANGELOG.md) for additional details.
+
 ## MilkDrop 2
 
-MilkDrop 2 (`vis_milk2`) is a music visualizer - a "plug-in" to the Winamp music player.
+MilkDrop 2 (`vis_milk2`) is a music visualizer - a "plug-in" to the Winamp music player. The changes to the [MilkDrop 2 source code release](https://sourceforge.net/projects/milkdrop2/) from 5/13/13 (version 2.25c) include:
 
-Open source release's `README.txt`:
-
-```text
-MilkDrop 2 development README
-
-Author:       Ryan Geiss
-Last updated: 18 May 2013
-
-GETTING STARTED
-
-To get started, either download the .zip file here (which contains a snapshot
-of the MilkDrop 2 source code on 5/13/13, the day it was open-sourced), or
-go to 'code' tab and execute the 'git clone' command given there to pull down
-the source.
-
-To build the Winamp / Windows version (which is the only build supported
-so far), you'll need Visual Studio [Visual C++] 2008 or later.  (The free
-'Express' editions of Visual Studio will work just fine, and they give you
-all the functionality.)
-
-Once it's installed, open Visual Studio and open the project
-"src/vis_milk2/milkdrop_DX9.sln".  Then select either the Debug or Release
-configuration, whichever you want.  Then build it.
-
-If it gets through the compile and link but then gives an error when
-trying to write the final binary (vis_milk2.dll) to disk, do the following:
-In the Solution Explorer, right click on the "vis_milk2" project and click
-Properties.  Then, under Configuration Properties, click on Linker.  To the
-right, the first item you'll see is "Output File", and it will be set to
-"$(ProgramFiles)\Winamp\plugins\vis_milk2.dll" (without the double quotes).
-You might have to change this to write the file to some "normal" directory,
-rather than the (proteted) Program Files directory.  Then, after building,
-you'll want to manually copy vis_milk2.dll to the Winamp\Plugins directory
-(and repeat this each time you build) (or maybe try starting Visual Studio
-as an Administrator, so it can just write the file to where you want it,
-in the first place).
-
-Once the .DLL under Program Files is updated, you can start Winamp.  Hit
-CTRL+K to select MilkDrop 2 as your visualizer; hit ALT+K to configure it
-(optional); or play some music and then click the 'visualization' tab to
-start it.  Double-click the visualization to go full-screen.
-
-You can attach the Visual Studio debugger to MilkDrop while it is running,
-as long as the DLL that's running matches the source code in Visual Studio.
-From within Visual Studio, just go to the Debug menu and select 'Attach
-to Process'.  Then find Winamp.exe and it should start.  You can then
-see debug output in the visual studio window, set breakpoints, move the
-instruction pointer around, look at variable values, and even
-modify code once a breakpoint is hit -- the compiler will recompile it
-on-the-fly and you'll just keep going.  (The Visual Studio debugger is
-absolutely mind-blowingly awesome.)
-
-You'll also need to have some preset files (*.milk) in
-$(ProgramFiles)\Winamp\Plugins\Milkdrop2\presets, but if you installed Winamp,
-then there will already be some there for you to play with.
-
-To learn how to alter or author new MilkDrop presets, see
-$(ProgramFiles)\Winamp\Plugins\Milkdrop2\docs\milkdrop_preset_authoring.html.
-```
+- Porting VMS from DirectX 9 to Direct X 11.1.
+<!--- Porting text layout and rendering from D3DX9 and GDI to DirectWrite and Direct2D, respectively.-->
+- Building DLL with Visual Studio 2022 (v143) Platform Toolset.
+- Minor bug and typo fixing so that the plug-in can be used in Winamp and foobar2000 music players without crashing.
+- Fixing of string resources to flow consistently with Segoe UI spacing and sizing.
+- Minor cleaning and updating of configuration panel to match functioning features and UI modifications.
+- Developer experience improvements, such as:
+  - Updated dependencies to latest available versions.
+  - Refactored EEL2 and DirectXTK into separate projects.
+  - PCH and multiprocessor compile enabled for fast builds.
+  - Buildable with C++20 compiler, including the address sanitizer and fuzzer. Builds clean using `/W4` (level 1,2,3,4 compiler warnings) and `/WX` (treat compiler warnings as errors) build options.
+  - All character string and memory manipulation functions migrated to use their respective secure CRT versions.
+  - Several utility functions and container classes replaced with their STL equivalents.
+  - Enabled and added x86 64-bit builds (x64 platform) in addition to the upgraded x86 32-bit (Win32 platform) ones. Mostly tested the 64-bit DLL standalone as most music players are still 32-bit applications.
+  - Added a minimal unit test with associated infrastructure and some API service mock classes to test DLL initialization.
+  - Added CI pipeline (GitHub Actions).
+  - Enforced more consistent formatting (with ClangFormat), line endings, and file encodings. Important notes:
+    - "plugin.rc" encoding was changed from "Western European (Windows) - Codepage 1252" to "Unicode (UTF-8 without signature) - Codepage 65001".
+    - "defines.h" encoding was changed from "Unicode (UTF-8 without signature) - Codepage 65001" to "Unicode (UTF-8 with signature/BOM) - Codepage 65001".
+    - All other text files use "Unicode (UTF-8 without signature) - Codepage 65001". All text files use CRLF line endings.
+  - Updated comments and consolidated documentation.

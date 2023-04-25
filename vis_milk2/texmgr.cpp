@@ -685,8 +685,10 @@ bool texmgr::RecompileExpressions(int iSlot)
     // because for some strange reason this would cause an error in compileCode().
     {
         char* p = expr;
-        while (*p == ' ' || *p == LINEFEED_CONTROL_CHAR) p++;
-        if (*p == 0) expr[0] = 0;
+        while (*p == ' ' || *p == LINEFEED_CONTROL_CHAR)
+            p++;
+        if (*p == 0)
+			expr[0] = 0;
     }
 
     // Replace line feed control characters with spaces, so they do not mess up the code compiler,

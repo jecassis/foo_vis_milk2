@@ -175,7 +175,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
 
     // Component paths
     std::string m_pwd;
-        
+
     unsigned char waves[2][576];
 
   protected:
@@ -441,113 +441,54 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
     if (m_callback->is_edit_mode_enabled())
     {
         SetMsgHandled(FALSE);
+        return;
     }
-    else
+
+    // A (-1,-1) point is due to context menu key rather than right click.
+    // `GetContextMenuPoint()` fixes that, returning a proper point at which the menu should be shown.
+    //point = m_list.GetContextMenuPoint(point);
+    CMenu menu;
+    WIN32_OP_D(menu.CreatePopupMenu());
+    menu.AppendMenu(MF_GRAYED, IDM_CURRENT_PRESET, GetCurrentPreset().c_str());
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, IDM_NEXT_PRESET, TEXT("Next Preset"));
+    menu.AppendMenu(MF_STRING, IDM_PREVIOUS_PRESET, TEXT("Previous Preset"));
+    menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
+    menu.AppendMenu(MF_STRING | (m_config.m_bPresetLockedByUser ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING | (m_config.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
+
+    int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
+
+    switch (cmd)
     {
-        // A (-1,-1) point is due to context menu key rather than right click.
-        // `GetContextMenuPoint()` fixes that, returning a proper point at which the menu should be shown.
-        //point = m_list.GetContextMenuPoint(point);
-        CMenu menu;
-        WIN32_OP_D(menu.CreatePopupMenu());
-        menu.AppendMenu(MF_GRAYED, IDM_CURRENT_PRESET, GetCurrentPreset().c_str());
-        menu.AppendMenu(MF_SEPARATOR);
-        menu.AppendMenu(MF_STRING, IDM_NEXT_PRESET, TEXT("Next Preset"));
-        menu.AppendMenu(MF_STRING, IDM_PREVIOUS_PRESET, TEXT("Previous Preset"));
-        menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
-        menu.AppendMenu(MF_STRING | (m_config.m_bPresetLockedByUser ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
-        menu.AppendMenu(MF_SEPARATOR);
-        menu.AppendMenu(MF_STRING | (m_config.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
-        menu.AppendMenu(MF_SEPARATOR);
-        menu.AppendMenu(MF_STRING, IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
+        case IDM_TOGGLE_FULLSCREEN:
+            ToggleFullScreen();
+            break;
+        case IDM_NEXT_PRESET:
+            NextPreset();
+            break;
+        case IDM_PREVIOUS_PRESET:
+            PrevPreset();
+            break;
+        case IDM_LOCK_PRESET:
+            m_config.m_bPresetLockedByUser = !m_config.m_bPresetLockedByUser;
+            LockPreset(m_config.m_bPresetLockedByUser);
+            break;
+        case IDM_SHUFFLE_PRESET:
+            RandomPreset();
+            break;
+        case IDM_ENABLE_DOWNMIX:
+            m_config.m_bEnableDownmix = !m_config.m_bEnableDownmix;
+            UpdateChannelMode();
+            break;
 
-        //CMenu durationMenu;
-        //durationMenu.CreatePopupMenu();
-        //durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 50) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_50, TEXT("50 ms"));
-        //durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 100) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_100, TEXT("100 ms"));
-
-        //menu.AppendMenu(MF_STRING, durationMenu, TEXT("Window Duration"));
-
-        //CMenu zoomMenu;
-        //zoomMenu.CreatePopupMenu();
-        //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 50) ? MF_CHECKED : 0) */, IDM_ZOOM_50, TEXT("50 %"));
-        //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 75) ? MF_CHECKED : 0) */, IDM_ZOOM_75, TEXT("75 %"));
-        //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 100) ? MF_CHECKED : 0) */, IDM_ZOOM_100, TEXT("100 %"));
-
-        //menu.AppendMenu(MF_STRING, zoomMenu, TEXT("Zoom"));
-
-        //CMenu refreshRateLimitMenu;
-        //refreshRateLimitMenu.CreatePopupMenu();
-        //refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 20) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_20, TEXT("20 Hz"));
-        //refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 60) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_60, TEXT("60 Hz"));
-
-        //menu.AppendMenu(MF_STRING, refreshRateLimitMenu, TEXT("Refresh Rate Limit"));
-
-        //menu.AppendMenu(MF_SEPARATOR);
-
-        //menu.AppendMenu(MF_STRING /* | (m_config.m_resample_enabled ? MF_CHECKED : 0) */, IDM_RESAMPLE_ENABLED, TEXT("Resample For Display"));
-        //menu.AppendMenu(MF_STRING /* | (m_config.m_hw_rendering_enabled ? MF_CHECKED : 0) */, IDM_HW_RENDERING_ENABLED, TEXT("Allow Hardware Rendering"));
-
-        //menu.SetMenuDefaultItem(IDM_TOGGLE_FULLSCREEN);
-
-        int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
-
-        switch (cmd)
-        {
-            case IDM_TOGGLE_FULLSCREEN:
-                ToggleFullScreen();
-                break;
-            case IDM_NEXT_PRESET:
-                NextPreset();
-                break;
-            case IDM_PREVIOUS_PRESET:
-                PrevPreset();
-                break;
-            case IDM_LOCK_PRESET:
-                m_config.m_bPresetLockedByUser = !m_config.m_bPresetLockedByUser;
-                LockPreset(m_config.m_bPresetLockedByUser);
-                break;
-            case IDM_SHUFFLE_PRESET:
-                RandomPreset();
-                break;
-            case IDM_ENABLE_DOWNMIX:
-                m_config.m_bEnableDownmix = !m_config.m_bEnableDownmix;
-                UpdateChannelMode();
-                break;
-                //case IDM_HW_RENDERING_ENABLED:
-                //    m_config.m_hw_rendering_enabled = !m_config.m_hw_rendering_enabled;
-                //    DiscardDeviceResources();
-                //    break;
-                //case IDM_RESAMPLE_ENABLED:
-                //    m_config.m_resample_enabled = !m_config.m_resample_enabled;
-                //    break;
-                //case IDM_WINDOW_DURATION_50:
-                //    m_config.m_window_duration_millis = 50;
-                //    break;
-                //case IDM_WINDOW_DURATION_100:
-                //    m_config.m_window_duration_millis = 100;
-                //    break;
-                //case IDM_ZOOM_50:
-                //    m_config.m_zoom_percent = 50;
-                //    break;
-                //case IDM_ZOOM_75:
-                //    m_config.m_zoom_percent = 75;
-                //    break;
-                //case IDM_ZOOM_100:
-                //    m_config.m_zoom_percent = 100;
-                //    break;
-                //case IDM_REFRESH_RATE_LIMIT_20:
-                //    m_config.m_refresh_rate_limit_hz = 20;
-                //    UpdateRefreshRateLimit();
-                //    break;
-                //case IDM_REFRESH_RATE_LIMIT_60:
-                //    m_config.m_refresh_rate_limit_hz = 60;
-                //    UpdateRefreshRateLimit();
-                //    break;
-        }
-
-        Invalidate();
-    }
+    Invalidate();
 }
+
+
 
 // Initialize the Direct3D resources required to run.
 bool milk2_ui_element_instance::Initialize(HWND window, int width, int height)
@@ -736,7 +677,7 @@ void milk2_ui_element_instance::LockPreset(bool lockUnlock)
 }
 
 bool milk2_ui_element_instance::IsPresetLock()
- {
+{
     return g_plugin.m_bPresetLockedByUser;
 }
 
@@ -807,6 +748,7 @@ void milk2_ui_element_instance::OnDeviceRestored()
 }
 #pragma endregion
 
+// clang-format off
 void milk2_ui_element_instance::UpdateChannelMode()
 {
     if (m_vis_stream.is_valid())
@@ -823,5 +765,6 @@ static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
 
 void ExitVis() noexcept
 {
-    //PostQuitMessage(0);
+    PostQuitMessage(0);
 }
+// clang-format on

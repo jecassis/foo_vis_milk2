@@ -6,6 +6,7 @@ AlignArrayOfStructures: Left
 #  Enabled: true
 #  AcrossComments: true
 #  AcrossEmptyLines: false
+AlignEscapedNewlines: DontAlign
 AlignTrailingComments: false
 #AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: InlineOnly

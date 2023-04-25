@@ -1,7 +1,8 @@
 //
 // d3d11shim.cpp - Direct3D 9 to Direct3D 11 conversion functions.
-//                 https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-d3d9-to-d3d10-considerations
-//                 https://learn.microsoft.com/en-us/windows/win32/direct3d11/d3d11-programming-guide-migrating
+//                 References:
+//                  - https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-d3d9-to-d3d10-considerations
+//                  - https://learn.microsoft.com/en-us/windows/win32/direct3d11/d3d11-programming-guide-migrating
 //
 
 #include "pch.h"
@@ -388,7 +389,7 @@ void D3D11Shim::SetTexture(unsigned int iSlot, ID3D11Resource* pResource)
             CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc1(reinterpret_cast<ID3D11Texture3D*>(pResource));
             srvDesc = srvDesc1;
         }
-        m_pDevice->CreateShaderResourceView(pResource, &srvDesc, &views[0]);
+        m_pDevice->CreateShaderResourceView(pResource, &srvDesc, &views[0]); // Crash here
     }
 
     m_pContext->PSSetShaderResources(iSlot, 1, views);

@@ -294,7 +294,7 @@ class CPluginShell
     int m_nTextWndHeight;
     bool m_bTextWindowClassRegistered;
     //LPDIRECT3D9 m_vjd3d9;
-    D3D11Shim* m_vjd3d9_device;
+    //D3D11Shim* m_vjd3d9_device;
     //HDC m_memDC; // memory device context
     //HBITMAP m_memBM, m_oldBM;
     //HBRUSH  m_hBlackBrush;
@@ -322,7 +322,7 @@ class CPluginShell
     void SaveAdapter(int screenmode);
     void SaveMaxFps(int screenmode);
     void OnTabChanged(int nNewTab);
-    D3D11Shim* GetTextDevice() { return (m_vjd3d9_device) ? m_vjd3d9_device : m_lpDX->m_lpDevice.get(); }
+    //D3D11Shim* GetTextDevice() { return (m_vjd3d9_device) ? m_vjd3d9_device : m_lpDX->m_lpDevice.get(); }
 
     // CHANGES
     friend class CShaderParams;

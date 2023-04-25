@@ -55,26 +55,29 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config">
-      <Filter>Configuration Files</Filter>
-    </None>
     <None Include="..\.clang-format">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\.gitignore">
+    <None Include="..\.gitattributes">
       <Filter>Configuration Files</Filter>
     </None>
     <None Include="..\.github\workflows\build.yml">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\README.md">
+    <None Include="..\.gitignore">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="..\.vsconfig">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="..\CHANGELOG.md">
       <Filter>Documentation Files</Filter>
     </None>
     <None Include="..\nuget.config">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\.gitattributes">
-      <Filter>Configuration Files</Filter>
+    <None Include="..\README.md">
+      <Filter>Documentation Files</Filter>
     </None>
     <None Include="..\tools\clang-format-all.ps1">
       <Filter>Configuration Files</Filter>
@@ -82,7 +85,7 @@
     <None Include="..\tools\clang-format-all.sh">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\.vsconfig">
+    <None Include="packages.config">
       <Filter>Configuration Files</Filter>
     </None>
   </ItemGroup>
