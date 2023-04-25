@@ -49,7 +49,13 @@ extern _locale_t g_use_C_locale;
 
 void SetScrollLock(int bNewState, bool bPreventHandling);
 void RemoveExtension(wchar_t* str);
+void RemoveSingleAmpersands(wchar_t* str);
 void TextToGuidA(char* str, GUID* pGUID);
+void TextToGuidW(wchar_t* str, GUID* pGUID);
+void TextToLuidA(char* str, LUID* pLUID);
+void GuidToTextA(GUID* pGUID, char* str, int nStrLen);
+void GuidToTextW(GUID* pGUID, wchar_t* str, int nStrLen);
+void LuidToTextA(LUID* pLUID, char* str, int nStrLen);
 
 void NSEEL_VM_resetvars(void* ctx);
 

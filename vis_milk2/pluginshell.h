@@ -177,16 +177,16 @@ class CPluginShell
   private:
     // GENERAL PRIVATE STUFF
     eScrMode m_screenmode; // WINDOWED, FULLSCREEN, or FAKE_FULLSCREEN (i.e. running in a full-screen-sized window)
-    int m_frame;           // current frame #, starting at zero
-    float m_time;          // current animation time in seconds; starts at zero.
-    float m_fps;           // current estimate of frames per second
-    HWND m_hWndWinamp;     // handle to Winamp window
+    int m_frame; // current frame number, starting at zero
+    float m_time; // current animation time in seconds; starts at zero.
+    float m_fps; // current estimate of frames per second
+    HWND m_hWndWinamp; // handle to Winamp window
     HINSTANCE m_hInstance; // handle to application instance
   public:
-    std::unique_ptr<DXContext> m_lpDX;    // pointer to DXContext object
+    std::unique_ptr<DXContext> m_lpDX; // pointer to DXContext object
     wchar_t m_szPluginsDirPath[MAX_PATH]; // usually 'c:\\program files\\winamp\\plugins\\'
-    wchar_t m_szConfigIniFile[MAX_PATH];  // usually 'c:\\program files\\winamp\\plugins\\something.ini' - filename is determined from identifiers in 'defines.h'
-    char m_szConfigIniFileA[MAX_PATH];    // usually 'c:\\program files\\winamp\\plugins\\something.ini' - filename is determined from identifiers in 'defines.h'
+    wchar_t m_szConfigIniFile[MAX_PATH]; // Unicode version: usually 'c:\\program files\\winamp\\plugins\\filename.ini' - filename is determined from identifiers in 'defines.h'
+    char m_szConfigIniFileA[MAX_PATH]; // ANSI version
     //ID3D11Device* m_device;
     //ID3D11DeviceContext* m_context;
   private:
@@ -196,7 +196,7 @@ class CPluginShell
     IUnknown* m_d3dx_desktop_font;
     HFONT m_font[NUM_BASIC_FONTS + NUM_EXTRA_FONTS];
     HFONT m_font_desktop;
-    
+
     // PRIVATE CONFIG PANEL SETTINGS
     //D3DMULTISAMPLE_TYPE m_multisample_fullscreen;
     //D3DMULTISAMPLE_TYPE m_multisample_desktop;
@@ -250,6 +250,7 @@ class CPluginShell
 
     void DrawAndDisplay(int redraw);
     void ReadConfig();
+    void WriteConfig();
     void DoTime();
     void AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR);
     void AlignWaves();

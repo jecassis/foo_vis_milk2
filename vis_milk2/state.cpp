@@ -797,33 +797,32 @@ void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
     m_fBlur3Max         .StartBlendFrom(&s_from->m_fBlur3Max        , fAnimTime, fTimespan);
     m_fBlur1EdgeDarken  .StartBlendFrom(&s_from->m_fBlur1EdgeDarken , fAnimTime, fTimespan);
 
-	// if motion vectors were transparent before, don't morph the # in X and Y - just
-	// start in the right place, and fade them in.
-	bool bOldStateTransparent = (s_from->m_fMvA.eval(-1) < 0.001f);
-	bool bNewStateTransparent = (s_to->m_fMvA.eval(-1) < 0.001f);
-	if (!bOldStateTransparent && bNewStateTransparent)
-	{
-		s_from->m_fMvX = s_to->m_fMvX.eval(fAnimTime);
-		s_from->m_fMvY = s_to->m_fMvY.eval(fAnimTime);
-		s_from->m_fMvDX = s_to->m_fMvDX.eval(fAnimTime);
-		s_from->m_fMvDY = s_to->m_fMvDY.eval(fAnimTime);
-		s_from->m_fMvL = s_to->m_fMvL.eval(fAnimTime);
-		s_from->m_fMvR = s_to->m_fMvR.eval(fAnimTime);
-		s_from->m_fMvG = s_to->m_fMvG.eval(fAnimTime);
-		s_from->m_fMvB = s_to->m_fMvB.eval(fAnimTime);
-	}
-	if (bNewStateTransparent && !bOldStateTransparent)
-	{
-		s_to->m_fMvX = s_from->m_fMvX.eval(fAnimTime);
-		s_to->m_fMvY = s_from->m_fMvY.eval(fAnimTime);
-		s_to->m_fMvDX = s_from->m_fMvDX.eval(fAnimTime);
-		s_to->m_fMvDY = s_from->m_fMvDY.eval(fAnimTime);
-		s_to->m_fMvL = s_from->m_fMvL.eval(fAnimTime);
-		s_to->m_fMvR = s_from->m_fMvR.eval(fAnimTime);
-		s_to->m_fMvG = s_from->m_fMvG.eval(fAnimTime);
-		s_to->m_fMvB = s_from->m_fMvB.eval(fAnimTime);
-	}
-
+    // If motion vectors were transparent before, don't morph the # in X and Y - just
+    // start in the right place, and fade them in.
+    bool bOldStateTransparent = (s_from->m_fMvA.eval(-1) < 0.001f);
+    bool bNewStateTransparent = (s_to->m_fMvA.eval(-1) < 0.001f);
+    if (!bOldStateTransparent && bNewStateTransparent)
+    {
+        s_from->m_fMvX  = s_to->m_fMvX.eval(fAnimTime);
+        s_from->m_fMvY  = s_to->m_fMvY.eval(fAnimTime);
+        s_from->m_fMvDX = s_to->m_fMvDX.eval(fAnimTime);
+        s_from->m_fMvDY = s_to->m_fMvDY.eval(fAnimTime);
+        s_from->m_fMvL  = s_to->m_fMvL.eval(fAnimTime);
+        s_from->m_fMvR  = s_to->m_fMvR.eval(fAnimTime);
+        s_from->m_fMvG  = s_to->m_fMvG.eval(fAnimTime);
+        s_from->m_fMvB  = s_to->m_fMvB.eval(fAnimTime);
+    }
+    if (bNewStateTransparent && !bOldStateTransparent)
+    {
+        s_to->m_fMvX  = s_from->m_fMvX.eval(fAnimTime);
+        s_to->m_fMvY  = s_from->m_fMvY.eval(fAnimTime);
+        s_to->m_fMvDX = s_from->m_fMvDX.eval(fAnimTime);
+        s_to->m_fMvDY = s_from->m_fMvDY.eval(fAnimTime);
+        s_to->m_fMvL  = s_from->m_fMvL.eval(fAnimTime);
+        s_to->m_fMvR  = s_from->m_fMvR.eval(fAnimTime);
+        s_to->m_fMvG  = s_from->m_fMvG.eval(fAnimTime);
+        s_to->m_fMvB  = s_from->m_fMvB.eval(fAnimTime);
+    }
 }
 
 void WriteCode(FILE* fOut, const int /* i */, char* pStr, const char* prefix, const bool bPrependApostrophe = false)
@@ -1883,7 +1882,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
             }
         }
     }
-    #endif
+#endif
 }
 
 void CState::RandomizePresetVars()
@@ -1893,68 +1892,63 @@ void CState::RandomizePresetVars()
     int k = 0;
     do
     {
-        for (int i=0; i<4; i++) 
+        for (int i = 0; i < 4; i++)
         {
-            float xlate_mult = 1;//(j==0) ? 1 : 0;
-            float rot_mult = 0.9f*powf(k/8.0f, 3.2f);
-            m_xlate[k].x = (FRAND*2-1)*xlate_mult;
-            m_xlate[k].y = (FRAND*2-1)*xlate_mult;
-            m_xlate[k].z = (FRAND*2-1)*xlate_mult;
-            m_rot_base[k].x = FRAND*6.28f;
-            m_rot_base[k].y = FRAND*6.28f;
-            m_rot_base[k].z = FRAND*6.28f;
-            m_rot_speed[k].x = (FRAND*2-1)*rot_mult;
-            m_rot_speed[k].y = (FRAND*2-1)*rot_mult;
-            m_rot_speed[k].z = (FRAND*2-1)*rot_mult;
+            float xlate_mult = 1; //(j==0) ? 1 : 0;
+            float rot_mult = 0.9f * powf(k / 8.0f, 3.2f);
+            m_xlate[k].x = (FRAND * 2 - 1) * xlate_mult;
+            m_xlate[k].y = (FRAND * 2 - 1) * xlate_mult;
+            m_xlate[k].z = (FRAND * 2 - 1) * xlate_mult;
+            m_rot_base[k].x = FRAND * 6.28f;
+            m_rot_base[k].y = FRAND * 6.28f;
+            m_rot_base[k].z = FRAND * 6.28f;
+            m_rot_speed[k].x = (FRAND * 2 - 1) * rot_mult;
+            m_rot_speed[k].y = (FRAND * 2 - 1) * rot_mult;
+            m_rot_speed[k].z = (FRAND * 2 - 1) * rot_mult;
             k++;
         }
-    }
-    while (k < sizeof(m_xlate)/sizeof(m_xlate[0]));
+    } while (k < sizeof(m_xlate) / sizeof(m_xlate[0]));
 }
 
 CBlendableFloat::CBlendableFloat()
 {
-	m_bBlending  = false;
+    m_bBlending = false;
 }
 
 CBlendableFloat::~CBlendableFloat()
 {
 }
 
-//--------------------------------------------------------------------------------
-
 float CBlendableFloat::eval(float fTime)
 {
-	if (fTime < 0)
-	{
-		return val;
-	}
+    if (fTime < 0)
+    {
+        return val;
+    }
 
-	if (m_bBlending && (fTime > m_fBlendStartTime + m_fBlendDuration) || (fTime < m_fBlendStartTime))
-	{
-		m_bBlending = false;
-	}
+    if (m_bBlending && (fTime > m_fBlendStartTime + m_fBlendDuration) || (fTime < m_fBlendStartTime))
+    {
+        m_bBlending = false;
+    }
 
-	if (!m_bBlending)
-	{
-		return val;
-	}
-	else
-	{
-		float mix = (fTime - m_fBlendStartTime) / m_fBlendDuration;
-		return (m_fBlendFrom*(1.0f - mix) + val*mix);
-	}
+    if (!m_bBlending)
+    {
+        return val;
+    }
+    else
+    {
+        float mix = (fTime - m_fBlendStartTime) / m_fBlendDuration;
+        return (m_fBlendFrom * (1.0f - mix) + val * mix);
+    }
 }
-
-//--------------------------------------------------------------------------------
 
 void CBlendableFloat::StartBlendFrom(CBlendableFloat *f_from, float fAnimTime, float fDuration)
 {
-	if (fDuration < 0.001f)
-		return;
+    if (fDuration < 0.001f)
+        return;
 
-	m_fBlendFrom		= f_from->eval(fAnimTime);
-	m_bBlending			= true;
-	m_fBlendStartTime	= fAnimTime;
-	m_fBlendDuration	= fDuration;
+    m_fBlendFrom = f_from->eval(fAnimTime);
+    m_bBlending = true;
+    m_fBlendStartTime = fAnimTime;
+    m_fBlendDuration = fDuration;
 }

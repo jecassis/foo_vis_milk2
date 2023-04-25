@@ -56,7 +56,7 @@ typedef struct _DXCONTEXT_PARAMS
     int nbackbuf;
     int allow_page_tearing;
     unsigned int enable_hdr;
-    GUID adapter_guid;
+    LUID adapter_guid;
     wchar_t adapter_devicename[256];
     DXGI_MODE_DESC1 display_mode; // only valid for FULLSCREEN mode
     DXGI_SAMPLE_DESC multisamp;

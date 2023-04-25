@@ -637,6 +637,81 @@ void CPluginShell::WriteFont(const int /*n*/)
 #endif
 }
 
+void CPluginShell::WriteConfig()
+{
+#if 0
+    WritePrivateProfileIntW(m_multisample_fullscreen.Count, L"multisample_fullscreen", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_multisample_desktop.Count, L"multisample_desktop", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_multisample_windowed.Count, L"multisample_windowed", m_szConfigIniFile, L"settings");
+
+    char str[256];
+    LuidToTextA(&m_adapter_guid_fullscreen, str, sizeof(str));
+    WritePrivateProfileStringA("settings", "adapter_guid_fullscreen", str, m_szConfigIniFileA);
+    LuidToTextA(&m_adapter_guid_desktop, str, sizeof(str));
+    WritePrivateProfileStringA("settings", "adapter_guid_desktop", str, m_szConfigIniFileA);
+    LuidToTextA(&m_adapter_guid_windowed, str, sizeof(str));
+    WritePrivateProfileStringA("settings", "adapter_guid_windowed", str, m_szConfigIniFileA);
+    WritePrivateProfileString(L"settings", L"adapter_devicename_fullscreen", m_adapter_devicename_fullscreen, m_szConfigIniFile);
+    WritePrivateProfileString(L"settings", L"adapter_devicename_desktop", m_adapter_devicename_desktop, m_szConfigIniFile);
+    WritePrivateProfileString(L"settings", L"adapter_devicename_windowed", m_adapter_devicename_windowed, m_szConfigIniFile);
+
+    // FONTS
+    WriteFont(0);
+    WriteFont(1);
+    WriteFont(2);
+    WriteFont(3);
+#if (NUM_EXTRA_FONTS >= 1)
+    WriteFont(4);
+#endif
+#if (NUM_EXTRA_FONTS >= 2)
+    WriteFont(5);
+#endif
+#if (NUM_EXTRA_FONTS >= 3)
+    WriteFont(6);
+#endif
+#if (NUM_EXTRA_FONTS >= 4)
+    WriteFont(7);
+#endif
+#if (NUM_EXTRA_FONTS >= 5)
+    WriteFont(8);
+#endif
+
+    WritePrivateProfileIntW(m_start_fullscreen, L"start_fullscreen", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_start_desktop, L"start_desktop", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fake_fullscreen_mode, L"fake_fullscreen_mode", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_max_fps_fs, L"max_fps_fs", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_max_fps_dm, L"max_fps_dm", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_max_fps_w, L"max_fps_w", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_show_press_f1_msg, L"show_press_f1_msg", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_allow_page_tearing_w, L"allow_page_tearing_w", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_allow_page_tearing_fs, L"allow_page_tearing_fs", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_allow_page_tearing_dm, L"allow_page_tearing_dm", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_minimize_winamp, L"minimize_winamp", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_desktop_show_icons, L"desktop_show_icons", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_desktop_textlabel_boxes, L"desktop_textlabel_boxes", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_desktop_manual_icon_scoot, L"desktop_manual_icon_scoot", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_desktop_555_fix, L"desktop_555_fix", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_dualhead_horz, L"dualhead_horz", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_dualhead_vert, L"dualhead_vert", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_save_cpu, L"save_cpu", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_skin, L"skin", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_fix_slow_text, L"fix_slow_text", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_vj_mode, L"vj_mode", m_szConfigIniFile, L"settings");
+
+    WritePrivateProfileIntW(m_disp_mode_fs.Width, L"disp_mode_fs_w", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_disp_mode_fs.Height, L"disp_mode_fs_h", m_szConfigIniFile, L"settings");
+    sprintf_s(str, "%d/%d", m_disp_mode_fs.RefreshRate.Numerator, m_disp_mode_fs.RefreshRate.Denominator);
+    WritePrivateProfileStringA("settings", "disp_mode_fs_r", str, m_szConfigIniFileA);
+    WritePrivateProfileIntW(m_disp_mode_fs.Format, L"disp_mode_fs_f", m_szConfigIniFile, L"settings");
+
+    WritePrivateProfileIntW(INT_VERSION, L"version", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(INT_SUBVERSION, L"subversion", m_szConfigIniFile, L"settings");
+
+    // Finally, save the plugin's unique settings.
+    MilkDropWriteConfig();
+#endif
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

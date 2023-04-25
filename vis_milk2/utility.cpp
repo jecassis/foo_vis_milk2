@@ -137,6 +137,22 @@ static void ShiftDown(wchar_t* str)
     }
 }
 
+void RemoveSingleAmpersands(wchar_t* str)
+{
+    while (*str)
+    {
+        if (str[0] == L'&')
+        {
+            if (str[1] == L'&') // two in a row: replace with single ampersand, move on
+                str++;
+
+            ShiftDown(str);
+        }
+        else
+            str = CharNext(str);
+    }
+}
+
 void TextToGuidA(char* str, GUID* pGUID)
 {
     if (!str || !pGUID)
@@ -157,4 +173,99 @@ void TextToGuidA(char* str, GUID* pGUID)
     pGUID->Data4[5] = (BYTE)d[8];
     pGUID->Data4[6] = (BYTE)d[9];
     pGUID->Data4[7] = (BYTE)d[10];
+}
+
+void TextToGuidW(wchar_t* str, GUID* pGUID)
+{
+    if (!str || !pGUID)
+        return;
+
+    DWORD d[11];
+
+    swscanf_s(str, L"%X %X %X %X %X %X %X %X %X %X %X", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9], &d[10]);
+
+    pGUID->Data1 = (DWORD)d[0];
+    pGUID->Data2 = (WORD)d[1];
+    pGUID->Data3 = (WORD)d[2];
+    pGUID->Data4[0] = (BYTE)d[3];
+    pGUID->Data4[1] = (BYTE)d[4];
+    pGUID->Data4[2] = (BYTE)d[5];
+    pGUID->Data4[3] = (BYTE)d[6];
+    pGUID->Data4[4] = (BYTE)d[7];
+    pGUID->Data4[5] = (BYTE)d[8];
+    pGUID->Data4[6] = (BYTE)d[9];
+    pGUID->Data4[7] = (BYTE)d[10];
+}
+
+void TextToLuidA(char* str, LUID* pLUID)
+{
+    if (!str || !pLUID)
+        return;
+
+    DWORD l;
+    LONG h;
+
+    sscanf_s(str, "%08X%08X", &h, &l);
+
+    pLUID->LowPart = static_cast<DWORD>(l);
+    pLUID->HighPart = static_cast<LONG>(h);
+}
+
+void GuidToTextA(GUID* pGUID, char* str, int nStrLen)
+{
+    // Note: `nStrLen` should be set to sizeof(str).
+    if (!str || !nStrLen || !pGUID)
+        return;
+    str[0] = '\0';
+
+    DWORD d[11];
+    d[0] = (DWORD)pGUID->Data1;
+    d[1] = (DWORD)pGUID->Data2;
+    d[2] = (DWORD)pGUID->Data3;
+    d[3] = (DWORD)pGUID->Data4[0];
+    d[4] = (DWORD)pGUID->Data4[1];
+    d[5] = (DWORD)pGUID->Data4[2];
+    d[6] = (DWORD)pGUID->Data4[3];
+    d[7] = (DWORD)pGUID->Data4[4];
+    d[8] = (DWORD)pGUID->Data4[5];
+    d[9] = (DWORD)pGUID->Data4[6];
+    d[10] = (DWORD)pGUID->Data4[7];
+
+    sprintf_s(str, nStrLen, "%08X %04X %04X %02X %02X %02X %02X %02X %02X %02X %02X", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10]);
+}
+
+void GuidToTextW(GUID* pGUID, wchar_t* str, int nStrLen)
+{
+    // Note: `nStrLen` should be set to sizeof(str).
+    if (!str || !nStrLen || !pGUID)
+        return;
+    str[0] = L'\0';
+
+    DWORD d[11];
+    d[0] = (DWORD)pGUID->Data1;
+    d[1] = (DWORD)pGUID->Data2;
+    d[2] = (DWORD)pGUID->Data3;
+    d[3] = (DWORD)pGUID->Data4[0];
+    d[4] = (DWORD)pGUID->Data4[1];
+    d[5] = (DWORD)pGUID->Data4[2];
+    d[6] = (DWORD)pGUID->Data4[3];
+    d[7] = (DWORD)pGUID->Data4[4];
+    d[8] = (DWORD)pGUID->Data4[5];
+    d[9] = (DWORD)pGUID->Data4[6];
+    d[10] = (DWORD)pGUID->Data4[7];
+
+    swprintf_s(str, nStrLen, L"%08X %04X %04X %02X %02X %02X %02X %02X %02X %02X %02X", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10]);
+}
+
+void LuidToTextA(LUID* pLUID, char* str, int nStrLen)
+{
+    // Note: `nStrLen` should be set to sizeof(str).
+    if (!str || !nStrLen || !pLUID)
+        return;
+    str[0] = '\0';
+
+    DWORD l = pLUID->LowPart;
+    LONG h = pLUID->HighPart;
+
+    sprintf_s(str, nStrLen, "%08X%08X", h, l);
 }
