@@ -157,7 +157,6 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void UpdateChannelMode();
     void ToggleFullScreen();
 
-
     void Update(DX::StepTimer const& timer);
     HRESULT Render();
     void BuildWaves();
@@ -230,9 +229,7 @@ void milk2_ui_element_instance::notify(const GUID& p_what, t_size p_param1, cons
 
 int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 {
-#ifdef _DEBUG
-    console::formatter() << core_api::get_my_file_name() << ": OnCreate " << cs->x << ", " << cs->y;
-#endif
+    MILK2_CONSOLE_LOG("OnCreate ", cs->x, ", ", cs->y);
     std::string base_path = core_api::get_my_full_path();
     std::string::size_type t = base_path.rfind('\\');
     if (t != std::string::npos)
@@ -253,11 +250,12 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
         w = r.right - r.left;
         h = r.bottom - r.top;
     }
-    Initialize(get_wnd(), w, h);
-#ifdef _DEBUG
-    //console::formatter() << core_api::get_my_file_name() << ": Could not initialize MilkDrop";
-    console::formatter() << core_api::get_my_file_name() << ": OnCreate2 " << r.right << ", " << r.left << ", " << r.top << ", " << r.bottom;
-#endif
+    if (!Initialize(get_wnd(), w, h))
+    {
+        MILK2_CONSOLE_LOG("Could not initialize MilkDrop");
+    }
+    MILK2_CONSOLE_LOG("OnCreate2 ", r.right, ", ", r.left, ", ", r.top, ", ", r.bottom);
+
     try
     {
         static_api_ptr_t<visualisation_manager> vis_manager;
@@ -269,7 +267,7 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     }
     catch (std::exception& exc)
     {
-        console::formatter() << core_api::get_my_file_name() << ": Exception while creating visualization stream - " << exc;
+        MILK2_CONSOLE_LOG("Exception while creating visualization stream - ", exc);
     }
 
     return hr;
@@ -277,9 +275,7 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 
 void milk2_ui_element_instance::OnDestroy()
 {
-#ifdef _DEBUG
-    console::formatter() << core_api::get_my_file_name() << ": OnDestroy";
-#endif
+    MILK2_CONSOLE_LOG("OnDestroy");
     m_vis_stream.release();
 
     if (m_IsInitialized)
@@ -292,18 +288,14 @@ void milk2_ui_element_instance::OnDestroy()
 
 void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 {
-    //#ifdef _DEBUG
-    //    console::formatter() << core_api::get_my_file_name() << ": OnTimer";
-    //#endif
+    //MILK2_CONSOLE_LOG("OnTimer");
     KillTimer(ID_REFRESH_TIMER);
     Invalidate();
 }
 
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
-    //#ifdef _DEBUG
-    //    console::formatter() << core_api::get_my_file_name() << ": OnPaint";
-    //#endif
+    //MILK2_CONSOLE_LOG("OnPaint");
     //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (m_milk2) //s_in_sizemove && vis
         Tick();
@@ -338,9 +330,7 @@ void milk2_ui_element_instance::OnMove(CPoint ptPos)
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 {
-#ifdef _DEBUG
-    console::formatter() << core_api::get_my_file_name() << ": OnSize " << size.cx << ", " << size.cy;
-#endif
+    MILK2_CONSOLE_LOG("OnSize ", size.cx, ", ", size.cy);
     //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (nType == SIZE_MINIMIZED)
     {
@@ -379,6 +369,7 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 
 BOOL milk2_ui_element_instance::OnEraseBkgnd(CDCHandle dc)
 {
+    MILK2_CONSOLE_LOG("OnEraseBkgnd");
     CRect r;
     WIN32_OP_D(GetClientRect(&r));
     CBrush brush;
@@ -435,9 +426,7 @@ void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFla
 
 void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
 {
-#ifdef _DEBUG
-    console::formatter() << core_api::get_my_file_name() << ": OnContextMenu " << point.x << ", " << point.y;
-#endif
+    MILK2_CONSOLE_LOG("OnContextMenu ", point.x, ", ", point.y);
     if (m_callback->is_edit_mode_enabled())
     {
         SetMsgHandled(FALSE);
