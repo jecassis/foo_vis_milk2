@@ -3298,13 +3298,47 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 
 void CPlugin::DumpDebugMessage(wchar_t* s)
 {
-#if _DEBUG
+#ifdef _DEBUG
     OutputDebugString(s);
     if (s[0])
     {
         size_t len = wcslen(s);
         if (s[len - 1] != L'\n')
             OutputDebugString(L"\n");
+    }
+#endif
+}
+
+void CPlugin::PopupMessage(int message_id, int title_id)
+{
+#ifdef _DEBUG
+    wchar_t buf[2048], title[64];
+    LoadString(GetInstance(), message_id, buf, 2048);
+    LoadString(GetInstance(), title_id, title, 64);
+    MessageBox(GetPluginWindow(), buf, title, MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+#endif
+}
+
+void CPlugin::ConsoleMessage(int message_id, int title_id)
+{
+#if _DEBUG && _FOOBAR
+    if (!PostMessage(GetWinampWindow(), WM_USER, MAKEWORD(0x21, 0x09), MAKELONG(message_id, title_id)))
+    {
+        LPVOID lpMsgBuf;
+        LPVOID lpDisplayBuf;
+        DWORD dw = GetLastError();
+
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw,
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+
+        // Display the error message and exit the process.
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)TEXT("PostMessage")) + 40) * sizeof(TCHAR));
+        swprintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), TEXT("PostMessage"),
+                 dw, (LPCTSTR)lpMsgBuf);
+        MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+        LocalFree(lpMsgBuf);
+        LocalFree(lpDisplayBuf);
     }
 #endif
 }

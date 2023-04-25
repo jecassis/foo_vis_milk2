@@ -571,7 +571,6 @@ class CPlugin : public CPluginShell
     void LoadCustomWavePerFrameEvallibVars(CState* pState, int i);
     void LoadCustomShapePerFrameEvallibVars(CState* pState, int i, int instance);
     void WriteRealtimeConfig(); // called on Finish()
-    void DumpDebugMessage(wchar_t* s);
     void Randomize();
     void LoadRandomPreset(float fBlendTime);
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);
@@ -638,6 +637,9 @@ class CPlugin : public CPluginShell
     //virtual LRESULT MilkDropWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     //virtual void OnAltK();
+    virtual void DumpDebugMessage(wchar_t* s);
+    virtual void PopupMessage(int message_id, int title_id);
+    virtual void ConsoleMessage(int message_id, int title_id);
 
     /*
     //====[ 4. Methods from base class ]===========================================================================

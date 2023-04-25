@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "config.h"
 #include "steptimer.h"
+#include "resource.h"
 
 #include <vis_milk2/plugin.h>
 
@@ -47,6 +48,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
+        MESSAGE_HANDLER(WM_MILK2, OnMilk2Message)
     END_MSG_MAP()
     // clang-format on
 
@@ -76,6 +78,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point) { ToggleFullScreen(); }
+    LRESULT OnMilk2Message(UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
 
     milk2_config m_config;
     visualisation_stream_v3::ptr m_vis_stream;
@@ -477,7 +480,21 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
     Invalidate();
 }
 
+LRESULT milk2_ui_element_instance::OnMilk2Message(UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled)
+{
+    handled = TRUE;
+    if (message != WM_MILK2)
+        return 1;
+    if (LOBYTE(wparam) == 0x21 && HIBYTE(wparam) == 0x09)
+    {
+        wchar_t buf[2048], title[64];
+        LoadString(core_api::get_my_instance(), LOWORD(lparam), buf, 2048);
+        LoadString(core_api::get_my_instance(), HIWORD(lparam), title, 64);
+        MILK2_CONSOLE_LOG("milk2 -> title: ", title, ", message: ", buf);
+    }
 
+    return 0;
+}
 
 // Initialize the Direct3D resources required to run.
 bool milk2_ui_element_instance::Initialize(HWND window, int width, int height)
@@ -485,7 +502,7 @@ bool milk2_ui_element_instance::Initialize(HWND window, int width, int height)
     swprintf_s(g_plugin.m_szPluginsDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
     swprintf_s(g_plugin.m_szConfigIniFile, L"%hs%ls", const_cast<char*>(m_pwd.c_str()), INIFILE);
 
-    if (FALSE == g_plugin.PluginPreInitialize(window, NULL))
+    if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
         return false;
 
     if (FALSE == g_plugin.PluginInitialize(0, 0, width, height, static_cast<float>(width) / static_cast<float>(height)))
