@@ -84,7 +84,7 @@ bool texmgr::TryCreateDDrawSurface(int iSlot, int w, int h)
     int loop = 1;
     int done = 0;
     int scaling = false;
-    
+
     do
     {
         //TEMP!!!
@@ -113,7 +113,7 @@ bool texmgr::TryCreateDDrawSurface(int iSlot, int w, int h)
                     w *= 2;
                     h *= 2;
                 }
-                else 
+                else
                 {
                     scaling = true;
                 }
@@ -140,8 +140,8 @@ bool texmgr::TryCreateDDrawSurface(int iSlot, int w, int h)
         // TRY TO CREATE THE SURFACE IN SYSTEM MEMORY.
         ZeroMemory(&ddsd, sizeof(DDSURFACEDESC2));
         ddsd.dwSize = sizeof( ddsd );
-        ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH; 
-        ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;//DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;// | DDSCAPS_3DDEVICE;// | DDSCAPS_LOCALVIDMEM | DDSCAPS_VIDEOMEMORY; 
+        ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+        ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;//DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;// | DDSCAPS_3DDEVICE;// | DDSCAPS_LOCALVIDMEM | DDSCAPS_VIDEOMEMORY;
         ddsd.dwWidth  = w;
         ddsd.dwHeight = h;
 
@@ -152,9 +152,9 @@ bool texmgr::TryCreateDDrawSurface(int iSlot, int w, int h)
         m_tex[iSlot].pSurface = NULL;
 
         loop++;
-    } 
+    }
     while (!done);
-    
+
     if (m_tex[iSlot].pSurface == NULL)
         return false;
 
@@ -275,7 +275,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         int ret = Begin_Jpeg_Read(szFilename, &w_img, &h_img, &img_color_channels);
         switch(ret)
         {
-        case JPEGSTUFF_ERR_SUCCESS: 
+        case JPEGSTUFF_ERR_SUCCESS:
             break;
         case JPEGSTUFF_ERR_OPENING:
             return TEXMGR_ERR_OPENING;
@@ -284,7 +284,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
             return TEXMGR_ERR_FORMAT;
             break;
         }
-        
+
         sprintf_s(buf, "texmgr: w=%d, h=%d, channels=%d", w_img, h_img, img_color_channels);
         //DumpDebugMessage(buf);
 
@@ -325,7 +325,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         DDSURFACEDESC2 ddsd;
         ZeroMemory(&ddsd, sizeof(DDSURFACEDESC2));
         ddsd.dwSize = sizeof( ddsd );
-        
+
         if (m_tex[iSlot].pSurface->Lock(0, &ddsd, DDLOCK_SURFACEMEMORYPTR|DDLOCK_WAIT|DDLOCK_NOSYSLOCK, 0) != DD_OK)
         {
             //DumpDebugMessage("texmgr: unable to lock ddraw surface");
@@ -370,7 +370,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
 
         // read jpeg in & store in directdraw surface
         // 2. read image into texture
-        if (w_img > w_tex || h_img > h_tex)				
+        if (w_img > w_tex || h_img > h_tex)
         {
             // DOWNSAMPLING VERSION
             unsigned int new_w_img = min(w_tex, w_img);
@@ -394,14 +394,14 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
                 unsigned int x;
 
                 unsigned char *buf = Jpeg_Read_Next_Line();
-                if (!buf) 
+                if (!buf)
                 {
                     End_Jpeg_Read();
                     m_tex[iSlot].pSurface->Release();
                     m_tex[iSlot].pSurface = NULL;
                     return TEXMGR_ERR_CORRUPT_JPEG;
                 }
-                
+
                 lines += 1.0f;
                 int portion = (int)(min(256, max(0, (input_lines_per_output_line - lines)*256)));
                 for (x=0; x<w_img*3; x++)
@@ -426,7 +426,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
                             buf2[out_x*3  ] += (downsample_buf[x*3  ] * portion) >> 4;
                             buf2[out_x*3+1] += (downsample_buf[x*3+1] * portion) >> 4;
                             buf2[out_x*3+2] += (downsample_buf[x*3+2] * portion) >> 4;
-                            
+
                             if (portion < 256)
                             {
                                 cols -= input_cols_per_output_col;
@@ -507,7 +507,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
                 for (int y=0; y<(int)h_img; y++)
                 {
                     unsigned char *buf = Jpeg_Read_Next_Line();
-                    if (!buf) 
+                    if (!buf)
                     {
                         End_Jpeg_Read();
                         m_tex[iSlot].pSurface->Release();
@@ -538,7 +538,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
                 for (int y=0; y<(int)h_img; y++)
                 {
                     unsigned char *buf = Jpeg_Read_Next_Line();
-                    if (!buf) 
+                    if (!buf)
                     {
                         End_Jpeg_Read();
                         m_tex[iSlot].pSurface->Release();

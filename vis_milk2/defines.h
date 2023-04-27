@@ -32,7 +32,7 @@
 
 // APPNAME is the name that will appear in Winamp's list of installed plugins.
 // Try to include the version number with the name.
-// Note: To change the name of the file (DLL) that the plugin is compiled 
+// Note: To change the name of the file (DLL) that the plugin is compiled
 //       to, go to the Project -> Properties -> Linker -> Output File.
 //       Do not forget to change both Debug and Release build configurations!
 #define SHORTNAME L"MilkDrop 2 (DirectX 11)" // used as window caption for both MilkDrop and the config panel
