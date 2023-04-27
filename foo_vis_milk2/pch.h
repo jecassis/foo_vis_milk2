@@ -22,8 +22,14 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include <helpers/foobar2000+atl.h>
+#include <helpers/foobar2000-lite+atl.h>
 #include <helpers/BumpableElem.h>
+#include <sdk/componentversion.h>
+#include <sdk/preferences_page.h>
+#include <sdk/cfg_var.h>
+#include <sdk/advconfig_impl.h>
+#include <sdk/vis.h>
+#include <sdk/ui_element.h>
 #include <libppui/win32_op.h>
 
 #include <wrl/client.h>

@@ -141,8 +141,8 @@ class CPluginShell
     // FONTS & TEXT
     // ------------------------------------------------------------
   public:
-    IUnknown*    GetFont(eFontIndex idx);       // returns a D3DX font handle for drawing text; see shell_defines.h for the definition of the 'eFontIndex' enum.
-    int          GetFontHeight(eFontIndex idx); // returns the height of the font, in pixels; see shell_defines.h for the definition of the 'eFontIndex' enum.
+    IUnknown* GetFont(eFontIndex idx); // returns a D3DX font handle for drawing text; see shell_defines.h for the definition of the 'eFontIndex' enum.
+    int GetFontHeight(eFontIndex idx); // returns the height of the font, in pixels; see shell_defines.h for the definition of the 'eFontIndex' enum.
     //CTextManager m_text;
 
     // MISCELLANEOUS

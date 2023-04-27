@@ -212,10 +212,7 @@ int CPluginShell::InitDirectX()
 
     if (!m_lpDX)
     {
-        /* wchar_t title[64];
-        MessageBox(NULL, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_INIT_DXCONTEXT),
-                    WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64),
-                    MB_OK|MB_SETFOREGROUND|MB_TOPMOST); */
+        PopupMessage(IDS_UNABLE_TO_INIT_DXCONTEXT, IDS_MILKDROP_ERROR);
         return FALSE;
     }
 

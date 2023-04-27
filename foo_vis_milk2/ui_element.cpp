@@ -24,7 +24,9 @@ static const GUID guid_milk2 = {
     0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}
 }; // {204B0345-4DF5-4B47-ADD3-989F811BD9A5}
 
-//std::unique_ptr<Vis> g_vis;
+static const GUID VisMilk2LangGUID = {
+    0xc5d175f1, 0xe4e4, 0x47ee, {0xb8, 0x5c, 0x4e, 0xdc, 0x6b, 0x2, 0x6a, 0x35}
+}; // {C5D175F1-E4E4-47EE-B85C-4EDC6B026A35}
 
 class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl<milk2_ui_element_instance>
 {
@@ -79,7 +81,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void OnActivateApp(BOOL bActive, DWORD dwThreadID);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnContextMenu(CWindow wnd, CPoint point);
-    void OnLButtonDblClk(UINT nFlags, CPoint point) { ToggleFullScreen(); }
+    void OnLButtonDblClk(UINT nFlags, CPoint point);
     LRESULT OnMilk2Message(UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
 
     milk2_config m_config;
@@ -88,12 +90,11 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     ULONGLONG m_last_refresh;
     DWORD m_refresh_interval = 33;
     double m_last_time = 0.0;
-    bool m_IsInitialized = false;
 
-    //Vis* vis;
     bool s_in_sizemove;
     bool s_in_suspend;
     bool s_minimized;
+    bool s_fullscreen;
 
     enum milk2_ui_timer
     {
@@ -192,6 +193,7 @@ milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr conf
     s_in_sizemove = false;
     s_in_suspend = false;
     s_minimized = false;
+    s_fullscreen = false;
 
     set_configuration(config);
     m_pwd = ".\\";
@@ -203,7 +205,6 @@ ui_element_config::ptr milk2_ui_element_instance::g_get_default_configuration()
     milk2_config config;
     config.build(builder);
     return builder.finish(g_get_guid());
-    //return ui_element_config::g_create_empty(g_get_guid());
 }
 
 void milk2_ui_element_instance::set_configuration(ui_element_config::ptr p_data)
@@ -235,13 +236,13 @@ void milk2_ui_element_instance::notify(const GUID& p_what, t_size p_param1, cons
 int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
 {
     MILK2_CONSOLE_LOG("OnCreate ", cs->x, ", ", cs->y);
+    SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(cs->lpCreateParams)); //reinterpret_cast<LONG_PTR>(g_vis.get())
+
     std::string base_path = core_api::get_my_full_path();
     std::string::size_type t = base_path.rfind('\\');
     if (t != std::string::npos)
         base_path.erase(t + 1);
     SetPwd(base_path);
-
-    //SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_vis.get()));
 
     HRESULT hr = S_OK;
     int w, h;
@@ -283,11 +284,9 @@ void milk2_ui_element_instance::OnDestroy()
     MILK2_CONSOLE_LOG("OnDestroy");
     m_vis_stream.release();
 
-    if (m_IsInitialized)
+    if (m_milk2)
     {
-        OnDeviceLost();
-        //g_vis.reset();
-        m_IsInitialized = false;
+        //OnDeviceLost();
     }
 }
 
@@ -301,8 +300,7 @@ void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
     //MILK2_CONSOLE_LOG("OnPaint");
-    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
-    if (m_milk2) //s_in_sizemove && vis
+    if (m_milk2) // foobar2000 does not enter/exit size/move - if (s_in_sizemove && m_milk2)
         Tick();
     else
     {
@@ -327,16 +325,20 @@ void milk2_ui_element_instance::OnPaint(CDCHandle dc)
     m_last_refresh = now;
 }
 
+void milk2_ui_element_instance::OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen)
+{
+    //((UINT)wParam, ::CSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+    //m_deviceResources->UpdateColorSpace();
+}
+
 void milk2_ui_element_instance::OnMove(CPoint ptPos)
 {
-    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     OnWindowMoved();
 }
 
 void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 {
     MILK2_CONSOLE_LOG("OnSize ", size.cx, ", ", size.cy);
-    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (nType == SIZE_MINIMIZED)
     {
         if (!s_minimized)
@@ -374,7 +376,7 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 
 BOOL milk2_ui_element_instance::OnEraseBkgnd(CDCHandle dc)
 {
-    MILK2_CONSOLE_LOG("OnEraseBkgnd");
+    //MILK2_CONSOLE_LOG("OnEraseBkgnd");
     CRect r;
     WIN32_OP_D(GetClientRect(&r));
     CBrush brush;
@@ -406,13 +408,14 @@ BOOL milk2_ui_element_instance::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
 
 void milk2_ui_element_instance::OnEnterSizeMove()
 {
+    MILK2_CONSOLE_LOG("OnEnterSizeMove");
     s_in_sizemove = true;
 }
 
 void milk2_ui_element_instance::OnExitSizeMove()
 {
+    MILK2_CONSOLE_LOG("OnExitSizeMove");
     s_in_sizemove = false;
-    //auto vis = reinterpret_cast<Vis*>(GetWindowLongPtr(GWLP_USERDATA));
     if (m_milk2)
     {
         CRect r;
@@ -437,8 +440,16 @@ void milk2_ui_element_instance::OnActivateApp(BOOL bActive, DWORD dwThreadID)
     }
 }
 
+void milk2_ui_element_instance::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+#ifdef _DEBUG
+    ToggleFullScreen();
+#endif
+}
+
 void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+#ifdef _DEBUG
     // Bit 29: The context code. The value is 1 if the ALT key is down while the
     //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
     //         the active window because no window has the keyboard focus.
@@ -448,6 +459,7 @@ void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFla
     {
         ToggleFullScreen();
     }
+#endif
 }
 
 void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
@@ -472,8 +484,10 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING | (m_config.m_bPresetLockedByUser ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (m_config.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+#ifdef _DEBUG
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING, IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
+#endif
 
     int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
 
@@ -499,6 +513,7 @@ void milk2_ui_element_instance::OnContextMenu(CWindow wnd, CPoint point)
             m_config.m_bEnableDownmix = !m_config.m_bEnableDownmix;
             UpdateChannelMode();
             break;
+    }
 
     Invalidate();
 }
@@ -642,10 +657,8 @@ void milk2_ui_element_instance::OnResuming()
 
 void milk2_ui_element_instance::OnWindowMoved()
 {
-}
-
-void milk2_ui_element_instance::OnDisplayChange()
-{
+    //auto const r = m_deviceResources->GetOutputSize();
+    //m_deviceResources->WindowSizeChanged(r.right, r.bottom);
 }
 
 void milk2_ui_element_instance::OnWindowSizeChanged(int width, int height)
@@ -767,6 +780,7 @@ void milk2_ui_element_instance::CreateWindowSizeDependentResources()
 void milk2_ui_element_instance::OnDeviceLost()
 {
     g_plugin.PluginQuit();
+    m_milk2 = false;
 }
 
 void milk2_ui_element_instance::OnDeviceRestored()

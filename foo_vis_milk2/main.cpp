@@ -2,6 +2,7 @@
 #include "version.h"
 
 DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualizer", APPLICATION_VERSION,
+DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
                           "MilkDrop 2 music visualizer ported from Winamp.\n\n"
                           "MilkDrop 2 is Copyright (c) 2005-2013 Nullsoft, Inc.\n"
                           "foobar2000 plugin and DirectX 11 port by " APPLICATION_COMPANY_NAME "\n"
