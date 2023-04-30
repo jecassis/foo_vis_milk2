@@ -646,8 +646,8 @@ class CPlugin : public CPluginShell
     //virtual LRESULT MilkDropWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     //virtual void OnAltK();
-    virtual void DumpDebugMessage(wchar_t* s);
-    virtual void PopupMessage(int message_id, int title_id);
+    virtual void DumpDebugMessage(const wchar_t* s);
+    virtual void PopupMessage(int message_id, int title_id, bool dump=false);
     virtual void ConsoleMessage(int message_id, int title_id);
 
     /*

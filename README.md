@@ -7,7 +7,7 @@ Prerequisites to build the DirectX 11 `foo_vis_milk2.dll` component for foobar20
 - [foobar2000 SDK](https://www.foobar2000.org/SDK): download version SDK2023-02-22 or later and place the contents in the `external/` folder.
 - [NS-EEL2](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
 - [DirectXTK](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are fetched using NuGet.
-- [WTL](https://sourceforge.net/projects/wtl/): the files required to build the DLL are fetched using NuGet.
+- [WTL](https://wtl.sourceforge.io/): the files required to build the DLL are fetched using NuGet.
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`milkdrop2`](foo_vis_milk2.sln) solution, select a configuration for the `foo_vis_milk2` project, and build.
 
 Refer to the [build pipeline](.github/workflows/build.yml) jobs for a step-by-step guide on how to build. _Only x86 and x64 Intel architecture platforms are functional._

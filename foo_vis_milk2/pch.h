@@ -23,20 +23,24 @@
 #include <windows.h>
 
 #include <helpers/foobar2000-lite+atl.h>
-#include <helpers/BumpableElem.h>
 #include <sdk/componentversion.h>
 #include <sdk/preferences_page.h>
+#include <sdk/audio_chunk.h>
+#include <sdk/console.h>
 #include <sdk/cfg_var.h>
 #include <sdk/advconfig_impl.h>
 #include <sdk/vis.h>
 #include <sdk/ui_element.h>
+#include <helpers/atl-misc.h>
+#include <helpers/advconfig_impl.h>
+#include <helpers/BumpableElem.h>
+#include <helpers/DarkMode.h>
 #include <libppui/win32_op.h>
 
 #include <wrl/client.h>
 
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
-#include <wrl/client.h>
 
 #define WM_MILK2 (WM_USER + 0)
 

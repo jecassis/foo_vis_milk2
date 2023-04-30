@@ -5,11 +5,6 @@
 #include "pch.h"
 #include "resource.h"
 #include "config.h"
-
-#include <helpers/atl-misc.h>
-#include <helpers/advconfig_impl.h>
-#include <sdk/cfg_var.h>
-#include <helpers/DarkMode.h>
 #include <vis_milk2/defines.h>
 
 // Dark Mode:
@@ -494,12 +489,12 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 parser >> m_bEnableDownmix;
                 break;
             default:
-                console::formatter() << core_api::get_my_file_name() << ": Unknown configuration format version: " << version;
+                FB2K_console_formatter() << core_api::get_my_file_name() << ": Unknown configuration format version: " << version;
         }
     }
     catch (exception_io& exc)
     {
-        console::formatter() << core_api::get_my_file_name() << ": Exception while reading configuration data: " << exc;
+        FB2K_console_formatter() << core_api::get_my_file_name() << ": Exception while reading configuration data: " << exc;
     }
 }
 

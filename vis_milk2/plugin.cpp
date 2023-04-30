@@ -1833,11 +1833,7 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
     D3D11_MAPPED_SUBRESOURCE r;
     if (!lpDevice->LockRect(pNoiseTex, 0, D3D11_MAP_WRITE_DISCARD, &r))
     {
-/*
-        WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_LOCK_3D_NOISE_TEXTURE,buf,sizeof(buf));
-        DumpDebugMessage(buf); 
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+        PopupMessage(IDS_UNABLE_TO_INIT_DXCONTEXT, IDS_MILKDROP_ERROR, true);
         return false;
     }
     if (r.RowPitch < (unsigned)(size * 4) || r.DepthPitch < (unsigned)(size * size * 4))
@@ -4500,7 +4496,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-void CPlugin::DumpDebugMessage(wchar_t* s)
+void CPlugin::DumpDebugMessage(const wchar_t* s)
 {
 #ifdef _DEBUG
     OutputDebugString(s);
@@ -4510,16 +4506,26 @@ void CPlugin::DumpDebugMessage(wchar_t* s)
         if (s[len - 1] != L'\n')
             OutputDebugString(L"\n");
     }
+#else
+    UNREFERENCED_PARAMETER(s);
 #endif
 }
 
-void CPlugin::PopupMessage(int message_id, int title_id)
+void CPlugin::PopupMessage(int message_id, int title_id, bool dump)
 {
 #ifdef _DEBUG
     wchar_t buf[2048], title[64];
     LoadString(GetInstance(), message_id, buf, 2048);
     LoadString(GetInstance(), title_id, title, 64);
+    if (dump)
+    {
+        DumpDebugMessage(buf);
+    }
     MessageBox(GetPluginWindow(), buf, title, MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+#else
+    UNREFERENCED_PARAMETER(message_id);
+    UNREFERENCED_PARAMETER(title_id);
+    UNREFERENCED_PARAMETER(dump);
 #endif
 }
 
@@ -4544,6 +4550,9 @@ void CPlugin::ConsoleMessage(int message_id, int title_id)
         LocalFree(lpMsgBuf);
         LocalFree(lpDisplayBuf);
     }
+#else
+    UNREFERENCED_PARAMETER(message_id);
+    UNREFERENCED_PARAMETER(title_id);
 #endif
 }
 

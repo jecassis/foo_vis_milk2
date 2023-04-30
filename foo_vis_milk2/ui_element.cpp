@@ -258,7 +258,7 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     }
     if (!Initialize(get_wnd(), w, h))
     {
-        MILK2_CONSOLE_LOG("Could not initialize MilkDrop");
+        FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
     }
     MILK2_CONSOLE_LOG("OnCreate2 ", r.right, ", ", r.left, ", ", r.top, ", ", r.bottom);
 
@@ -273,7 +273,7 @@ int milk2_ui_element_instance::OnCreate(LPCREATESTRUCT cs)
     }
     catch (std::exception& exc)
     {
-        MILK2_CONSOLE_LOG("Exception while creating visualization stream - ", exc);
+        FB2K_console_print(core_api::get_my_file_name(), ": Exception while creating visualization stream - ", exc);
     }
 
     return hr;
