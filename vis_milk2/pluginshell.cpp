@@ -85,6 +85,7 @@ int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else
 int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; }
 int CPluginShell::GetCanvasMarginY() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height) / 2; else return 0; }
 HWND CPluginShell::GetWinampWindow() { return m_hWndWinamp; }
+void CPluginShell::SetWinampWindow(HWND window) { m_hWndWinamp = window; }
 HINSTANCE CPluginShell::GetInstance() { return m_hInstance; }
 wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; }
 wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; }
@@ -149,17 +150,11 @@ void CPluginShell::CleanUpDX11(int final_cleanup)
     CleanUpMilkDropDX11(final_cleanup);
 }
 
-void CPluginShell::OnUserResizeWindow()
+void CPluginShell::OnWindowSizeChanged(int width, int height)
 {
     // Update window properties
-    RECT c{};
-    GetClientRect(m_lpDX->GetHwnd(), &c);
-
-    if (!m_lpDX->OnUserResizeWindow(&c))
+    if (!m_lpDX->OnWindowSizeChanged(width, height))
     {
-        // Note: a basic warning message box will have already been given.
-        // Suggest specific advice on how to regain more video memory.
-        //SuggestHowToFreeSomeMem();
         return;
     }
     //if (!AllocateDX11())
@@ -167,6 +162,16 @@ void CPluginShell::OnUserResizeWindow()
     //    m_lpDX->m_ready = false; // flag to exit
     //    return;
     //}
+}
+
+void CPluginShell::OnWindowMoved()
+{
+    m_lpDX->OnWindowMoved();
+}
+
+void CPluginShell::OnDisplayChange()
+{
+    m_lpDX->OnDisplayChange();
 }
 
 void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
@@ -201,6 +206,47 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
             break;
     }
     //pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
+}
+
+void CPluginShell::ToggleFullScreen()
+{
+    CleanUpDX11(0);
+
+    switch (m_screenmode)
+    {
+        case DESKTOP:
+        case WINDOWED:
+            m_screenmode = FULLSCREEN;
+            break;
+        case FULLSCREEN:
+        case FAKE_FULLSCREEN:
+            m_screenmode = WINDOWED;
+            break;
+    }
+
+    DXCONTEXT_PARAMS params{};
+    StuffParams(&params);
+
+    if (!m_lpDX->StartOrRestartDevice(/*&params*/))
+    {
+        // Note: A basic warning message box will have already been given.
+        if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
+        {
+            // Make specific suggestions on how to regain more video memory.
+            //SuggestHowToFreeSomeMem();
+        }
+        return;
+    }
+
+    if (!AllocateDX11())
+    {
+        m_lpDX->m_ready = false; // flag to exit
+        return;
+    }
+
+    //SetForegroundWindow(m_lpDX->GetHwnd());
+    //SetActiveWindow(m_lpDX->GetHwnd());
+    //SetFocus(m_lpDX->GetHwnd());
 }
 
 int CPluginShell::InitDirectX()
@@ -353,7 +399,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_fps = 30;
     m_hWndWinamp = hWinampWnd;
     m_hInstance = hWinampInstance;
-    m_lpDX = NULL;
+    m_lpDX = nullptr;
     //m_szPluginsDirPath[0] = 0;  // will be set further down
     //m_szConfigIniFile[0] = 0;  // will be set further down
     //m_szPluginsDirPath:
@@ -491,16 +537,16 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     OverrideDefaults();
     ReadConfig();
 
-    m_screenmode = FULLSCREEN;
-
     MilkDropPreInitialize();
     MilkDropReadConfig();
 
     return TRUE;
 }
 
-int CPluginShell::PluginInitialize(int /* iPosX */, int /* iPosY */, int iWidth, int iHeight, float /* pixelRatio */)
+int CPluginShell::PluginInitialize(std::unique_ptr<DXContext> pContext, int /* iPosX */, int /* iPosY */, int iWidth, int iHeight, float /* pixelRatio */)
 {
+    m_lpDX = std::move(pContext);
+
     m_disp_mode_fs.Width = iWidth;
     m_disp_mode_fs.Height = iHeight;
     //m_posX = iPosX;
@@ -517,11 +563,14 @@ int CPluginShell::PluginInitialize(int /* iPosX */, int /* iPosY */, int iWidth,
     return TRUE;
 }
 
-void CPluginShell::PluginQuit()
+void CPluginShell::PluginQuit(BOOL destroy)
+{
+    if (destroy)
 {
     //CleanUpVJ();
     CleanUpDX11(1);
     CleanUpNonDX11();
+    }
     CleanUpDirectX();
 }
 
@@ -791,6 +840,8 @@ void CPluginShell::DrawAndDisplay(int redraw)
     m_lower_right_corner_y = cy - TEXT_MARGIN - GetCanvasMarginY();
     m_left_edge = TEXT_MARGIN + GetCanvasMarginX();
     m_right_edge = cx - TEXT_MARGIN - GetCanvasMarginX();
+
+    //m_lpDX->Clear();
 
     MilkDropRenderFrame(redraw);
     //RenderBuiltInTextMsgs();

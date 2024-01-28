@@ -135,7 +135,6 @@ CMakeLists.txt
 ################
 ## Dependencies
 ################
-/external/milkdrop2/
 /external/foobar2000/
 /external/pfc/
 /external/libppui/

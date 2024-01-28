@@ -10,14 +10,14 @@
 #endif
 
 // DirectX apps do not need GDI
-#define NODRAWTEXT
-#define NOGDI
-#define NOBITMAP
+#define NODRAWTEXT // `DrawText()` and `DT_*` definitions --> From "WinUser.h"
+#define NOGDI // All GDI defines and routines --> From "wingdi.h"
+#define NOBITMAP // Extended bitmap info header definition --> From "mmreg.h
 
-#define NOMINMAX // Use the C++ standard templated min/max
-#define NOMCX
-#define NOSERVICE
-#define NOHELP // WinHelp is deprecated
+#define NOMINMAX // Macros `min(a,b)` and `max(a,b)` --> Use the C++ standard templated min/max
+#define NOMCX // Modem Configuration Extensions --> From "mcx.h"
+#define NOSERVICE // All Service Controller routines, `SERVICE_*` equates, etc... --> From "winsvc.h"
+#define NOHELP // Help engine interface (WinHelp) --> [deprecated]
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

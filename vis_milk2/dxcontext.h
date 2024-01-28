@@ -79,7 +79,9 @@ class DXContext final : public DX::IDeviceNotify
     //DXContext& operator=(DXContext const&) = delete;
 
     BOOL StartOrRestartDevice(); // also serves as Init() function
-    BOOL OnUserResizeWindow(RECT* new_client_rect);
+    BOOL OnWindowSizeChanged(int width, int height);
+    void OnWindowMoved();
+    void OnDisplayChange();
     inline HWND GetHwnd() { return m_hwnd; };
     void Show();
     void Clear();

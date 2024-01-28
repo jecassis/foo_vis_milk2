@@ -15,6 +15,9 @@
     <Filter Include="Utility Files">
       <UniqueIdentifier>{3e19c0b4-7cfd-4d60-915d-c27bbad1a317}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Configuration Files">
+      <UniqueIdentifier>{0dd32e9c-6625-42a5-b01f-20cde893f952}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -128,6 +131,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <Filter>Configuration Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

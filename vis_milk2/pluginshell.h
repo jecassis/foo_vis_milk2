@@ -67,11 +67,14 @@ class CPluginShell
     virtual ~CPluginShell();
 
     int PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance); // called by "vis.cpp" on behalf of Winamp
-    int PluginInitialize(int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio);
-    void OnUserResizeWindow();
+    int PluginInitialize(std::unique_ptr<DXContext> pContext, int iPosX, int iPosY, int iWidth, int iHeight, float pixelRatio);
     int PluginRender(unsigned char* pWaveL, unsigned char* pWaveR);
-    void PluginQuit();
+    void PluginQuit(BOOL destroy);
+    void OnWindowSizeChanged(int width, int height);
+    void OnWindowMoved();
+    void OnDisplayChange();
 
+    void ToggleFullScreen();
     void ToggleHelp();
     void TogglePlaylist();
 
@@ -95,6 +98,7 @@ class CPluginShell
     float GetFps(); // returns current estimate of framerate (frames per second)
     eScrMode GetScreenMode(); // returns WINDOWED, FULLSCREEN, FAKE_FULLSCREEN, DESKTOP, or NOT_YET_KNOWN (if called before or during OverrideDefaults()).
     HWND GetWinampWindow(); // returns handle to Winamp main window
+    void SetWinampWindow(HWND window); // sets the Winamp main window handle
     HINSTANCE GetInstance(); // returns handle to the plugin DLL module; used for things like loading resources (dialogs, bitmaps, icons...) that are built into the plugin.
     wchar_t* GetPluginsDirPath(); // usually returns 'c:\\program files\\winamp\\plugins\\'
     wchar_t* GetConfigIniFile(); // usually returns 'c:\\program files\\winamp\\plugins\\something.ini' - filename is determined from identifiers in "defines.h"
@@ -271,11 +275,10 @@ class CPluginShell
     int GetCanvasMarginX(); // returns the number of pixels that exist on the canvas, on each side, that the user will never see. Mainly used in windowed mode, where sometimes, up to 15 pixels get cropped at edges of the screen.
     int GetCanvasMarginY(); // returns the number of pixels that exist on the canvas, on each side, that the user will never see. Mainly used in windowed mode, where sometimes, up to 15 pixels get cropped at edges of the screen.
   public:
-    void ToggleFullScreen();
     void DrawDarkTranslucentBox(RECT* pr);
+    void StuffParams(DXCONTEXT_PARAMS* pParams);
   protected:
     void RenderPlaylist();
-    void StuffParams(DXCONTEXT_PARAMS* pParams);
     void EnforceMaxFPS();
 
     // DESKTOP MODE FUNCTIONS (found in desktop_mode.cpp)

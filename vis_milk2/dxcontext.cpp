@@ -105,9 +105,12 @@ void DXContext::Show()
     m_deviceResources->Present();
 }
 
+// Clear the back buffers.
 void DXContext::Clear()
 {
-    // Clear the views
+    m_deviceResources->PIXBeginEvent(L"Clear");
+
+    // Clear the views.
     auto context = m_deviceResources->GetD3DDeviceContext();
     auto renderTarget = m_deviceResources->GetRenderTargetView();
     auto depthStencil = m_deviceResources->GetDepthStencilView();
@@ -117,13 +120,14 @@ void DXContext::Clear()
     context->OMSetRenderTargets(1, &renderTarget, depthStencil);
 
     // Set the viewport.
-    auto viewport = m_deviceResources->GetScreenViewport();
+    auto const viewport = m_deviceResources->GetScreenViewport();
     context->RSSetViewports(1, &viewport);
+
+    m_deviceResources->PIXEndEvent();
 }
 
 void DXContext::RestoreTarget()
 {
-    //auto context = m_deviceResources->GetD3DDeviceContext();
     auto rt = m_deviceResources->GetRenderTarget();
     m_lpDevice->SetRenderTarget(rt);
 }
@@ -155,31 +159,36 @@ BOOL DXContext::StartOrRestartDevice()
     }
 }
 
+void DXContext::OnWindowMoved()
+{
+    auto const r = m_deviceResources->GetOutputSize();
+    m_deviceResources->WindowSizeChanged(r.right, r.bottom);
+}
+
+void DXContext::OnDisplayChange()
+{
+    m_deviceResources->UpdateColorSpace();
+}
+
 // Call this function on `WM_EXITSIZEMOVE` when running windowed.
 // Do not call when fullscreen. Clean up all the DirectX stuff
 // first (textures, vertex buffers, etc...) and reallocate it
 // afterwards!
-BOOL DXContext::OnUserResizeWindow(RECT* new_client_rect)
+BOOL DXContext::OnWindowSizeChanged(int width, int height)
 {
     if (!m_ready)// || (m_current_mode.screenmode != WINDOWED))
         return FALSE;
 
-    if ((m_client_width == new_client_rect->right - new_client_rect->left) &&
-        (m_client_height == new_client_rect->bottom - new_client_rect->top))
-    {
+    if ((m_client_width == width) && (m_client_height == height))
         return TRUE;
-    }
 
-    m_ready = FALSE;
+    m_client_width = m_REAL_client_width = width;
+    m_client_height = m_REAL_client_height = height;
 
-    m_client_width = new_client_rect->right - new_client_rect->left;
-    m_client_height = new_client_rect->bottom - new_client_rect->top;
-    m_REAL_client_width = new_client_rect->right - new_client_rect->left;
-    m_REAL_client_height = new_client_rect->bottom - new_client_rect->top;
-
-    if (!m_deviceResources->WindowSizeChanged(m_client_width, m_client_height))
+    if (!m_deviceResources->WindowSizeChanged(width, height))
     {
         m_lastErr = DXC_ERR_RESIZEFAILED;
+        m_ready = FALSE;
         return FALSE;
     }
 
