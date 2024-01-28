@@ -33,6 +33,9 @@
     <ClCompile Include="ui_element.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -82,11 +88,11 @@
     <None Include="..\tools\clang-format-all.sh">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="packages.config">
-      <Filter>Configuration Files</Filter>
-    </None>
     <None Include="..\vis_milk2\help.bin">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>Configuration Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

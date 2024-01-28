@@ -13,6 +13,7 @@ DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
                           "MilkDrop 2 music visualizer ported from Winamp.\n\n"
                           "MilkDrop 2 is Copyright (c) 2005-2013 Nullsoft, Inc.\n"
                           "foobar2000 plugin and DirectX 11 port by " APPLICATION_COMPANY_NAME "\n"
+                          "Built with foobar2000 SDK " STR(FOOBAR2000_SDK_VERSION) " on " __DATE__ " " __TIME__ ".\n\n"
                           "Source code can be obtained from:\n"
                           APPLICATION_SOURCE_URLS);
 

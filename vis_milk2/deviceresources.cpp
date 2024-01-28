@@ -54,11 +54,9 @@ inline DXGI_FORMAT NoSRGB(DXGI_FORMAT fmt) noexcept
     }
 }
 
-inline long ComputeIntersectionArea(long ax1, long ay1, long ax2, long ay2, long bx1, long by1, long bx2,
-                                    long by2) noexcept
+inline long ComputeIntersectionArea(long ax1, long ay1, long ax2, long ay2, long bx1, long by1, long bx2, long by2) noexcept
 {
-    return std::max(0l, std::min(ax2, bx2) - std::max(ax1, bx1)) *
-           std::max(0l, std::min(ay2, by2) - std::max(ay1, by1));
+    return std::max(0l, std::min(ax2, bx2) - std::max(ax1, bx1)) * std::max(0l, std::min(ay2, by2) - std::max(ay1, by1));
 }
 } // namespace
 
@@ -66,10 +64,16 @@ inline long ComputeIntersectionArea(long ax1, long ay1, long ax2, long ay2, long
 DeviceResources::DeviceResources(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthBufferFormat, UINT backBufferCount,
                                  D3D_FEATURE_LEVEL minFeatureLevel, unsigned int flags) noexcept :
     m_screenViewport{},
-    m_backBufferFormat(backBufferFormat), m_depthBufferFormat(depthBufferFormat), m_backBufferCount(backBufferCount),
-    m_d3dMinFeatureLevel(minFeatureLevel), m_window(nullptr),
-    m_d3dFeatureLevel(D3D_FEATURE_LEVEL_9_1), m_outputSize{0, 0, 1, 1},
-    m_colorSpace(DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709), m_options(flags | c_FlipPresent), m_deviceNotify(nullptr)
+    m_backBufferFormat(backBufferFormat),
+    m_depthBufferFormat(depthBufferFormat),
+    m_backBufferCount(backBufferCount),
+    m_d3dMinFeatureLevel(minFeatureLevel),
+    m_window(nullptr),
+    m_d3dFeatureLevel(D3D_FEATURE_LEVEL_9_1),
+    m_outputSize{0, 0, 1, 1},
+    m_colorSpace(DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709),
+    m_options(flags | c_FlipPresent),
+    m_deviceNotify(nullptr)
 {
 }
 
@@ -167,8 +171,13 @@ void DeviceResources::CreateDeviceResources()
     HRESULT hr = E_FAIL;
     if (adapter)
     {
-        hr = D3D11CreateDevice(adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, creationFlags, s_featureLevels,
-                               featLevelCount, D3D11_SDK_VERSION,
+        hr = D3D11CreateDevice(adapter.Get(),
+                               D3D_DRIVER_TYPE_UNKNOWN,
+                               nullptr,
+                               creationFlags,
+                               s_featureLevels,
+                               featLevelCount,
+                               D3D11_SDK_VERSION,
                                device.GetAddressOf(), // Returns the Direct3D device created.
                                &m_d3dFeatureLevel, // Returns feature level of device created.
                                context.GetAddressOf() // Returns the device immediate context.
@@ -187,8 +196,13 @@ void DeviceResources::CreateDeviceResources()
         // http://go.microsoft.com/fwlink/?LinkId=286690
         hr = D3D11CreateDevice(nullptr,
                                D3D_DRIVER_TYPE_WARP, // Create a WARP device instead of a hardware device.
-                               nullptr, creationFlags, s_featureLevels, featLevelCount, D3D11_SDK_VERSION,
-                               device.GetAddressOf(), &m_d3dFeatureLevel, context.GetAddressOf());
+                               nullptr,
+                               creationFlags,
+                               s_featureLevels,
+                               featLevelCount,
+                               D3D11_SDK_VERSION,
+                               device.GetAddressOf(),
+                               &m_d3dFeatureLevel, context.GetAddressOf());
 
         if (SUCCEEDED(hr))
         {
@@ -285,9 +299,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-        swapChainDesc.SwapEffect = (m_options & (c_FlipPresent | c_AllowTearing | c_EnableHDR))
-                                       ? DXGI_SWAP_EFFECT_FLIP_DISCARD
-                                       : DXGI_SWAP_EFFECT_DISCARD;
+        swapChainDesc.SwapEffect = (m_options & (c_FlipPresent | c_AllowTearing | c_EnableHDR)) ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
         swapChainDesc.Flags = (m_options & c_AllowTearing) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u;
 
@@ -295,9 +307,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
         fsSwapChainDesc.Windowed = TRUE;
 
         // Create a SwapChain from a Win32 window.
-        ThrowIfFailed(m_dxgiFactory->CreateSwapChainForHwnd(m_d3dDevice.Get(), m_window, &swapChainDesc,
-                                                            &fsSwapChainDesc, nullptr,
-                                                            m_swapChain.ReleaseAndGetAddressOf()));
+        ThrowIfFailed(m_dxgiFactory->CreateSwapChainForHwnd(m_d3dDevice.Get(), m_window, &swapChainDesc, &fsSwapChainDesc, nullptr, m_swapChain.ReleaseAndGetAddressOf()));
 
         // This class does not support exclusive full-screen mode and prevents DXGI from responding to the ALT+ENTER shortcut
         ThrowIfFailed(m_dxgiFactory->MakeWindowAssociation(m_window, DXGI_MWA_NO_ALT_ENTER));
@@ -310,8 +320,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
     ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(m_renderTarget.ReleaseAndGetAddressOf())));
 
     CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2D, m_backBufferFormat);
-    ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(m_renderTarget.Get(), &renderTargetViewDesc,
-                                                      m_d3dRenderTargetView.ReleaseAndGetAddressOf()));
+    ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(m_renderTarget.Get(), &renderTargetViewDesc, m_d3dRenderTargetView.ReleaseAndGetAddressOf()));
 
     if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
@@ -327,7 +336,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
     }
 
     // Set the 3D rendering viewport to target the entire window.
-    m_screenViewport = {0.0f, 0.0f, static_cast<float>(backBufferWidth), static_cast<float>(backBufferHeight), 0.f,  1.f};
+    m_screenViewport = {0.f, 0.f, static_cast<float>(backBufferWidth), static_cast<float>(backBufferHeight), 0.f, 1.f};
 }
 
 // This method is called when the Win32 window is created (or re-created).
@@ -340,7 +349,7 @@ void DeviceResources::SetWindow(HWND window, int width, int height) noexcept
     m_outputSize.bottom = static_cast<long>(height);
 }
 
-// This method is called when the Win32 window changes size
+// This method is called when the Win32 window changes size.
 bool DeviceResources::WindowSizeChanged(int width, int height)
 {
     if (!m_window)
@@ -352,7 +361,7 @@ bool DeviceResources::WindowSizeChanged(int width, int height)
     newRc.bottom = static_cast<long>(height);
     if (newRc.right == m_outputSize.right && newRc.bottom == m_outputSize.bottom)
     {
-        // Handle color space settings for HDR
+        // Handle color space settings for HDR.
         UpdateColorSpace();
 
         return false;
@@ -436,7 +445,7 @@ void DeviceResources::Present()
 #ifdef _DEBUG
         char buff[64] = {};
         sprintf_s(buff, "Device Lost on Present: Reason code 0x%08X\n",
-            static_cast<unsigned int>((hr == DXGI_ERROR_DEVICE_REMOVED) ? m_d3dDevice->GetDeviceRemovedReason() : hr));
+                  static_cast<unsigned int>((hr == DXGI_ERROR_DEVICE_REMOVED) ? m_d3dDevice->GetDeviceRemovedReason() : hr));
         OutputDebugStringA(buff);
 #endif
         HandleDeviceLost();
@@ -462,8 +471,7 @@ void DeviceResources::CreateFactory()
         {
             debugDXGI = true;
 
-            ThrowIfFailed(
-                CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(m_dxgiFactory.ReleaseAndGetAddressOf())));
+            ThrowIfFailed(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(m_dxgiFactory.ReleaseAndGetAddressOf())));
 
             dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
             dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -583,8 +591,7 @@ void DeviceResources::UpdateColorSpace()
         for (UINT adapterIndex = 0; SUCCEEDED(m_dxgiFactory->EnumAdapters(adapterIndex, adapter.ReleaseAndGetAddressOf())); ++adapterIndex)
         {
             ComPtr<IDXGIOutput> output;
-            for (UINT outputIndex = 0; SUCCEEDED(adapter->EnumOutputs(outputIndex, output.ReleaseAndGetAddressOf()));
-                 ++outputIndex)
+            for (UINT outputIndex = 0; SUCCEEDED(adapter->EnumOutputs(outputIndex, output.ReleaseAndGetAddressOf())); ++outputIndex)
             {
                 // Get the rectangle bounds of current output.
                 DXGI_OUTPUT_DESC desc;
@@ -592,8 +599,7 @@ void DeviceResources::UpdateColorSpace()
                 const auto& r = desc.DesktopCoordinates;
 
                 // Compute the intersection
-                const long intersectArea =
-                    ComputeIntersectionArea(ax1, ay1, ax2, ay2, r.left, r.top, r.right, r.bottom);
+                const long intersectArea = ComputeIntersectionArea(ax1, ay1, ax2, ay2, r.left, r.top, r.right, r.bottom);
                 if (intersectArea > bestIntersectArea)
                 {
                     bestOutput.Swap(output);

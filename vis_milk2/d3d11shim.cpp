@@ -3,6 +3,9 @@
 //                 References:
 //                  - https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-d3d9-to-d3d10-considerations
 //                  - https://learn.microsoft.com/en-us/windows/win32/direct3d11/d3d11-programming-guide-migrating
+//                      - https://github.com/walbourn/directx-vs-templates/tree/main/d3d11game_win32_dr
+//                      - https://bitbucket.org/zao/foo_vis_osc_dx110
+//                      - https://github.com/stuerp/foo_vis_spectrum_analyzer
 //
 
 #include "pch.h"
@@ -57,6 +60,21 @@ D3D11Shim::~D3D11Shim()
     SafeRelease(m_pState);
     SafeRelease(m_pImmContext);
     m_states.reset(nullptr);
+    //ID3D11Device* pD3DDevice = nullptr;
+    //ID3D11DeviceContext* pImmediateContext = nullptr;
+    //IDXGISwapChain* pSwapChain = nullptr;
+    //ID3D11RenderTargetView* pRenderTargetView = nullptr;
+    //ID3D11DepthStencilView* pDepthStencilView = nullptr;
+    //D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
+
+    //m_pContext->Flush();
+    //m_pContext->ClearState();
+
+    //pRenderTargetView->Release();
+    //pDepthStencilView->Release();
+    //pSwapChain->Release();
+    //m_pContext->Release();
+    //m_pDevice->Release();
 }
 
 void D3D11Shim::Initialize()
@@ -389,7 +407,7 @@ void D3D11Shim::SetTexture(unsigned int iSlot, ID3D11Resource* pResource)
             CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc1(reinterpret_cast<ID3D11Texture3D*>(pResource));
             srvDesc = srvDesc1;
         }
-        m_pDevice->CreateShaderResourceView(pResource, &srvDesc, &views[0]); // Crash here
+        m_pDevice->CreateShaderResourceView(pResource, &srvDesc, &views[0]); // Jimmy: Crash here
     }
 
     m_pContext->PSSetShaderResources(iSlot, 1, views);

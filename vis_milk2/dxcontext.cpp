@@ -29,12 +29,12 @@
 
 #include "pch.h"
 #include "dxcontext.h"
-
-#include <strsafe.h>
-#include <DirectXColors.h>
-
 #include "shell_defines.h"
 #include "utility.h"
+
+const GUID avs_guid = {
+    10, 12, 16, {255, 123, 1, 1, 66, 99, 69, 12}
+}; // {0000000A-000C-0010-FF7B-01014263450C}
 
 DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniFile) noexcept(false)
 {
@@ -77,11 +77,6 @@ void DXContext::Internal_CleanUp()
     if (m_lpDevice)
         m_lpDevice.reset();
 }
-
-// {0000000A-000C-0010-FF7B-01014263450C}
-const GUID avs_guid = {
-    10, 12, 16, {255, 123, 1, 1, 66, 99, 69, 12}
-};
 
 BOOL DXContext::Internal_Init(BOOL /* bFirstInit */)
 {
