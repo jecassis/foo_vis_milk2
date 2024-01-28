@@ -90,14 +90,15 @@
 // in a little box in the config panel, to identify the author and copyright
 // holder of the plugin. Keep them short so they fit in the box.
 #define AUTHOR_NAME L"Ryan Geiss && Jimmy Cassis"
-#define COPYRIGHT L"© 2001–2013 Nullsoft, Inc. — © 2022–2023 Jimmy Cassis"
+#define COPYRIGHT L"© 2001–2013 Nullsoft, Inc. — © 2022–2024 Jimmy Cassis"
 
 // CLASSNAME is the name of the window class that the plugin will
 // use. You don't want this to overlap with any other plugins
 // or applications that are running, so change this to something
 // that will probably be unique. For example, if your plugin was
 // called Libido, then "LibidoClass" would probably be a safe bet.
-#define CLASSNAME L"MilkDrop2"
+#define NAMECLASS "MilkDrop2"
+#define CLASSNAME TEXT(NAMECLASS)
 
 // Here you can give names to the buttons (~tabs) along the top
 // of the config panel. Each button, when clicked, will bring

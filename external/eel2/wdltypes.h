@@ -190,6 +190,15 @@ typedef bool WDL_bool;
   #define WDL_NOT_NORMALLY(x) WDL_unlikely(x)
 #endif
 
+#if __GNUC__ >= 7 || __clang_major__ > 9
+  #if __has_attribute(__fallthrough__)
+    #define WDL_FALLTHROUGH __attribute__((__fallthrough__))
+  #endif
+#endif
+
+#ifndef WDL_FALLTHROUGH
+#define WDL_FALLTHROUGH do { } while(0)
+#endif
 
 typedef unsigned int WDL_TICKTYPE;
 
@@ -229,7 +238,7 @@ typedef char wdl_assert_failed_unsigned_char[((char)-1) > 0 ? -1 : 1];
 
 // wdl_log() / printf() wrapper. no-op on release builds
 #if !defined(_DEBUG) && !defined(WDL_LOG_ON_RELEASE)
-  static void WDL_STATICFUNC_UNUSED WDL_VARARG_WARN(printf,1,2) wdl_log(const char *format, ...) { UNREFERENCED_PARAMETER(format); }
+  static void WDL_STATICFUNC_UNUSED WDL_VARARG_WARN(printf,1,2) wdl_log(const char *format, ...) { }
 #elif defined(_WIN32)
   static void WDL_STATICFUNC_UNUSED WDL_VARARG_WARN(printf,1,2) wdl_log(const char *format, ...)
   {
@@ -287,6 +296,42 @@ static void WDL_STATICFUNC_UNUSED wdl_memcpy_be(void *bout, const void *bin, siz
   else
 #endif
   if (bout != bin) memmove(bout,bin,elemsz * nelem);
+}
+
+static void WDL_STATICFUNC_UNUSED wdl_mem_store_int(void *bout, int v)
+{
+  memcpy(bout,&v,sizeof(v));
+}
+
+static void WDL_STATICFUNC_UNUSED wdl_mem_store_int_le(void *bout, int v)
+{
+  wdl_memcpy_le(bout,&v,1,sizeof(v));
+}
+
+static void WDL_STATICFUNC_UNUSED wdl_mem_store_int_be(void *bout, int v)
+{
+  wdl_memcpy_be(bout,&v,1,sizeof(v));
+}
+
+static int WDL_STATICFUNC_UNUSED wdl_mem_load_int(const void *rd)
+{
+  int v;
+  memcpy(&v,rd,sizeof(v));
+  return v;
+}
+
+static int WDL_STATICFUNC_UNUSED wdl_mem_load_int_le(const void *rd)
+{
+  int v;
+  wdl_memcpy_le(&v,rd,1,sizeof(v));
+  return v;
+}
+
+static int WDL_STATICFUNC_UNUSED wdl_mem_load_int_be(const void *rd)
+{
+  int v;
+  wdl_memcpy_be(&v,rd,1,sizeof(v));
+  return v;
 }
 
 

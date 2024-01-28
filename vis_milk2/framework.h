@@ -1,7 +1,13 @@
 #pragma once
 
 #include <winsdkver.h>
-#define _WIN32_WINNT 0x0600 // Windows Vista
+#ifndef _DEBUG
+//#define _WIN32_WINNT 0x0600 // Windows Vista
+#define _WIN32_WINNT 0x0601 // Windows 7
+//#define _WIN32_WINNT 0x0602 // Windows 8
+#else
+#define _WIN32_WINNT 0x0603 // Windows 8.1
+#endif
 
 // DirectX apps do not need GDI
 #define NODRAWTEXT
@@ -11,9 +17,7 @@
 #define NOMINMAX // Use the C++ standard templated min/max
 #define NOMCX
 #define NOSERVICE
-
-// WinHelp is deprecated
-//#define NOHELP
+#define NOHELP // WinHelp is deprecated
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

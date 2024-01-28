@@ -19,6 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <Object Include="asm-nseel-arm64ec.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Object>
     <Object Include="asm-nseel-x64.obj">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -45,9 +51,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="denormal.h" />
+    <ClInclude Include="glue_aarch64.h" />
+    <ClInclude Include="glue_x86.h" />
+    <ClInclude Include="glue_x86_64_sse.h" />
+    <ClInclude Include="mutex.h" />
     <ClInclude Include="ns-eel-addfuncs.h" />
     <ClInclude Include="ns-eel-int.h" />
     <ClInclude Include="ns-eel.h" />
+    <ClInclude Include="utf8_extended.h" />
     <ClInclude Include="wdlcstring.h" />
     <ClInclude Include="wdltypes.h" />
     <ClInclude Include="y.tab.h" />

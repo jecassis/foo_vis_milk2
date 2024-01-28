@@ -55,9 +55,27 @@
     <ClInclude Include="denormal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8_extended.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glue_aarch64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glue_x86.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glue_x86_64_sse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Object Include="asm-nseel-x64.obj">
+      <Filter>Source Files</Filter>
+    </Object>
+    <Object Include="asm-nseel-arm64ec.obj">
       <Filter>Source Files</Filter>
     </Object>
   </ItemGroup>

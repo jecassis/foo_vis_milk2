@@ -32,10 +32,6 @@
 #include "shell_defines.h"
 #include "utility.h"
 
-const GUID avs_guid = {
-    10, 12, 16, {255, 123, 1, 1, 66, 99, 69, 12}
-}; // {0000000A-000C-0010-FF7B-01014263450C}
-
 DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniFile) noexcept(false)
 {
     m_hwnd = hWndWinamp;
@@ -197,8 +193,8 @@ BOOL DXContext::OnUserResizeWindow(RECT* new_client_rect)
 // These are the resources that depend on the device.
 void DXContext::CreateDeviceDependentResources()
 {
-    auto context = m_deviceResources->GetD3DDeviceContext();
     auto device = m_deviceResources->GetD3DDevice();
+    auto context = m_deviceResources->GetD3DDeviceContext();
 
     m_lpDevice = std::make_unique<D3D11Shim>(device, context);
     m_lpDevice->Initialize();
