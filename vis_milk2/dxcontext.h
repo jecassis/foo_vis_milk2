@@ -82,12 +82,12 @@ class DXContext final : public DX::IDeviceNotify
     BOOL OnWindowSizeChanged(int width, int height);
     void OnWindowMoved();
     void OnDisplayChange();
-    inline HWND GetHwnd() { return m_hwnd; };
+    inline HWND GetHwnd() const { return m_hwnd; };
     void Show();
     void Clear();
     void RestoreTarget();
     void UpdateMonitorWorkRect();
-    int GetBitDepth() { return m_bpp; };
+    int GetBitDepth() const { return m_bpp; };
     void SaveWindow();
 
     void OnDeviceLost() override;

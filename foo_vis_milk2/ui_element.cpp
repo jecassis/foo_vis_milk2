@@ -35,10 +35,11 @@ static const GUID VisMilk2LangGUID = {
     0xc5d175f1, 0xe4e4, 0x47ee, {0xb8, 0x5c, 0x4e, 0xdc, 0x6b, 0x2, 0x6a, 0x35}
 }; // {C5D175F1-E4E4-47EE-B85C-4EDC6B026A35}
 
-static constexpr int debugLimit = 50;
-
 static bool s_fullscreen = false;
 static bool s_milk2 = false;
+static HWND s_hWindow = nullptr;
+static ULONGLONG s_count = 0ull;
+static constexpr ULONGLONG debugLimit = 50ull;
 
 class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl<milk2_ui_element_instance>
 {
@@ -47,10 +48,12 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
 
     void initialize_window(HWND parent)
     {
+#ifdef _DEBUG
         WCHAR szParent[11], szWnd[11];
-        swprintf_s(szParent, TEXT("%p"), parent);
-        swprintf_s(szWnd, TEXT("%p"), get_wnd());
-        MILK2_CONSOLE_LOG("Init ", szParent, szWnd);
+        swprintf_s(szParent, TEXT("0x%p"), parent);
+        swprintf_s(szWnd, TEXT("0x%p"), get_wnd());
+        MILK2_CONSOLE_LOG("Init ", szParent, ", ", szWnd);
+#endif
         WIN32_OP(Create(parent, nullptr, nullptr, 0, WS_EX_STATICEDGE) != NULL);
     }
 
@@ -116,15 +119,12 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     visualisation_stream_v3::ptr m_vis_stream;
 
     ULONGLONG m_last_refresh;
-    DWORD m_refresh_interval = 33;
-    double m_last_time = 0.0;
+    DWORD m_refresh_interval;
+    double m_last_time;
 
     bool s_in_sizemove;
     bool s_in_suspend;
     bool s_minimized;
-
-    HWND m_hWindow;
-    RECT m_rWindow;
 
     enum milk2_ui_timer
     {
@@ -171,7 +171,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     bool IsPresetLock();
     std::wstring GetCurrentPreset();
     bool GetPresets(std::vector<std::string>& presets);
-    int GetActivePreset();
+    int GetActivePreset() const;
     char* WideToUTF8(const wchar_t* WFilename);
 
     // Window Messages
@@ -194,11 +194,7 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
     void BuildWaves();
 
     // MilkDrop status
-    bool m_milk2 = false;
-#ifdef _DEBUG
-    int count = 0;
-#endif
-    bool first = true;
+    bool m_milk2;
     WCHAR m_szWnd[11];
 
     // Device resources
@@ -219,22 +215,9 @@ class milk2_ui_element_instance : public ui_element_instance, public CWindowImpl
 milk2_ui_element_instance::milk2_ui_element_instance(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
     m_callback(p_callback)
 {
-    typedef struct _DXCONTEXT_PARAMS
-    {
-        int nbackbuf;
-        int allow_page_tearing;
-        unsigned int enable_hdr;
-        LUID adapter_guid;
-        wchar_t adapter_devicename[256];
-        DXGI_MODE_DESC1 display_mode;
-        DXGI_SAMPLE_DESC multisamp;
-        HWND parent_window;
-    } DXCONTEXT_PARAMS;
-
-    DXCONTEXT_PARAMS m_current_mode{};
-    m_current_mode.nbackbuf = 2;
-    m_current_mode.allow_page_tearing = 0;
-    m_current_mode.enable_hdr = 0;
+    m_milk2 = false;
+    m_refresh_interval = 33;
+    m_last_time = 0.0;
     s_in_sizemove = false;
     s_in_suspend = false;
     s_minimized = false;
@@ -349,7 +332,7 @@ void milk2_ui_element_instance::OnDestroy()
         g_plugin.PluginQuit(FALSE);
         m_milk2 = false;
     }
-#ifdef _DEBUG
+    s_count = 0ull;
         count = 0;
 #endif
     //PostQuitMessage(0);
@@ -357,16 +340,14 @@ void milk2_ui_element_instance::OnDestroy()
 
 void milk2_ui_element_instance::OnTimer(UINT_PTR nIDEvent)
 {
-    //if (count <= debugLimit) MILK2_CONSOLE_LOG("OnTimer ", GetWnd());
-    if (s_fullscreen && get_wnd() == m_hWindow)
-        return;
+    if (s_count <= debugLimit) MILK2_CONSOLE_LOG("OnTimer ", GetWnd());
     KillTimer(ID_REFRESH_TIMER);
     Invalidate();
 }
 
 void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 {
-    //if (count <= debugLimit) MILK2_CONSOLE_LOG("OnPaint ", GetWnd());
+    if (s_count <= debugLimit) MILK2_CONSOLE_LOG("OnPaint ", GetWnd());
     if (s_in_sizemove && m_milk2) // foobar2000 does not enter/exit size/move
     {
         Tick();
@@ -396,6 +377,7 @@ void milk2_ui_element_instance::OnPaint(CDCHandle dc)
 
 void milk2_ui_element_instance::OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen)
 {
+    MILK2_CONSOLE_LOG("OnDisplayChange ", GetWnd());
     if (m_milk2)
     {
         g_plugin.OnDisplayChange();
@@ -404,6 +386,7 @@ void milk2_ui_element_instance::OnDisplayChange(UINT uBitsPerPixel, CSize sizeSc
 
 void milk2_ui_element_instance::OnMove(CPoint ptPos)
 {
+    MILK2_CONSOLE_LOG("OnMove ", GetWnd());
     if (m_milk2)
     {
         g_plugin.OnWindowMoved();
@@ -448,13 +431,13 @@ void milk2_ui_element_instance::OnSize(UINT nType, CSize size)
 
 void milk2_ui_element_instance::OnEnterSizeMove()
 {
-    MILK2_CONSOLE_LOG("OnEnterSizeMove");
+    MILK2_CONSOLE_LOG("OnEnterSizeMove ", GetWnd());
     s_in_sizemove = true;
 }
 
 void milk2_ui_element_instance::OnExitSizeMove()
     {
-    MILK2_CONSOLE_LOG("OnExitSizeMove");
+    MILK2_CONSOLE_LOG("OnExitSizeMove ", GetWnd());
     s_in_sizemove = false;
     if (m_milk2)
     {
@@ -466,10 +449,7 @@ void milk2_ui_element_instance::OnExitSizeMove()
 
 BOOL milk2_ui_element_instance::OnEraseBkgnd(CDCHandle dc)
 {
-    if (count <= debugLimit) {
-    MILK2_CONSOLE_LOG("OnEraseBkgnd ", GetWnd());
-        count++;
-    }
+    if (s_count++ <= debugLimit) MILK2_CONSOLE_LOG("OnEraseBkgnd ", GetWnd());
 
 #if 0
     CRect r;
@@ -507,6 +487,7 @@ BOOL milk2_ui_element_instance::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
 
 void milk2_ui_element_instance::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 {
+    MILK2_CONSOLE_LOG("OnActivateApp ", GetWnd());
     if (m_milk2)
     {
         if (bActive)
@@ -522,6 +503,7 @@ void milk2_ui_element_instance::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 
 BOOL milk2_ui_element_instance::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
 {
+    MILK2_CONSOLE_LOG("OnPowerBroadcast ", GetWnd());
     switch (dwPowerEvent)
     {
         case PBT_APMQUERYSUSPEND:
@@ -546,6 +528,7 @@ BOOL milk2_ui_element_instance::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR d
 
 void milk2_ui_element_instance::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
+    MILK2_CONSOLE_LOG("OnLButtonDblClk ", GetWnd());
 #ifdef _DEBUG
     ToggleFullScreen();
 #endif
@@ -553,6 +536,7 @@ void milk2_ui_element_instance::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    MILK2_CONSOLE_LOG("OnSysKeyDown ", GetWnd());
 #ifdef _DEBUG
     // Bit 29: The context code. The value is 1 if the ALT key is down while the
     //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
@@ -776,6 +760,8 @@ bool milk2_ui_element_instance::Initialize(HWND window, int width, int height)
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;
 
+        if (!s_fullscreen)
+            s_hWindow = get_wnd();
         s_milk2 = true;
     }
 
@@ -913,9 +899,15 @@ void milk2_ui_element_instance::SetPwd(std::string pwd) noexcept
 
 void milk2_ui_element_instance::ToggleFullScreen()
 {
+    MILK2_CONSOLE_LOG("ToggleFullScreen ", GetWnd());
     if (m_milk2)
     {
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
+        if (!s_fullscreen)
+        {
+            s_hWindow = get_wnd();
+            m_milk2 = false;
+        }
         //g_plugin.ToggleFullScreen();
         //g_plugin.PluginQuit();
 #if 0
@@ -942,6 +934,7 @@ void milk2_ui_element_instance::ToggleFullScreen()
         }
 #endif
         s_fullscreen = !s_fullscreen;
+        MILK2_CONSOLE_LOG("ToggleFullScreen2 ", GetWnd());
     }
 }
 
@@ -1006,7 +999,7 @@ bool milk2_ui_element_instance::GetPresets(std::vector<std::string>& presets)
     return true;
 }
 
-int milk2_ui_element_instance::GetActivePreset()
+int milk2_ui_element_instance::GetActivePreset() const
 {
     //if (m_milk2)
     //{
@@ -1043,6 +1036,7 @@ static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
 
 void ExitVis() noexcept
 {
+    MILK2_CONSOLE_LOG("ExitVis");
     g_plugin.PluginQuit(TRUE);
     PostQuitMessage(0);
     //g_game.reset();

@@ -145,8 +145,13 @@ void DeviceResources::CreateDeviceResources()
 
     // Determine DirectX hardware feature levels this app will support.
     static const D3D_FEATURE_LEVEL s_featureLevels[] = {
-        D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
-        D3D_FEATURE_LEVEL_9_3,  D3D_FEATURE_LEVEL_9_2,  D3D_FEATURE_LEVEL_9_1,
+        D3D_FEATURE_LEVEL_11_1,
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0,
+        D3D_FEATURE_LEVEL_9_3,
+        D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1,
     };
 
     UINT featLevelCount = 0;
@@ -355,7 +360,7 @@ bool DeviceResources::WindowSizeChanged(int width, int height)
     if (!m_window)
         return false;
 
-    RECT newRc;
+    RECT newRc{};
     newRc.left = newRc.top = 0;
     newRc.right = static_cast<long>(width);
     newRc.bottom = static_cast<long>(height);
