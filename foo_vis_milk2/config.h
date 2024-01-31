@@ -107,7 +107,9 @@ class milk2_config
     wchar_t m_szImgIniFile[MAX_PATH];
 
   private:
+    uint32_t m_sentinel = ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K');
     uint32_t m_version = 0u;
 
-    void InitializePaths();
+    static void initialize_paths();
+    void update_paths();
 };

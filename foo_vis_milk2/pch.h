@@ -5,19 +5,22 @@
 #pragma once
 
 #include <winsdkver.h>
+#ifndef _DEBUG
+//#define _WIN32_WINNT 0x0600 // Windows Vista
 #define _WIN32_WINNT 0x0601 // Windows 7
+//#define _WIN32_WINNT 0x0602 // Windows 8
+#else
+#define _WIN32_WINNT 0x0603 // Windows 8.1
+#endif
 
-// DirectX apps do not need GDI
-//#define NODRAWTEXT
-//#define NOGDI
-#define NOBITMAP
+//#define NODRAWTEXT // `DrawText()` and `DT_*` definitions --> From "WinUser.h"
+//#define NOGDI // All GDI defines and routines --> From "wingdi.h"
+#define NOBITMAP // Extended bitmap info header definition --> From "mmreg.h
 
-#define NOMINMAX // Use the C++ standard templated min/max
-#define NOMCX
-#define NOSERVICE
-
-// WinHelp is deprecated
-//#define NOHELP
+#define NOMINMAX // Macros `min(a,b)` and `max(a,b)` --> Use the C++ standard templated min/max
+#define NOMCX // Modem Configuration Extensions --> From "mcx.h"
+#define NOSERVICE // All Service Controller routines, `SERVICE_*` equates, etc... --> From "winsvc.h"
+//#define NOHELP // Help engine interface (WinHelp) --> [deprecated]
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -27,6 +30,7 @@
 #include <sdk/preferences_page.h>
 #include <sdk/audio_chunk.h>
 #include <sdk/console.h>
+#include <sdk/initquit.h>
 #include <sdk/cfg_var.h>
 #include <sdk/advconfig_impl.h>
 #include <sdk/vis.h>
@@ -43,6 +47,7 @@
 #include <dxgi1_6.h>
 
 #define WM_MILK2 (WM_USER + 0)
+#define WM_CONFIG_CHANGE (WM_USER + 1)
 
 #ifdef _DEBUG
 #define MILK2_CONSOLE_LOG(...) FB2K_console_print(core_api::get_my_file_name(), ": ", __VA_ARGS__);

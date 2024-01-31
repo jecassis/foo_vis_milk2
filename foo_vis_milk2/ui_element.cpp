@@ -13,7 +13,7 @@
 //#endif
 
 CPlugin g_plugin;
-HWND s_hWindow;
+HWND g_hWindow;
 
 extern void ExitVis() noexcept;
 
@@ -222,17 +222,24 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
     s_in_sizemove = false;
     s_in_suspend = false;
     s_minimized = false;
-
-    set_configuration(config);
+    
     m_pwd = ".\\";
+    set_configuration(config);
 }
 
 ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
 {
     ui_element_config_builder builder;
-    milk2_config config;
-    config.build(builder);
-    return builder.finish(g_get_guid());
+    try
+    {
+        milk2_config config;
+        config.build(builder);
+    }
+    catch (exception_io& exc)
+    {
+        FB2K_console_print(core_api::get_my_file_name(), ": Exception while building default configuration data - ", exc);
+    }
+    return builder.finish(g_get_guid()); //return ui_element_config::g_create_empty(g_get_guid());
 }
 
 void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
@@ -246,9 +253,7 @@ void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
     //    m_config = g_get_default_configuration();
     //DWORD* in = reinterpret_cast<DWORD*>(dataptr);
     ui_element_config_parser parser(p_data);
-    milk2_config config;
-    config.parse(parser);
-    m_config = config;
+    m_config.parse(parser);
 
     UpdateChannelMode();
     //UpdateRefreshRateLimit();
@@ -534,7 +539,7 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 #endif
 }
 
-void milk2_ui_element_instance::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnSysKeyDown ", GetWnd())
 #ifdef _DEBUG
@@ -751,12 +756,17 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    MILK2_CONSOLE_LOG("OnConfigurationChange")
+    MILK2_CONSOLE_LOG("OnConfigurationChange ", GetWnd())
     if (uMsg != WM_CONFIG_CHANGE)
         return 1;
     switch (wParam)
     {
-        case 0:
+        case 0: // Preferences Dialog
+            {
+                m_config.reset();
+                break;
+            }
+        case 1: // Advanced Preferences
             {
                 break;
             }
@@ -778,7 +788,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
             return false;
 
         if (!s_fullscreen)
-            s_hWindow = get_wnd();
+            g_hWindow = get_wnd();
         s_milk2 = true;
     }
 
@@ -922,7 +932,7 @@ void milk2_ui_element::ToggleFullScreen()
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
         if (!s_fullscreen)
         {
-            s_hWindow = get_wnd();
+            g_hWindow = get_wnd();
             m_milk2 = false;
         }
         //g_plugin.ToggleFullScreen();

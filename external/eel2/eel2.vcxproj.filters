@@ -78,5 +78,8 @@
     <Object Include="asm-nseel-arm64ec.obj">
       <Filter>Source Files</Filter>
     </Object>
+    <Object Include="asm-nseel-aarch64-msvc.obj">
+      <Filter>Source Files</Filter>
+    </Object>
   </ItemGroup>
 </Project>
