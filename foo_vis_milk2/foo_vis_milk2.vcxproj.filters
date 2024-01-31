@@ -67,17 +67,8 @@
     <None Include="..\.vsconfig">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\CHANGELOG.md">
-      <Filter>Documentation Files</Filter>
-    </None>
-    <None Include="..\LICENSE.txt">
-      <Filter>Documentation Files</Filter>
-    </None>
     <None Include="..\nuget.config">
       <Filter>Configuration Files</Filter>
-    </None>
-    <None Include="..\README.md">
-      <Filter>Documentation Files</Filter>
     </None>
     <None Include="..\tools\clang-format-all.ps1">
       <Filter>Configuration Files</Filter>
@@ -101,5 +92,13 @@
     <Image Include="..\vis_milk2\milkdrop.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CHANGELOG.md">
+      <Filter>Documentation Files</Filter>
+    </Text>
+    <Text Include="..\README.md">
+      <Filter>Documentation Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

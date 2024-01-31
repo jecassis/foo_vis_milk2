@@ -142,7 +142,6 @@ CMakeLists.txt
 /external/wtl*/
 /external/eel2/*
 /external/unused/
-/tools/
 !/external/eel2/nseel-cfunc.c
 !/external/eel2/nseel-compiler.c
 !/external/eel2/nseel-eval.c
@@ -163,6 +162,7 @@ CMakeLists.txt
 !/external/eel2/wdlcstring.h
 !/external/eel2/asm-nseel-x86-msvc.c
 !/external/eel2/asm-nseel-x64.obj
+!/external/eel2/asm-nseel-arm64-msvc.obj
 !/external/eel2/asm-nseel-arm64ec.obj
 !/external/eel2/eel2.vcxproj
 !/external/eel2/eel2.vcxproj.filters

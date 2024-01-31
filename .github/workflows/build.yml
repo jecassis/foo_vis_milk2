@@ -15,8 +15,8 @@ jobs:
         configuration: [Release] #, Debug]
         platform: [x86, x64, arm64]
     env:
-      SDK_VERSION: '2023-04-18'
-      SDK_SHA256: 54cb34d63bc03e124d0a56a39d269c933e2ac3b4719fac0c57f5babc4d0e2b91
+      SDK_VERSION: '2023-09-23'
+      SDK_SHA256: c64a9e972a77c4f49a9b67464e5a25f0353cf6758c8a537f8c972e55c93b4364
     steps:
       - name: Clone foo_vis_milk2 repository
         uses: actions/checkout@v3

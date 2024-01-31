@@ -545,7 +545,6 @@ void CPlugin::MilkDropReadConfig()
     m_bHardCutsDisabled = GetPrivateProfileBoolW(L"settings", L"bHardCutsDisabled", m_bHardCutsDisabled, pIni);
     g_bDebugOutput = GetPrivateProfileBoolW(L"settings", L"bDebugOutput", g_bDebugOutput, pIni);
     //m_bShowSongInfo = GetPrivateProfileBoolW(L"settings", L"bShowSongInfo", m_bShowSongInfo, pIni);
-    //m_bShowPresetInfo = GetPrivateProfileBoolW(L"settings", L"bShowPresetInfo", m_bShowPresetInfo, pIni);
     m_bShowPressF1ForHelp = GetPrivateProfileBoolW(L"settings", L"bShowPressF1ForHelp", m_bShowPressF1ForHelp, pIni);
     //m_bShowMenuToolTips = GetPrivateProfileBoolW(L"settings", L"bShowMenuToolTips", m_bShowMenuToolTips, pIni);
     m_bSongTitleAnims = GetPrivateProfileBoolW(L"settings", L"bSongTitleAnims", m_bSongTitleAnims, pIni);
@@ -597,7 +596,6 @@ void CPlugin::MilkDropReadConfig()
     m_fSongTitleAnimDuration = GetPrivateProfileFloatW(L"settings", L"fSongTitleAnimDuration", m_fSongTitleAnimDuration, pIni);
     m_fTimeBetweenRandomSongTitles = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomSongTitles", m_fTimeBetweenRandomSongTitles, pIni);
     m_fTimeBetweenRandomCustomMsgs = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomCustomMsgs", m_fTimeBetweenRandomCustomMsgs, pIni);
-
 
     GetPrivateProfileStringW(L"settings",L"szPresetDir",m_szPresetDir,m_szPresetDir,sizeof(m_szPresetDir),pIni);
 #endif
@@ -654,7 +652,7 @@ void CPlugin::MilkDropWriteConfig()
     //itePrivateProfileInt(m_bFixPinkBug, 		    "bFixPinkBug",			pIni, "settings");
 
     WritePrivateProfileIntW(m_bShowPressF1ForHelp,   L"bShowPressF1ForHelp",	pIni, L"settings");
-    //itePrivateProfileInt(m_bShowMenuToolTips, 	"bShowMenuToolTips",    pIni, "settings");
+    //WritePrivateProfileInt(m_bShowMenuToolTips, 	"bShowMenuToolTips",    pIni, "settings");
     WritePrivateProfileIntW(m_n16BitGamma, 		    L"n16BitGamma",			pIni, L"settings");
     WritePrivateProfileIntW(m_bAutoGamma,  		    L"bAutoGamma",			pIni, L"settings");
 
@@ -4466,6 +4464,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                 }
             }
 #else
+            // https://learn.microsoft.com/en-us/windows/win32/dataxchg/using-data-copy
             ErrorCopy msg;
             COPYDATASTRUCT cds{};
             cds.dwData = 0x09; // PRINT_CONSOLE

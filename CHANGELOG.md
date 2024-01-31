@@ -19,8 +19,7 @@ Prerequisites to build `vis_milk2.dll`:
 
 - [Winamp 5.55 SDK](http://forums.winamp.com/showthread.php?t=252090): the files required to build the DLL are included in this repository.
 - [NS-EEL2 Library](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
-- [DirectXTK Library](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are included in this repository.
-- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`milkdrop`](src/vis_milk2/milkdrop.sln) solution, select a configuration for the `vis_milk2` project, and build.
+- [DirectXTK Library](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are imported via the NuGet package manager.
 
 Breaking changes, relative to version 2.25c:
 

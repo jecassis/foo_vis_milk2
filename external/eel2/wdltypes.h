@@ -238,7 +238,7 @@ typedef char wdl_assert_failed_unsigned_char[((char)-1) > 0 ? -1 : 1];
 
 // wdl_log() / printf() wrapper. no-op on release builds
 #if !defined(_DEBUG) && !defined(WDL_LOG_ON_RELEASE)
-  static void WDL_STATICFUNC_UNUSED WDL_VARARG_WARN(printf,1,2) wdl_log(const char *format, ...) { }
+  static void WDL_STATICFUNC_UNUSED WDL_VARARG_WARN(printf,1,2) wdl_log(const char *format, ...) { UNREFERENCED_PARAMETER(format); }
 #elif defined(_WIN32)
   static void WDL_STATICFUNC_UNUSED WDL_VARARG_WARN(printf,1,2) wdl_log(const char *format, ...)
   {

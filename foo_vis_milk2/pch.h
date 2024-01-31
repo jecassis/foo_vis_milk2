@@ -45,7 +45,13 @@
 #define WM_MILK2 (WM_USER + 0)
 
 #ifdef _DEBUG
-#define MILK2_CONSOLE_LOG(...) FB2K_console_print(core_api::get_my_file_name(), ": ", __VA_ARGS__)
+#define MILK2_CONSOLE_LOG(...) FB2K_console_print(core_api::get_my_file_name(), ": ", __VA_ARGS__);
+#define MILK2_CONSOLE_LOG_LIMIT(...) \
+    if (s_count <= DebugLimit) \
+    { \
+        FB2K_console_print(core_api::get_my_file_name(), ": ", __VA_ARGS__); \
+    }
 #else
 #define MILK2_CONSOLE_LOG(...)
+#define MILK2_CONSOLE_LOG_LIMIT(...)
 #endif

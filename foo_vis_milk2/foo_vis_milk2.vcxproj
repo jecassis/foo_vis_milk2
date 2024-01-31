@@ -402,9 +402,7 @@
     <None Include="..\.github\workflows\build.yml" />
     <None Include="..\.gitignore" />
     <None Include="..\.vsconfig" />
-    <None Include="..\CHANGELOG.md" />
     <None Include="..\nuget.config" />
-    <None Include="..\README.md" />
     <None Include="..\tools\clang-format-all.ps1" />
     <None Include="..\tools\clang-format-all.sh" />
     <None Include="..\vis_milk2\help.bin" />
@@ -435,6 +433,10 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\vis_milk2\milkdrop.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CHANGELOG.md" />
+    <Text Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
