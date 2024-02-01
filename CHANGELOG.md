@@ -2,6 +2,11 @@
 
 ## Current foobar2000 Component Status
 
+Unstable functionality:
+
+- Fullscreen mode crashes foobar2000.
+- Configurability incomplete.
+
 In order to complete the port from Winamp large amounts of functionality has been removed, lost, or untested:
 
 - Text, Image and texture rendering.
