@@ -5,15 +5,8 @@
 #include "pch.h"
 #include "resource.h"
 #include "config.h"
-#include <vis_milk2/defines.h>
-#include <vis_milk2/md_defines.h>
 
 extern HWND g_hWindow;
-
-// Dark Mode:
-// (1) Add fb2k::CDarkModeHooks member.
-// (2) Initialize it in WM_INITDIALOG handler.
-// (3) Tell foobar2000 that this preferences page supports dark mode, by returning correct get_state() flags.
 
 static constexpr GUID guid_cfg_bPresetLockOnAtStartup = {
     0x8a6c8c08, 0xc298, 0x4485, {0xb9, 0xb5, 0xa3, 0x1d, 0xd4, 0xed, 0xfa, 0x4b}
@@ -54,21 +47,60 @@ static constexpr GUID guid_cfg_fBlendTimeAuto = {
 static constexpr GUID guid_cfg_fBlendTimeUser = {
     0x901d5b5c, 0x5038, 0x4236, {0x8b, 0xd3, 0x6a, 0x53, 0x42, 0xd2, 0x45, 0x23}
 }; // {901D5B5C-5038-4236-8BD3-6A5342D24523}
-static constexpr GUID guid_advconfig_branch = {
-    0xd7ab1cd7, 0x7956, 0x4497, {0x9b, 0x1d, 0x74, 0x78, 0x7e, 0xde, 0x1d, 0xbc}
-}; // {D7AB1CD7-7956-4497-9B1D-74787EDE1DBC}
-static constexpr GUID guid_cfg_bDebugOutput = {
-    0x808a73c, 0x8857, 0x4472, {0xad, 0x49, 0xdb, 0x1a, 0x48, 0x4e, 0x3f, 0x5}
-}; // {0808A73C-8857-4472-AD49-DB1A484E3F05}
-static constexpr GUID guid_cfg_nMaxPSVersion = {
-    0xcb39278b, 0x4c19, 0x4931, {0x92, 0x63, 0x63, 0x1f, 0x69, 0x24, 0xf1, 0xc4}
-}; // {CB39278B-4C19-4931-9263-631F6924F1C4}
+static constexpr GUID guid_cfg_fHardCutHalflife = {
+    0xee9f3690, 0x5383, 0x4358, {0x88, 0x30, 0x6d, 0x8, 0xe5, 0x4, 0x36, 0x34}
+}; // {EE9F3690-5383-4358-8830-6D08E5043634}
+static constexpr GUID guid_cfg_fHardCutLoudnessThresh = {
+    0x5dc9f051, 0xf880, 0x43df, {0xb4, 0x8c, 0xdf, 0x78, 0x15, 0x66, 0xf3, 0x5e}
+}; // {5DC9F051-F880-43DF-B48C-DF781566F35E}
+static const GUID guid_cfg_bHardCutsDisabled = {
+    0x5d1a0e92, 0x3f95, 0x410c, {0xad, 0x66, 0xb4, 0xa5, 0xfa, 0x4f, 0xdc, 0xf4}
+}; // {5D1A0E92-3F95-410C-AD66-B4A5FA4FDCF4}
+static const GUID guid_cfg_n16BitGamma = {
+    0x350ba0d5, 0xee5b, 0x4886, {0x96, 0x3, 0x7f, 0xd4, 0xf5, 0xf8, 0x1b, 0x10}
+}; // {350BA0D5-EE5B-4886-9603-7FD4F5F81B10}
+static const GUID guid_cfg_bAutoGamma = {
+    0xe40b6e03, 0xdeea, 0x4515, {0x96, 0xb2, 0xd0, 0xe0, 0xe6, 0x8b, 0x58, 0x86}
+}; // {E40B6E03-DEEA-4515-96B2-D0E0E68B5886}
 static constexpr GUID guid_cfg_nMaxImages = {
     0x779da878, 0xf890, 0x4dd5, {0x9b, 0xb1, 0xb8, 0xfc, 0x64, 0x3d, 0xa, 0xfb}
 }; // {779DA878-F890-4DD5-9BB1-B8FC643D0AFB}
 static constexpr GUID guid_cfg_nMaxBytes = {
     0x904342ae, 0x2844, 0x4970, {0x9c, 0x2, 0x8e, 0xc4, 0xcc, 0x75, 0x26, 0x9f}
 }; // {904342AE-2844-4970-9C02-8EC4CC75269F}
+static constexpr GUID guid_cfg_nMaxPSVersion = {
+    0xcb39278b, 0x4c19, 0x4931, {0x92, 0x63, 0x63, 0x1f, 0x69, 0x24, 0xf1, 0xc4}
+}; // {CB39278B-4C19-4931-9263-631F6924F1C4}
+static const GUID guid_cfg_bSongTitleAnims = {
+    0x7ff565aa, 0x8402, 0x4ae0, {0x99, 0xc7, 0x11, 0x18, 0x44, 0x1d, 0xee, 0xc2}
+}; // {7FF565AA-8402-4AE0-99C7-1118441DEEC2}
+static const GUID guid_cfg_fSongTitleAnimDuration = {
+    0xe539e22c, 0x2c41, 0x4238, {0xae, 0xa9, 0x52, 0x25, 0xda, 0x29, 0xba, 0xcf}
+}; // {E539E22C-2C41-4238-AEA9-5225DA29BACF}
+static const GUID guid_cfg_fTimeBetweenRandomSongTitles = {
+    0xbea5f8e5, 0x48d1, 0x4063, {0xa1, 0xf2, 0x9d, 0x2, 0xfd, 0x33, 0xce, 0x4d}
+}; // {BEA5F8E5-48D1-4063-A1F2-9D02FD33CE4D}
+static const GUID guid_cfg_fTimeBetweenRandomCustomMsgs = {
+    0xd7778394, 0x8ed4, 0x4d0b, {0xb8, 0xec, 0x2e, 0x1d, 0xfb, 0x25, 0x49, 0x74}
+}; // {D7778394-8ED4-4D0B-B8EC-2E1DFB254974}
+static const GUID guid_cfg_nCanvasStretch = {
+    0xce121917, 0xc83d, 0x4a0b, {0xb7, 0x4c, 0x56, 0xf8, 0x3c, 0x97, 0xbe, 0x6c}
+}; // {CE121917-C83D-4A0B-B74C-56F83C97BE6C}
+static const GUID guid_cfg_nGridX = {
+    0xacf37191, 0xfbb4, 0x4ffa, {0x95, 0x24, 0xd1, 0x17, 0xba, 0x11, 0x4, 0x47}
+}; // {ACF37191-FBB4-4FFA-9524-D117BA110447}
+static const GUID guid_cfg_nTexSizeX = {
+    0xa2cd1e44, 0x9056, 0x4a2c, {0x97, 0x9e, 0x5b, 0xa4, 0x52, 0x34, 0x80, 0x3e}
+}; // {A2CD1E44-9056-4A2C-979E-5BA45234803E}
+static const GUID guid_cfg_nTexBitsPerCh = {
+    0xab5a6d53, 0xb4c9, 0x41c3, {0xa5, 0x66, 0x1d, 0x83, 0x90, 0xdb, 0x1e, 0xfa}
+}; // {AB5A6D53-B4C9-41C3-A566-1D8390DB1EFA}
+static constexpr GUID guid_advconfig_branch = {
+    0xd7ab1cd7, 0x7956, 0x4497, {0x9b, 0x1d, 0x74, 0x78, 0x7e, 0xde, 0x1d, 0xbc}
+}; // {D7AB1CD7-7956-4497-9B1D-74787EDE1DBC}
+static constexpr GUID guid_cfg_bDebugOutput = {
+    0x808a73c, 0x8857, 0x4472, {0xad, 0x49, 0xdb, 0x1a, 0x48, 0x4e, 0x3f, 0x5}
+}; // {0808A73C-8857-4472-AD49-DB1A484E3F05}
 static constexpr GUID guid_cfg_szPresetDir = {
     0xfa9e467b, 0xfe6d, 0x4d79, {0x83, 0x98, 0xcd, 0x3d, 0x8b, 0xf4, 0x7a, 0x63}
 }; // {FA9E467B-FE6D-4D79-8398-CD3D8BF47A63}
@@ -104,7 +136,7 @@ static constexpr float default_fStereoSep = 1.0f;
 static constexpr bool default_bWarningsDisabled2 = false;
 //static constexpr bool default_bAnisotropicFiltering = true;
 static constexpr bool default_bPresetLockOnAtStartup = false;
-static constexpr bool default_bPreventScollLockHandling = false;
+static constexpr bool default_bPreventScollLockHandling = true; //false
 static constexpr int default_nCanvasStretch = 0;
 static constexpr int default_nTexSizeX = -1; // -1 means "auto"
 //static constexpr int default_nTexSizeY = -1; // -1 means "auto"
@@ -119,7 +151,7 @@ static constexpr int default_nMaxBytes = 16000000;
 static constexpr bool default_bPresetLockedByCode = false;
 static constexpr float default_fStartTime = 0.0f;
 static constexpr float default_fPresetStartTime = 0.0f;
-static constexpr float default_fNextPresetTime = -1.0f; // negative value means no time set (...it will be auto-set on first call to UpdateTime)
+static constexpr float default_fNextPresetTime = -1.0f; // negative value means no time set (...it will be auto-set on first call to `UpdateTime()`)
 static constexpr bool default_nLoadingPreset = 0;
 static constexpr bool default_nPresetsLoadedTotal = 0;
 static constexpr float default_fSnapPoint = 0.5f;
@@ -159,9 +191,6 @@ static WCHAR default_szImgIniFile[MAX_PATH];
 enum
 {
     order_bDebugOutput,
-    order_nMaxPSVersion,
-    order_nMaxImages,
-    order_nMaxBytes,
     order_szPresetDir,
 };
 
@@ -173,17 +202,30 @@ static cfg_bool cfg_bEnableRating(guid_cfg_bEnableRating, !default_bEnableRating
 static cfg_bool cfg_bShowPressF1ForHelp(guid_cfg_bShowPressF1ForHelp, default_bShowPressF1ForHelp);
 static cfg_bool cfg_allow_page_tearing_w(guid_cfg_allow_page_tearing_w, default_allow_page_tearing_w);
 static cfg_bool cfg_allow_page_tearing_fs(guid_cfg_allow_page_tearing_fs, default_allow_page_tearing_fs);
+static cfg_bool cfg_bSongTitleAnims(guid_cfg_bSongTitleAnims, default_bSongTitleAnims);
+static cfg_bool cfg_bAutoGamma(guid_cfg_bAutoGamma, default_bAutoGamma);
+static cfg_bool cfg_bHardCutsDisabled(guid_cfg_bHardCutsDisabled, static_cast<double>(default_bHardCutsDisabled));
 static cfg_int cfg_max_fps_w(guid_cfg_max_fps_w, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_max_fps_fs(guid_cfg_max_fps_fs, static_cast<int64_t>(default_max_fps_fs));
+static cfg_int cfg_n16BitGamma(guid_cfg_n16BitGamma, static_cast<int64_t>(default_n16BitGamma));
+static cfg_int cfg_nMaxBytes(guid_cfg_nMaxBytes, static_cast<int64_t>(default_nMaxBytes));
+static cfg_int cfg_nMaxImages(guid_cfg_nMaxImages, static_cast<int64_t>(default_nMaxImages));
+static cfg_int cfg_nCanvasStretch(guid_cfg_nCanvasStretch, static_cast<int64_t>(default_nCanvasStretch));
+static cfg_int cfg_nGridX(guid_cfg_nGridX, static_cast<int64_t>(default_nGridX));
+static cfg_int cfg_nTexSizeX(guid_cfg_nTexSizeX, static_cast<int64_t>(default_nTexSizeX));
+static cfg_int cfg_nTexBitsPerCh(guid_cfg_nTexBitsPerCh, static_cast<int64_t>(default_nTexBitsPerCh));
+static cfg_int cfg_nMaxPSVersion(guid_cfg_nMaxPSVersion, default_nMaxPSVersion);
 static cfg_float cfg_fTimeBetweenPresets(guid_cfg_fTimeBetweenPresets, static_cast<double>(default_fTimeBetweenPresets));
 static cfg_float cfg_fTimeBetweenPresetsRand(guid_cfg_fTimeBetweenPresetsRand, static_cast<double>(default_fTimeBetweenPresetsRand));
 static cfg_float cfg_fBlendTimeAuto(guid_cfg_fBlendTimeAuto, static_cast<double>(default_fBlendTimeAuto));
 static cfg_float cfg_fBlendTimeUser(guid_cfg_fBlendTimeUser, static_cast<double>(default_fBlendTimeUser));
+static cfg_float cfg_fHardCutHalflife(guid_cfg_fHardCutHalflife, static_cast<double>(default_fHardCutHalflife));
+static cfg_float cfg_fHardCutLoudnessThresh(guid_cfg_fHardCutLoudnessThresh, static_cast<double>(default_fHardCutLoudnessThresh));
+static cfg_float cfg_fSongTitleAnimDuration(guid_cfg_fSongTitleAnimDuration, static_cast<double>(default_fSongTitleAnimDuration));
+static cfg_float cfg_fTimeBetweenRandomSongTitles(guid_cfg_fTimeBetweenRandomSongTitles, static_cast<double>(default_fTimeBetweenRandomSongTitles));
+static cfg_float cfg_fTimeBetweenRandomCustomMsgs(guid_cfg_fTimeBetweenRandomCustomMsgs, static_cast<double>(default_fTimeBetweenRandomCustomMsgs));
 static advconfig_branch_factory g_advconfigBranch("MilkDrop", guid_advconfig_branch, advconfig_branch::guid_branch_vis, 0);
 static advconfig_checkbox_factory cfg_bDebugOutput("Debug Output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput);
-static advconfig_signed_integer_factory cfg_nMaxPSVersion("Max. Pixel Shader Version", "milk2.nMaxPSVersion", guid_cfg_nMaxPSVersion, guid_advconfig_branch, order_nMaxPSVersion, default_nMaxPSVersion, -1, 3);
-static advconfig_integer_factory cfg_nMaxImages("Max. Images", "milk2.nMaxImages", guid_cfg_nMaxImages, guid_advconfig_branch, order_nMaxImages, default_nMaxImages, 1, 64);
-static advconfig_integer_factory cfg_nMaxBytes("Max. Bytes", "milk2.nMaxBytes", guid_cfg_nMaxBytes, guid_advconfig_branch, order_nMaxBytes, default_nMaxBytes, 1, 32000000);
 static advconfig_string_factory cfg_szPresetDir("Preset Directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "");
 // clang-format on
 
@@ -205,68 +247,351 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     // clang-format off
     BEGIN_MSG_MAP_EX(milk2_preferences_page)
         MSG_WM_INITDIALOG(OnInitDialog)
+        MSG_WM_HSCROLL(OnHScroll)
         COMMAND_HANDLER_EX(IDC_CB_SCROLLON3, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_SCROLLON4, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_NOWARN3, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_NORATING2, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_PRESS_F1_MSG, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_W_MAXFPS2, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_FS_MAXFPS2, CBN_SELCHANGE, OnComboChange)
         COMMAND_HANDLER_EX(IDC_CB_WPT, BN_CLICKED, OnButtonClick)
-        COMMAND_HANDLER_EX(IDC_BETWEEN_TIME, EN_CHANGE, OnEditChange)
-        COMMAND_HANDLER_EX(IDC_BETWEEN_TIME_RANDOM, EN_CHANGE, OnEditChange)
-        COMMAND_HANDLER_EX(IDC_BLEND_AUTO, EN_CHANGE, OnEditChange)
-        COMMAND_HANDLER_EX(IDC_BLEND_USER, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_CB_FSPT, BN_CLICKED, OnButtonClick)
+        COMMAND_HANDLER_EX(IDC_BETWEEN_TIME, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_BETWEEN_TIME_RANDOM, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_BLEND_AUTO, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_BLEND_USER, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_HARDCUT_BETWEEN_TIME, EN_CHANGE, OnEditNotification)
         COMMAND_HANDLER_EX(IDC_CB_HARDCUTS, BN_CLICKED, OnButtonClick)
+        COMMAND_HANDLER_EX(IDC_SHADERS, CBN_SELCHANGE, OnComboChange)
+        //COMMAND_HANDLER_EX(IDC_TEXFORMAT, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_MESHSIZECOMBO, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_STRETCH2, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_TEXSIZECOMBO, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_CB_AUTOGAMMA2, BN_CLICKED, OnButtonClick)
+        COMMAND_HANDLER_EX(IDC_MAX_BYTES2, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_MAX_IMAGES2, CBN_SELCHANGE, OnComboChange)
+        COMMAND_HANDLER_EX(IDC_BETWEEN_TIME, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_SONGTITLEANIM_DURATION, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_RAND_TITLE, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_RAND_MSG, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_CB_TITLE_ANIMS, BN_CLICKED, OnButtonClick)
     END_MSG_MAP()
     // clang-format on
 
   private:
     BOOL OnInitDialog(CWindow, LPARAM);
-    void OnEditChange(UINT, int, CWindow);
-    void OnButtonClick(UINT, int, CWindow);
-    void OnComboChange(UINT, int, CWindow);
+    void OnEditNotification(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnButtonClick(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnComboChange(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar);
     bool HasChanged() const;
     void OnChanged();
-    void UpdateMaxFps(int screenmode);
-    void SaveMaxFps(int screenmode);
+    void UpdateMaxFps(int screenmode) const;
+    void SaveMaxFps(int screenmode) const;
 
     const preferences_page_callback::ptr m_callback;
 
     fb2k::CDarkModeHooks m_dark;
 };
 
+// Functions for populating combo boxes.
+inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata)
+{
+    LRESULT nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)text);
+    SendMessage(ctrl, CB_SETITEMDATA, nPos, itemdata);
+}
+
+inline void SelectItemByPos(HWND ctrl, int pos)
+{
+    SendMessage(ctrl, CB_SETCURSEL, (WPARAM)pos, (LPARAM)0);
+}
+
+int SelectItemByValue(HWND ctrl, DWORD value)
+{
+    LRESULT count = SendMessage(ctrl, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
+    for (int i = 0; i < count; ++i)
+    {
+        LRESULT value_i = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)i, (LPARAM)0);
+        if (value_i == static_cast<LRESULT>(value))
+        {
+            SendMessage(ctrl, CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool ReadCBValue(HWND hwnd, DWORD ctrl_id, int* pRetValue)
+{
+    if (!pRetValue)
+        return false;
+    HWND ctrl = GetDlgItem(hwnd, ctrl_id);
+    LRESULT t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t == CB_ERR)
+        return false;
+    *pRetValue = static_cast<int>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    return true;
+}
+
+wchar_t* FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID)
+{
+    static wchar_t cacheBuf[128] = {0};
+    wchar_t buf[128] = {0};
+    LoadString(core_api::get_my_instance(), sizeID, buf, 128);
+    swprintf_s(cacheBuf, L"%s %s", itemStr, buf);
+    return cacheBuf;
+}
+
 BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
 {
-    // Enable dark mode
-    // One call does it all, applies all relevant hacks automatically.
+    WCHAR buf[256] = {0};
+    HWND ctrl = nullptr;
+    int n = 0;
+
     m_dark.AddDialogWithControls(*this);
 
-    WCHAR buf[256]{};
-    HWND ctrl = nullptr;
-
-    // Set checkboxes.
+    // Loose checkboxes.
     CheckDlgButton(IDC_CB_SCROLLON3, static_cast<UINT>(cfg_bPresetLockOnAtStartup));
     CheckDlgButton(IDC_CB_SCROLLON4, static_cast<UINT>(cfg_bPreventScollLockHandling));
     CheckDlgButton(IDC_CB_NOWARN3, static_cast<UINT>(cfg_bWarningsDisabled));
     CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!cfg_bEnableRating));
     CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
+
+    // Maximum FPS.
     CheckDlgButton(IDC_CB_WPT, static_cast<UINT>(cfg_allow_page_tearing_w));
-    //CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
+    CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
     UpdateMaxFps(WINDOWED);
-    //void SaveMaxFps(FULLSCREEN);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fTimeBetweenPresets));
+    UpdateMaxFps(FULLSCREEN);
+
+    // Soft cuts.
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresets));
     SetDlgItemText(IDC_BETWEEN_TIME, buf);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fTimeBetweenPresetsRand));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresetsRand));
     SetDlgItemText(IDC_BETWEEN_TIME_RANDOM, buf);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fBlendTimeAuto));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fBlendTimeAuto));
     SetDlgItemText(IDC_BLEND_AUTO, buf);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fBlendTimeUser));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fBlendTimeUser));
     SetDlgItemText(IDC_BLEND_USER, buf);
+
+    // Hard cuts.
+    swprintf_s(buf, L" %2.1f", static_cast<float>(cfg_fHardCutHalflife));
+    SetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf);
+
+    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+    if (n < 0)
+        n = 0;
+    if (n > 20)
+        n = 20;
+    ctrl = GetDlgItem(IDC_HARDCUT_LOUDNESS);
+    SendMessage(ctrl, TBM_SETRANGEMIN, (WPARAM)FALSE, (LPARAM)0);
+    SendMessage(ctrl, TBM_SETRANGEMAX, (WPARAM)FALSE, (LPARAM)20);
+    SendMessage(ctrl, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)n);
+
+    CheckDlgButton(IDC_CB_HARDCUTS, static_cast<UINT>(cfg_bHardCutsDisabled));
+
+    // Pixel shaders.
+    ctrl = GetDlgItem(IDC_SHADERS);
+    LoadString(core_api::get_my_instance(), IDS_PS_AUTO_RECOMMENDED, buf, 256);
+    AddItem(ctrl, buf, unsigned(-1));
+    LoadString(core_api::get_my_instance(), IDS_PS_DISABLED, buf, 256);
+    AddItem(ctrl, buf, MD2_PS_NONE);
+    LoadString(core_api::get_my_instance(), IDS_PS_SHADER_MODEL_2, buf, 256);
+    AddItem(ctrl, buf, MD2_PS_2_0);
+    LoadString(core_api::get_my_instance(), IDS_PS_SHADER_MODEL_3, buf, 256);
+    AddItem(ctrl, buf, MD2_PS_3_0);
+    SelectItemByPos(ctrl, 0); // as a safe default
+    SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nMaxPSVersion));
+
+    // Texture format.
+    //ctrl = GetDlgItem(IDC_TEXFORMAT);
+    //LoadString(core_api::get_my_instance(), IDS_TX_8_BITS_PER_CHANNEL, buf, 256);
+    //AddItem(ctrl, buf, 8);
+    ////AddItem(ctrl, " 10 bits per channel", 10);
+    //LoadString(core_api::get_my_instance(), IDS_TX_16_BITS_PER_CHANNEL, buf, 256);
+    //AddItem(ctrl, buf, 16);
+    //LoadString(core_api::get_my_instance(), IDS_TX_32_BITS_PER_CHANNEL, buf, 256);
+    //AddItem(ctrl, buf, 32);
+    //SelectItemByPos(ctrl, 0); // as a safe default
+    //SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nTexBitsPerCh));
+
+    // Mesh size.
+    ctrl = GetDlgItem(IDC_MESHSIZECOMBO);
+    LoadString(core_api::get_my_instance(), IDS_8X6_FAST, buf, 256);
+    AddItem(ctrl, buf, 8);
+    LoadString(core_api::get_my_instance(), IDS_16X12_FAST, buf, 256);
+    AddItem(ctrl, buf, 16);
+    LoadString(core_api::get_my_instance(), IDS_24X18, buf, 256);
+    AddItem(ctrl, buf, 24);
+    LoadString(core_api::get_my_instance(), IDS_32X24, buf, 256);
+    AddItem(ctrl, buf, 32);
+    LoadString(core_api::get_my_instance(), IDS_40X30, buf, 256);
+    AddItem(ctrl, buf, 40);
+    LoadString(core_api::get_my_instance(), IDS_48X36_DEFAULT, buf, 256);
+    AddItem(ctrl, buf, 48);
+    LoadString(core_api::get_my_instance(), IDS_64X48_SLOW, buf, 256);
+    AddItem(ctrl, buf, 64);
+    LoadString(core_api::get_my_instance(), IDS_80X60_SLOW, buf, 256);
+    AddItem(ctrl, buf, 80);
+    LoadString(core_api::get_my_instance(), IDS_96X72_SLOW, buf, 256);
+    AddItem(ctrl, buf, 96);
+    LoadString(core_api::get_my_instance(), IDS_128X96_SLOW, buf, 256);
+    AddItem(ctrl, buf, 128);
+    LoadString(core_api::get_my_instance(), IDS_160X120_SLOW, buf, 256);
+    AddItem(ctrl, buf, 160);
+    LoadString(core_api::get_my_instance(), IDS_192X144_SLOW, buf, 256);
+    AddItem(ctrl, buf, 192);
+    SelectItemByPos(ctrl, 0); // as a safe default
+    SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nGridX));
+
+    // Canvas stretch.
+    ctrl = GetDlgItem(IDC_STRETCH2);
+    LoadString(core_api::get_my_instance(), IDS_AUTO, buf, 256);
+    AddItem(ctrl, buf, 0);
+    LoadString(core_api::get_my_instance(), IDS_NONE_BEST_IMAGE_QUALITY, buf, 256);
+    AddItem(ctrl, buf, 100);
+    LoadString(core_api::get_my_instance(), IDS_1_25_X, buf, 256);
+    AddItem(ctrl, buf, 125);
+    LoadString(core_api::get_my_instance(), IDS_1_33_X, buf, 256);
+    AddItem(ctrl, buf, 133);
+    LoadString(core_api::get_my_instance(), IDS_1_5_X, buf, 256);
+    AddItem(ctrl, buf, 150);
+    LoadString(core_api::get_my_instance(), IDS_1_67_X, buf, 256);
+    AddItem(ctrl, buf, 167);
+    LoadString(core_api::get_my_instance(), IDS_2_X, buf, 256);
+    AddItem(ctrl, buf, 200);
+    LoadString(core_api::get_my_instance(), IDS_3_X, buf, 256);
+    AddItem(ctrl, buf, 300);
+    LoadString(core_api::get_my_instance(), IDS_4_X, buf, 256);
+    AddItem(ctrl, buf, 400);
+    SelectItemByPos(ctrl, 0); // as a safe default
+    SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nCanvasStretch));
+
+    // Texture size.
+    ctrl = GetDlgItem(IDC_TEXSIZECOMBO);
+    LRESULT nPos = 0;
+    for (int i = 0; i < 5; ++i)
+    {
+        int size = static_cast<int>(pow(2.0, i + 8));
+        swprintf_s(buf, L" %4d x %4d ", size, size);
+        nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)buf);
+        SendMessage(ctrl, CB_SETITEMDATA, (WPARAM)nPos, (LPARAM)size);
+    }
+    LoadString(core_api::get_my_instance(), IDS_NEAREST_POWER_OF_2, buf, 256);
+    nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)buf);
+    LoadString(core_api::get_my_instance(), IDS_EXACT_RECOMMENDED, buf, 256);
+    SendMessage(ctrl, CB_SETITEMDATA, (WPARAM)nPos, (LPARAM)(-2));
+    nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)buf);
+    SendMessage(ctrl, CB_SETITEMDATA, (WPARAM)nPos, (LPARAM)(-1));
+    for (int i = 0; i < 5 + 2; ++i)
+    {
+        LRESULT size = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)i, (LPARAM)0);
+        if (size == static_cast<LRESULT>(cfg_nTexSizeX))
+            SendMessage(ctrl, CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
+    }
+
+    // 16-bit brightness.
+    ctrl = GetDlgItem(IDC_BRIGHT_SLIDER2);
+    SendMessage(ctrl, TBM_SETRANGEMIN, (WPARAM)FALSE, (LPARAM)0);
+    SendMessage(ctrl, TBM_SETRANGEMAX, (WPARAM)FALSE, (LPARAM)4);
+    SendMessage(ctrl, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
+    for (int i = 0; i < 5; ++i)
+        SendMessage(ctrl, TBM_SETTIC, (WPARAM)0, (LPARAM)i);
+
+    CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(cfg_bAutoGamma));
+
+    // Image cache maximum bytes.
+    ctrl = GetDlgItem(IDC_MAX_BYTES2);
+    LoadString(core_api::get_my_instance(), IDS_AUTO, buf, 256);
+    AddItem(ctrl, buf, unsigned(-1));
+    AddItem(ctrl, FormImageCacheSizeString(L"   0", IDS_MB), 0);
+    AddItem(ctrl, FormImageCacheSizeString(L"   1", IDS_MB), 1000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"   2", IDS_MB), 2000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"   3", IDS_MB), 3000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"   4", IDS_MB), 4000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"   6", IDS_MB), 6000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"   9", IDS_MB), 8000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  10", IDS_MB), 10000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  12", IDS_MB), 12000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  14", IDS_MB), 14000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  16", IDS_MB), 16000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  20", IDS_MB), 20000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  24", IDS_MB), 24000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  28", IDS_MB), 28000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  32", IDS_MB), 32000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  40", IDS_MB), 40000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  48", IDS_MB), 48000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  56", IDS_MB), 56000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  64", IDS_MB), 64000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  80", IDS_MB), 80000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  96", IDS_MB), 96000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 128", IDS_MB), 128000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 160", IDS_MB), 160000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 192", IDS_MB), 192000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 224", IDS_MB), 224000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 256", IDS_MB), 256000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 384", IDS_MB), 384000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 512", IDS_MB), 512000000);
+    AddItem(ctrl, FormImageCacheSizeString(L" 768", IDS_MB), 768000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"     1", IDS_GB), 1000000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"1.25", IDS_GB), 1250000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"  1.5", IDS_GB), 1500000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"1.75", IDS_GB), 1750000000);
+    AddItem(ctrl, FormImageCacheSizeString(L"      2", IDS_GB), 2000000000);
+    SelectItemByPos(ctrl, 0); // as a safe default
+    SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nMaxBytes));
+
+    // Image cache maximum number of images.
+    ctrl = GetDlgItem(IDC_MAX_IMAGES2);
+    LoadString(core_api::get_my_instance(), IDS_AUTO, buf, 256);
+    AddItem(ctrl, buf, unsigned(-1));
+    AddItem(ctrl, L"    0 ", 0);
+    AddItem(ctrl, L"    1 ", 1);
+    AddItem(ctrl, L"    2 ", 2);
+    AddItem(ctrl, L"    3 ", 3);
+    AddItem(ctrl, L"    4 ", 4);
+    AddItem(ctrl, L"    6 ", 6);
+    AddItem(ctrl, L"    8 ", 8);
+    AddItem(ctrl, L"   10 ", 10);
+    AddItem(ctrl, L"   12 ", 12);
+    AddItem(ctrl, L"   14 ", 14);
+    AddItem(ctrl, L"   16 ", 16);
+    AddItem(ctrl, L"   20 ", 20);
+    AddItem(ctrl, L"   24 ", 24);
+    AddItem(ctrl, L"   28 ", 28);
+    AddItem(ctrl, L"   32 ", 32);
+    AddItem(ctrl, L"   40 ", 40);
+    AddItem(ctrl, L"   48 ", 48);
+    AddItem(ctrl, L"   56 ", 56);
+    AddItem(ctrl, L"   64 ", 64);
+    AddItem(ctrl, L"   80 ", 80);
+    AddItem(ctrl, L"   96 ", 96);
+    AddItem(ctrl, L"  128 ", 128);
+    AddItem(ctrl, L"  160 ", 160);
+    AddItem(ctrl, L"  192 ", 192);
+    AddItem(ctrl, L"  224 ", 224);
+    AddItem(ctrl, L"  256 ", 256);
+    AddItem(ctrl, L"  384 ", 384);
+    AddItem(ctrl, L"  512 ", 512);
+    AddItem(ctrl, L"  768 ", 768);
+    AddItem(ctrl, L" 1024 ", 1024);
+    AddItem(ctrl, L" 1536 ", 1536);
+    AddItem(ctrl, L" 2048 ", 2048);
+    SelectItemByPos(ctrl, 0); // as a safe default
+    SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nMaxImages));
+
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fSongTitleAnimDuration));
+    SetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf);
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomSongTitles));
+    SetDlgItemText(IDC_RAND_TITLE, buf);
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomCustomMsgs));
+    SetDlgItemText(IDC_RAND_MSG, buf);
+    CheckDlgButton(IDC_CB_TITLE_ANIMS, static_cast<UINT>(cfg_bSongTitleAnims));
 
     return FALSE;
 }
 
-void milk2_preferences_page::OnEditChange(UINT, int, CWindow)
+void milk2_preferences_page::OnEditNotification(UINT, int, CWindow)
 {
     OnChanged();
 }
@@ -281,6 +606,22 @@ void milk2_preferences_page::OnComboChange(UINT, int, CWindow)
     OnChanged();
 }
 
+void milk2_preferences_page::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar)
+{
+    switch (pScrollBar.GetDlgCtrlID())
+    {
+        case IDC_HARDCUT_LOUDNESS:
+        case IDC_BRIGHT_SLIDER2:
+            {
+                switch (nSBCode)
+                {
+                    case TB_ENDTRACK:
+                        OnChanged();
+                }
+            }
+    }
+}
+
 uint32_t milk2_preferences_page::get_state()
 {
     // IMPORTANT: Always return "dark_mode_supported" to tell foobar2000 that this preferences page is dark mode compliant.
@@ -292,24 +633,63 @@ uint32_t milk2_preferences_page::get_state()
 
 void milk2_preferences_page::reset()
 {
-    WCHAR buf[256];
+    WCHAR buf[256] = {0};
+    int n = 0;
+
     CheckDlgButton(IDC_CB_SCROLLON3, static_cast<UINT>(cfg_bPresetLockOnAtStartup));
     CheckDlgButton(IDC_CB_SCROLLON4, static_cast<UINT>(cfg_bPreventScollLockHandling));
     CheckDlgButton(IDC_CB_NOWARN3, static_cast<UINT>(cfg_bWarningsDisabled));
     CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!cfg_bEnableRating));
     CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
+
     CheckDlgButton(IDC_CB_WPT, static_cast<UINT>(cfg_allow_page_tearing_w));
-    //CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
+    CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
     UpdateMaxFps(WINDOWED);
-    //UpdateMaxFps(FULLSCREEN);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fTimeBetweenPresets));
+    UpdateMaxFps(FULLSCREEN);
+
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresets));
     SetDlgItemText(IDC_BETWEEN_TIME, buf);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fTimeBetweenPresetsRand));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresetsRand));
     SetDlgItemText(IDC_BETWEEN_TIME_RANDOM, buf);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fBlendTimeAuto));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fBlendTimeAuto));
     SetDlgItemText(IDC_BLEND_AUTO, buf);
-    swprintf_s(buf, L"%.1f", static_cast<float>(cfg_fBlendTimeUser));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fBlendTimeUser));
     SetDlgItemText(IDC_BLEND_USER, buf);
+
+    swprintf_s(buf, L" %2.1f", static_cast<float>(cfg_fHardCutHalflife));
+    SetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf);
+    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+    if (n < 0)
+        n = 0;
+    if (n > 20)
+        n = 20;
+    SendMessage(GetDlgItem(IDC_HARDCUT_LOUDNESS), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)n);
+    CheckDlgButton(IDC_CB_HARDCUTS, static_cast<UINT>(cfg_bHardCutsDisabled));
+
+    SelectItemByValue(GetDlgItem(IDC_SHADERS), static_cast<DWORD>(cfg_nMaxPSVersion));
+
+    //SelectItemByValue(GetDlgItem(IDC_TEXFORMAT), static_cast<DWORD>(cfg_nTexBitsPerCh));
+
+    SelectItemByValue(GetDlgItem(IDC_MESHSIZECOMBO), static_cast<DWORD>(cfg_nGridX));
+
+    SelectItemByValue(GetDlgItem(IDC_STRETCH2), static_cast<DWORD>(cfg_nCanvasStretch));
+
+    SelectItemByValue(GetDlgItem(IDC_TEXSIZECOMBO), static_cast<DWORD>(cfg_nTexSizeX));
+
+    SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
+    CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(cfg_bAutoGamma));
+
+    SelectItemByValue(GetDlgItem(IDC_MAX_BYTES2), static_cast<DWORD>(cfg_nMaxBytes));
+
+    SelectItemByValue(GetDlgItem(IDC_MAX_IMAGES2), static_cast<DWORD>(cfg_nMaxImages));
+
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fSongTitleAnimDuration));
+    SetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf);
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomSongTitles));
+    SetDlgItemText(IDC_RAND_TITLE, buf);
+    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomCustomMsgs));
+    SetDlgItemText(IDC_RAND_MSG, buf);
+    CheckDlgButton(IDC_CB_TITLE_ANIMS, static_cast<UINT>(cfg_bSongTitleAnims));
 
     OnChanged();
 }
@@ -317,26 +697,89 @@ void milk2_preferences_page::reset()
 void milk2_preferences_page::apply()
 {
     WCHAR buf[256], *stop;
+    HWND ctrl = nullptr;
+    LRESULT t = 0;
+
     cfg_bPresetLockOnAtStartup = static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON3));
     cfg_bPreventScollLockHandling = static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON4));
     cfg_bWarningsDisabled = static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3));
     cfg_bEnableRating = !static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2));
     cfg_bShowPressF1ForHelp = static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG));
+
     cfg_allow_page_tearing_w = static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT));
+    cfg_allow_page_tearing_fs = static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT));
     SaveMaxFps(WINDOWED);
-    //SaveMaxFps(FULLSCREEN);
+    SaveMaxFps(FULLSCREEN);
+
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
     cfg_fTimeBetweenPresets = wcstof(buf, &stop);
     if (cfg_fTimeBetweenPresets < 0.1f)
         cfg_fTimeBetweenPresets = 0.1f;
-    GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
+    GetDlgItemText(IDC_BETWEEN_TIME_RANDOM, buf, 256);
     cfg_fTimeBetweenPresetsRand = wcstof(buf, &stop);
     if (cfg_fTimeBetweenPresetsRand < 0.0f)
         cfg_fTimeBetweenPresetsRand = 0.0f;
     GetDlgItemText(IDC_BLEND_AUTO, buf, 256);
     cfg_fBlendTimeAuto = wcstof(buf, &stop);
-    GetDlgItemText(IDC_BLEND_AUTO, buf, 256);
+    GetDlgItemText(IDC_BLEND_USER, buf, 256);
     cfg_fBlendTimeUser = wcstof(buf, &stop);
+
+    GetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf, 256);
+    cfg_fHardCutHalflife = wcstof(buf, &stop);
+    t = SendMessage(GetDlgItem(IDC_HARDCUT_LOUDNESS), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_fHardCutLoudnessThresh = static_cast<double>(1.25f + t / 10.0f);
+    cfg_bHardCutsDisabled = static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS));
+
+    ctrl = GetDlgItem(IDC_SHADERS);
+    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_nMaxPSVersion = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    //ctrl = GetDlgItem(IDC_TEXFORMAT);
+    //t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    //if (t != CB_ERR)
+    //    cfg_nTexBitsPerCh = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    ctrl = GetDlgItem(IDC_MESHSIZECOMBO);
+    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_nGridX = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    ctrl = GetDlgItem(IDC_STRETCH2);
+    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_nCanvasStretch = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    ctrl = GetDlgItem(IDC_TEXSIZECOMBO);
+    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_nTexSizeX = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
+
+    t = SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_n16BitGamma = static_cast<int64_t>(t);
+    cfg_bAutoGamma = static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2));
+
+    ctrl = GetDlgItem(IDC_MAX_BYTES2);
+    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_nMaxBytes = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    ctrl = GetDlgItem(IDC_MAX_IMAGES2);
+    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        cfg_nMaxImages = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+
+    GetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf, 256);
+    cfg_fSongTitleAnimDuration = wcstof(buf, &stop);
+    GetDlgItemText(IDC_RAND_TITLE, buf, 256);
+    cfg_fTimeBetweenRandomSongTitles = wcstof(buf, &stop);
+    GetDlgItemText(IDC_RAND_MSG, buf, 256);
+    cfg_fTimeBetweenRandomCustomMsgs = wcstof(buf, &stop);
+    cfg_bSongTitleAnims = static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS));
 
     OnChanged(); // The dialog content has not changed but the flags have; the currently shown values now match the settings so the apply button can be disabled.
     ::SendMessage(g_hWindow, WM_CONFIG_CHANGE, (WPARAM)0, (LPARAM)0);
@@ -351,10 +794,16 @@ bool milk2_preferences_page::HasChanged() const
                             static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3)) != cfg_bWarningsDisabled ||
                             static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2)) == cfg_bEnableRating ||
                             static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG)) != cfg_bShowPressF1ForHelp ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT)) != cfg_allow_page_tearing_w;
+                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT)) != cfg_allow_page_tearing_w ||
+                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT)) != cfg_allow_page_tearing_fs ||
+                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS)) != cfg_bHardCutsDisabled ||
+                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2)) != cfg_bAutoGamma ||
+                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS)) != cfg_bSongTitleAnims;
 
+    HWND ctrl = nullptr;
+    LRESULT n = 0;
     bool combobox_changes = false;
-    LRESULT n = SendMessage(GetDlgItem(IDC_W_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    n = SendMessage(GetDlgItem(IDC_W_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         if (n > 0)
@@ -362,19 +811,101 @@ bool milk2_preferences_page::HasChanged() const
 
         combobox_changes = combobox_changes || static_cast<UINT>(n) != cfg_max_fps_w;
     }
+    n = SendMessage(GetDlgItem(IDC_FS_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        if (n > 0)
+            n = MAX_MAX_FPS + 1 - n;
+
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != cfg_max_fps_fs;
+    }
+    ctrl = GetDlgItem(IDC_SHADERS);
+    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxPSVersion);
+    }
+    //ctrl = GetDlgItem(IDC_TEXFORMAT);
+    //n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    //if (n != CB_ERR)
+    //{
+    //    n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+    //    combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nTexBitsPerCh);
+    //}
+    ctrl = GetDlgItem(IDC_MESHSIZECOMBO);
+    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nGridX);
+    }
+    ctrl = GetDlgItem(IDC_STRETCH2);
+    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nCanvasStretch);
+    }
+    ctrl = GetDlgItem(IDC_TEXSIZECOMBO);
+    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nTexSizeX);
+    }
+    ctrl = GetDlgItem(IDC_MAX_BYTES2);
+    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxBytes);
+    }
+    ctrl = GetDlgItem(IDC_MAX_IMAGES2);
+    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxImages);
+    }
 
     WCHAR buf[256], *stop;
     bool editcontrol_changes = false;
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
     editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenPresets;
-    GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
+    GetDlgItemText(IDC_BETWEEN_TIME_RANDOM, buf, 256);
     editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenPresetsRand;
     GetDlgItemText(IDC_BLEND_AUTO, buf, 256);
     editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fBlendTimeAuto;
-    GetDlgItemText(IDC_BLEND_AUTO, buf, 256);
+    GetDlgItemText(IDC_BLEND_USER, buf, 256);
     editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fBlendTimeUser;
+    GetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf, 256);
+    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fHardCutHalflife;
+    GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
+    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenPresets;
+    GetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf, 256);
+    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fSongTitleAnimDuration;
+    GetDlgItemText(IDC_RAND_TITLE, buf, 256);
+    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenRandomSongTitles;
+    GetDlgItemText(IDC_RAND_MSG, buf, 256);
+    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenRandomCustomMsgs;
 
-    return checkbox_changes || combobox_changes || editcontrol_changes;
+    LRESULT t;
+    bool slider_changes = false;
+    t = SendMessage(GetDlgItem(IDC_HARDCUT_LOUDNESS), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+    {
+        if (t < 0)
+            t = 0;
+        if (t > 20)
+            t = 20;
+        slider_changes = slider_changes || static_cast<int>(t) != static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+    }
+    t = SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        slider_changes = slider_changes || static_cast<UINT>(t) != static_cast<UINT>(cfg_n16BitGamma);
+
+    return checkbox_changes || combobox_changes || editcontrol_changes || slider_changes;
 }
 
 // Tells the host that state has changed to enable or disable the "Apply" button appropriately.
@@ -405,7 +936,7 @@ class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_pa
 };
 
 // Initializes FPS combo boxes.
-void milk2_preferences_page::UpdateMaxFps(int screenmode)
+void milk2_preferences_page::UpdateMaxFps(int screenmode) const
 {
     HWND ctrl = nullptr;
     switch (screenmode)
@@ -414,14 +945,14 @@ void milk2_preferences_page::UpdateMaxFps(int screenmode)
             ctrl = GetDlgItem(IDC_W_MAXFPS2);
             break;
         case FULLSCREEN:
-            ctrl = GetDlgItem(IDC_FS_MAXFPS);
+            ctrl = GetDlgItem(IDC_FS_MAXFPS2);
             break;
     }
 
     if (!ctrl)
         return;
 
-    SendMessage(ctrl, CB_RESETCONTENT, 0, 0);
+    SendMessage(ctrl, CB_RESETCONTENT, (WPARAM)0, (LPARAM)0);
     for (int j = 0; j <= MAX_MAX_FPS; ++j)
     {
         WCHAR buf[256];
@@ -429,11 +960,11 @@ void milk2_preferences_page::UpdateMaxFps(int screenmode)
             LoadString(core_api::get_my_instance(), IDS_UNLIMITED, buf, 256);
         else
         {
-            LoadString(core_api::get_my_instance(), IDS_X_FRAME_SEC, buf, 256);
+            LoadString(core_api::get_my_instance(), IDS_X_FPS, buf, 256);
             swprintf_s(buf, buf, MAX_MAX_FPS + 1 - j);
         }
 
-        SendMessage(ctrl, CB_ADDSTRING, j, (LPARAM)buf);
+        SendMessage(ctrl, CB_ADDSTRING, (WPARAM)j, (LPARAM)buf);
     }
 
     // Set previous selection.
@@ -444,16 +975,16 @@ void milk2_preferences_page::UpdateMaxFps(int screenmode)
             max_fps = static_cast<UINT>(cfg_max_fps_w);
             break;
         case FULLSCREEN:
-            max_fps = static_cast<UINT>(cfg_max_fps_w);
+            max_fps = static_cast<UINT>(cfg_max_fps_fs);
             break;
     }
     if (max_fps == 0)
-        SendMessage(ctrl, CB_SETCURSEL, 0, 0);
+        SendMessage(ctrl, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
     else
-        SendMessage(ctrl, CB_SETCURSEL, MAX_MAX_FPS - max_fps + 1, 0);
+        SendMessage(ctrl, CB_SETCURSEL, (WPARAM)(MAX_MAX_FPS - max_fps + 1), (LPARAM)0);
 }
 
-void milk2_preferences_page::SaveMaxFps(int screenmode)
+void milk2_preferences_page::SaveMaxFps(int screenmode) const
 {
     HWND ctrl = nullptr;
     switch (screenmode)
@@ -462,7 +993,7 @@ void milk2_preferences_page::SaveMaxFps(int screenmode)
             ctrl = GetDlgItem(IDC_W_MAXFPS2);
             break;
         case FULLSCREEN:
-            ctrl = GetDlgItem(IDC_FS_MAXFPS);
+            ctrl = GetDlgItem(IDC_FS_MAXFPS2);
             break;
     }
 
@@ -503,65 +1034,65 @@ uint32_t milk2_config::g_get_version() const
 
 void milk2_config::reset()
 {
-    // milk.ini
     //m_nFpsLimit = default_nFpsLimit;
     m_nSongTitlesSpawned = default_nSongTitlesSpawned;
     m_nCustMsgsSpawned = default_nCustMsgsSpawned;
     m_nFramesSinceResize = default_nFramesSinceResize;
 
     m_bEnableRating = cfg_bEnableRating.get();
-    m_bHardCutsDisabled = default_bHardCutsDisabled;
+    m_bHardCutsDisabled = cfg_bHardCutsDisabled.get();
     g_bDebugOutput = cfg_bDebugOutput.get();
     //m_bShowSongInfo;
     m_bShowPressF1ForHelp = cfg_bShowPressF1ForHelp.get();
     //m_bShowMenuToolTips;
-    m_bSongTitleAnims = default_bSongTitleAnims;
+    m_bSongTitleAnims = cfg_bSongTitleAnims.get();
 
     m_bShowFPS = default_bShowFPS;
     m_bShowRating = default_bShowRating;
     m_bShowPresetInfo = default_bShowPresetInfo;
-    //m_bShowDebugInfo = false;
+    //m_bShowDebugInfo = default_bShowDebugInfo;
     m_bShowSongTitle = default_bShowSongTitle;
     m_bShowSongTime = default_bShowSongTime;
     m_bShowSongLen = default_bShowSongLen;
 
     //m_bFixPinkBug = default_bFixPinkBug;
-    m_n16BitGamma = default_n16BitGamma;
-    m_bAutoGamma = default_bAutoGamma;
+    m_n16BitGamma = static_cast<uint32_t>(cfg_n16BitGamma.get());
+    m_bAutoGamma = cfg_bAutoGamma.get();
     //m_bAlways3D = default_bAlways3D;
     //m_fStereoSep = default_fStereoSep;
     //m_bFixSlowText = default_bFixSlowText;
     //m_bAlwaysOnTop = default_bAlwaysOnTop;
     //m_bWarningsDisabled = default_bWarningsDisabled;
-    m_bWarningsDisabled2 = default_bWarningsDisabled2;
+    m_bWarningsDisabled2 = cfg_bWarningsDisabled.get();
     //m_bAnisotropicFiltering = default_bAnisotropicFiltering;
     m_bPresetLockOnAtStartup = cfg_bPresetLockOnAtStartup.get();
     m_bPreventScollLockHandling = cfg_bPreventScollLockHandling.get();
 
-    m_nCanvasStretch = default_nCanvasStretch;
-    m_nTexSizeX = default_nTexSizeX;
+    m_nCanvasStretch = static_cast<uint32_t>(cfg_nCanvasStretch.get());
+    m_nTexSizeX = static_cast<uint32_t>(cfg_nTexSizeX.get());
     m_nTexSizeY = m_nTexSizeX;
     m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
     m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
-    m_nTexBitsPerCh = default_nTexBitsPerCh;
-    m_nGridX = default_nGridX;
+    m_nTexBitsPerCh = static_cast<uint32_t>(cfg_nTexBitsPerCh.get());
+    m_nGridX = static_cast<uint32_t>(cfg_nGridX.get());
+    if (m_nGridX > MAX_GRID_X)
+        m_nGridX = MAX_GRID_X;
     m_nGridY = m_nGridX * 3 / 4;
+    if (m_nGridY > MAX_GRID_Y)
+        m_nGridY = MAX_GRID_Y;
     m_nMaxPSVersion = static_cast<uint32_t>(cfg_nMaxPSVersion.get());
     m_nMaxImages = static_cast<uint32_t>(cfg_nMaxImages.get());
     m_nMaxBytes = static_cast<uint32_t>(cfg_nMaxBytes.get());
 
-    m_fBlendTimeUser = default_fBlendTimeUser;
-    m_fBlendTimeAuto = default_fBlendTimeAuto;
+    m_fBlendTimeUser = static_cast<float>(cfg_fBlendTimeUser.get());
+    m_fBlendTimeAuto = static_cast<float>(cfg_fBlendTimeAuto.get());
     m_fTimeBetweenPresets = static_cast<float>(cfg_fTimeBetweenPresets.get());
     m_fTimeBetweenPresetsRand = static_cast<float>(cfg_fTimeBetweenPresetsRand.get());
-    m_fHardCutLoudnessThresh = default_fHardCutLoudnessThresh;
-    m_fHardCutHalflife = default_fHardCutHalflife;
-    m_fSongTitleAnimDuration = default_fSongTitleAnimDuration;
-    m_fTimeBetweenRandomSongTitles = default_fTimeBetweenRandomSongTitles;
-    m_fTimeBetweenRandomCustomMsgs = default_fTimeBetweenRandomCustomMsgs;
-
-    m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
-    m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
+    m_fHardCutLoudnessThresh = static_cast<float>(cfg_fHardCutLoudnessThresh.get());
+    m_fHardCutHalflife = static_cast<float>(cfg_fHardCutHalflife.get());
+    m_fSongTitleAnimDuration = static_cast<float>(cfg_fSongTitleAnimDuration.get());
+    m_fTimeBetweenRandomSongTitles = static_cast<float>(cfg_fTimeBetweenRandomSongTitles.get());
+    m_fTimeBetweenRandomCustomMsgs = static_cast<float>(cfg_fTimeBetweenRandomCustomMsgs.get());
 
     m_bPresetLockedByCode = default_bPresetLockedByCode;
     m_fStartTime = default_fStartTime;
@@ -574,13 +1105,6 @@ void milk2_config::reset()
     m_fMotionVectorsTempDx = default_fMotionVectorsTempDx;
     m_fMotionVectorsTempDy = default_fMotionVectorsTempDy;
 
-    // Bounds checking
-    if (m_nGridX > MAX_GRID_X)
-        m_nGridX = MAX_GRID_X;
-    if (m_nGridY > MAX_GRID_Y)
-        m_nGridY = MAX_GRID_Y;
-
-    // Derived settings
     m_bPresetLockedByUser = m_bPresetLockOnAtStartup;
     //m_bMilkdropScrollLockState = m_bPresetLockOnAtStartup;
 
@@ -591,6 +1115,11 @@ void milk2_config::reset()
     m_nDepthBufferFormat = default_nDepthBufferFormat;
     m_nBackBufferCount = default_nBackBufferCount;
     m_nMinFeatureLevel = default_nMinFeatureLevel;
+
+    //m_max_fps_w = static_cast<uint32_t>(cfg_max_fps_w.get());
+    //m_max_fps_fs = static_cast<uint32_t>(cfg_max_fps_fs.get());
+    //m_allow_page_tearing_w = static_cast<uint32_t>(cfg_allow_page_tearing_w.get());
+    //m_allow_page_tearing_fs = static_cast<uint32_t>(cfg_allow_page_tearing_fs.get());
 
     update_paths();
 }
@@ -640,7 +1169,6 @@ void milk2_config::update_paths()
 // Reads the configuration.
 void milk2_config::parse(ui_element_config_parser& parser)
 {
-    // to retrieve state: pfc::string8 val; mystring.get(val); myint.get();
     try
     {
         uint32_t sentinel, version;
@@ -648,44 +1176,19 @@ void milk2_config::parse(ui_element_config_parser& parser)
         parser >> version;
         switch (version)
         {
-            //case 6:
-            //    parser >> m_line_stroke_width;
-            //    m_line_stroke_width = pfc::clip_t<t_uint32>(m_line_stroke_width, 5, 30);
-            //    // fall through
-            //case 5:
-            //    parser >> m_low_quality_enabled;
-            //    // fall through
-            //case 4:
-            //    parser >> m_resample_enabled;
-            //    // fall through
-            //case 3:
-            //    parser >> m_refresh_rate_limit_hz;
-            //    m_refresh_rate_limit_hz = pfc::clip_t<t_uint32>(m_refresh_rate_limit_hz, 20, 200);
-            //    // fall through
-            //case 2:
-            //    parser >> m_trigger_enabled;
-            //    // fall through
-            //case 1:
-            //    parser >> m_hw_rendering_enabled;
-            //    parser >> m_window_duration_millis;
-            //    m_window_duration_millis = pfc::clip_t<t_uint32>(m_window_duration_millis, 50, 800);
-            //    parser >> m_zoom_percent;
-            //    m_zoom_percent = pfc::clip_t<t_uint32>(m_zoom_percent, 50, 800);
-            //    // fall through
             case 0:
-                // milk.ini
                 //parser >> m_nFpsLimit;
                 parser >> m_nSongTitlesSpawned;
                 parser >> m_nCustMsgsSpawned;
                 parser >> m_nFramesSinceResize;
 
-                parser >> m_bEnableRating;
-                parser >> m_bHardCutsDisabled;
-                parser >> g_bDebugOutput;
+                //parser >> m_bEnableRating;
+                //parser >> m_bHardCutsDisabled;
+                //parser >> g_bDebugOutput;
                 //parser >> m_bShowSongInfo;
-                parser >> m_bShowPressF1ForHelp;
+                //parser >> m_bShowPressF1ForHelp;
                 //parser >> m_bShowMenuToolTips;
-                parser >> m_bSongTitleAnims;
+                //parser >> m_bSongTitleAnims;
 
                 parser >> m_bShowFPS;
                 parser >> m_bShowRating;
@@ -696,39 +1199,39 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 parser >> m_bShowSongLen;
 
                 //parser >> m_bFixPinkBug;
-                parser >> m_n16BitGamma;
-                parser >> m_bAutoGamma;
+                //parser >> m_n16BitGamma;
+                //parser >> m_bAutoGamma;
                 //parser >> m_bAlways3D;
                 //parser >> m_fStereoSep;
                 //parser >> m_bFixSlowText;
                 //parser >> m_bAlwaysOnTop;
                 //parser >> m_bWarningsDisabled;
-                parser >> m_bWarningsDisabled2;
+                //parser >> m_bWarningsDisabled2;
                 //parser >> m_bAnisotropicFiltering;
-                parser >> m_bPresetLockOnAtStartup;
-                parser >> m_bPreventScollLockHandling;
+                //parser >> m_bPresetLockOnAtStartup;
+                //parser >> m_bPreventScollLockHandling;
 
-                parser >> m_nCanvasStretch;
-                parser >> m_nTexSizeX;
+                //parser >> m_nCanvasStretch;
+                //parser >> m_nTexSizeX;
                 parser >> m_nTexSizeY;
                 parser >> m_bTexSizeWasAutoPow2;
                 parser >> m_bTexSizeWasAutoExact;
-                parser >> m_nTexBitsPerCh;
-                parser >> m_nGridX;
+                //parser >> m_nTexBitsPerCh;
+                //parser >> m_nGridX;
                 parser >> m_nGridY;
-                parser >> m_nMaxPSVersion;
-                parser >> m_nMaxImages;
-                parser >> m_nMaxBytes;
+                //parser >> m_nMaxPSVersion;
+                //parser >> m_nMaxImages;
+                //parser >> m_nMaxBytes;
 
-                parser >> m_fBlendTimeUser;
-                parser >> m_fBlendTimeAuto;
-                parser >> m_fTimeBetweenPresets;
-                parser >> m_fTimeBetweenPresetsRand;
-                parser >> m_fHardCutLoudnessThresh;
-                parser >> m_fHardCutHalflife;
-                parser >> m_fSongTitleAnimDuration;
-                parser >> m_fTimeBetweenRandomSongTitles;
-                parser >> m_fTimeBetweenRandomCustomMsgs;
+                //parser >> m_fBlendTimeUser;
+                //parser >> m_fBlendTimeAuto;
+                //parser >> m_fTimeBetweenPresets;
+                //parser >> m_fTimeBetweenPresetsRand;
+                //parser >> m_fHardCutLoudnessThresh;
+                //parser >> m_fHardCutHalflife;
+                //parser >> m_fSongTitleAnimDuration;
+                //parser >> m_fTimeBetweenRandomSongTitles;
+                //parser >> m_fTimeBetweenRandomCustomMsgs;
 
                 parser >> m_bPresetLockedByCode;
                 parser >> m_fStartTime;
@@ -741,7 +1244,7 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 parser >> m_fMotionVectorsTempDx;
                 parser >> m_fMotionVectorsTempDy;
 
-                parser >> m_bPresetLockedByUser;
+                //parser >> m_bPresetLockedByUser;
                 //parser >> m_bMilkdropScrollLockState;
 
                 parser >> m_bEnableDownmix;
@@ -751,6 +1254,11 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 parser >> m_nDepthBufferFormat;
                 parser >> m_nBackBufferCount;
                 parser >> m_nMinFeatureLevel;
+
+                //parser >> m_max_fps_w;
+                //parser >> m_max_fps_fs;
+                //parser >> m_allow_page_tearing_w;
+                //parser >> m_allow_page_tearing_fs;
 
                 parser >> m_szPluginsDirPath;
                 parser >> m_szConfigIniFile;
@@ -775,18 +1283,19 @@ void milk2_config::build(ui_element_config_builder& builder)
 {
     builder << m_sentinel;
     builder << g_get_version();
+
     //builder << m_nFpsLimit;
     builder << m_nSongTitlesSpawned;
     builder << m_nCustMsgsSpawned;
     builder << m_nFramesSinceResize;
 
-    builder << cfg_bEnableRating.get();
-    builder << m_bHardCutsDisabled;
-    builder << cfg_bDebugOutput.get();
+    cfg_bEnableRating = m_bEnableRating;
+    cfg_bHardCutsDisabled = m_bHardCutsDisabled;
+    cfg_bDebugOutput = g_bDebugOutput;
     //builder << m_bShowSongInfo;
-    builder << cfg_bShowPressF1ForHelp.get();
+    cfg_bShowPressF1ForHelp = m_bShowPressF1ForHelp;
     //builder << m_bShowMenuToolTips;
-    builder << m_bSongTitleAnims;
+    cfg_bSongTitleAnims = m_bSongTitleAnims;
 
     builder << m_bShowFPS;
     builder << m_bShowRating;
@@ -797,39 +1306,39 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << m_bShowSongLen;
 
     //builder << m_bFixPinkBug;
-    builder << m_n16BitGamma;
-    builder << m_bAutoGamma;
+    cfg_n16BitGamma = m_n16BitGamma;
+    cfg_bAutoGamma = m_bAutoGamma;
     //builder << m_bAlways3D;
     //builder << m_fStereoSep;
     //builder << m_bFixSlowText;
     //builder << m_bAlwaysOnTop;
     //builder << m_bWarningsDisabled;
-    builder << cfg_bWarningsDisabled.get();
+    cfg_bWarningsDisabled = m_bWarningsDisabled2;
     //builder << m_bAnisotropicFiltering;
-    builder << cfg_bPresetLockOnAtStartup.get();
-    builder << cfg_bPreventScollLockHandling.get();
+    cfg_bPresetLockOnAtStartup = m_bPresetLockOnAtStartup;
+    cfg_bPreventScollLockHandling = m_bPreventScollLockHandling;
 
-    builder << m_nCanvasStretch;
-    builder << m_nTexSizeX;
+    cfg_nCanvasStretch = m_nCanvasStretch;
+    cfg_nTexSizeX = m_nTexSizeX;
     builder << m_nTexSizeY;
     builder << m_bTexSizeWasAutoPow2;
     builder << m_bTexSizeWasAutoExact;
-    builder << m_nTexBitsPerCh;
-    builder << m_nGridX;
+    cfg_nTexBitsPerCh = m_nTexBitsPerCh;
+    cfg_nGridX = m_nGridX;
     builder << m_nGridY;
-    builder << static_cast<uint32_t>(cfg_nMaxPSVersion.get());
-    builder << static_cast<uint32_t>(cfg_nMaxImages.get());
-    builder << static_cast<uint32_t>(cfg_nMaxBytes.get());
+    cfg_nMaxPSVersion = m_nMaxPSVersion;
+    cfg_nMaxImages = m_nMaxImages;
+    cfg_nMaxBytes = m_nMaxBytes;
 
-    builder << static_cast<float>(cfg_fBlendTimeUser.get());
-    builder << static_cast<float>(cfg_fBlendTimeAuto.get());
-    builder << static_cast<float>(cfg_fTimeBetweenPresets.get());
-    builder << static_cast<float>(cfg_fTimeBetweenPresetsRand.get());
-    builder << m_fHardCutLoudnessThresh;
-    builder << m_fHardCutHalflife;
-    builder << m_fSongTitleAnimDuration;
-    builder << m_fTimeBetweenRandomSongTitles;
-    builder << m_fTimeBetweenRandomCustomMsgs;
+    cfg_fBlendTimeUser = m_fBlendTimeUser;
+    cfg_fBlendTimeAuto = m_fBlendTimeAuto;
+    cfg_fTimeBetweenPresets = m_fTimeBetweenPresets;
+    cfg_fTimeBetweenPresetsRand = m_fTimeBetweenPresetsRand;
+    cfg_fHardCutLoudnessThresh = m_fHardCutLoudnessThresh;
+    cfg_fHardCutHalflife = m_fHardCutHalflife;
+    cfg_fSongTitleAnimDuration = m_fSongTitleAnimDuration;
+    cfg_fTimeBetweenRandomSongTitles = m_fTimeBetweenRandomSongTitles;
+    cfg_fTimeBetweenRandomCustomMsgs = m_fTimeBetweenRandomCustomMsgs;
 
     builder << m_bPresetLockedByCode;
     builder << m_fStartTime;
@@ -842,7 +1351,7 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << m_fMotionVectorsTempDx;
     builder << m_fMotionVectorsTempDy;
 
-    builder << m_bPresetLockedByUser;
+    //builder << m_bPresetLockedByUser;
     //builder << m_bMilkdropScrollLockState;
 
     builder << m_bEnableDownmix;
@@ -852,6 +1361,11 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << m_nDepthBufferFormat;
     builder << m_nBackBufferCount;
     builder << m_nMinFeatureLevel;
+
+    //builder << cfg_max_fps_w;
+    //builder << cfg_max_fps_fs;
+    //builder << cfg_allow_page_tearing_w;
+    //builder << cfg_allow_page_tearing_fs;
 
     builder << m_szPluginsDirPath;
     builder << m_szConfigIniFile;

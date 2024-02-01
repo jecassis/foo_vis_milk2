@@ -4,9 +4,6 @@
 #include "resource.h"
 #include "version.h"
 
-#include <vis_milk2/plugin.h>
-#include <vis_milk2/dxcontext.h>
-
 //#ifdef __clang__
 //#pragma clang diagnostic ignored "-Wcovered-switch-default"
 //#pragma clang diagnostic ignored "-Wswitch-enum"
@@ -72,6 +69,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_ACTIVATEAPP(OnActivateApp)
+        MSG_WM_KEYDOWN(OnKeyDown)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
@@ -109,6 +107,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
     void OnActivateApp(BOOL bActive, DWORD dwThreadID);
     BOOL OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData);
+    void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point);
@@ -584,7 +583,7 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING | (m_config.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
 #ifdef _DEBUG
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING, IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
+    menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
 #endif
 
     //CMenu durationMenu;

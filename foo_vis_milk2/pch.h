@@ -46,6 +46,18 @@
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
 
+#include <vis_milk2/defines.h>
+#include <vis_milk2/md_defines.h>
+#include <vis_milk2/shell_defines.h>
+#include <vis_milk2/pluginshell.h>
+#include <vis_milk2/plugin.h>
+#include <vis_milk2/dxcontext.h>
+
+#define MAX_PROPERTY_PAGES 8
+#define MAX_DISPLAY_ADAPTERS 16
+#define MAX_MAX_FPS 144
+#define MAX_DISPLAY_MODES 1024
+
 #define WM_MILK2 (WM_USER + 0)
 #define WM_CONFIG_CHANGE (WM_USER + 1)
 
