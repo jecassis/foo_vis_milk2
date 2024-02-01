@@ -388,10 +388,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
+    <ClInclude Include="steptimer.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="steptimer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="foo_vis_milk2.rc" />
