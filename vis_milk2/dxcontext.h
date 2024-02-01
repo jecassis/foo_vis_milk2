@@ -78,7 +78,7 @@ class DXContext final : public DX::IDeviceNotify
     //DXContext(DXContext const&) = delete;
     //DXContext& operator=(DXContext const&) = delete;
 
-    BOOL StartOrRestartDevice(); // also serves as Init() function
+    BOOL StartOrRestartDevice(DXCONTEXT_PARAMS* pParams); // also serves as Init() function
     BOOL OnWindowSizeChanged(int width, int height);
     void OnWindowMoved();
     void OnDisplayChange();
@@ -111,7 +111,7 @@ class DXContext final : public DX::IDeviceNotify
     int m_bpp;
 
     int GetWindowedModeAutoSize(int iteration);
-    BOOL Internal_Init(BOOL bFirstInit);
+    BOOL Internal_Init(DXCONTEXT_PARAMS* pParams, BOOL bFirstInit);
     void Internal_CleanUp();
 
   private:

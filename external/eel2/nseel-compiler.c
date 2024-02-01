@@ -2091,7 +2091,7 @@ start_over: // when an opcode changed substantially in optimization, goto here t
                 if (a) 
                 {
 #ifdef GLUE_MOD_IS_64
-                  ret = ((WDL_INT64) fabs(op->parms.parms[0]->parms.dv.directValue)) % a;
+                  ret = (EEL_F)(((WDL_INT64) fabs(op->parms.parms[0]->parms.dv.directValue)) % a);
 #else
                   ret = ((int) fabs(op->parms.parms[0]->parms.dv.directValue)) % a;
 #endif

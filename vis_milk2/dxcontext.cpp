@@ -74,7 +74,7 @@ void DXContext::Internal_CleanUp()
         m_lpDevice.reset();
 }
 
-BOOL DXContext::Internal_Init(BOOL /* bFirstInit */)
+BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* /* pParams */, BOOL /* bFirstInit */)
 {
     // Screen mode check.
     if (m_current_mode.screenmode != WINDOWED)
@@ -138,12 +138,12 @@ void DXContext::RestoreTarget()
 // Clean up all the DirectX collateral first (textures, vertex buffers,
 // D3DX allocations, etc...) and reallocate it afterwards!
 // Note: for windowed mode, `pParams->disp_mode` (w/h/r/f) is ignored.
-BOOL DXContext::StartOrRestartDevice()
+BOOL DXContext::StartOrRestartDevice(DXCONTEXT_PARAMS* pParams)
 {
     if (!m_ready)
     {
         // First time init: create a fresh new device.
-        return Internal_Init(TRUE);
+        return Internal_Init(pParams, TRUE);
     }
     else
     {
@@ -155,7 +155,7 @@ BOOL DXContext::StartOrRestartDevice()
 
         // But leave the D3D object!
         //RestoreWinamp();
-        return Internal_Init(FALSE);
+        return Internal_Init(pParams, FALSE);
     }
 }
 

@@ -14,15 +14,14 @@ HWND g_hWindow;
 
 extern void ExitVis() noexcept;
 
-// Indicates to hybrid graphics systems to prefer the discrete part by default
+// Indicates to hybrid graphics systems to prefer the discrete part by default.
 //extern "C" {
 //__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 //__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 //}
 
-// Anonymous namespace is standard practice in foobar2000 components.
-// Nothing outside should have any reason to see these symbols and do not want
-// funny results if another component has similarly named classes.
+// Anonymous namespace is standard practice in foobar2000 components
+// to prevent name collisions between them.
 namespace
 {
 static const GUID guid_milk2 = {
@@ -139,26 +138,12 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         IDM_PREVIOUS_PRESET,
         IDM_LOCK_PRESET,
         IDM_SHUFFLE_PRESET,
-        IDM_ENABLE_DOWNMIX,
-        //IDM_DURATION_5,
-        //IDM_DURATION_10,
-        //IDM_DURATION_20,
-        //IDM_DURATION_30,
-        //IDM_DURATION_45,
-        //IDM_DURATION_60,
-        //IDM_HW_RENDERING_ENABLED,
-        //IDM_RESAMPLE_ENABLED,
-        //IDM_WINDOW_DURATION_50,
-        //IDM_WINDOW_DURATION_100,
-        //IDM_ZOOM_50,
-        //IDM_ZOOM_75,
-        //IDM_ZOOM_100,
-        //IDM_REFRESH_RATE_LIMIT_20,
-        //IDM_REFRESH_RATE_LIMIT_60
+        IDM_ENABLE_DOWNMIX
     };
 
     // Initialization and management
     bool Initialize(HWND window, int width, int height);
+    void ReadConfig();
 
     // Basic visualization loop
     void Tick();
@@ -221,7 +206,7 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
     s_in_sizemove = false;
     s_in_suspend = false;
     s_minimized = false;
-    
+
     m_pwd = ".\\";
     set_configuration(config);
 }
@@ -238,24 +223,21 @@ ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
     {
         FB2K_console_print(core_api::get_my_file_name(), ": Exception while building default configuration data - ", exc);
     }
-    return builder.finish(g_get_guid()); //return ui_element_config::g_create_empty(g_get_guid());
+    return builder.finish(g_get_guid());
 }
 
 void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
 {
     //LPVOID dataptr = const_cast<LPVOID>(p_data->get_data());
-    //if (dataptr && p_data->get_data_size() > 4 && static_cast<DWORD*>(dataptr)[0] == ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K'))
-    //{
+    //if (dataptr && p_data->get_data_size() >= 4 && static_cast<DWORD*>(dataptr)[0] == ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K'))
     //    m_config = p_data;
-    //}
     //else
     //    m_config = g_get_default_configuration();
-    //DWORD* in = reinterpret_cast<DWORD*>(dataptr);
+
     ui_element_config_parser parser(p_data);
     m_config.parse(parser);
 
     UpdateChannelMode();
-    //UpdateRefreshRateLimit();
 }
 
 ui_element_config::ptr milk2_ui_element::get_configuration()
@@ -268,9 +250,7 @@ ui_element_config::ptr milk2_ui_element::get_configuration()
 void milk2_ui_element::notify(const GUID& p_what, t_size p_param1, const void* p_param2, t_size p_param2size)
 {
     if (p_what == ui_element_notify_colors_changed || p_what == ui_element_notify_font_changed)
-    {
         Invalidate();
-    }
 }
 
 int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
@@ -462,6 +442,24 @@ BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
     WIN32_OP_D(brush.CreateSolidBrush(m_callback->query_std_color(ui_color_background)) != NULL);
     WIN32_OP_D(dc.FillRect(&r, brush));
 #else
+    if (!m_milk2 && !s_fullscreen && s_milk2)
+    {
+        HRESULT hr = S_OK;
+        int w, h;
+        GetDefaultSize(w, h);
+
+        CRect r{};
+        WIN32_OP_D(GetClientRect(&r))
+        if (r.right - r.left > 0 && r.bottom - r.top > 0)
+        {
+            w = r.right - r.left;
+            h = r.bottom - r.top;
+        }
+        if (!Initialize(get_wnd(), w, h))
+        {
+            FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
+        }
+    }
     Tick();
 #endif
 
@@ -533,15 +531,75 @@ BOOL milk2_ui_element::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
 void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     MILK2_CONSOLE_LOG("OnLButtonDblClk ", GetWnd())
-#ifdef _DEBUG
+//#ifdef _DEBUG
     ToggleFullScreen();
-#endif
+//#endif
+}
+
+void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+    switch (nChar)
+    {
+        case VK_ESCAPE:
+//#ifdef _DEBUG
+            if (s_fullscreen)
+            {
+                ToggleFullScreen();
+            }
+//#endif
+            return;
+        case VK_F2:
+            m_config.settings.m_bShowSongTitle = !m_config.settings.m_bShowSongTitle;
+            g_plugin.m_bShowSongTitle = m_config.settings.m_bShowSongTitle;
+            return;
+        case VK_F3:
+            if (m_config.settings.m_bShowSongTime && m_config.settings.m_bShowSongLen)
+            {
+                m_config.settings.m_bShowSongTime = false;
+                m_config.settings.m_bShowSongLen = false;
+            }
+            else if (m_config.settings.m_bShowSongTime && !m_config.settings.m_bShowSongLen)
+            {
+                m_config.settings.m_bShowSongLen = true;
+            }
+            else
+            {
+                m_config.settings.m_bShowSongTime = true;
+                m_config.settings.m_bShowSongLen = false;
+            }
+            g_plugin.m_bShowSongTime = m_config.settings.m_bShowSongTime;
+            g_plugin.m_bShowSongLen = m_config.settings.m_bShowSongLen;
+            return;
+        case VK_F4:
+            m_config.settings.m_bShowPresetInfo = !m_config.settings.m_bShowPresetInfo;
+            g_plugin.m_bShowPresetInfo = m_config.settings.m_bShowPresetInfo;
+            return;
+        case VK_F5:
+            m_config.settings.m_bShowFPS = !m_config.settings.m_bShowFPS;
+            g_plugin.m_bShowFPS = m_config.settings.m_bShowFPS;
+            return;
+        case VK_F6:
+            m_config.settings.m_bShowRating = !m_config.settings.m_bShowRating;
+            g_plugin.m_bShowRating = m_config.settings.m_bShowRating;
+            return;
+        case VK_F9:
+            m_config.settings.m_bShowShaderHelp = !m_config.settings.m_bShowShaderHelp;
+            g_plugin.m_bShowShaderHelp = m_config.settings.m_bShowShaderHelp;
+            SetMsgHandled(FALSE);
+            return;
+        case VK_SCROLL:
+            {
+                SHORT lock = GetKeyState(VK_SCROLL) & 0x0001;
+                LockPreset(static_cast<bool>(lock));
+            }
+            return;
+    }
 }
 
 void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnSysKeyDown ", GetWnd())
-#ifdef _DEBUG
+//#ifdef _DEBUG
     // Bit 29: The context code. The value is 1 if the ALT key is down while the
     //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
     //         the active window because no window has the keyboard focus.
@@ -551,7 +609,7 @@ void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     {
         ToggleFullScreen();
     }
-#endif
+//#endif
 }
 
 void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
@@ -571,53 +629,24 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     WIN32_OP_D(menu.CreatePopupMenu());
     //BOOL b = TRUE;
     //CMenu original;
-    /*       b = menu.LoadMenu(IDR_WINDOWED_CONTEXT_MENU);
-        menu.AppendMenu(MF_STRING, menu.GetSubMenu(0), TEXT("Winamp"));*/
+    //b = menu.LoadMenu(IDR_WINDOWED_CONTEXT_MENU);
+    //menu.AppendMenu(MF_STRING, menu.GetSubMenu(0), TEXT("Winamp"));
     menu.AppendMenu(MF_GRAYED, IDM_CURRENT_PRESET, GetCurrentPreset().c_str());
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING, IDM_NEXT_PRESET, TEXT("Next Preset"));
     menu.AppendMenu(MF_STRING, IDM_PREVIOUS_PRESET, TEXT("Previous Preset"));
     menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
-    menu.AppendMenu(MF_STRING | (m_config.m_bPresetLockedByUser ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
+    menu.AppendMenu(MF_STRING | (g_plugin.m_bPresetLockedByUser ? MF_CHECKED : 0) | (s_fullscreen ? MF_DISABLED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING | (m_config.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
-#ifdef _DEBUG
+    menu.AppendMenu(MF_STRING | (g_plugin.m_bEnableDownmix ? MF_CHECKED : 0) | (s_fullscreen ? MF_DISABLED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+//#ifdef _DEBUG
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
-#endif
-
-    //CMenu durationMenu;
-    //durationMenu.CreatePopupMenu();
-    //durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 50) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_50, TEXT("50 ms"));
-    //durationMenu.AppendMenu(MF_STRING /* | ((m_config.m_window_duration_millis == 100) ? MF_CHECKED : 0) */, IDM_WINDOW_DURATION_100, TEXT("100 ms"));
+//#endif
 
     //auto submenu = std::make_unique<CMenu>(menu.GetSubMenu(0));
     //b = menu.RemoveMenu(0, MF_BYPOSITION);
     //return submenu;
-
-    //menu.AppendMenu(MF_STRING, durationMenu, TEXT("Window Duration"));
-
-    //CMenu zoomMenu;
-    //zoomMenu.CreatePopupMenu();
-    //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 50) ? MF_CHECKED : 0) */, IDM_ZOOM_50, TEXT("50 %"));
-    //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 75) ? MF_CHECKED : 0) */, IDM_ZOOM_75, TEXT("75 %"));
-    //zoomMenu.AppendMenu(MF_STRING /* | ((m_config.m_zoom_percent == 100) ? MF_CHECKED : 0) */, IDM_ZOOM_100, TEXT("100 %"));
-
-    //menu.AppendMenu(MF_STRING, zoomMenu, TEXT("Zoom"));
-
-    //CMenu refreshRateLimitMenu;
-    //refreshRateLimitMenu.CreatePopupMenu();
-    //refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 20) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_20, TEXT("20 Hz"));
-    //refreshRateLimitMenu.AppendMenu(MF_STRING /* | ((m_config.m_refresh_rate_limit_hz == 60) ? MF_CHECKED : 0) */, IDM_REFRESH_RATE_LIMIT_60, TEXT("60 Hz"));
-
-    //menu.AppendMenu(MF_STRING, refreshRateLimitMenu, TEXT("Refresh Rate Limit"));
-
-    //menu.AppendMenu(MF_SEPARATOR);
-
-    //menu.AppendMenu(MF_STRING /* | (m_config.m_resample_enabled ? MF_CHECKED : 0) */, IDM_RESAMPLE_ENABLED, TEXT("Resample For Display"));
-    //menu.AppendMenu(MF_STRING /* | (m_config.m_hw_rendering_enabled ? MF_CHECKED : 0) */, IDM_HW_RENDERING_ENABLED, TEXT("Allow Hardware Rendering"));
-
-    //menu.SetMenuDefaultItem(IDM_TOGGLE_FULLSCREEN);
 
     //int cmd = menu.GetSubMenu(0).TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
     int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
@@ -634,46 +663,16 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             PrevPreset();
             break;
         case IDM_LOCK_PRESET:
-            m_config.m_bPresetLockedByUser = !m_config.m_bPresetLockedByUser;
-            LockPreset(m_config.m_bPresetLockedByUser);
+            LockPreset(!g_plugin.m_bPresetLockedByUser);
             break;
         case IDM_SHUFFLE_PRESET:
             RandomPreset();
             break;
         case IDM_ENABLE_DOWNMIX:
-            m_config.m_bEnableDownmix = !m_config.m_bEnableDownmix;
+            m_config.settings.m_bEnableDownmix = !m_config.settings.m_bEnableDownmix;
+            g_plugin.m_bEnableDownmix = m_config.settings.m_bEnableDownmix;
             UpdateChannelMode();
             break;
-            //case IDM_HW_RENDERING_ENABLED:
-            //    m_config.m_hw_rendering_enabled = !m_config.m_hw_rendering_enabled;
-            //    DiscardDeviceResources();
-            //    break;
-            //case IDM_RESAMPLE_ENABLED:
-            //    m_config.m_resample_enabled = !m_config.m_resample_enabled;
-            //    break;
-            //case IDM_WINDOW_DURATION_50:
-            //    m_config.m_window_duration_millis = 50;
-            //    break;
-            //case IDM_WINDOW_DURATION_100:
-            //    m_config.m_window_duration_millis = 100;
-            //    break;
-            //case IDM_ZOOM_50:
-            //    m_config.m_zoom_percent = 50;
-            //    break;
-            //case IDM_ZOOM_75:
-            //    m_config.m_zoom_percent = 75;
-            //    break;
-            //case IDM_ZOOM_100:
-            //    m_config.m_zoom_percent = 100;
-            //    break;
-            //case IDM_REFRESH_RATE_LIMIT_20:
-            //    m_config.m_refresh_rate_limit_hz = 20;
-            //    UpdateRefreshRateLimit();
-            //    break;
-            //case IDM_REFRESH_RATE_LIMIT_60:
-            //    m_config.m_refresh_rate_limit_hz = 60;
-            //    UpdateRefreshRateLimit();
-            //    break;
     }
 
     Invalidate();
@@ -763,6 +762,7 @@ LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM
         case 0: // Preferences Dialog
             {
                 m_config.reset();
+                g_plugin.OverrideSettings(&m_config.settings);
                 break;
             }
         case 1: // Advanced Preferences
@@ -785,20 +785,38 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;
+        if (!g_plugin.OverrideSettings(&m_config.settings))
+            return false;
 
         if (!s_fullscreen)
             g_hWindow = get_wnd();
-        s_milk2 = true;
     }
 
-    DXCONTEXT_PARAMS params{};
-    g_plugin.StuffParams(&params);
     g_plugin.SetWinampWindow(window);
-    g_game = std::make_unique<DXContext>(window, &params, g_plugin.m_szConfigIniFile);
-    SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
+    if (!s_milk2 == !s_fullscreen)
+    {
+        DXCONTEXT_PARAMS params{};
+        g_plugin.StuffParams(&params);
+        g_game = std::make_unique<DXContext>(window, &params, g_plugin.m_szConfigIniFile);
+        SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
+    }
 
-    if (FALSE == g_plugin.PluginInitialize(std::move(g_game), 0, 0, width, height, static_cast<float>(width) / static_cast<float>(height)))
-        return false;
+    if (!s_milk2 && !s_fullscreen)
+    {
+        if (FALSE == g_plugin.PluginInitialize(std::move(g_game), width, height, false, false))
+            return false;
+        s_milk2 = true;
+    }
+    else if (s_milk2 && s_fullscreen)
+    {
+        if (FALSE == g_plugin.PluginInitialize(std::move(g_game), width, height, true, false))
+            return false;
+    }
+    else if (s_milk2 && !m_milk2 && !s_fullscreen)
+    {
+        if (FALSE == g_plugin.PluginInitialize(nullptr, width, height, false, true))
+            return false;
+    }
 
     m_milk2 = true;
 
@@ -928,12 +946,13 @@ void milk2_ui_element::ToggleFullScreen()
     MILK2_CONSOLE_LOG("ToggleFullScreen ", GetWnd())
     if (m_milk2)
     {
-        static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
         if (!s_fullscreen)
         {
             g_hWindow = get_wnd();
             m_milk2 = false;
         }
+        s_fullscreen = !s_fullscreen;
+        static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
         //g_plugin.ToggleFullScreen();
         //g_plugin.PluginQuit();
 #if 0
@@ -959,7 +978,6 @@ void milk2_ui_element::ToggleFullScreen()
             ShowWindow(SW_SHOWMAXIMIZED);
         }
 #endif
-        s_fullscreen = !s_fullscreen;
         MILK2_CONSOLE_LOG("ToggleFullScreen2 ", GetWnd())
     }
 }
@@ -1050,7 +1068,7 @@ void milk2_ui_element::UpdateChannelMode()
 {
     if (m_vis_stream.is_valid())
     {
-        m_vis_stream->set_channel_mode(m_config.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
+        m_vis_stream->set_channel_mode(g_plugin.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
     }
 }
 

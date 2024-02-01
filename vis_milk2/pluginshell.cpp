@@ -227,7 +227,7 @@ void CPluginShell::ToggleFullScreen()
     DXCONTEXT_PARAMS params{};
     StuffParams(&params);
 
-    if (!m_lpDX->StartOrRestartDevice(/*&params*/))
+    if (!m_lpDX->StartOrRestartDevice(&params))
     {
         // Note: A basic warning message box will have already been given.
         if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
@@ -270,7 +270,7 @@ int CPluginShell::InitDirectX()
     }
 
     // Initialize graphics.
-    if (!m_lpDX->StartOrRestartDevice())
+    if (!m_lpDX->StartOrRestartDevice(&params))
     {
         // Note: A basic warning message box will have already been given.
         /* if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
@@ -543,20 +543,22 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     return TRUE;
 }
 
-int CPluginShell::PluginInitialize(std::unique_ptr<DXContext> pContext, int /* iPosX */, int /* iPosY */, int iWidth, int iHeight, float /* pixelRatio */)
+int CPluginShell::PluginInitialize(std::unique_ptr<DXContext> pContext, int iWidth, int iHeight, bool fullscreen, bool recover)
 {
+    assert(!(fullscreen && recover));
+    if (fullscreen)
+        m_lpDX_paused = std::move(m_lpDX);
     m_lpDX = std::move(pContext);
+    if (recover)
+        m_lpDX = std::move(m_lpDX_paused);
 
     m_disp_mode_fs.Width = iWidth;
     m_disp_mode_fs.Height = iHeight;
-    //m_posX = iPosX;
-    //m_posY = iPosY;
-    //m_pixelRatio = pixelRatio;
 
-    if (!InitDirectX()) return FALSE;
+    if (!recover && !InitDirectX()) return FALSE;
     m_lpDX->m_client_width = iWidth;
     m_lpDX->m_client_height = iHeight;
-    if (!InitNonDX11()) return FALSE;
+    if (!fullscreen && !recover && !InitNonDX11()) return FALSE;
     if (!AllocateDX11()) return FALSE;
     //if (!InitVJ()) return FALSE;
 
@@ -565,12 +567,10 @@ int CPluginShell::PluginInitialize(std::unique_ptr<DXContext> pContext, int /* i
 
 void CPluginShell::PluginQuit(BOOL destroy)
 {
-    if (destroy)
-{
     //CleanUpVJ();
     CleanUpDX11(1);
-    CleanUpNonDX11();
-    }
+    if (destroy)
+        CleanUpNonDX11();
     CleanUpDirectX();
 }
 

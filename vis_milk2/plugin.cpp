@@ -687,6 +687,92 @@ void CPlugin::MilkDropWriteConfig()
 #endif
 }
 
+bool CPlugin::OverrideSettings(plugin_config* settings)
+{
+    // CPluginShell::ReadConfig()
+    //m_multisample_fullscreen = {settings->m_multisample_fullscreen.Count, 0U};
+    //m_multisample_windowed = {settings->m_multisample_windowed.Count, 0U};
+
+    //m_start_fullscreen = settings->m_start_fullscreen;
+    m_max_fps_fs = settings->m_max_fps_fs;
+    m_max_fps_w = settings->m_max_fps_w;
+    m_show_press_f1_msg = settings->m_show_press_f1_msg;
+    m_allow_page_tearing_w = settings->m_allow_page_tearing_w;
+    m_allow_page_tearing_fs = settings->m_allow_page_tearing_fs;
+    //m_minimize_winamp = settings->m_minimize_winamp;
+    //m_dualhead_horz = settings->m_dualhead_horz;
+    //m_dualhead_vert = settings->m_dualhead_vert;
+    //m_save_cpu = settings->m_save_cpu;
+    //m_skin = settings->m_skin;
+    //m_fix_slow_text = settings->m_fix_slow_text;
+
+    //m_disp_mode_fs.Width = settings->m_disp_mode_fs.Width;
+    //m_disp_mode_fs.Height = settings->m_disp_mode_fs.Height;
+    //m_disp_mode_fs.RefreshRate.Numerator = settings->m_disp_mode_fs.RefreshRate.Numerator;
+    //m_disp_mode_fs.RefreshRate.Denominator = settings->m_disp_mode_fs.RefreshRate.Denominator;
+    //m_disp_mode_fs.Format = settings->m_disp_mode_fs.Format;
+
+    // CPlugin::MilkDropReadConfig()
+    m_bEnableRating = settings->m_bEnableRating;
+    m_bHardCutsDisabled = settings->m_bHardCutsDisabled;
+    g_bDebugOutput = settings->g_bDebugOutput;
+    //m_bShowSongInfo = settings->m_bShowSongInfo;
+    //m_bShowPressF1ForHelp = settings->m_bShowPressF1ForHelp;
+    //m_bShowMenuToolTips = settings->m_bShowMenuToolTips;
+    m_bSongTitleAnims = settings->m_bSongTitleAnims;
+
+    m_bShowFPS = settings->m_bShowFPS;
+    m_bShowRating = settings->m_bShowRating;
+    m_bShowPresetInfo = settings->m_bShowPresetInfo;
+    //m_bShowDebugInfo = settings->m_bShowDebugInfo;
+    m_bShowSongTitle = settings->m_bShowSongTitle;
+    m_bShowSongTime = settings->m_bShowSongTime;
+    m_bShowSongLen = settings->m_bShowSongLen;
+    m_bShowShaderHelp = settings->m_bShowShaderHelp;
+
+    //m_bFixPinkBug = settings->m_bFixPinkBug;
+    m_n16BitGamma = settings->m_n16BitGamma;
+    m_bAutoGamma = settings->m_bAutoGamma;
+    //m_bAlways3D = settings->m_bAlways3D;
+    //m_fStereoSep = settings->m_fStereoSep;
+    //m_bFixSlowText = settings->m_bFixSlowText;
+    //m_bAlwaysOnTop = settings->m_bAlwaysOnTop;
+    //m_bWarningsDisabled = settings->m_bWarningsDisabled;
+    m_bWarningsDisabled2 = settings->m_bWarningsDisabled2;
+    //m_bAnisotropicFiltering = settings->m_bAnisotropicFiltering;
+    m_bPresetLockOnAtStartup = settings->m_bPresetLockOnAtStartup;
+    m_bPreventScollLockHandling = settings->m_bPreventScollLockHandling;
+
+    m_nCanvasStretch = settings->m_nCanvasStretch;
+    m_nTexSizeX = settings->m_nTexSizeX;
+    m_nTexSizeY = settings->m_nTexSizeY;
+    m_bTexSizeWasAutoPow2 = settings->m_bTexSizeWasAutoPow2;
+    m_bTexSizeWasAutoExact = settings->m_bTexSizeWasAutoExact;
+    m_nTexBitsPerCh = settings->m_nTexBitsPerCh;
+    m_nGridX = settings->m_nGridX;
+    m_nGridY = settings->m_nGridY;
+    m_nMaxPSVersion_ConfigPanel = settings->m_nMaxPSVersion;
+    m_nMaxImages = settings->m_nMaxImages;
+    m_nMaxBytes = settings->m_nMaxBytes;
+
+    m_fBlendTimeUser = settings->m_fBlendTimeUser;
+    m_fBlendTimeAuto = settings->m_fBlendTimeAuto;
+    m_fTimeBetweenPresets = settings->m_fTimeBetweenPresets;
+    m_fTimeBetweenPresetsRand = settings->m_fTimeBetweenPresetsRand;
+    m_fHardCutLoudnessThresh = settings->m_fHardCutLoudnessThresh;
+    m_fHardCutHalflife = settings->m_fHardCutHalflife;
+    m_fSongTitleAnimDuration = settings->m_fSongTitleAnimDuration;
+    m_fTimeBetweenRandomSongTitles = settings->m_fTimeBetweenRandomSongTitles;
+    m_fTimeBetweenRandomCustomMsgs = settings->m_fTimeBetweenRandomCustomMsgs;
+
+    m_bPresetLockedByUser = settings->m_bPresetLockedByUser;
+    //m_bMilkdropScrollLockState = settings->m_bMilkdropScrollLockState;
+
+    m_bEnableDownmix = settings->m_bEnableDownmix;
+
+    return true;
+}
+
 //----------------------------------------------------------------------
 
 void StripComments(char* str)

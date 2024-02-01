@@ -108,9 +108,6 @@ static constexpr GUID guid_cfg_szPresetDir = {
 // Defaults
 // `milk.ini` defaults
 //constexpr int default_nFpsLimit = -1;
-static constexpr int default_nSongTitlesSpawned = 0;
-static constexpr bool default_nCustMsgsSpawned = 0;
-static constexpr bool default_nFramesSinceResize = 0;
 static constexpr bool default_bEnableRating = true;
 static constexpr bool default_bHardCutsDisabled = true;
 static constexpr bool default_bDebugOutput = false;
@@ -149,15 +146,7 @@ static constexpr int default_nMaxPSVersion = -1; // -1 = auto, 0 = disable shade
 static constexpr int default_nMaxImages = 32;
 static constexpr int default_nMaxBytes = 16000000;
 static constexpr bool default_bPresetLockedByCode = false;
-static constexpr float default_fStartTime = 0.0f;
-static constexpr float default_fPresetStartTime = 0.0f;
-static constexpr float default_fNextPresetTime = -1.0f; // negative value means no time set (...it will be auto-set on first call to `UpdateTime()`)
-static constexpr bool default_nLoadingPreset = 0;
-static constexpr bool default_nPresetsLoadedTotal = 0;
-static constexpr float default_fSnapPoint = 0.5f;
 static constexpr bool default_bShowShaderHelp = false;
-static constexpr float default_fMotionVectorsTempDx = 0.0f;
-static constexpr float default_fMotionVectorsTempDy = 0.0f;
 static constexpr float default_fBlendTimeUser = 1.7f;
 static constexpr float default_fBlendTimeAuto = 2.7f;
 static constexpr float default_fTimeBetweenPresets = 16.0f;
@@ -174,7 +163,7 @@ static constexpr int default_nBackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 static constexpr int default_nDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 static constexpr int default_nBackBufferCount = 2;
 static constexpr int default_nMinFeatureLevel = D3D_FEATURE_LEVEL_9_1;
-static constexpr UINT default_max_fps_w = 30;
+static constexpr UINT default_max_fps_w = 60;
 static constexpr UINT default_max_fps_fs = 30;
 static constexpr bool default_allow_page_tearing_w = true;
 static constexpr bool default_allow_page_tearing_fs = false;
@@ -204,7 +193,7 @@ static cfg_bool cfg_allow_page_tearing_w(guid_cfg_allow_page_tearing_w, default_
 static cfg_bool cfg_allow_page_tearing_fs(guid_cfg_allow_page_tearing_fs, default_allow_page_tearing_fs);
 static cfg_bool cfg_bSongTitleAnims(guid_cfg_bSongTitleAnims, default_bSongTitleAnims);
 static cfg_bool cfg_bAutoGamma(guid_cfg_bAutoGamma, default_bAutoGamma);
-static cfg_bool cfg_bHardCutsDisabled(guid_cfg_bHardCutsDisabled, static_cast<double>(default_bHardCutsDisabled));
+static cfg_bool cfg_bHardCutsDisabled(guid_cfg_bHardCutsDisabled, default_bHardCutsDisabled);
 static cfg_int cfg_max_fps_w(guid_cfg_max_fps_w, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_max_fps_fs(guid_cfg_max_fps_fs, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_n16BitGamma(guid_cfg_n16BitGamma, static_cast<int64_t>(default_n16BitGamma));
@@ -214,7 +203,7 @@ static cfg_int cfg_nCanvasStretch(guid_cfg_nCanvasStretch, static_cast<int64_t>(
 static cfg_int cfg_nGridX(guid_cfg_nGridX, static_cast<int64_t>(default_nGridX));
 static cfg_int cfg_nTexSizeX(guid_cfg_nTexSizeX, static_cast<int64_t>(default_nTexSizeX));
 static cfg_int cfg_nTexBitsPerCh(guid_cfg_nTexBitsPerCh, static_cast<int64_t>(default_nTexBitsPerCh));
-static cfg_int cfg_nMaxPSVersion(guid_cfg_nMaxPSVersion, default_nMaxPSVersion);
+static cfg_int cfg_nMaxPSVersion(guid_cfg_nMaxPSVersion, static_cast<int64_t>(default_nMaxPSVersion));
 static cfg_float cfg_fTimeBetweenPresets(guid_cfg_fTimeBetweenPresets, static_cast<double>(default_fTimeBetweenPresets));
 static cfg_float cfg_fTimeBetweenPresetsRand(guid_cfg_fTimeBetweenPresetsRand, static_cast<double>(default_fTimeBetweenPresetsRand));
 static cfg_float cfg_fBlendTimeAuto(guid_cfg_fBlendTimeAuto, static_cast<double>(default_fBlendTimeAuto));
@@ -612,12 +601,10 @@ void milk2_preferences_page::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScro
     {
         case IDC_HARDCUT_LOUDNESS:
         case IDC_BRIGHT_SLIDER2:
+            switch (nSBCode)
             {
-                switch (nSBCode)
-                {
-                    case TB_ENDTRACK:
-                        OnChanged();
-                }
+                case TB_ENDTRACK:
+                    OnChanged();
             }
     }
 }
@@ -808,7 +795,6 @@ bool milk2_preferences_page::HasChanged() const
     {
         if (n > 0)
             n = MAX_MAX_FPS + 1 - n;
-
         combobox_changes = combobox_changes || static_cast<UINT>(n) != cfg_max_fps_w;
     }
     n = SendMessage(GetDlgItem(IDC_FS_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
@@ -816,7 +802,6 @@ bool milk2_preferences_page::HasChanged() const
     {
         if (n > 0)
             n = MAX_MAX_FPS + 1 - n;
-
         combobox_changes = combobox_changes || static_cast<UINT>(n) != cfg_max_fps_fs;
     }
     ctrl = GetDlgItem(IDC_SHADERS);
@@ -1032,95 +1017,105 @@ uint32_t milk2_config::g_get_version() const
     return m_version;
 }
 
+uint32_t milk2_config::get_sentinel() const
+{
+    return m_sentinel;
+}
+
 void milk2_config::reset()
 {
-    //m_nFpsLimit = default_nFpsLimit;
-    m_nSongTitlesSpawned = default_nSongTitlesSpawned;
-    m_nCustMsgsSpawned = default_nCustMsgsSpawned;
-    m_nFramesSinceResize = default_nFramesSinceResize;
+    //--- CPluginShell::ReadConfig()
+    //settings.m_multisample_fullscreen;
+    //settings.m_multisample_windowed;
 
-    m_bEnableRating = cfg_bEnableRating.get();
-    m_bHardCutsDisabled = cfg_bHardCutsDisabled.get();
-    g_bDebugOutput = cfg_bDebugOutput.get();
-    //m_bShowSongInfo;
-    m_bShowPressF1ForHelp = cfg_bShowPressF1ForHelp.get();
-    //m_bShowMenuToolTips;
-    m_bSongTitleAnims = cfg_bSongTitleAnims.get();
+    //settings.m_start_fullscreen;
+    settings.m_max_fps_fs = static_cast<uint32_t>(cfg_max_fps_fs);
+    settings.m_max_fps_w = static_cast<uint32_t>(cfg_max_fps_w);
+    settings.m_show_press_f1_msg = static_cast<uint32_t>(cfg_bShowPressF1ForHelp);
+    settings.m_allow_page_tearing_w = static_cast<uint32_t>(cfg_allow_page_tearing_w);
+    settings.m_allow_page_tearing_fs = static_cast<uint32_t>(cfg_allow_page_tearing_fs);
+    //settings.m_minimize_winamp;
+    //settings.m_dualhead_horz;
+    //settings.m_dualhead_vert;
+    //settings.m_save_cpu;
+    //settings.m_skin;
+    //settings.m_fix_slow_text;
 
-    m_bShowFPS = default_bShowFPS;
-    m_bShowRating = default_bShowRating;
-    m_bShowPresetInfo = default_bShowPresetInfo;
-    //m_bShowDebugInfo = default_bShowDebugInfo;
-    m_bShowSongTitle = default_bShowSongTitle;
-    m_bShowSongTime = default_bShowSongTime;
-    m_bShowSongLen = default_bShowSongLen;
+    //settings.m_disp_mode_fs;
 
-    //m_bFixPinkBug = default_bFixPinkBug;
-    m_n16BitGamma = static_cast<uint32_t>(cfg_n16BitGamma.get());
-    m_bAutoGamma = cfg_bAutoGamma.get();
-    //m_bAlways3D = default_bAlways3D;
-    //m_fStereoSep = default_fStereoSep;
-    //m_bFixSlowText = default_bFixSlowText;
-    //m_bAlwaysOnTop = default_bAlwaysOnTop;
-    //m_bWarningsDisabled = default_bWarningsDisabled;
-    m_bWarningsDisabled2 = cfg_bWarningsDisabled.get();
-    //m_bAnisotropicFiltering = default_bAnisotropicFiltering;
-    m_bPresetLockOnAtStartup = cfg_bPresetLockOnAtStartup.get();
-    m_bPreventScollLockHandling = cfg_bPreventScollLockHandling.get();
+    //--- CPlugin::MilkDropReadConfig()
+    settings.m_bEnableRating = cfg_bEnableRating;
+    settings.m_bHardCutsDisabled = cfg_bHardCutsDisabled;
+    settings.g_bDebugOutput = cfg_bDebugOutput;
+    //settings.m_bShowSongInfo;
+    //settings.m_bShowPressF1ForHelp;
+    //settings.m_bShowMenuToolTips;
+    settings.m_bSongTitleAnims = cfg_bSongTitleAnims;
 
-    m_nCanvasStretch = static_cast<uint32_t>(cfg_nCanvasStretch.get());
-    m_nTexSizeX = static_cast<uint32_t>(cfg_nTexSizeX.get());
-    m_nTexSizeY = m_nTexSizeX;
-    m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
-    m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
-    m_nTexBitsPerCh = static_cast<uint32_t>(cfg_nTexBitsPerCh.get());
-    m_nGridX = static_cast<uint32_t>(cfg_nGridX.get());
-    if (m_nGridX > MAX_GRID_X)
-        m_nGridX = MAX_GRID_X;
-    m_nGridY = m_nGridX * 3 / 4;
-    if (m_nGridY > MAX_GRID_Y)
-        m_nGridY = MAX_GRID_Y;
-    m_nMaxPSVersion = static_cast<uint32_t>(cfg_nMaxPSVersion.get());
-    m_nMaxImages = static_cast<uint32_t>(cfg_nMaxImages.get());
-    m_nMaxBytes = static_cast<uint32_t>(cfg_nMaxBytes.get());
+    settings.m_bShowFPS = default_bShowFPS;
+    settings.m_bShowRating = default_bShowRating;
+    settings.m_bShowPresetInfo = default_bShowPresetInfo;
+    //settings.m_bShowDebugInfo = default_bShowDebugInfo;
+    settings.m_bShowSongTitle = default_bShowSongTitle;
+    settings.m_bShowSongTime = default_bShowSongTime;
+    settings.m_bShowSongLen = default_bShowSongLen;
+    settings.m_bShowShaderHelp = default_bShowShaderHelp;
 
-    m_fBlendTimeUser = static_cast<float>(cfg_fBlendTimeUser.get());
-    m_fBlendTimeAuto = static_cast<float>(cfg_fBlendTimeAuto.get());
-    m_fTimeBetweenPresets = static_cast<float>(cfg_fTimeBetweenPresets.get());
-    m_fTimeBetweenPresetsRand = static_cast<float>(cfg_fTimeBetweenPresetsRand.get());
-    m_fHardCutLoudnessThresh = static_cast<float>(cfg_fHardCutLoudnessThresh.get());
-    m_fHardCutHalflife = static_cast<float>(cfg_fHardCutHalflife.get());
-    m_fSongTitleAnimDuration = static_cast<float>(cfg_fSongTitleAnimDuration.get());
-    m_fTimeBetweenRandomSongTitles = static_cast<float>(cfg_fTimeBetweenRandomSongTitles.get());
-    m_fTimeBetweenRandomCustomMsgs = static_cast<float>(cfg_fTimeBetweenRandomCustomMsgs.get());
+    //settings.m_bFixPinkBug = default_bFixPinkBug;
+    settings.m_n16BitGamma = static_cast<uint32_t>(cfg_n16BitGamma);
+    settings.m_bAutoGamma = cfg_bAutoGamma;
+    //settings.m_bAlways3D = default_bAlways3D;
+    //settings.m_fStereoSep = default_fStereoSep;
+    //settings.m_bFixSlowText = default_bFixSlowText;
+    //settings.m_bAlwaysOnTop = default_bAlwaysOnTop;
+    //settings.m_bWarningsDisabled = default_bWarningsDisabled;
+    settings.m_bWarningsDisabled2 = cfg_bWarningsDisabled;
+    //settings.m_bAnisotropicFiltering = default_bAnisotropicFiltering;
+    settings.m_bPresetLockOnAtStartup = cfg_bPresetLockOnAtStartup;
+    settings.m_bPreventScollLockHandling = cfg_bPreventScollLockHandling;
 
-    m_bPresetLockedByCode = default_bPresetLockedByCode;
-    m_fStartTime = default_fStartTime;
-    m_fPresetStartTime = default_fPresetStartTime;
-    m_fNextPresetTime = default_fNextPresetTime;
-    m_nLoadingPreset = default_nLoadingPreset;
-    m_nPresetsLoadedTotal = default_nPresetsLoadedTotal;
-    m_fSnapPoint = default_fSnapPoint;
-    m_bShowShaderHelp = default_bShowShaderHelp;
-    m_fMotionVectorsTempDx = default_fMotionVectorsTempDx;
-    m_fMotionVectorsTempDy = default_fMotionVectorsTempDy;
+    settings.m_nCanvasStretch = static_cast<uint32_t>(cfg_nCanvasStretch);
+    settings.m_nTexSizeX = static_cast<uint32_t>(cfg_nTexSizeX);
+    settings.m_nTexSizeY = settings.m_nTexSizeX;
+    settings.m_bTexSizeWasAutoPow2 = (settings.m_nTexSizeX == -2);
+    settings.m_bTexSizeWasAutoExact = (settings.m_nTexSizeX == -1);
+    settings.m_nTexBitsPerCh = static_cast<uint32_t>(cfg_nTexBitsPerCh);
+    settings.m_nGridX = static_cast<uint32_t>(cfg_nGridX);
+    if (settings.m_nGridX > MAX_GRID_X)
+        settings.m_nGridX = MAX_GRID_X;
+    settings.m_nGridY = settings.m_nGridX * 3 / 4;
+    if (settings.m_nGridY > MAX_GRID_Y)
+        settings.m_nGridY = MAX_GRID_Y;
+    settings.m_nMaxPSVersion = static_cast<uint32_t>(cfg_nMaxPSVersion);
+    settings.m_nMaxImages = static_cast<uint32_t>(cfg_nMaxImages);
+    settings.m_nMaxBytes = static_cast<uint32_t>(cfg_nMaxBytes);
 
-    m_bPresetLockedByUser = m_bPresetLockOnAtStartup;
-    //m_bMilkdropScrollLockState = m_bPresetLockOnAtStartup;
+    settings.m_fBlendTimeUser = static_cast<float>(cfg_fBlendTimeUser);
+    settings.m_fBlendTimeAuto = static_cast<float>(cfg_fBlendTimeAuto);
+    settings.m_fTimeBetweenPresets = static_cast<float>(cfg_fTimeBetweenPresets);
+    settings.m_fTimeBetweenPresetsRand = static_cast<float>(cfg_fTimeBetweenPresetsRand);
+    settings.m_fHardCutLoudnessThresh = static_cast<float>(cfg_fHardCutLoudnessThresh);
+    settings.m_fHardCutHalflife = static_cast<float>(cfg_fHardCutHalflife);
+    settings.m_fSongTitleAnimDuration = static_cast<float>(cfg_fSongTitleAnimDuration);
+    settings.m_fTimeBetweenRandomSongTitles = static_cast<float>(cfg_fTimeBetweenRandomSongTitles);
+    settings.m_fTimeBetweenRandomCustomMsgs = static_cast<float>(cfg_fTimeBetweenRandomCustomMsgs);
 
-    m_bEnableDownmix = default_bEnableDownmix;
-    m_bAllowTearing = default_bAllowTearing;
-    m_bEnableHDR = default_bEnableHDR;
-    m_nBackBufferFormat = default_nBackBufferFormat;
-    m_nDepthBufferFormat = default_nDepthBufferFormat;
-    m_nBackBufferCount = default_nBackBufferCount;
-    m_nMinFeatureLevel = default_nMinFeatureLevel;
+    settings.m_bPresetLockedByCode = default_bPresetLockedByCode;
+    settings.m_bPresetLockedByUser = settings.m_bPresetLockOnAtStartup;
+    //settings.m_bMilkdropScrollLockState = settings.m_bPresetLockOnAtStartup;
 
-    //m_max_fps_w = static_cast<uint32_t>(cfg_max_fps_w.get());
-    //m_max_fps_fs = static_cast<uint32_t>(cfg_max_fps_fs.get());
-    //m_allow_page_tearing_w = static_cast<uint32_t>(cfg_allow_page_tearing_w.get());
-    //m_allow_page_tearing_fs = static_cast<uint32_t>(cfg_allow_page_tearing_fs.get());
+    //--- Extras
+    settings.m_bEnableDownmix = default_bEnableDownmix;
+    settings.m_bAllowTearing = default_bAllowTearing;
+    settings.m_bEnableHDR = default_bEnableHDR;
+    settings.m_nBackBufferFormat = default_nBackBufferFormat;
+    settings.m_nDepthBufferFormat = default_nDepthBufferFormat;
+    settings.m_nBackBufferCount = default_nBackBufferCount;
+    settings.m_nMinFeatureLevel = default_nMinFeatureLevel;
 
+    //settings.m_nFpsLimit = default_nFpsLimit;
+
+    //--- Paths
     update_paths();
 }
 
@@ -1149,21 +1144,21 @@ void milk2_config::update_paths()
 {
     if (cfg_szPresetDir.get().empty())
     {
-        wcscpy_s(m_szPresetDir, default_szPresetDir);
+        wcscpy_s(settings.m_szPresetDir, default_szPresetDir);
         cfg_szPresetDir.set(default_szPresetDirA);
-        strcpy_s(m_szPresetDirA, default_szPresetDirA);
+        strcpy_s(settings.m_szPresetDirA, default_szPresetDirA);
     }
     else
     {
         size_t convertedChars;
-        mbstowcs_s(&convertedChars, m_szPresetDir, cfg_szPresetDir.get().c_str(), _TRUNCATE);
-        strcpy_s(m_szPresetDirA, cfg_szPresetDir.get().c_str());
+        mbstowcs_s(&convertedChars, settings.m_szPresetDir, cfg_szPresetDir.get().c_str(), _TRUNCATE);
+        strcpy_s(settings.m_szPresetDirA, cfg_szPresetDir.get().c_str());
     }
-    wcscpy_s(m_szPluginsDirPath, default_szPluginsDirPath);
-    wcscpy_s(m_szConfigIniFile, default_szConfigIniFile);
-    wcscpy_s(m_szMilkdrop2Path, default_szMilkdrop2Path);
-    wcscpy_s(m_szMsgIniFile, default_szMsgIniFile);
-    wcscpy_s(m_szImgIniFile, default_szImgIniFile);
+    wcscpy_s(settings.m_szPluginsDirPath, default_szPluginsDirPath);
+    wcscpy_s(settings.m_szConfigIniFile, default_szConfigIniFile);
+    wcscpy_s(settings.m_szMilkdrop2Path, default_szMilkdrop2Path);
+    wcscpy_s(settings.m_szMsgIniFile, default_szMsgIniFile);
+    wcscpy_s(settings.m_szImgIniFile, default_szImgIniFile);
 }
 
 // Reads the configuration.
@@ -1177,96 +1172,96 @@ void milk2_config::parse(ui_element_config_parser& parser)
         switch (version)
         {
             case 0:
-                //parser >> m_nFpsLimit;
-                parser >> m_nSongTitlesSpawned;
-                parser >> m_nCustMsgsSpawned;
-                parser >> m_nFramesSinceResize;
+                //parser >> m_multisample_fullscreen;
+                //parser >> m_multisample_windowed;
 
-                //parser >> m_bEnableRating;
-                //parser >> m_bHardCutsDisabled;
-                //parser >> g_bDebugOutput;
-                //parser >> m_bShowSongInfo;
-                //parser >> m_bShowPressF1ForHelp;
-                //parser >> m_bShowMenuToolTips;
-                //parser >> m_bSongTitleAnims;
-
-                parser >> m_bShowFPS;
-                parser >> m_bShowRating;
-                parser >> m_bShowPresetInfo;
-                //parser >> m_bShowDebugInfo;
-                parser >> m_bShowSongTitle;
-                parser >> m_bShowSongTime;
-                parser >> m_bShowSongLen;
-
-                //parser >> m_bFixPinkBug;
-                //parser >> m_n16BitGamma;
-                //parser >> m_bAutoGamma;
-                //parser >> m_bAlways3D;
-                //parser >> m_fStereoSep;
-                //parser >> m_bFixSlowText;
-                //parser >> m_bAlwaysOnTop;
-                //parser >> m_bWarningsDisabled;
-                //parser >> m_bWarningsDisabled2;
-                //parser >> m_bAnisotropicFiltering;
-                //parser >> m_bPresetLockOnAtStartup;
-                //parser >> m_bPreventScollLockHandling;
-
-                //parser >> m_nCanvasStretch;
-                //parser >> m_nTexSizeX;
-                parser >> m_nTexSizeY;
-                parser >> m_bTexSizeWasAutoPow2;
-                parser >> m_bTexSizeWasAutoExact;
-                //parser >> m_nTexBitsPerCh;
-                //parser >> m_nGridX;
-                parser >> m_nGridY;
-                //parser >> m_nMaxPSVersion;
-                //parser >> m_nMaxImages;
-                //parser >> m_nMaxBytes;
-
-                //parser >> m_fBlendTimeUser;
-                //parser >> m_fBlendTimeAuto;
-                //parser >> m_fTimeBetweenPresets;
-                //parser >> m_fTimeBetweenPresetsRand;
-                //parser >> m_fHardCutLoudnessThresh;
-                //parser >> m_fHardCutHalflife;
-                //parser >> m_fSongTitleAnimDuration;
-                //parser >> m_fTimeBetweenRandomSongTitles;
-                //parser >> m_fTimeBetweenRandomCustomMsgs;
-
-                parser >> m_bPresetLockedByCode;
-                parser >> m_fStartTime;
-                parser >> m_fPresetStartTime;
-                parser >> m_fNextPresetTime;
-                parser >> m_nLoadingPreset;
-                parser >> m_nPresetsLoadedTotal;
-                parser >> m_fSnapPoint;
-                parser >> m_bShowShaderHelp;
-                parser >> m_fMotionVectorsTempDx;
-                parser >> m_fMotionVectorsTempDy;
-
-                //parser >> m_bPresetLockedByUser;
-                //parser >> m_bMilkdropScrollLockState;
-
-                parser >> m_bEnableDownmix;
-                parser >> m_bAllowTearing;
-                parser >> m_bEnableHDR;
-                parser >> m_nBackBufferFormat;
-                parser >> m_nDepthBufferFormat;
-                parser >> m_nBackBufferCount;
-                parser >> m_nMinFeatureLevel;
-
-                //parser >> m_max_fps_w;
+                //parser >> m_start_fullscreen;
                 //parser >> m_max_fps_fs;
+                //parser >> m_max_fps_w;
+                //parser >> m_show_press_f1_msg;
                 //parser >> m_allow_page_tearing_w;
                 //parser >> m_allow_page_tearing_fs;
+                //parser >> m_minimize_winamp;
+                //parser >> m_dualhead_horz;
+                //parser >> m_dualhead_vert;
+                //parser >> m_save_cpu;
+                //parser >> m_skin;
+                //parser >> m_fix_slow_text;
 
-                parser >> m_szPluginsDirPath;
-                parser >> m_szConfigIniFile;
-                parser >> m_szMilkdrop2Path;
-                parser >> m_szPresetDir;
-                parser >> m_szPresetDirA;
-                parser >> m_szMsgIniFile;
-                parser >> m_szImgIniFile;
+                //parser >> m_disp_mode_fs;
+
+                //parser >> settings.m_bEnableRating;
+                //parser >> settings.m_bHardCutsDisabled;
+                //parser >> settings.g_bDebugOutput;
+                //parser >> settings.m_bShowSongInfo;
+                //parser >> settings.m_bShowPressF1ForHelp;
+                //parser >> settings.m_bShowMenuToolTips;
+                //parser >> settings.m_bSongTitleAnims;
+
+                parser >> settings.m_bShowFPS;
+                parser >> settings.m_bShowRating;
+                parser >> settings.m_bShowPresetInfo;
+                //parser >> settings.m_bShowDebugInfo;
+                parser >> settings.m_bShowSongTitle;
+                parser >> settings.m_bShowSongTime;
+                parser >> settings.m_bShowSongLen;
+                parser >> settings.m_bShowShaderHelp;
+
+                //parser >> settings.m_bFixPinkBug;
+                //parser >> settings.m_n16BitGamma;
+                //parser >> settings.m_bAutoGamma;
+                //parser >> settings.m_bAlways3D;
+                //parser >> settings.m_fStereoSep;
+                //parser >> settings.m_bFixSlowText;
+                //parser >> settings.m_bAlwaysOnTop;
+                //parser >> settings.m_bWarningsDisabled;
+                //parser >> settings.m_bWarningsDisabled2;
+                //parser >> settings.m_bAnisotropicFiltering;
+                //parser >> settings.m_bPresetLockOnAtStartup;
+                //parser >> settings.m_bPreventScollLockHandling;
+
+                //parser >> settings.m_nCanvasStretch;
+                //parser >> settings.m_nTexSizeX;
+                parser >> settings.m_nTexSizeY;
+                parser >> settings.m_bTexSizeWasAutoPow2;
+                parser >> settings.m_bTexSizeWasAutoExact;
+                //parser >> settings.m_nTexBitsPerCh;
+                //parser >> settings.m_nGridX;
+                parser >> settings.m_nGridY;
+                //parser >> settings.m_nMaxPSVersion;
+                //parser >> settings.m_nMaxImages;
+                //parser >> settings.m_nMaxBytes;
+
+                //parser >> settings.m_fBlendTimeUser;
+                //parser >> settings.m_fBlendTimeAuto;
+                //parser >> settings.m_fTimeBetweenPresets;
+                //parser >> settings.m_fTimeBetweenPresetsRand;
+                //parser >> settings.m_fHardCutLoudnessThresh;
+                //parser >> settings.m_fHardCutHalflife;
+                //parser >> settings.m_fSongTitleAnimDuration;
+                //parser >> settings.m_fTimeBetweenRandomSongTitles;
+                //parser >> settings.m_fTimeBetweenRandomCustomMsgs;
+
+                parser >> settings.m_bPresetLockedByCode;
+                //parser >> settings.m_bPresetLockedByUser;
+                //parser >> settings.m_bMilkdropScrollLockState;
+                //parser >> settings.m_nFpsLimit;
+
+                parser >> settings.m_bEnableDownmix;
+                parser >> settings.m_bAllowTearing;
+                parser >> settings.m_bEnableHDR;
+                parser >> settings.m_nBackBufferFormat;
+                parser >> settings.m_nDepthBufferFormat;
+                parser >> settings.m_nBackBufferCount;
+                parser >> settings.m_nMinFeatureLevel;
+
+                parser >> settings.m_szPluginsDirPath;
+                parser >> settings.m_szConfigIniFile;
+                parser >> settings.m_szMilkdrop2Path;
+                parser >> settings.m_szPresetDir;
+                parser >> settings.m_szPresetDirA;
+                parser >> settings.m_szMsgIniFile;
+                parser >> settings.m_szImgIniFile;
                 break;
             default:
                 FB2K_console_formatter() << core_api::get_my_file_name() << ": Unknown configuration format version: " << version;
@@ -1284,94 +1279,94 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << m_sentinel;
     builder << g_get_version();
 
-    //builder << m_nFpsLimit;
-    builder << m_nSongTitlesSpawned;
-    builder << m_nCustMsgsSpawned;
-    builder << m_nFramesSinceResize;
+    //builder << m_multisample_fullscreen;
+    //builder << m_multisample_windowed;
 
-    cfg_bEnableRating = m_bEnableRating;
-    cfg_bHardCutsDisabled = m_bHardCutsDisabled;
-    cfg_bDebugOutput = g_bDebugOutput;
-    //builder << m_bShowSongInfo;
-    cfg_bShowPressF1ForHelp = m_bShowPressF1ForHelp;
-    //builder << m_bShowMenuToolTips;
-    cfg_bSongTitleAnims = m_bSongTitleAnims;
+    //builder << settings.m_start_fullscreen;
+    cfg_max_fps_fs = settings.m_max_fps_fs;
+    cfg_max_fps_w = settings.m_max_fps_w;
+    //builder << settings.m_show_press_f1_msg;
+    cfg_allow_page_tearing_w = settings.m_allow_page_tearing_w;
+    cfg_allow_page_tearing_fs = settings.m_allow_page_tearing_fs;
+    //builder << settings.m_minimize_winamp;
+    //builder << settings.m_dualhead_horz;
+    //builder << settings.m_dualhead_vert;
+    //builder << settings.m_save_cpu;
+    //builder << settings.m_skin;
+    //builder << settings.m_fix_slow_text;
 
-    builder << m_bShowFPS;
-    builder << m_bShowRating;
-    builder << m_bShowPresetInfo;
-    //builder << m_bShowDebugInfo;
-    builder << m_bShowSongTitle;
-    builder << m_bShowSongTime;
-    builder << m_bShowSongLen;
+    //parser >> m_disp_mode_fs;
 
-    //builder << m_bFixPinkBug;
-    cfg_n16BitGamma = m_n16BitGamma;
-    cfg_bAutoGamma = m_bAutoGamma;
-    //builder << m_bAlways3D;
-    //builder << m_fStereoSep;
-    //builder << m_bFixSlowText;
-    //builder << m_bAlwaysOnTop;
-    //builder << m_bWarningsDisabled;
-    cfg_bWarningsDisabled = m_bWarningsDisabled2;
-    //builder << m_bAnisotropicFiltering;
-    cfg_bPresetLockOnAtStartup = m_bPresetLockOnAtStartup;
-    cfg_bPreventScollLockHandling = m_bPreventScollLockHandling;
+    cfg_bEnableRating = settings.m_bEnableRating;
+    cfg_bHardCutsDisabled = settings.m_bHardCutsDisabled;
+    cfg_bDebugOutput = settings.g_bDebugOutput;
+    //builder << settings.m_bShowSongInfo;
+    cfg_bShowPressF1ForHelp = settings.m_show_press_f1_msg;
+    //builder << settings.m_bShowMenuToolTips;
+    cfg_bSongTitleAnims = settings.m_bSongTitleAnims;
 
-    cfg_nCanvasStretch = m_nCanvasStretch;
-    cfg_nTexSizeX = m_nTexSizeX;
-    builder << m_nTexSizeY;
-    builder << m_bTexSizeWasAutoPow2;
-    builder << m_bTexSizeWasAutoExact;
-    cfg_nTexBitsPerCh = m_nTexBitsPerCh;
-    cfg_nGridX = m_nGridX;
-    builder << m_nGridY;
-    cfg_nMaxPSVersion = m_nMaxPSVersion;
-    cfg_nMaxImages = m_nMaxImages;
-    cfg_nMaxBytes = m_nMaxBytes;
+    builder << settings.m_bShowFPS;
+    builder << settings.m_bShowRating;
+    builder << settings.m_bShowPresetInfo;
+    //builder << settings.m_bShowDebugInfo;
+    builder << settings.m_bShowSongTitle;
+    builder << settings.m_bShowSongTime;
+    builder << settings.m_bShowSongLen;
+    builder << settings.m_bShowShaderHelp;
 
-    cfg_fBlendTimeUser = m_fBlendTimeUser;
-    cfg_fBlendTimeAuto = m_fBlendTimeAuto;
-    cfg_fTimeBetweenPresets = m_fTimeBetweenPresets;
-    cfg_fTimeBetweenPresetsRand = m_fTimeBetweenPresetsRand;
-    cfg_fHardCutLoudnessThresh = m_fHardCutLoudnessThresh;
-    cfg_fHardCutHalflife = m_fHardCutHalflife;
-    cfg_fSongTitleAnimDuration = m_fSongTitleAnimDuration;
-    cfg_fTimeBetweenRandomSongTitles = m_fTimeBetweenRandomSongTitles;
-    cfg_fTimeBetweenRandomCustomMsgs = m_fTimeBetweenRandomCustomMsgs;
+    //builder << settings.m_bFixPinkBug;
+    cfg_n16BitGamma = settings.m_n16BitGamma;
+    cfg_bAutoGamma = settings.m_bAutoGamma;
+    //builder << settings.m_bAlways3D;
+    //builder << settings.m_fStereoSep;
+    //builder << settings.m_bFixSlowText;
+    //builder << settings.m_bAlwaysOnTop;
+    //builder << settings.m_bWarningsDisabled;
+    cfg_bWarningsDisabled = settings.m_bWarningsDisabled2;
+    //builder << settings.m_bAnisotropicFiltering;
+    cfg_bPresetLockOnAtStartup = settings.m_bPresetLockOnAtStartup;
+    cfg_bPreventScollLockHandling = settings.m_bPreventScollLockHandling;
 
-    builder << m_bPresetLockedByCode;
-    builder << m_fStartTime;
-    builder << m_fPresetStartTime;
-    builder << m_fNextPresetTime;
-    builder << m_nLoadingPreset;
-    builder << m_nPresetsLoadedTotal;
-    builder << m_fSnapPoint;
-    builder << m_bShowShaderHelp;
-    builder << m_fMotionVectorsTempDx;
-    builder << m_fMotionVectorsTempDy;
+    cfg_nCanvasStretch = settings.m_nCanvasStretch;
+    cfg_nTexSizeX = settings.m_nTexSizeX;
+    builder << settings.m_nTexSizeY;
+    builder << settings.m_bTexSizeWasAutoPow2;
+    builder << settings.m_bTexSizeWasAutoExact;
+    cfg_nTexBitsPerCh = settings.m_nTexBitsPerCh;
+    cfg_nGridX = settings.m_nGridX;
+    builder << settings.m_nGridY;
+    cfg_nMaxPSVersion = settings.m_nMaxPSVersion;
+    cfg_nMaxImages = settings.m_nMaxImages;
+    cfg_nMaxBytes = settings.m_nMaxBytes;
 
-    //builder << m_bPresetLockedByUser;
-    //builder << m_bMilkdropScrollLockState;
+    cfg_fBlendTimeUser = settings.m_fBlendTimeUser;
+    cfg_fBlendTimeAuto = settings.m_fBlendTimeAuto;
+    cfg_fTimeBetweenPresets = settings.m_fTimeBetweenPresets;
+    cfg_fTimeBetweenPresetsRand = settings.m_fTimeBetweenPresetsRand;
+    cfg_fHardCutLoudnessThresh = settings.m_fHardCutLoudnessThresh;
+    cfg_fHardCutHalflife = settings.m_fHardCutHalflife;
+    cfg_fSongTitleAnimDuration = settings.m_fSongTitleAnimDuration;
+    cfg_fTimeBetweenRandomSongTitles = settings.m_fTimeBetweenRandomSongTitles;
+    cfg_fTimeBetweenRandomCustomMsgs = settings.m_fTimeBetweenRandomCustomMsgs;
 
-    builder << m_bEnableDownmix;
-    builder << m_bAllowTearing;
-    builder << m_bEnableHDR;
-    builder << m_nBackBufferFormat;
-    builder << m_nDepthBufferFormat;
-    builder << m_nBackBufferCount;
-    builder << m_nMinFeatureLevel;
+    builder << settings.m_bPresetLockedByCode;
+    //builder << settings.m_bPresetLockedByUser;
+    //builder << settings.m_bMilkdropScrollLockState;
+    //builder << settings.m_nFpsLimit;
 
-    //builder << cfg_max_fps_w;
-    //builder << cfg_max_fps_fs;
-    //builder << cfg_allow_page_tearing_w;
-    //builder << cfg_allow_page_tearing_fs;
+    builder << settings.m_bEnableDownmix;
+    builder << settings.m_bAllowTearing;
+    builder << settings.m_bEnableHDR;
+    builder << settings.m_nBackBufferFormat;
+    builder << settings.m_nDepthBufferFormat;
+    builder << settings.m_nBackBufferCount;
+    builder << settings.m_nMinFeatureLevel;
 
-    builder << m_szPluginsDirPath;
-    builder << m_szConfigIniFile;
-    builder << m_szMilkdrop2Path;
-    builder << m_szPresetDir;
-    builder << m_szPresetDirA;
-    builder << m_szMsgIniFile;
-    builder << m_szImgIniFile;
+    builder << settings.m_szPluginsDirPath;
+    builder << settings.m_szConfigIniFile;
+    builder << settings.m_szMilkdrop2Path;
+    builder << settings.m_szPresetDir;
+    builder << settings.m_szPresetDirA;
+    builder << settings.m_szMsgIniFile;
+    builder << settings.m_szImgIniFile;
 }
