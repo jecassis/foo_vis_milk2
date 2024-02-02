@@ -183,7 +183,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     WCHAR m_szWnd[11];
 
     // Device resources
-    std::unique_ptr<DXContext> g_game;
+    std::unique_ptr<DXContext> g_vis;
 
     // Rendering loop timer
     DX::StepTimer m_timer;
@@ -479,7 +479,7 @@ BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
         case 0x09: // PRINT STDOUT
             {
                 LPCTSTR lpszString = (LPCTSTR)((ErrorCopy*)(pcds->lpData))->error;
-                MILK2_CONSOLE_LOG(WideToUTF8(lpszString))
+                FB2K_console_print(core_api::get_my_file_name(), ": ", WideToUTF8(lpszString));
                 break;
             }
     }
@@ -531,22 +531,27 @@ BOOL milk2_ui_element::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
 void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     MILK2_CONSOLE_LOG("OnLButtonDblClk ", GetWnd())
-//#ifdef _DEBUG
+#ifndef NO_FULLSCREEN
     ToggleFullScreen();
-//#endif
+#else
+    UNREFERENCED_PARAMETER(nFlags);
+    UNREFERENCED_PARAMETER(point);
+#endif
 }
 
+// NOTE: Keyboard messages from foobar2000 propagate to the component
+// only during full screen.
 void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    MILK2_CONSOLE_LOG("OnKeyDown ", GetWnd())
+#ifndef NO_FULLSCREEN
     switch (nChar)
     {
         case VK_ESCAPE:
-//#ifdef _DEBUG
             if (s_fullscreen)
-            {
                 ToggleFullScreen();
-            }
-//#endif
+            return;
+        case VK_F1:
             return;
         case VK_F2:
             m_config.settings.m_bShowSongTitle = !m_config.settings.m_bShowSongTitle;
@@ -582,10 +587,14 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             m_config.settings.m_bShowRating = !m_config.settings.m_bShowRating;
             g_plugin.m_bShowRating = m_config.settings.m_bShowRating;
             return;
+        case VK_F7:
+            return;
+        case VK_F8:
+            return;
         case VK_F9:
             m_config.settings.m_bShowShaderHelp = !m_config.settings.m_bShowShaderHelp;
             g_plugin.m_bShowShaderHelp = m_config.settings.m_bShowShaderHelp;
-            SetMsgHandled(FALSE);
+            //SetMsgHandled(FALSE);
             return;
         case VK_SCROLL:
             {
@@ -594,12 +603,17 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             }
             return;
     }
+#else
+    UNREFERENCED_PARAMETER(nChar);
+    UNREFERENCED_PARAMETER(nRepCnt);
+    UNREFERENCED_PARAMETER(nFlags);
+#endif
 }
 
 void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnSysKeyDown ", GetWnd())
-//#ifdef _DEBUG
+#ifndef NO_FULLSCREEN
     // Bit 29: The context code. The value is 1 if the ALT key is down while the
     //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
     //         the active window because no window has the keyboard focus.
@@ -609,7 +623,11 @@ void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     {
         ToggleFullScreen();
     }
-//#endif
+#else
+    UNREFERENCED_PARAMETER(nChar);
+    UNREFERENCED_PARAMETER(nRepCnt);
+    UNREFERENCED_PARAMETER(nFlags);
+#endif
 }
 
 void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
@@ -639,10 +657,10 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING | (g_plugin.m_bPresetLockedByUser ? MF_CHECKED : 0) | (s_fullscreen ? MF_DISABLED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (g_plugin.m_bEnableDownmix ? MF_CHECKED : 0) | (s_fullscreen ? MF_DISABLED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
-//#ifdef _DEBUG
+#ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Full Screen"));
-//#endif
+    menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
+#endif
 
     //auto submenu = std::make_unique<CMenu>(menu.GetSubMenu(0));
     //b = menu.RemoveMenu(0, MF_BYPOSITION);
@@ -690,64 +708,6 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         LoadString(core_api::get_my_instance(), HIWORD(lParam), title, 64);
         MILK2_CONSOLE_LOG("milk2 -> title: ", title, ", message: ", buf)
     }
-    //else if (lparam == IPC_SETVISWND)
-    //{
-    //    //SendMessage(m_hwnd_winamp, WM_WA_IPC, (WPARAM)m_hwnd, IPC_SETVISWND);
-    //}
-    //else if (lparam == IPC_CB_VISRANDOM)
-    //{
-    //    //SendMessage(GetWinampWindow(), WM_WA_IPC, (m_bPresetLockOnAtStartup ? 0 : 1) << 16, IPC_CB_VISRANDOM);
-    //}
-    //else if (lparam == IPC_IS_PLAYING_VIDEO)
-    //{
-    //    //if (m_screenmode == FULLSCREEN && SendMessage(GetWinampWindow(), WM_WA_IPC, 0, IPC_IS_PLAYING_VIDEO) > 1)
-    //}
-    //else if (lparam == IPC_SET_VIS_FS_FLAG)
-    //{
-    //    //    SendMessage(GetWinampWindow(), WM_WA_IPC, 1, IPC_SET_VIS_FS_FLAG);
-    //}
-    //else if (lparam == IPC_GETPLUGINDIRECTORYW)
-    //{
-    //    //(p = (wchar_t*)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETPLUGINDIRECTORYW))(
-    //}
-    //else if (lparam == IPC_GETINIDIRECTORYW)
-    //{
-    //    //    p = (wchar_t*)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))
-    //}
-    //else if (lparam == IPC_GETPLAYLISTTITLEW)
-    //{
-    //    //lstrcpyn(buf, (wchar_t*)SendMessage(m_hWndWinamp, WM_USER, j, IPC_GETPLAYLISTTITLEW),
-    //}
-    //else if (lparam == IPC_GETLISTPOS)
-    //{
-    //    //lstrcpyn(szSongTitle, (wchar_t *)SendMessage(hWndWinamp, WM_WA_IPC, SendMessage(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS), IPC_GETPLAYLISTTITLEW), nSize);
-    //}
-    //else if (lparam == IPC_GET_D3DX9)
-    //{
-    //    //HMODULE d3dx9 = (HMODULE)SendMessage(winamp, WM_WA_IPC, 0, IPC_GET_D3DX9);
-    //}
-    //else if (lparam == IPC_GET_API_SERVICE)
-    //{
-    //    //WASABI_API_SVC = (api_service*)SendMessage(hwndParent, WM_WA_IPC, 0, IPC_GET_API_SERVICE);
-    //}
-    //else if (lparam == IPC_GETDIALOGBOXPARENT)
-    //{
-    //    //HWND parent = (HWND)SendMessage(winamp, WM_WA_IPC, 0, IPC_GETDIALOGBOXPARENT);
-    //}
-    //else if (lparam == IPC_GET_RANDFUNC)
-    //{
-    //    //warand = (int (*)(void))SendMessage(this_mod->hwndParent, WM_WA_IPC, 0, IPC_GET_RANDFUNC);
-    //}
-    //else if (lparam == IPC_ISPLAYING)
-    //{
-    //    //#define IPC_ISPLAYING 104
-    //    /* int res = SendMessage(hwnd_winamp,WM_WA_IPC,0,IPC_ISPLAYING);
-    //    ** This is sent to retrieve the current playback state of Winamp.
-    //    ** If it returns 1, Winamp is playing.
-    //    ** If it returns 3, Winamp is paused.
-    //    ** If it returns 0, Winamp is not playing.
-    //    */
-    //}
 
     return 0;
 }
@@ -797,19 +757,19 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
     {
         DXCONTEXT_PARAMS params{};
         g_plugin.StuffParams(&params);
-        g_game = std::make_unique<DXContext>(window, &params, g_plugin.m_szConfigIniFile);
-        SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
+        g_vis = std::make_unique<DXContext>(window, &params, g_plugin.m_szConfigIniFile);
+        SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_vis.get()));
     }
 
     if (!s_milk2 && !s_fullscreen)
     {
-        if (FALSE == g_plugin.PluginInitialize(std::move(g_game), width, height, false, false))
+        if (FALSE == g_plugin.PluginInitialize(std::move(g_vis), width, height, false, false))
             return false;
         s_milk2 = true;
     }
     else if (s_milk2 && s_fullscreen)
     {
-        if (FALSE == g_plugin.PluginInitialize(std::move(g_game), width, height, true, false))
+        if (FALSE == g_plugin.PluginInitialize(std::move(g_vis), width, height, true, false))
             return false;
     }
     else if (s_milk2 && !m_milk2 && !s_fullscreen)
@@ -824,7 +784,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 }
 
 #pragma region Frame Update
-// Executes the basic game loop.
+// Executes the render.
 void milk2_ui_element::Tick()
 {
     m_timer.Tick([&]() { Update(m_timer); });
@@ -910,7 +870,6 @@ void milk2_ui_element::BuildWaves()
 #pragma endregion
 
 #pragma region Message Handlers
-// Message handlers
 void milk2_ui_element::OnActivated()
 {
 }
@@ -953,8 +912,6 @@ void milk2_ui_element::ToggleFullScreen()
         }
         s_fullscreen = !s_fullscreen;
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
-        //g_plugin.ToggleFullScreen();
-        //g_plugin.PluginQuit();
 #if 0
         if (s_fullscreen)
         {
@@ -994,14 +951,17 @@ void milk2_ui_element::PrevPreset()
 
 bool milk2_ui_element::LoadPreset(int select)
 {
-    //g_plugin.m_nCurrentPreset = select + g_plugin.m_nDirs;
+#if 0
+    g_plugin.m_nCurrentPreset = select + g_plugin.m_nDirs;
 
-    //wchar_t szFile[MAX_PATH] = {0};
-    //wcscpy_s(szFile, g_plugin.m_szPresetDir); // Note: m_szPresetDir always ends with '\'
-    //wcscat_s(szFile, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str());
+    wchar_t szFile[MAX_PATH] = {0};
+    wcscpy_s(szFile, g_plugin.m_szPresetDir); // Note: m_szPresetDir always ends with '\'
+    wcscat_s(szFile, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str());
 
-    //g_plugin.LoadPreset(szFile, 1.0f);
-
+    g_plugin.LoadPreset(szFile, 1.0f);
+#else
+    UNREFERENCED_PARAMETER(select);
+#endif
     return true;
 }
 
@@ -1096,6 +1056,5 @@ void ExitVis() noexcept
     MILK2_CONSOLE_LOG("ExitVis")
     g_plugin.PluginQuit(TRUE);
     PostQuitMessage(0);
-    //g_game.reset();
 }
 // clang-format on

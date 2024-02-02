@@ -214,8 +214,8 @@ static cfg_float cfg_fSongTitleAnimDuration(guid_cfg_fSongTitleAnimDuration, sta
 static cfg_float cfg_fTimeBetweenRandomSongTitles(guid_cfg_fTimeBetweenRandomSongTitles, static_cast<double>(default_fTimeBetweenRandomSongTitles));
 static cfg_float cfg_fTimeBetweenRandomCustomMsgs(guid_cfg_fTimeBetweenRandomCustomMsgs, static_cast<double>(default_fTimeBetweenRandomCustomMsgs));
 static advconfig_branch_factory g_advconfigBranch("MilkDrop", guid_advconfig_branch, advconfig_branch::guid_branch_vis, 0);
-static advconfig_checkbox_factory cfg_bDebugOutput("Debug Output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput);
-static advconfig_string_factory cfg_szPresetDir("Preset Directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "");
+static advconfig_checkbox_factory cfg_bDebugOutput("Debug output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput);
+static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "");
 // clang-format on
 
 class milk2_preferences_page : public preferences_page_instance, public CDialogImpl<milk2_preferences_page>
@@ -276,6 +276,11 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar);
     bool HasChanged() const;
     void OnChanged();
+
+    inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata);
+    inline void SelectItemByPos(HWND ctrl, int pos);
+    int SelectItemByValue(HWND ctrl, DWORD value);
+    wchar_t* FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID);
     void UpdateMaxFps(int screenmode) const;
     void SaveMaxFps(int screenmode) const;
 
@@ -283,54 +288,6 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
 
     fb2k::CDarkModeHooks m_dark;
 };
-
-// Functions for populating combo boxes.
-inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata)
-{
-    LRESULT nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)text);
-    SendMessage(ctrl, CB_SETITEMDATA, nPos, itemdata);
-}
-
-inline void SelectItemByPos(HWND ctrl, int pos)
-{
-    SendMessage(ctrl, CB_SETCURSEL, (WPARAM)pos, (LPARAM)0);
-}
-
-int SelectItemByValue(HWND ctrl, DWORD value)
-{
-    LRESULT count = SendMessage(ctrl, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
-    for (int i = 0; i < count; ++i)
-    {
-        LRESULT value_i = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)i, (LPARAM)0);
-        if (value_i == static_cast<LRESULT>(value))
-        {
-            SendMessage(ctrl, CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
-            return i;
-        }
-    }
-    return -1;
-}
-
-bool ReadCBValue(HWND hwnd, DWORD ctrl_id, int* pRetValue)
-{
-    if (!pRetValue)
-        return false;
-    HWND ctrl = GetDlgItem(hwnd, ctrl_id);
-    LRESULT t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t == CB_ERR)
-        return false;
-    *pRetValue = static_cast<int>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
-    return true;
-}
-
-wchar_t* FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID)
-{
-    static wchar_t cacheBuf[128] = {0};
-    wchar_t buf[128] = {0};
-    LoadString(core_api::get_my_instance(), sizeID, buf, 128);
-    swprintf_s(cacheBuf, L"%s %s", itemStr, buf);
-    return cacheBuf;
-}
 
 BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
 {
@@ -920,7 +877,42 @@ class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_pa
     }
 };
 
-// Initializes FPS combo boxes.
+#pragma region Helper Methods
+inline void milk2_preferences_page::AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata)
+{
+    LRESULT nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)text);
+    SendMessage(ctrl, CB_SETITEMDATA, nPos, itemdata);
+}
+
+inline void milk2_preferences_page::SelectItemByPos(HWND ctrl, int pos)
+{
+    SendMessage(ctrl, CB_SETCURSEL, (WPARAM)pos, (LPARAM)0);
+}
+
+int milk2_preferences_page::SelectItemByValue(HWND ctrl, DWORD value)
+{
+    LRESULT count = SendMessage(ctrl, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
+    for (int i = 0; i < count; ++i)
+    {
+        LRESULT value_i = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)i, (LPARAM)0);
+        if (value_i == static_cast<LRESULT>(value))
+        {
+            SendMessage(ctrl, CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
+            return i;
+        }
+    }
+    return -1;
+}
+
+wchar_t* milk2_preferences_page::FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID)
+{
+    static wchar_t cacheBuf[128] = {0};
+    wchar_t buf[128] = {0};
+    LoadString(core_api::get_my_instance(), sizeID, buf, 128);
+    swprintf_s(cacheBuf, L"%s %s", itemStr, buf);
+    return cacheBuf;
+}
+
 void milk2_preferences_page::UpdateMaxFps(int screenmode) const
 {
     HWND ctrl = nullptr;
@@ -1003,6 +995,7 @@ void milk2_preferences_page::SaveMaxFps(int screenmode) const
         }
     }
 }
+#pragma endregion
 
 static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_milk2_factory;
 

@@ -1137,10 +1137,10 @@ void CPlugin::BlurPasses()
         return;
 
         ID3D11Texture2D* pBackBuffer=NULL;//, pZBuffer=NULL;
-        lpDevice->GetRenderTarget( &pBackBuffer );
+        lpDevice->GetRenderTarget(&pBackBuffer);
 
-        //lpDevice->SetFVF( MDVERTEX_FORMAT );
-        lpDevice->SetVertexShader( m_BlurShaders[0].vs.ptr, m_BlurShaders[0].vs.CT );
+        //lpDevice->SetFVF(MDVERTEX_FORMAT);
+        lpDevice->SetVertexShader(m_BlurShaders[0].vs.ptr, m_BlurShaders[0].vs.CT);
         //lpDevice->SetVertexDeclaration(m_pMyVertDecl);
         lpDevice->SetBlendState(false);
         lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);

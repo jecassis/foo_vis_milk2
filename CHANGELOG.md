@@ -4,8 +4,10 @@
 
 Unstable functionality:
 
-- Fullscreen mode crashes foobar2000.
-- Configurability incomplete.
+- **Fullscreen mode can crash foobar2000.*
+- Configurability is incomplete. Some changes may have no effect.
+- Several presets have NS-EEL compiler errors. Turn off "Suppress all errors and warnings" in Preferences to see messages in the Console.
+- C++ code organization is messy which introduces bugs and inconsistent behavior.
 
 In order to complete the port from Winamp large amounts of functionality has been removed, lost, or untested:
 
@@ -29,8 +31,8 @@ Prerequisites to build `vis_milk2.dll`:
 Breaking changes, relative to version 2.25c:
 
 - The shader files in the `Winamp\Plugins\Milkdrop2\data` have been updated to match the DirectX 11 data layout.
-- The [Legacy DirectX SDK](http://go.microsoft.com/fwlink/?LinkId=226640) is no longer required to build due the update to DirectX 11 (see [Where is the DirectX SDK (2021 Edition)?](https://walbourn.github.io/where-is-the-directx-sdk-2021-edition/)).
-- The minimum OS version supported is Windows 7. Consequently, the [DirectX End-User Runtime](http://go.microsoft.com/fwlink/?LinkID=194352) installation is not required as it is included as a core component of the OS.
+- The [Legacy DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) is no longer required to build due the update to DirectX 11 (see [Where is the DirectX SDK (2021 Edition)?](https://walbourn.github.io/where-is-the-directx-sdk-2021-edition/)).
+- The minimum OS version supported is Windows 7. Consequently, the [DirectX End-User Runtime](https://www.microsoft.com/en-us/download/details.aspx?id=8109) installation is not required as it is included as a core component of the OS.
 - Removed system callback API, which was mainly used to open websites in the internal browser.
 - NS-EEL2 is _not_ built in EEL1 compatibility mode. So presets that use that syntax will not compile. Refer to the [WDL documentation](https://www.cockos.com/EEL2/) for syntax. Known EEL1 functions that have alternate EEL2 syntax or were deprecated are:
   `assign`, `if`, `equal`, `below`, `above`, `bnot`, `megabuf`, `gmegabuf`, `sigmoid`, `band`, `bor`

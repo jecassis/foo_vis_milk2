@@ -4616,7 +4616,7 @@ void CPlugin::PopupMessage(int message_id, int title_id, bool dump)
 
 void CPlugin::ConsoleMessage(int message_id, int title_id)
 {
-#if _DEBUG && _FOOBAR
+#ifdef _FOOBAR
     if (!PostMessage(GetWinampWindow(), WM_USER, MAKEWORD(0x21, 0x09), MAKELONG(message_id, title_id)))
     {
         LPVOID lpMsgBuf;
