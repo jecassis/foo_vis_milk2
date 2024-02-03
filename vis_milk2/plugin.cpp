@@ -530,7 +530,7 @@ void CPlugin::MilkDropPreInitialize()
 // added to the configuration panel.
 void CPlugin::MilkDropReadConfig()
 {
-#if 0
+#ifndef _FOOBAR
     // Use this function         declared in   to read a value of this type
     // -----------------         -----------   ----------------------------
     // GetPrivateProfileInt      WinBase.h     int
@@ -541,7 +541,7 @@ void CPlugin::MilkDropReadConfig()
     int n = 0;
     wchar_t* pIni = GetConfigIniFile();
 
-    m_bEnableRating = GetPrivateProfileBoolW(L"settings",L"bEnableRating",m_bEnableRating,pIni);
+    m_bEnableRating = GetPrivateProfileBoolW(L"settings", L"bEnableRating", m_bEnableRating, pIni);
     m_bHardCutsDisabled = GetPrivateProfileBoolW(L"settings", L"bHardCutsDisabled", m_bHardCutsDisabled, pIni);
     g_bDebugOutput = GetPrivateProfileBoolW(L"settings", L"bDebugOutput", g_bDebugOutput, pIni);
     //m_bShowSongInfo = GetPrivateProfileBoolW(L"settings", L"bShowSongInfo", m_bShowSongInfo, pIni);
@@ -569,11 +569,11 @@ void CPlugin::MilkDropReadConfig()
     //m_fStereoSep = GetPrivateProfileFloatW(L"settings", L"fStereoSep", m_fStereoSep, pIni);
     //m_bFixSlowText = GetPrivateProfileBoolW(L"settings", L"bFixSlowText", m_bFixSlowText, pIni);
     //m_bAlwaysOnTop = GetPrivateProfileBoolW(L"settings", L"bAlwaysOnTop", m_bAlwaysOnTop, pIni);
-    //m_bWarningsDisabled		= GetPrivateProfileBool("settings","bWarningsDisabled",m_bWarningsDisabled,pIni);
+    //m_bWarningsDisabled = GetPrivateProfileBool("settings","bWarningsDisabled",m_bWarningsDisabled, pIni);
     m_bWarningsDisabled2 = GetPrivateProfileBoolW(L"settings", L"bWarningsDisabled2", m_bWarningsDisabled2, pIni);
     //m_bAnisotropicFiltering = GetPrivateProfileBoolW(L"settings", L"bAnisotropicFiltering", m_bAnisotropicFiltering, pIni);
     m_bPresetLockOnAtStartup = GetPrivateProfileBoolW(L"settings", L"bPresetLockOnAtStartup", m_bPresetLockOnAtStartup, pIni);
-    m_bPreventScollLockHandling = GetPrivateProfileBoolW(L"settings",L"m_bPreventScollLockHandling",m_bPreventScollLockHandling,pIni);
+    m_bPreventScollLockHandling = GetPrivateProfileBoolW(L"settings", L"m_bPreventScollLockHandling", m_bPreventScollLockHandling, pIni);
 
     m_nCanvasStretch = GetPrivateProfileIntW(L"settings", L"nCanvasStretch", m_nCanvasStretch, pIni);
     m_nTexSizeX = GetPrivateProfileIntW(L"settings", L"nTexSize", m_nTexSizeX, pIni);
@@ -583,9 +583,9 @@ void CPlugin::MilkDropReadConfig()
     m_nTexBitsPerCh = GetPrivateProfileIntW(L"settings", L"nTexBitsPerCh", m_nTexBitsPerCh, pIni);
     m_nGridX = GetPrivateProfileIntW(L"settings", L"nMeshSize", m_nGridX, pIni);
     m_nGridY = m_nGridX * 3 / 4;
-    m_nMaxPSVersion_ConfigPanel = GetPrivateProfileIntW(L"settings",L"MaxPSVersion",m_nMaxPSVersion_ConfigPanel,pIni);
-    m_nMaxImages    = GetPrivateProfileIntW(L"settings",L"MaxImages",m_nMaxImages,pIni);
-    m_nMaxBytes     = GetPrivateProfileIntW(L"settings",L"MaxBytes" ,m_nMaxBytes ,pIni);
+    m_nMaxPSVersion_ConfigPanel = GetPrivateProfileIntW(L"settings", L"MaxPSVersion", m_nMaxPSVersion_ConfigPanel, pIni);
+    m_nMaxImages = GetPrivateProfileIntW(L"settings", L"MaxImages", m_nMaxImages, pIni);
+    m_nMaxBytes = GetPrivateProfileIntW(L"settings", L"MaxBytes", m_nMaxBytes, pIni);
 
     m_fBlendTimeUser = GetPrivateProfileFloatW(L"settings", L"fBlendTimeUser", m_fBlendTimeUser, pIni);
     m_fBlendTimeAuto = GetPrivateProfileFloatW(L"settings", L"fBlendTimeAuto", m_fBlendTimeAuto, pIni);
@@ -597,12 +597,12 @@ void CPlugin::MilkDropReadConfig()
     m_fTimeBetweenRandomSongTitles = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomSongTitles", m_fTimeBetweenRandomSongTitles, pIni);
     m_fTimeBetweenRandomCustomMsgs = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomCustomMsgs", m_fTimeBetweenRandomCustomMsgs, pIni);
 
-    GetPrivateProfileStringW(L"settings",L"szPresetDir",m_szPresetDir,m_szPresetDir,sizeof(m_szPresetDir),pIni);
+    GetPrivateProfileStringW(L"settings", L"szPresetDir", m_szPresetDir, m_szPresetDir, sizeof(m_szPresetDir), pIni);
 #endif
-    m_nTexSizeY		= m_nTexSizeX;
-    m_bTexSizeWasAutoPow2   = (m_nTexSizeX == -2);
+    m_nTexSizeY = m_nTexSizeX;
+    m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
     m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
-    m_nGridY        = m_nGridX*3/4;
+    m_nGridY = m_nGridX * 3 / 4;
 
     // Bounds checking.
     if (m_nGridX > MAX_GRID_X)
@@ -625,7 +625,7 @@ void CPlugin::MilkDropReadConfig()
 // to the .INI file here.
 void CPlugin::MilkDropWriteConfig()
 {
-#if 0
+#ifndef _FOOBAR
     // Use this function           declared in   to write a value of this type
     // -----------------           -----------   -----------------------------
     // WritePrivateProfileIntW     utility.h     int
@@ -636,54 +636,54 @@ void CPlugin::MilkDropWriteConfig()
     wchar_t* pIni = GetConfigIniFile();
 
     // constants:
-    WritePrivateProfileStringW(L"settings",L"bConfigured",L"1",pIni);
+    WritePrivateProfileStringW(L"settings", L"bConfigured", L"1", pIni);
 
     //note: m_szPresetDir is not written here; it is written manually, whenever it changes.
 
     wchar_t szSectionName[] = L"settings";
 
-    WritePrivateProfileIntW(m_bSongTitleAnims,		L"bSongTitleAnims",		pIni, L"settings");
-    WritePrivateProfileIntW(m_bHardCutsDisabled,	    L"bHardCutsDisabled",	pIni, L"settings");
-    WritePrivateProfileIntW(m_bEnableRating,		    L"bEnableRating",		pIni, L"settings");
-    WritePrivateProfileIntW(g_bDebugOutput,		    L"bDebugOutput",			pIni, L"settings");
+    WritePrivateProfileIntW(m_bSongTitleAnims, L"bSongTitleAnims", pIni, L"settings");
+    WritePrivateProfileIntW(m_bHardCutsDisabled, L"bHardCutsDisabled", pIni, L"settings");
+    WritePrivateProfileIntW(m_bEnableRating, L"bEnableRating", pIni, L"settings");
+    WritePrivateProfileIntW(g_bDebugOutput, L"bDebugOutput", pIni, L"settings");
 
-    //itePrivateProfileInt(m_bShowPresetInfo, 	    "bShowPresetInfo",		pIni, "settings");
-    //itePrivateProfileInt(m_bShowSongInfo, 		"bShowSongInfo",        pIni, "settings");
-    //itePrivateProfileInt(m_bFixPinkBug, 		    "bFixPinkBug",			pIni, "settings");
+    //WritePrivateProfileInt(m_bShowPresetInfo, "bShowPresetInfo", pIni, "settings");
+    //WritePrivateProfileInt(m_bShowSongInfo, "bShowSongInfo", pIni, "settings");
+    //WritePrivateProfileInt(m_bFixPinkBug, "bFixPinkBug", pIni, "settings");
 
-    WritePrivateProfileIntW(m_bShowPressF1ForHelp,   L"bShowPressF1ForHelp",	pIni, L"settings");
-    //WritePrivateProfileInt(m_bShowMenuToolTips, 	"bShowMenuToolTips",    pIni, "settings");
-    WritePrivateProfileIntW(m_n16BitGamma, 		    L"n16BitGamma",			pIni, L"settings");
-    WritePrivateProfileIntW(m_bAutoGamma,  		    L"bAutoGamma",			pIni, L"settings");
+    WritePrivateProfileIntW(m_bShowPressF1ForHelp, L"bShowPressF1ForHelp", pIni, L"settings");
+    //WritePrivateProfileInt(m_bShowMenuToolTips, "bShowMenuToolTips", pIni, "settings");
+    WritePrivateProfileIntW(m_n16BitGamma, L"n16BitGamma", pIni, L"settings");
+    WritePrivateProfileIntW(m_bAutoGamma, L"bAutoGamma", pIni, L"settings");
 
-    //WritePrivateProfileIntW(m_bAlways3D, 			"bAlways3D",			pIni, "settings");
-    //WritePrivateProfileFloat(m_fStereoSep,          "fStereoSep",           pIni, "settings");
-    //WritePrivateProfileIntW(m_bFixSlowText,		    "bFixSlowText",			pIni, "settings");
-    //itePrivateProfileInt(m_bAlwaysOnTop,		    "bAlwaysOnTop",			pIni, "settings");
-    //WritePrivateProfileIntW(m_bWarningsDisabled,	    "bWarningsDisabled",	pIni, "settings");
-    WritePrivateProfileIntW(m_bWarningsDisabled2,	L"bWarningsDisabled2",	pIni, L"settings");
-    //WritePrivateProfileIntW(m_bAnisotropicFiltering,	"bAnisotropicFiltering",pIni, "settings");
-    WritePrivateProfileIntW(m_bPresetLockOnAtStartup,L"bPresetLockOnAtStartup",pIni,L"settings");
-    WritePrivateProfileIntW(m_bPreventScollLockHandling,L"m_bPreventScollLockHandling",pIni,L"settings");
-    // note: this is also written @ exit of the visualizer
+    //WritePrivateProfileIntW(m_bAlways3D, "bAlways3D", pIni, "settings");
+    //WritePrivateProfileFloat(m_fStereoSep, "fStereoSep", pIni, "settings");
+    //WritePrivateProfileIntW(m_bFixSlowText, "bFixSlowText", pIni, "settings");
+    //itePrivateProfileInt(m_bAlwaysOnTop, "bAlwaysOnTop", pIni, "settings");
+    //WritePrivateProfileIntW(m_bWarningsDisabled, "bWarningsDisabled", pIni, "settings");
+    WritePrivateProfileIntW(m_bWarningsDisabled2, L"bWarningsDisabled2", pIni, L"settings");
+    //WritePrivateProfileIntW(m_bAnisotropicFiltering, "bAnisotropicFiltering", pIni, "settings");
+    WritePrivateProfileIntW(m_bPresetLockOnAtStartup, L"bPresetLockOnAtStartup", pIni, L"settings");
+    WritePrivateProfileIntW(m_bPreventScollLockHandling, L"m_bPreventScollLockHandling", pIni, L"settings");
+    // note: this is also written at exit of the visualizer
 
-    WritePrivateProfileIntW(m_nCanvasStretch,        L"nCanvasStretch",   	pIni, L"settings");
-    WritePrivateProfileIntW(m_nTexSizeX,			    L"nTexSize",				pIni, L"settings");
-    WritePrivateProfileIntW(m_nTexBitsPerCh,         L"nTexBitsPerCh",        pIni, L"settings");
-    WritePrivateProfileIntW(m_nGridX, 				L"nMeshSize",			pIni, L"settings");
-    WritePrivateProfileIntW(m_nMaxPSVersion_ConfigPanel, L"MaxPSVersion",  	pIni, L"settings");
-    WritePrivateProfileIntW(m_nMaxImages, L"MaxImages",  	pIni, L"settings");
-    WritePrivateProfileIntW(m_nMaxBytes , L"MaxBytes",  	pIni, L"settings");
+    WritePrivateProfileIntW(m_nCanvasStretch, L"nCanvasStretch", pIni, L"settings");
+    WritePrivateProfileIntW(m_nTexSizeX, L"nTexSize", pIni, L"settings");
+    WritePrivateProfileIntW(m_nTexBitsPerCh, L"nTexBitsPerCh", pIni, L"settings");
+    WritePrivateProfileIntW(m_nGridX, L"nMeshSize", pIni, L"settings");
+    WritePrivateProfileIntW(m_nMaxPSVersion_ConfigPanel, L"MaxPSVersion", pIni, L"settings");
+    WritePrivateProfileIntW(m_nMaxImages, L"MaxImages", pIni, L"settings");
+    WritePrivateProfileIntW(m_nMaxBytes, L"MaxBytes", pIni, L"settings");
 
-    WritePrivateProfileFloatW(m_fBlendTimeAuto,          L"fBlendTimeAuto",           pIni, L"settings");
-    WritePrivateProfileFloatW(m_fBlendTimeUser,          L"fBlendTimeUser",           pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenPresets,     L"fTimeBetweenPresets",      pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenPresetsRand, L"fTimeBetweenPresetsRand",  pIni, L"settings");
-    WritePrivateProfileFloatW(m_fHardCutLoudnessThresh,  L"fHardCutLoudnessThresh",   pIni, L"settings");
-    WritePrivateProfileFloatW(m_fHardCutHalflife,        L"fHardCutHalflife",         pIni, L"settings");
-    WritePrivateProfileFloatW(m_fSongTitleAnimDuration,  L"fSongTitleAnimDuration",   pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenRandomSongTitles,L"fTimeBetweenRandomSongTitles",pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenRandomCustomMsgs,L"fTimeBetweenRandomCustomMsgs",pIni, L"settings");
+    WritePrivateProfileFloatW(m_fBlendTimeAuto, L"fBlendTimeAuto", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fBlendTimeUser, L"fBlendTimeUser", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fTimeBetweenPresets, L"fTimeBetweenPresets", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fTimeBetweenPresetsRand, L"fTimeBetweenPresetsRand", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fHardCutLoudnessThresh, L"fHardCutLoudnessThresh", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fHardCutHalflife, L"fHardCutHalflife", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fSongTitleAnimDuration, L"fSongTitleAnimDuration", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fTimeBetweenRandomSongTitles, L"fTimeBetweenRandomSongTitles", pIni, L"settings");
+    WritePrivateProfileFloatW(m_fTimeBetweenRandomCustomMsgs, L"fTimeBetweenRandomCustomMsgs", pIni, L"settings");
 #endif
 }
 
@@ -845,6 +845,7 @@ int CPlugin::AllocateMilkDropNonDX11()
     InitializeCriticalSection(&g_cs);
 
     // Read in `m_szShaderIncludeText`.
+    // clang-format off
     bool bSuccess = true;
     bSuccess = ReadFileToString(L"data\\include.fx", m_szShaderIncludeText, sizeof(m_szShaderIncludeText) - 4, false);
     if (!bSuccess) return false;
@@ -865,12 +866,13 @@ int CPlugin::AllocateMilkDropNonDX11()
     if (!bSuccess) return false;
     bSuccess |= ReadFileToString(L"data\\blur2_ps.fx", m_szBlurPSY, sizeof(m_szBlurPSY), true);
     if (!bSuccess) return false;
+    // clang-format on
 
     m_pState->Default();
     m_pOldState->Default();
     m_pNewState->Default();
 
-    //LoadRandomPreset(0.0f);   -avoid this here; causes some DX9 stuff to happen.
+    //LoadRandomPreset(0.0f); -avoid this here; causes some DX9 stuff to happen.
 
     return true;
 }
@@ -888,7 +890,7 @@ void CancelThread(int max_wait_time_ms)
     if (g_bThreadAlive)
     {
 #ifdef TARGET_WINDOWS_DESKTOP
-        TerminateThread(g_hThread,0);
+        TerminateThread(g_hThread, 0);
 #endif
         g_bThreadAlive = false;
     }
@@ -1056,114 +1058,116 @@ int CPlugin::AllocateMilkDropDX11()
     {
         /* DX11: vertex declarations not required. D3D11Shim uses needed layout
         // Create vertex declarations (since we're not using FVF anymore)
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration( g_MyVertDecl, &m_pMyVertDecl ))
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_MyVertDecl, &m_pMyVertDecl))
         {
-// 			WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_MY_VERTEX_DECLARATION,buf,sizeof(buf));
-// 		    DumpDebugMessage(buf);
-// 		    MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,sizeof(title)), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
+            //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_MY_VERTEX_DECLARATION, buf, sizeof(buf));
+            //DumpDebugMessage(buf);
+            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
             return false;
         }
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration( g_WfVertDecl, &m_pWfVertDecl ))
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_WfVertDecl, &m_pWfVertDecl))
         {
-// 			WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_WF_VERTEX_DECLARATION,buf,sizeof(buf));
-// 		    DumpDebugMessage(buf);
-// 		    MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,sizeof(title)), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
+            //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_WF_VERTEX_DECLARATION, buf, sizeof(buf));
+            //DumpDebugMessage(buf);
+            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
             return false;
         }
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration( g_SpriteVertDecl, &m_pSpriteVertDecl ))
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_SpriteVertDecl, &m_pSpriteVertDecl))
         {
-// 			WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_SPRITE_VERTEX_DECLARATION,buf,sizeof(buf));
-// 		    DumpDebugMessage(buf);
-// 		    MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,sizeof(title)), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
+            //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_SPRITE_VERTEX_DECLARATION, buf, sizeof(buf));
+            //DumpDebugMessage(buf);
+            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
             return false;
         }*/
 
         // Load the FALLBACK shaders...
         if (!RecompilePShader(m_szDefaultWarpPShaderText, &m_fallbackShaders_ps.warp, SHADER_WARP, true, 2))
         {
-/*
+            /*
             wchar_t szSM[64];
             switch(m_nMaxPSVersion_DX9)
             {
             case MD2_PS_2_0:
             case MD2_PS_2_X:
-                WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_2,szSM,64); break;
-            case MD2_PS_3_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_3,szSM,64); break;
-            case MD2_PS_4_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_4,szSM,64); break;
+                WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_2, szSM, 64); break;
+            case MD2_PS_3_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_3, szSM, 64); break;
+            case MD2_PS_4_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_4, szSM, 64); break;
             default:
                 swprintf(szSM, WASABI_API_LNGSTRINGW(IDS_UKNOWN_CASE_X), m_nMaxPSVersion_DX9);
                 break;
             }
             if (m_nMaxPSVersion_ConfigPanel >= MD2_PS_NONE && m_nMaxPSVersion_DX9 < m_nMaxPSVersion_ConfigPanel)
-                swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_USING_X),szSM,PSVersion);
+                swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_USING_X), szSM, PSVersion);
             else
-                swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT),szSM,PSVersion);
+                swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT), szSM, PSVersion);
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
         if (!RecompileVShader(m_szDefaultWarpVShaderText, &m_fallbackShaders_vs.warp, SHADER_WARP, true))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_WV_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_WV_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
         if (!RecompileVShader(m_szDefaultCompVShaderText, &m_fallbackShaders_vs.comp, SHADER_COMP, true))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_CV_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_CV_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
         if (!RecompilePShader(m_szDefaultCompPShaderText, &m_fallbackShaders_ps.comp, SHADER_COMP, true, 2))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_CP_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_CP_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
 
         // Load the BLUR shaders...
         if (!RecompileVShader(m_szBlurVS, &m_BlurShaders[0].vs, SHADER_BLUR, true))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR1_VERTEX_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR1_VERTEX_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
         if (!RecompilePShader(m_szBlurPSX, &m_BlurShaders[0].ps, SHADER_BLUR, true, 2))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR1_PIXEL_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR1_PIXEL_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
         if (!RecompileVShader(m_szBlurVS, &m_BlurShaders[1].vs, SHADER_BLUR, true))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR2_VERTEX_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR2_VERTEX_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
         if (!RecompilePShader(m_szBlurPSY, &m_BlurShaders[1].ps, SHADER_BLUR, true, 2))
         {
-/*
-            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR2_PIXEL_SHADER,buf,sizeof(buf));
+            /*
+            WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR2_PIXEL_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            */
             return false;
         }
     }
@@ -1229,7 +1233,7 @@ int CPlugin::AllocateMilkDropDX11()
         // Reallocate.
         bool bSuccess = false;
         //DWORD vs_flags = D3DUSAGE_RENDERTARGET;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
-        DWORD vs_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;// | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
+        DWORD vs_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE; // | D3DUSAGE_AUTOGENMIPMAP;//FIXME! (make automipgen optional)
         //bool bRevertedBitDepth = false;
         do
         {
@@ -1283,31 +1287,34 @@ int CPlugin::AllocateMilkDropDX11()
 
         if (!bSuccess)
         {
-/*            wchar_t buf[2048];
+            /*
+            wchar_t buf[2048];
             UINT err_id = IDS_COULD_NOT_CREATE_INTERNAL_CANVAS_TEXTURE_NOT_ENOUGH_VID_MEM;
             if (GetScreenMode() == FULLSCREEN)
                 err_id = IDS_COULD_NOT_CREATE_INTERNAL_CANVAS_TEXTURE_SMALLER_DISPLAY;
             else if (!(m_bTexSizeWasAutoExact || m_bTexSizeWasAutoPow2))
                 err_id = IDS_COULD_NOT_CREATE_INTERNAL_CANVAS_TEXTURE_NOT_ENOUGH_VID_MEM_RECOMMENDATION;
 
-            WASABI_API_LNGSTRINGW_BUF(err_id,buf,sizeof(buf));
+            WASABI_API_LNGSTRINGW_BUF(err_id, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
             */
             return false;
         }
         else
         {
-//             swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SUCCESSFULLY_CREATED_VS0_VS1), m_nTexSizeX, m_nTexSizeY, GetWidth(), GetHeight());
-//             DumpDebugMessage(buf);
+            //swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SUCCESSFULLY_CREATED_VS0_VS1), m_nTexSizeX, m_nTexSizeY, GetWidth(), GetHeight());
+            //DumpDebugMessage(buf);
         }
 
-        /* if (m_nTexSizeX != GetWidth() || m_nTexSizeY != GetHeight())
+        /*
+        if (m_nTexSizeX != GetWidth() || m_nTexSizeY != GetHeight())
         {
             swprintf_s(buf, "warning - canvas size adjusted from %dx%d to %dx%d.", GetWidth(), GetHeight(), m_nTexSizeX, m_nTexSizeY);
             DumpDebugMessage(buf);
             AddError(buf, 3.2f, ERR_INIT, true);
-        } */
+        }
+        */
 
         // Create blur textures with same format. A complete MIP chain costs 33% more video memory than 1 full-sized VS.
 #if (NUM_BLUR_TEX > 0)
@@ -1337,10 +1344,10 @@ int CPlugin::AllocateMilkDropDX11()
             {
                 m_nBlurTexW[i] = 1;
                 m_nBlurTexH[i] = 1;
-/*
-                    MessageBox(GetPluginWindow(), WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_BLUR_TEXTURES,buf,sizeof(buf)),
-                               WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_WARNING,title,sizeof(title)), MB_OK|MB_SETFOREGROUND|MB_TOPMOST);
-*/
+                /*
+                MessageBox(GetPluginWindow(), WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_BLUR_TEXTURES, buf, sizeof(buf)),
+                WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_WARNING, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+                */
                 break;
             }
 
@@ -1455,35 +1462,35 @@ int CPlugin::AllocateMilkDropDX11()
     // Order should be friendly for interpolation of 'ang' value!
     int* cur_index = &m_comp_indices[0];
     int y;
-    for (y=0; y<FCGSY-1; y++)
+    for (y = 0; y < FCGSY - 1; y++)
     {
-        if (y==FCGSY/2-1)
+        if (y == FCGSY / 2 - 1)
             continue;
-        for (int x=0; x<FCGSX-1; x++)
+        for (int x = 0; x < FCGSX - 1; x++)
         {
-            if (x==FCGSX/2-1)
+            if (x == FCGSX / 2 - 1)
                 continue;
-            bool left_half = (x < FCGSX/2);
-            bool top_half  = (y < FCGSY/2);
-            bool center_4 = ((x==FCGSX/2 || x==FCGSX/2-1) && (y==FCGSY/2 || y==FCGSY/2-1));
+            bool left_half = (x < FCGSX / 2);
+            bool top_half = (y < FCGSY / 2);
+            bool center_4 = ((x == FCGSX / 2 || x == FCGSX / 2 - 1) && (y == FCGSY / 2 || y == FCGSY / 2 - 1));
 
-            if ( ((int)left_half + (int)top_half + (int)center_4) % 2 )
+            if (((int)left_half + (int)top_half + (int)center_4) % 2)
             {
-                *(cur_index+0) = (y  )*FCGSX + (x  );
-                *(cur_index+1) = (y  )*FCGSX + (x+1);
-                *(cur_index+2) = (y+1)*FCGSX + (x+1);
-                *(cur_index+3) = (y+1)*FCGSX + (x+1);
-                *(cur_index+4) = (y+1)*FCGSX + (x  );
-                *(cur_index+5) = (y  )*FCGSX + (x  );
+                *(cur_index + 0) = (y) * FCGSX + (x);
+                *(cur_index + 1) = (y)  *FCGSX + (x + 1);
+                *(cur_index + 2) = (y + 1) * FCGSX + (x + 1);
+                *(cur_index + 3) = (y + 1) * FCGSX + (x + 1);
+                *(cur_index + 4) = (y + 1) * FCGSX + (x);
+                *(cur_index + 5) = (y) * FCGSX + (x);
             }
             else
             {
-                *(cur_index+0) = (y+1)*FCGSX + (x  );
-                *(cur_index+1) = (y  )*FCGSX + (x  );
-                *(cur_index+2) = (y  )*FCGSX + (x+1);
-                *(cur_index+3) = (y  )*FCGSX + (x+1);
-                *(cur_index+4) = (y+1)*FCGSX + (x+1);
-                *(cur_index+5) = (y+1)*FCGSX + (x  );
+                *(cur_index + 0) = (y + 1) * FCGSX + (x);
+                *(cur_index + 1) = (y) * FCGSX + (x);
+                *(cur_index + 2) = (y) * FCGSX + (x + 1);
+                *(cur_index + 3) = (y) * FCGSX + (x + 1);
+                *(cur_index + 4) = (y + 1) * FCGSX + (x + 1);
+                *(cur_index + 5) = (y + 1) * FCGSX + (x);
             }
             cur_index += 6;
         }
@@ -1491,7 +1498,8 @@ int CPlugin::AllocateMilkDropDX11()
 
     // -----------------
 
-    /*if (m_bFixSlowText && !m_bSeparateTextWindow)
+    /*
+    if (m_bFixSlowText && !m_bSeparateTextWindow)
     {
         if (pCreateTexture(GetDevice(), GetWidth(), GetHeight(), 1, D3DUSAGE_RENDERTARGET, GetBackBufFormat(), D3DPOOL_DEFAULT, &m_lpDDSText) != D3D_OK)
         {
@@ -1500,17 +1508,18 @@ int CPlugin::AllocateMilkDropDX11()
             sprintf(buf, "WARNING: Not enough video memory to make a dedicated text surface; \rtext will still be drawn directly to the back buffer.\r\rTo avoid seeing this error again, uncheck the 'fix slow text' option.");
             DumpDebugMessage(buf);
             if (!m_bWarningsDisabled)
-                MessageBox(GetPluginWindow(), buf, "WARNING", MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
+                MessageBox(GetPluginWindow(), buf, "WARNING", MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
             m_lpDDSText = NULL;
         }
-    }*/
+    }
+    */
 
     // -----------------
 
     // reallocate the texture for font titles + custom msgs (m_lpDDSTitle)
     {
         m_nTitleTexSizeX = std::max(m_nTexSizeX, m_nTexSizeY);
-        m_nTitleTexSizeY = m_nTitleTexSizeX/4;
+        m_nTitleTexSizeY = m_nTitleTexSizeX / 4;
 
         //DumpDebugMessage("Init: [re]allocating title surface");
 
@@ -1526,7 +1535,7 @@ int CPlugin::AllocateMilkDropDX11()
         bool bSuccess;
         do
         {
-      bSuccess = GetDevice()->CreateTexture(m_nTitleTexSizeX, m_nTitleTexSizeY, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_B8G8R8A8_UNORM, &m_lpDDSTitle);
+            bSuccess = GetDevice()->CreateTexture(m_nTitleTexSizeX, m_nTitleTexSizeY, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_B8G8R8A8_UNORM, &m_lpDDSTitle);
             //hr = D3DXCreateTexture(GetDevice(), m_nTitleTexSizeX, m_nTitleTexSizeY, 1, D3DUSAGE_RENDERTARGET, GetBackBufFormat(), D3DPOOL_DEFAULT, &m_lpDDSTitle);
             //if (hr != D3D_OK)
             if (!bSuccess)
@@ -1543,7 +1552,7 @@ int CPlugin::AllocateMilkDropDX11()
             }
         }
         //while (hr != D3D_OK && m_nTitleTexSizeX > 16);
-    while (!bSuccess && m_nTitleTexSizeX > 16);
+        while (!bSuccess && m_nTitleTexSizeX > 16);
 
         if (!bSuccess)
         {
@@ -1563,46 +1572,46 @@ int CPlugin::AllocateMilkDropDX11()
     m_texmgr.Init(GetDevice());
 
     //DumpDebugMessage("Init: mesh allocation");
-    m_verts      = new MDVERTEX[(m_nGridX+1)*(m_nGridY+1)];
-    m_verts_temp = new MDVERTEX[(m_nGridX+2) * 4];
-    m_vertinfo   = new td_vertinfo[(m_nGridX+1)*(m_nGridY+1)];
-    m_indices_strip = new int[(m_nGridX+2)*(m_nGridY*2)];
-    m_indices_list  = new int[m_nGridX*m_nGridY*6];
+    m_verts = new MDVERTEX[(m_nGridX + 1) * (m_nGridY + 1)];
+    m_verts_temp = new MDVERTEX[(m_nGridX + 2) * 4];
+    m_vertinfo = new td_vertinfo[(m_nGridX + 1) * (m_nGridY + 1)];
+    m_indices_strip = new int[(m_nGridX + 2) * (m_nGridY * 2)];
+    m_indices_list = new int[m_nGridX * m_nGridY * 6];
     if (!m_verts || !m_vertinfo)
     {
-/*
+        /*
         swprintf(buf, L"couldn't allocate mesh - out of memory");
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        */
         return false;
     }
 
     int nVert = 0;
     float texel_offset_x = 0.5f / (float)m_nTexSizeX;
     float texel_offset_y = 0.5f / (float)m_nTexSizeY;
-    for (y=0; y<=m_nGridY; y++)
+    for (y = 0; y <= m_nGridY; y++)
     {
-        for (int x=0; x<=m_nGridX; x++)
+        for (int x = 0; x <= m_nGridX; x++)
         {
             // precompute x,y,z
-            m_verts[nVert].x = x/(float)m_nGridX*2.0f - 1.0f;
-            m_verts[nVert].y = y/(float)m_nGridY*2.0f - 1.0f;
+            m_verts[nVert].x = x / (float)m_nGridX * 2.0f - 1.0f;
+            m_verts[nVert].y = y / (float)m_nGridY * 2.0f - 1.0f;
             m_verts[nVert].z = 0.0f;
 
             // precompute rad, ang, being conscious of aspect ratio
-            m_vertinfo[nVert].rad = sqrtf(m_verts[nVert].x*m_verts[nVert].x*m_fAspectX*m_fAspectX + m_verts[nVert].y*m_verts[nVert].y*m_fAspectY*m_fAspectY);
-            if (y==m_nGridY/2 && x==m_nGridX/2)
+            m_vertinfo[nVert].rad = sqrtf(m_verts[nVert].x * m_verts[nVert].x * m_fAspectX * m_fAspectX + m_verts[nVert].y * m_verts[nVert].y * m_fAspectY * m_fAspectY);
+            if (y == m_nGridY / 2 && x == m_nGridX / 2)
                 m_vertinfo[nVert].ang = 0.0f;
             else
-                m_vertinfo[nVert].ang = atan2f(m_verts[nVert].y*m_fAspectY, m_verts[nVert].x*m_fAspectX);
+                m_vertinfo[nVert].ang = atan2f(m_verts[nVert].y * m_fAspectY, m_verts[nVert].x * m_fAspectX);
             m_vertinfo[nVert].a = 1;
             m_vertinfo[nVert].c = 0;
 
             m_verts[nVert].rad = m_vertinfo[nVert].rad;
             m_verts[nVert].ang = m_vertinfo[nVert].ang;
-            m_verts[nVert].tu_orig =  m_verts[nVert].x*0.5f + 0.5f + texel_offset_x;
-            m_verts[nVert].tv_orig = -m_verts[nVert].y*0.5f + 0.5f + texel_offset_y;
+            m_verts[nVert].tu_orig =  m_verts[nVert].x * 0.5f + 0.5f + texel_offset_x;
+            m_verts[nVert].tv_orig = -m_verts[nVert].y * 0.5f + 0.5f + texel_offset_y;
 
             nVert++;
         }
@@ -1613,23 +1622,23 @@ int CPlugin::AllocateMilkDropDX11()
     // each strip has m_nGridX+2 *points* in it, or m_nGridX/2 polygons.
     int xref, yref;
     int nVert_strip = 0;
-    for (int quadrant=0; quadrant<4; quadrant++)
+    for (int quadrant = 0; quadrant < 4; quadrant++)
     {
-        for (int slice=0; slice < m_nGridY/2; slice++)
+        for (int slice = 0; slice < m_nGridY / 2; slice++)
         {
-            for (int i=0; i < m_nGridX + 2; i++)
+            for (int i = 0; i < m_nGridX + 2; i++)
             {
-                // quadrants:	2 3
-                //				0 1
-                xref = i/2;
-                yref = (i%2) + slice;
+                // quadrants: 2 3
+                //            0 1
+                xref = i / 2;
+                yref = (i % 2) + slice;
 
                 if (quadrant & 1)
                     xref = m_nGridX - xref;
                 if (quadrant & 2)
                     yref = m_nGridY - yref;
 
-                int v = xref + (yref)*(m_nGridX+1);
+                int v = xref + (yref) * (m_nGridX + 1);
 
                 m_indices_strip[nVert_strip++] = v;
             }
@@ -1638,30 +1647,30 @@ int CPlugin::AllocateMilkDropDX11()
 
     // also generate triangle lists for drawing the main warp mesh.
     int nVert_list = 0;
-    for (int quadrant=0; quadrant<4; quadrant++)
+    for (int quadrant = 0; quadrant < 4; quadrant++)
     {
-        for (int slice=0; slice < m_nGridY/2; slice++)
+        for (int slice = 0; slice < m_nGridY / 2; slice++)
         {
-            for (int i=0; i < m_nGridX/2; i++)
+            for (int i = 0; i < m_nGridX / 2; i++)
             {
-                // quadrants:	2 3
-                //				0 1
+                // quadrants: 2 3
+                //            0 1
                 xref = i;
                 yref = slice;
 
                 if (quadrant & 1)
-                    xref = m_nGridX-1 - xref;
+                    xref = m_nGridX - 1 - xref;
                 if (quadrant & 2)
-                    yref = m_nGridY-1 - yref;
+                    yref = m_nGridY - 1 - yref;
 
-                int v = xref + (yref)*(m_nGridX+1);
+                int v = xref + (yref) * (m_nGridX + 1);
 
                 m_indices_list[nVert_list++] = v;
-                m_indices_list[nVert_list++] = v           +1;
-                m_indices_list[nVert_list++] = v+m_nGridX+1  ;
-                m_indices_list[nVert_list++] = v           +1;
-                m_indices_list[nVert_list++] = v+m_nGridX+1  ;
-                m_indices_list[nVert_list++] = v+m_nGridX+1+1;
+                m_indices_list[nVert_list++] = v + 1;
+                m_indices_list[nVert_list++] = v + m_nGridX + 1;
+                m_indices_list[nVert_list++] = v + 1;
+                m_indices_list[nVert_list++] = v + m_nGridX + 1;
+                m_indices_list[nVert_list++] = v + m_nGridX + 1 + 1;
             }
         }
     }
@@ -1710,20 +1719,19 @@ DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
     // performs cubic interpolation on a D3DCOLOR value.
     DWORD ret = 0;
     DWORD shift = 0;
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < 4; i++)
     {
         float f = fCubicInterpolate(
-            ((y0 >> shift) & 0xFF)/255.0f,
-            ((y1 >> shift) & 0xFF)/255.0f,
-            ((y2 >> shift) & 0xFF)/255.0f,
-            ((y3 >> shift) & 0xFF)/255.0f,
-            t
-        );
-        if (f<0)
+            ((y0 >> shift) & 0xFF) / 255.0f,
+            ((y1 >> shift) & 0xFF) / 255.0f,
+            ((y2 >> shift) & 0xFF) / 255.0f,
+            ((y3 >> shift) & 0xFF) / 255.0f,
+            t);
+        if (f < 0)
             f = 0;
-        if (f>1)
+        if (f > 1)
             f = 1;
-        ret |= ((DWORD)(f*255)) << shift;
+        ret |= ((DWORD)(f * 255)) << shift;
         shift += 8;
     }
     return ret;
@@ -1749,11 +1757,11 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
         {
             //if (i==1)
             {
-/*
-                WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_NOISE_TEXTURE,buf,sizeof(buf));
+                /*
+                WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_NOISE_TEXTURE, buf, sizeof(buf));
                 DumpDebugMessage(buf);
-                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                */
                 return false;
             }
         }
@@ -1769,21 +1777,21 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     if (!lpDevice->LockRect(pNoiseTex, 0, D3D11_MAP_WRITE_DISCARD, &r))
     //if (D3D_OK != pNoiseTex->LockRect(0, &r, NULL, D3DLOCK_DISCARD))
     {
-/*
-        WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_LOCK_NOISE_TEXTURE,buf,sizeof(buf));
+        /*
+        WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_LOCK_NOISE_TEXTURE, buf, sizeof(buf));
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        */
         return false;
     }
 
     if (r.RowPitch < (unsigned)(size * 4))
     {
-/*
-        WASABI_API_LNGSTRINGW_BUF(IDS_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED,buf,sizeof(buf));
+        /*
+        WASABI_API_LNGSTRINGW_BUF(IDS_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED, buf, sizeof(buf));
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        */
         return false;
     }
 
@@ -1888,7 +1896,7 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
     //wchar_t buf[2048], title[64];
     D3D11Shim* lpDevice = GetDevice();
     // Synthesize noise texture(s)
-    ID3D11Texture3D* pNoiseTex = NULL, *pStaging = NULL;
+    ID3D11Texture3D *pNoiseTex = NULL, *pStaging = NULL;
     // try twice - once with mips, once without.
     // NO, TRY JUST ONCE - DX9 doesn't do auto mipgen w/volume textures.  (Debug runtime complains.)
     //for (int i=1; i<2; i++)
@@ -1898,11 +1906,11 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
         {
             //if (i==1)
             {
-/*
-                WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_3D_NOISE_TEXTURE,buf,sizeof(buf));
+                /*
+                WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_3D_NOISE_TEXTURE, buf, sizeof(buf));
                 DumpDebugMessage(buf);
-                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                */
                 return false;
             }
         }
@@ -1922,11 +1930,11 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
     }
     if (r.RowPitch < (unsigned)(size * 4) || r.DepthPitch < (unsigned)(size * size * 4))
     {
-/*
-        WASABI_API_LNGSTRINGW_BUF(IDS_3D_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED,buf,sizeof(buf));
+        /*
+        WASABI_API_LNGSTRINGW_BUF(IDS_3D_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED, buf, sizeof(buf));
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-*/
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        */
         return false;
     }
 
@@ -2133,7 +2141,7 @@ bool CPlugin::EvictSomeTexture()
     int oldest = 0;
     bool bAtLeastOneFound = false;
     for (size_t i = 0; i < N; i++)
-        if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes>0 && m_textures[i].nAge < m_nPresetsLoadedTotal-1) // note: -1 here keeps images around for the blend-from preset, too...
+        if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes > 0 && m_textures[i].nAge < m_nPresetsLoadedTotal - 1) // note: -1 here keeps images around for the blend-from preset, too...
         {
             newest = std::min(newest, m_textures[i].nAge);
             oldest = std::max(oldest, m_textures[i].nAge);
@@ -2147,10 +2155,10 @@ bool CPlugin::EvictSomeTexture()
     int biggest_bytes = 0;
     int biggest_index = -1;
     for (size_t i = 0; i < N; i++)
-        if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes>0 && m_textures[i].nAge < m_nPresetsLoadedTotal-1) // note: -1 here keeps images around for the blend-from preset, too...
+        if (m_textures[i].bEvictable && m_textures[i].nSizeInBytes > 0 && m_textures[i].nAge < m_nPresetsLoadedTotal - 1) // note: -1 here keeps images around for the blend-from preset, too...
         {
             float size_mult = 1.0f + (m_textures[i].nAge - newest) / (float)(oldest - newest);
-            int bytes =  static_cast<int>(m_textures[i].nSizeInBytes * size_mult);
+            int bytes = static_cast<int>(m_textures[i].nSizeInBytes * size_mult);
             if (bytes > biggest_bytes)
             {
                 biggest_bytes = bytes;
@@ -2411,10 +2419,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texcode[cd.BindPoint] = TEX_DISK;
 
-                // check for request for random texture.
-                if (!wcsncmp(L"rand", szRootName, 4) &&
-                    IsNumericChar(szRootName[4]) &&
-                    IsNumericChar(szRootName[5]) &&
+                // Check for request for random texture.
+                if (!wcsncmp(L"rand", szRootName, 4) && IsNumericChar(szRootName[4]) && IsNumericChar(szRootName[5]) &&
                     (szRootName[6] == 0 || szRootName[6] == '_'))
                 {
                     int rand_slot = -1;
@@ -2439,7 +2445,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                         }
                         else
                         {
-                            //chop off extension
+                            // Chop off extension
                             wchar_t* p = wcsrchr(szRootName, L'.');
                             if (p)
                                 *p = 0;
@@ -2450,7 +2456,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                     }
                 }
 
-                // see if <szRootName>.tga or .jpg has already been loaded.
+                // See if <szRootName>.tga or .jpg has already been loaded.
                 //   (if so, grab a pointer to it)
                 //   (if NOT, create & load it).
                 size_t N1 = g_plugin.m_textures.size();
@@ -2510,21 +2516,22 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                         while (1)
                         {
                             HRESULT hr = g_plugin.GetDevice()->CreateTextureFromFile(szFilename, &x.texptr);
-                            /*HRESULT hr = D3DXCreateTextureFromFileExW(g_plugin.GetDevice(),
-                                                                   szFilename,
-                                                                   D3DX_DEFAULT_NONPOW2, // w
-                                                                   D3DX_DEFAULT_NONPOW2, // h
-                                                                   D3DX_DEFAULT,    // # mip levels to gen - all
-                                                                   0,  // usage flags
-                                                                   D3DFMT_UNKNOWN,
-                                                                   D3DPOOL_DEFAULT,
-                                                                   D3DX_DEFAULT,     //filter
-                                                                   D3DX_DEFAULT,     //mipfilter
-                                                                   0,                // color key
-                                                                   &desc,
-                                                                   NULL,             //palette
-                                                                   (IDirect3DTexture9**)&x.texptr
-                                                                     );*/
+                            /*
+                            HRESULT hr = D3DXCreateTextureFromFileExW(g_plugin.GetDevice(),
+                                szFilename,
+                                D3DX_DEFAULT_NONPOW2, // w
+                                D3DX_DEFAULT_NONPOW2, // h
+                                D3DX_DEFAULT,         // # mip levels to gen - all
+                                0,                    // usage flags
+                                D3DFMT_UNKNOWN,
+                                D3DPOOL_DEFAULT,
+                                D3DX_DEFAULT,         // filter
+                                D3DX_DEFAULT,         // mipfilter
+                                0,                    // color key
+                                &desc,
+                                NULL,                 // palette
+                                (IDirect3DTexture9**)&x.texptr);
+                            */
                             if (hr == E_OUTOFMEMORY)
                             {
                                 // Out of memory - try evicting something old and/or big.
@@ -2567,15 +2574,15 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
 
                     if (!x.texptr)
                     {
-/*
+                        /*
                         wchar_t buf[2048], title[64];
                         swprintf(buf, WASABI_API_LNGSTRINGW(IDS_COULD_NOT_LOAD_TEXTURE_X), szRootName, szExtsWithSlashes);
                         g_plugin.DumpDebugMessage(buf);
                         if (bHardErrors)
-                            MessageBox(g_plugin.GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-                        else {
+                            MessageBox(g_plugin.GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                        else
                             g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-                        }*/
+                        */
                         return;
                     }
 
@@ -2596,7 +2603,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
         D3D11_SHADER_TYPE_DESC ct = var->Type;
 
         if (cd.uFlags == 0) // DX11 do not process unused variables.
-          continue;
+            continue;
         //pCT->GetConstantDesc(h, &cd, &count);
 
         if (ct.Type == D3D_SVT_FLOAT)
@@ -2645,9 +2652,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
 
                     // Check for request for random texture.
                     // It should be a previously-seen random index - just fetch/reuse the name.
-                    if (!wcsncmp(L"rand", szRootName, 4) &&
-                        IsNumericChar(szRootName[4]) &&
-                        IsNumericChar(szRootName[5]) &&
+                    if (!wcsncmp(L"rand", szRootName, 4) && IsNumericChar(szRootName[4]) && IsNumericChar(szRootName[5]) &&
                         (szRootName[6] == 0 || szRootName[6] == L'_'))
                     {
                         int rand_slot = -1;
@@ -2685,11 +2690,11 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
 
                     if (!bTexFound)
                     {
-/*
+                        /*
                         wchar_t buf[1024];
                         swprintf(buf, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_RESOLVE_TEXSIZE_FOR_A_TEXTURE_NOT_IN_USE), cd.Name);
                         g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
-*/
+                        */
                     }
                 }
                 else if (cd.Name[0] == '_' && cd.Name[1] == 'c')
@@ -2804,8 +2809,8 @@ bool CPlugin::LoadShaders(PShaderSet* sh, CState* pState, bool bTick)
 
 //----------------------------------------------------------------------
 
-bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szFn, const char* szProfile,
-                                   CConstantTable** ppConstTable, void** ppShader, int shaderType, bool /*bHardErrors*/)
+bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szFn, const char* szProfile, CConstantTable** ppConstTable,
+                                   void** ppShader, int shaderType, bool /*bHardErrors*/)
 {
     const char szWarpDefines[] = "#define rad _rad_ang.x\n"
                                  "#define ang _rad_ang.y\n"
@@ -2816,10 +2821,10 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
                                  "#define uv _uv.xy\n"
                                  "#define uv_orig _uv.xy\n" //[sic]
                                  "#define hue_shader _vDiffuse.xyz\n";
-    const char szWarpParams[] = "float4 _vDiffuse : COLOR, float4 _uv : TEXCOORD0, float2 _rad_ang : TEXCOORD1, out float4 _return_value : COLOR0";
-    const char szCompParams[] = "float4 _vDiffuse : COLOR, float2 _uv : TEXCOORD0, float2 _rad_ang : TEXCOORD1, out float4 _return_value : COLOR0";
-    const char szFirstLine[]  = "    float3 ret = 0;";
-    const char szLastLine[]   = "    _return_value = float4(ret.xyz, _vDiffuse.w);";
+    const char szWarpParams[]  = "float4 _vDiffuse : COLOR, float4 _uv : TEXCOORD0, float2 _rad_ang : TEXCOORD1, out float4 _return_value : COLOR0";
+    const char szCompParams[]  = "float4 _vDiffuse : COLOR, float2 _uv : TEXCOORD0, float2 _rad_ang : TEXCOORD1, out float4 _return_value : COLOR0";
+    const char szFirstLine[]   = "    float3 ret = 0;";
+    const char szLastLine[]    = "    _return_value = float4(ret.xyz, _vDiffuse.w);";
 
     char szWhichShader[64];
     switch (shaderType)
@@ -2970,12 +2975,12 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
 
         if (!p)
         {
-/*
+            /*
             wchar_t temp[512];
             swprintf(temp, WASABI_API_LNGSTRINGW(IDS_ERROR_PARSING_X_X_SHADER), szProfile, szWhichShader);
             DumpDebugMessage(temp);
             AddError(temp, 8.0f, ERR_PRESET, true);
-*/
+            */
             return false;
         }
     }
@@ -3002,50 +3007,51 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
             failed = false;
         }
     }
-   /* if (D3D_OK != D3DXCompileShader(
+    /*
+    if (D3D_OK != D3DXCompileShader(
         szShaderText,
         len,
-        NULL,//CONST D3DXMACRO* pDefines,
-        NULL,//LPD3DXINCLUDE pInclude,
+        NULL, // CONST D3DXMACRO* pDefines,
+        NULL, // LPD3DXINCLUDE pInclude,
         szFn,
         szProfile,
         m_dwShaderFlags,
         &pShaderByteCode,
-                &m_pShaderCompileErrors,
-                ppConstTable
-                ))
+        &m_pShaderCompileErrors,
+        ppConstTable
+        ))
+    {
+        failed = true;
+    }
+    // before we totally fail, let's try using ps_2_b instead of ps_2_a
+    if (failed && !strcmp(szProfile, "ps_2_a"))
+    {
+        SafeRelease(m_pShaderCompileErrors);
+        if (D3D_OK == D3DXCompileShader(szShaderText, len, NULL, NULL, szFn,
+            "ps_2_b", m_dwShaderFlags, &pShaderByteCode, &m_pShaderCompileErrors, ppConstTable))
         {
-            failed=true;
+            failed = false;
         }
-        // before we totally fail, let's try using ps_2_b instead of ps_2_a
-        if (failed && !strcmp(szProfile, "ps_2_a"))
-        {
-            SafeRelease(m_pShaderCompileErrors);
-            if (D3D_OK == D3DXCompileShader(szShaderText, len, NULL, NULL, szFn,
-                "ps_2_b", m_dwShaderFlags, &pShaderByteCode, &m_pShaderCompileErrors, ppConstTable))
-            {
-                failed=false;
-            }
-        }*/
+    }
+    */
 
     if (failed)
     {
-/*
-            wchar_t temp[1024];
-            swprintf(temp, WASABI_API_LNGSTRINGW(IDS_ERROR_COMPILING_X_X_SHADER), szProfile, szWhichShader);
-            if (m_pShaderCompileErrors && m_pShaderCompileErrors->GetBufferSize() < sizeof(temp) - 256)
-            {
+        /*
+        wchar_t temp[1024];
+        swprintf(temp, WASABI_API_LNGSTRINGW(IDS_ERROR_COMPILING_X_X_SHADER), szProfile, szWhichShader);
+        if (m_pShaderCompileErrors && m_pShaderCompileErrors->GetBufferSize() < sizeof(temp) - 256)
+        {
             //strcat_s(tempw, L"\n\n");
             wcscat_s(err, AutoWide(reinterpret_cast<char*>(m_pShaderCompileErrors->GetBufferPointer())));
-            }
-*/
+        }
+        */
         SafeRelease(m_pShaderCompileErrors);
-//			DumpDebugMessage(temp);
-// 			if (bHardErrors)
-// 				MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-// 			else {
-// 				AddError(temp, 8.0f, ERR_PRESET, true);
-// 			}
+        //DumpDebugMessage(temp);
+        //if (bHardErrors)
+        //    MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        //else
+        //    AddError(temp, 8.0f, ERR_PRESET, true);
         return false;
     }
 
@@ -3073,16 +3079,15 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
 
     if (hr != S_OK)
     {
-/*
+        /*
         wchar_t temp[512];
-        WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_SHADER,temp,sizeof(temp));
+        WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_SHADER, temp, sizeof(temp));
         DumpDebugMessage(temp);
         if (bHardErrors)
-            MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR,title,64), MB_OK|MB_SETFOREGROUND|MB_TOPMOST );
-        else {
+            MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        else
             AddError(temp, 6.0f, ERR_PRESET, true);
-        }
-*/
+        */
         return false;
     }
 
@@ -3238,7 +3243,7 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     // The "random" state should be preserved from session to session.
     // It's pretty safe to do, because the Scroll Lock key is hard to
     //   accidentally click... :)
-    WritePrivateProfileIntW(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
+    //WritePrivateProfileIntW(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
 }
 
 // Renders a frame of animation.
@@ -4679,7 +4684,7 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
     // Ensure file list is OK.
     if (m_nPresets - m_nDirs == 0)
     {
-            return;
+        return;
     }
 
     bool bHistoryEmpty = (m_presetHistoryFwdFence == m_presetHistoryBackFence);
@@ -4937,7 +4942,7 @@ void CPlugin::GenPlasma(int x0, int x1, int y0, int y1, float dt)
     }
 }
 
-void CPlugin::LoadPreset(const wchar_t *szPresetFilename, float fBlendTime)
+void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
 {
     OutputDebugString(szPresetFilename);
     //OutputDebugString("\n");
@@ -4949,11 +4954,13 @@ void CPlugin::LoadPreset(const wchar_t *szPresetFilename, float fBlendTime)
     //  in RANDOM preset order and a file was renamed or deleted!)
     if (GetFileAttributes(szPresetFilename) == 0xFFFFFFFF)
     {
-       /* const wchar_t *p = wcsrchr(szPresetFilename, L'\\');
-        p = (p) ? p+1 : szPresetFilename;
+        /*
+        const wchar_t *p = wcsrchr(szPresetFilename, L'\\');
+        p = (p) ? p + 1 : szPresetFilename;
         wchar_t buf[1024];
         swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_PRESET_NOT_FOUND_X), p);
-        AddError(buf, 6.0f, ERR_PRESET, true);*/
+        AddError(buf, 6.0f, ERR_PRESET, true);
+        */
         return;
     }
 
@@ -5192,8 +5199,8 @@ retry:
         g_plugin.m_presets.clear();
 
         // Find first .MILK file
-        //if( (hFile = _findfirst(szMask, &c_file )) != -1L )		// note: returns filename -without- path
-        if( (h = FindFirstFileW(g_plugin.m_szUpdatePresetMask, &fd )) == INVALID_HANDLE_VALUE )		// note: returns filename -without- path
+        //if ((hFile = _findfirst(szMask, &c_file )) != -1L ) // note: returns filename -without- path
+        if ((h = FindFirstFileW(g_plugin.m_szUpdatePresetMask, &fd)) == INVALID_HANDLE_VALUE) // note: returns filename -without- path
         {
             // Revert back to plugins directory.
             /* wchar_t buf[1024];
@@ -5411,9 +5418,11 @@ retry:
     {
         // no presets OR directories found - weird - but it happens.
         // --> revert back to plugins dir
-       /* wchar_t buf[1024];
+        /*
+        wchar_t buf[1024];
         swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILES_OR_DIRS_FOUND_IN_X), g_plugin.m_szPresetDir);
-        g_plugin.AddError(buf, 4.0f, ERR_MISC, true);*/
+        g_plugin.AddError(buf, 4.0f, ERR_MISC, true);
+        */
 
         if (bRetrying)
         {
@@ -5512,7 +5521,7 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
         // It will just run in the background til it finishes.
         // however, we want to wait until at least ~32 presets are found (or failure) before returning,
         // so we know we have *something* in the preset list to start with.
-        SetThreadPriority(g_hThread,THREAD_PRIORITY_HIGHEST);
+        SetThreadPriority(g_hThread, THREAD_PRIORITY_HIGHEST);
 
         // Wait until either the thread exits, or number of presets is >32, before returning.
         // Also enter the CS whenever checking on it!

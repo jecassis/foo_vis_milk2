@@ -27,7 +27,6 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #include "pch.h"
 #include "utility.h"
 
@@ -158,7 +157,7 @@ void TextToGuidA(char* str, GUID* pGUID)
     if (!str || !pGUID)
         return;
 
-    DWORD d[11];
+    DWORD d[11]{};
 
     sscanf_s(str, "%X %X %X %X %X %X %X %X %X %X %X", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9], &d[10]);
 
@@ -180,7 +179,7 @@ void TextToGuidW(wchar_t* str, GUID* pGUID)
     if (!str || !pGUID)
         return;
 
-    DWORD d[11];
+    DWORD d[11]{};
 
     swscanf_s(str, L"%X %X %X %X %X %X %X %X %X %X %X", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9], &d[10]);
 
@@ -218,7 +217,7 @@ void GuidToTextA(GUID* pGUID, char* str, int nStrLen)
         return;
     str[0] = '\0';
 
-    DWORD d[11];
+    DWORD d[11]{};
     d[0] = (DWORD)pGUID->Data1;
     d[1] = (DWORD)pGUID->Data2;
     d[2] = (DWORD)pGUID->Data3;
@@ -241,7 +240,7 @@ void GuidToTextW(GUID* pGUID, wchar_t* str, int nStrLen)
         return;
     str[0] = L'\0';
 
-    DWORD d[11];
+    DWORD d[11]{};
     d[0] = (DWORD)pGUID->Data1;
     d[1] = (DWORD)pGUID->Data2;
     d[2] = (DWORD)pGUID->Data3;

@@ -688,7 +688,7 @@ bool texmgr::RecompileExpressions(int iSlot)
         while (*p == ' ' || *p == LINEFEED_CONTROL_CHAR)
             p++;
         if (*p == 0)
-			expr[0] = 0;
+            expr[0] = 0;
     }
 
     // Replace line feed control characters with spaces, so they do not mess up the code compiler,

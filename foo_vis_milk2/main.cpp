@@ -9,6 +9,7 @@
 #define APPLICATION_SOURCE_URLS " * " PLUGIN_WEB_URL
 #endif
 
+// clang-format off
 DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
                           "MilkDrop 2 music visualizer ported from Winamp.\n\n"
                           APPLICATION_FILE_NAME " " APPLICATION_VERSION "\n"
@@ -19,5 +20,6 @@ DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
                           "Built with foobar2000 SDK " STR(FOOBAR2000_SDK_VERSION) " on " __DATE__ " " __TIME__ " -0800.\n\n"
                           "Documentation and source code can be obtained from:\n"
                           APPLICATION_SOURCE_URLS);
+// clang-format on
 
 VALIDATE_COMPONENT_FILENAME(APPLICATION_FILE_NAME _APPLICATION_VERSION_EXTENSION);

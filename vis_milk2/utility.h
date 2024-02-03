@@ -32,7 +32,7 @@
 
 #define SafeRelease(x) { if (x) { x->Release(); x = nullptr; } }
 #define SafeDelete(x) { if (x) { delete x; x = nullptr; } }
-#define IsNullGuid(lpGUID) (((int *)lpGUID)[0] == 0 && ((int *)lpGUID)[1] == 0 && ((int *)lpGUID)[2] == 0 && ((int *)lpGUID)[3] == 0)
+#define IsNullGuid(lpGUID) (((int*)lpGUID)[0] == 0 && ((int*)lpGUID)[1] == 0 && ((int*)lpGUID)[2] == 0 && ((int*)lpGUID)[3] == 0)
 #define DlgItemIsChecked(hDlg, nIDDlgItem) ((SendDlgItemMessage(hDlg, nIDDlgItem, BM_GETCHECK, (WPARAM)0, (LPARAM)0) == BST_CHECKED) ? true : false)
 #define CosineInterp(x) (0.5f - 0.5f * cosf((x) * 3.1415926535898f))
 #define InvCosineInterp(x) (acosf(1.0f - 2.0f * (x)) / 3.1415926535898f)

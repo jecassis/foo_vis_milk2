@@ -195,8 +195,7 @@ bool CConstantTable::ApplyChanges(ID3D11DeviceContext* pContext)
             ShaderVariable* var = &m_ConstantBuffers[i].Variables[j];
             if (var->IsDirty && var->Value)
             {
-                memcpy(static_cast<unsigned char*>(res.pData) + var->Description.StartOffset, var->Value,
-                       var->Description.Size);
+                memcpy(static_cast<unsigned char*>(res.pData) + var->Description.StartOffset, var->Value, var->Description.Size);
                 var->IsDirty = false;
             }
         }

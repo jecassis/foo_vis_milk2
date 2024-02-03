@@ -438,7 +438,7 @@ class CState
     double q_values_after_init_code[NUM_Q_VAR];
     double monitor_after_init_code;
 
-    float GetPresetStartTime() { return m_fPresetStartTime; }
+    float GetPresetStartTime() const { return m_fPresetStartTime; }
     float m_fPresetStartTime;
 };
 

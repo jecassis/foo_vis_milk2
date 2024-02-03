@@ -70,7 +70,7 @@ bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChar
 
         // Scan each line in the file for "szVarName=value" pairs, and store info about them.
         constexpr auto MAX_VARNAME_LEN = 128;
-        char szThisLineVarName[MAX_VARNAME_LEN];
+        char szThisLineVarName[MAX_VARNAME_LEN]{};
         while (1)
         {
             char ch;
@@ -241,6 +241,7 @@ CState::~CState()
 
 //--------------------------------------------------------------------------------
 
+// clang-format off
 void CState::RegisterBuiltInVariables(int flags)
 {
     if (flags & RECOMPILE_PRESET_CODE)
@@ -680,20 +681,16 @@ void CState::Default(DWORD ApplyFlags)
     FreeVarsAndCode();
 }
 
-void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
+void CState::StartBlendFrom(CState* s_from, float fAnimTime, float fTimespan)
 {
-    CState *s_to = this;
+    CState* s_to = this;
 
     // bools, ints, and strings instantly change
     s_to->m_fVideoEchoAlphaOld       = s_from->m_fVideoEchoAlpha.eval(-1);
     s_to->m_nVideoEchoOrientationOld = s_from->m_nVideoEchoOrientation;
     s_to->m_nOldWaveMode             = s_from->m_nWaveMode;
 
-	/*
-	s_to->m_fVideoEchoAlphaOld		 = s_from->m_fVideoEchoAlpha.eval(-1);
-	s_to->m_nVideoEchoOrientationOld = s_from->m_nVideoEchoOrientation;
-
-    s_to->m_nOldWaveMode             = s_from->m_nWaveMode;
+    /*
     s_to->m_nWaveMode                = s_from->m_nWaveMode;
     s_to->m_bAdditiveWaves           = s_from->m_bAdditiveWaves;
     s_to->m_nVideoEchoOrientation    = s_from->m_nVideoEchoOrientation;
@@ -713,9 +710,9 @@ void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
     */
 
     // expr. eval. also copies over immediately (replaces prev.)
-    m_bBlending       = true;
+    m_bBlending = true;
     m_fBlendStartTime = fAnimTime;
-    m_fBlendDuration  = fTimespan;
+    m_fBlendDuration = fTimespan;
 
     /*
     //for (int e = 0; e < MAX_EVALS; e++)
@@ -824,6 +821,7 @@ void CState::StartBlendFrom(CState *s_from, float fAnimTime, float fTimespan)
         s_to->m_fMvB  = s_from->m_fMvB.eval(fAnimTime);
     }
 }
+// clang-format on
 
 void WriteCode(FILE* fOut, const int /* i */, char* pStr, const char* prefix, const bool bPrependApostrophe = false)
 {
@@ -841,7 +839,9 @@ void WriteCode(FILE* fOut, const int /* i */, char* pStr, const char* prefix, co
 
         char ch = pStr[char_pos];
         pStr[char_pos] = 0;
-        //if (!WritePrivateProfileString(szSectionName, szLineName, &pStr[start_pos], szIniFile)) return false;
+#ifndef _FOOBAR
+        if (!WritePrivateProfileString(szSectionName, szLineName, &pStr[start_pos], szIniFile)) return false;
+#endif
         fprintf_s(fOut, "%s=%s%s\n", szLineName, bPrependApostrophe ? "`" : "", &pStr[start_pos]);
         pStr[char_pos] = ch;
 
@@ -991,9 +991,12 @@ int CWave::Export(FILE* fOut, const wchar_t* szFile, int i)
 
     // READ THE CODE IN
     char prefix[64];
-    sprintf_s(prefix, "wave_%d_init", i);      WriteCode(f2, i, m_szInit, prefix);
-    sprintf_s(prefix, "wave_%d_per_frame", i); WriteCode(f2, i, m_szPerFrame, prefix);
-    sprintf_s(prefix, "wave_%d_per_point", i); WriteCode(f2, i, m_szPerPoint, prefix);
+    sprintf_s(prefix, "wave_%d_init", i);
+    WriteCode(f2, i, m_szInit, prefix);
+    sprintf_s(prefix, "wave_%d_per_frame", i);
+    WriteCode(f2, i, m_szPerFrame, prefix);
+    sprintf_s(prefix, "wave_%d_per_point", i);
+    WriteCode(f2, i, m_szPerPoint, prefix);
 
     if (!fOut)
         fclose(f2); // [sic]
@@ -1038,9 +1041,12 @@ int CShape::Export(FILE* fOut, const wchar_t* szFile, int i)
     fprintf_s(f2, "shapecode_%d_%s=%.3f\n", i, "border_a", border_a);
 
     char prefix[64];
-    sprintf_s(prefix, "shape_%d_init", i);      WriteCode(f2, i, m_szInit, prefix);
-    sprintf_s(prefix, "shape_%d_per_frame", i); WriteCode(f2, i, m_szPerFrame, prefix);
-    //sprintf_s(prefix, "shape_%d_per_point", i); WriteCode(f2, i, m_szPerPoint, prefix);
+    sprintf_s(prefix, "shape_%d_init", i);
+    WriteCode(f2, i, m_szInit, prefix);
+    sprintf_s(prefix, "shape_%d_per_frame", i);
+    WriteCode(f2, i, m_szPerFrame, prefix);
+    //sprintf_s(prefix, "shape_%d_per_point", i);
+    //WriteCode(f2, i, m_szPerPoint, prefix);
 
     if (!fOut)
         fclose(f2); // [sic]
@@ -1246,8 +1252,10 @@ int CShape::Import(FILE* f, const wchar_t* szFile, int i)
 
     // READ THE CODE IN
     char prefix[64];
-    sprintf_s(prefix, "shape_%d_init", i);      ReadCode(f2, m_szInit, prefix);
-    sprintf_s(prefix, "shape_%d_per_frame", i); ReadCode(f2, m_szPerFrame, prefix);
+    sprintf_s(prefix, "shape_%d_init", i);
+    ReadCode(f2, m_szInit, prefix);
+    sprintf_s(prefix, "shape_%d_per_frame", i);
+    ReadCode(f2, m_szPerFrame, prefix);
 
     if (!f)
         fclose(f2); // [sic]
@@ -1454,12 +1462,12 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
 
 void CState::GenDefaultWarpShader()
 {
-    if (m_nWarpPSVersion>0)
+    if (m_nWarpPSVersion > 0)
         g_plugin.GenWarpPShaderText(m_szWarpShadersText, m_fDecay.eval(-1), m_bTexWrap);
 }
 void CState::GenDefaultCompShader()
 {
-    if (m_nCompPSVersion>0)
+    if (m_nCompPSVersion > 0)
         g_plugin.GenCompPShaderText(m_szCompShadersText, m_fGammaAdj.eval(-1), m_fVideoEchoAlpha.eval(-1), m_fVideoEchoZoom.eval(-1), m_nVideoEchoOrientation, m_fShader.eval(-1), m_bBrighten, m_bDarken, m_bSolarize, m_bInvert);
 }
 
@@ -1933,7 +1941,7 @@ float CBlendableFloat::eval(float fTime)
     }
 }
 
-void CBlendableFloat::StartBlendFrom(CBlendableFloat *f_from, float fAnimTime, float fDuration)
+void CBlendableFloat::StartBlendFrom(CBlendableFloat* f_from, float fAnimTime, float fDuration)
 {
     if (fDuration < 0.001f)
         return;

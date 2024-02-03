@@ -176,7 +176,7 @@ void DXContext::OnDisplayChange()
 // afterwards!
 BOOL DXContext::OnWindowSizeChanged(int width, int height)
 {
-    if (!m_ready)// || (m_current_mode.screenmode != WINDOWED))
+    if (!m_ready) //|| (m_current_mode.screenmode != WINDOWED))
         return FALSE;
 
     if ((m_client_width == width) && (m_client_height == height))

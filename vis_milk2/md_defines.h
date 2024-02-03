@@ -62,10 +62,10 @@
 #define MAX_CUSTOM_SHAPES 4
 
 // Aspect ratio makes the motion in the UV field [0..1] cover the screen appropriately.
-//#define ASPECT_X    1.00
-//#define ASPECT_Y    0.75     // ~h/w
-//#define ASPECT_X  ( (m_nTexSizeY > m_nTexSizeX) ? m_nTexSizeX/(float)m_nTexSizeY : 1.0f )  //0.75f
-//#define ASPECT_Y  ( (m_nTexSizeX > m_nTexSizeY) ? m_nTexSizeY/(float)m_nTexSizeX : 1.0f )  //0.75f
+//#define ASPECT_X 1.00
+//#define ASPECT_Y 0.75 // ~h/w
+//#define ASPECT_X ((m_nTexSizeY > m_nTexSizeX) ? m_nTexSizeX/(float)m_nTexSizeY : 1.0f) // 0.75f
+//#define ASPECT_Y ((m_nTexSizeX > m_nTexSizeY) ? m_nTexSizeY/(float)m_nTexSizeX : 1.0f) // 0.75f
 //  --> now stored in m_fAspectX, m_fInvAspectY, etc. <--
 
 #define WM_MILKDROP_SYSTRAY_MSG WM_USER + 407

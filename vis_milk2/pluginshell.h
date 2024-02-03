@@ -139,7 +139,7 @@ class CPluginShell
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
     //virtual void OnAltK(){}; // does not *have* to be implemented
     virtual void DumpDebugMessage(const wchar_t* s) = 0;
-    virtual void PopupMessage(int message_id, int title_id, bool dump=false) = 0;
+    virtual void PopupMessage(int message_id, int title_id, bool dump = false) = 0;
     virtual void ConsoleMessage(int message_id, int title_id) = 0;
 
     // FONTS & TEXT
@@ -277,6 +277,7 @@ class CPluginShell
   public:
     void DrawDarkTranslucentBox(RECT* pr);
     void StuffParams(DXCONTEXT_PARAMS* pParams);
+
   protected:
     void RenderPlaylist();
     void EnforceMaxFPS();
@@ -294,7 +295,6 @@ class CPluginShell
     int m_vj_mode;
     int m_hidden_textwnd;
     int m_resizing_textwnd;
-  protected:
     HWND m_hTextWnd;
   private:
     int m_nTextWndWidth;

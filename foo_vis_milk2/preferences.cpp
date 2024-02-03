@@ -733,16 +733,16 @@ void milk2_preferences_page::apply()
 // i.e., whether the "Apply" button should be enabled or not.
 bool milk2_preferences_page::HasChanged() const
 {
-    bool checkbox_changes = static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON3)) != cfg_bPresetLockOnAtStartup ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON4)) != cfg_bPreventScollLockHandling ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3)) != cfg_bWarningsDisabled ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2)) == cfg_bEnableRating ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG)) != cfg_bShowPressF1ForHelp ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT)) != cfg_allow_page_tearing_w ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT)) != cfg_allow_page_tearing_fs ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS)) != cfg_bHardCutsDisabled ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2)) != cfg_bAutoGamma ||
-                            static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS)) != cfg_bSongTitleAnims;
+    bool checkbox_changes = (static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON3)) != cfg_bPresetLockOnAtStartup) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON4)) != cfg_bPreventScollLockHandling) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3)) != cfg_bWarningsDisabled) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2)) == cfg_bEnableRating) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG)) != cfg_bShowPressF1ForHelp) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT)) != cfg_allow_page_tearing_w) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT)) != cfg_allow_page_tearing_fs) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS)) != cfg_bHardCutsDisabled) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2)) != cfg_bAutoGamma) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS)) != cfg_bSongTitleAnims);
 
     HWND ctrl = nullptr;
     LRESULT n = 0;
@@ -752,21 +752,21 @@ bool milk2_preferences_page::HasChanged() const
     {
         if (n > 0)
             n = MAX_MAX_FPS + 1 - n;
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != cfg_max_fps_w;
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != cfg_max_fps_w);
     }
     n = SendMessage(GetDlgItem(IDC_FS_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         if (n > 0)
             n = MAX_MAX_FPS + 1 - n;
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != cfg_max_fps_fs;
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != cfg_max_fps_fs);
     }
     ctrl = GetDlgItem(IDC_SHADERS);
     n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxPSVersion);
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxPSVersion));
     }
     //ctrl = GetDlgItem(IDC_TEXFORMAT);
     //n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
@@ -780,57 +780,57 @@ bool milk2_preferences_page::HasChanged() const
     if (n != CB_ERR)
     {
         n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nGridX);
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nGridX));
     }
     ctrl = GetDlgItem(IDC_STRETCH2);
     n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nCanvasStretch);
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nCanvasStretch));
     }
     ctrl = GetDlgItem(IDC_TEXSIZECOMBO);
     n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nTexSizeX);
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nTexSizeX));
     }
     ctrl = GetDlgItem(IDC_MAX_BYTES2);
     n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxBytes);
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxBytes));
     }
     ctrl = GetDlgItem(IDC_MAX_IMAGES2);
     n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxImages);
+        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxImages));
     }
 
     WCHAR buf[256], *stop;
     bool editcontrol_changes = false;
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenPresets;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenPresets);
     GetDlgItemText(IDC_BETWEEN_TIME_RANDOM, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenPresetsRand;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenPresetsRand);
     GetDlgItemText(IDC_BLEND_AUTO, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fBlendTimeAuto;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fBlendTimeAuto);
     GetDlgItemText(IDC_BLEND_USER, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fBlendTimeUser;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fBlendTimeUser);
     GetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fHardCutHalflife;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fHardCutHalflife);
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenPresets;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenPresets);
     GetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fSongTitleAnimDuration;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fSongTitleAnimDuration);
     GetDlgItemText(IDC_RAND_TITLE, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenRandomSongTitles;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenRandomSongTitles);
     GetDlgItemText(IDC_RAND_MSG, buf, 256);
-    editcontrol_changes = editcontrol_changes || wcstof(buf, &stop) != cfg_fTimeBetweenRandomCustomMsgs;
+    editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenRandomCustomMsgs);
 
     LRESULT t;
     bool slider_changes = false;
@@ -841,11 +841,12 @@ bool milk2_preferences_page::HasChanged() const
             t = 0;
         if (t > 20)
             t = 20;
-        slider_changes = slider_changes || static_cast<int>(t) != static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+        int prev_slider_position = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+        slider_changes = slider_changes || (static_cast<int>(t) != prev_slider_position);
     }
     t = SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
     if (t != CB_ERR)
-        slider_changes = slider_changes || static_cast<UINT>(t) != static_cast<UINT>(cfg_n16BitGamma);
+        slider_changes = slider_changes || (static_cast<UINT>(t) != static_cast<UINT>(cfg_n16BitGamma));
 
     return checkbox_changes || combobox_changes || editcontrol_changes || slider_changes;
 }

@@ -231,7 +231,7 @@ class CShaderParams
     //int texbind_voronoi;
     //...
     SamplerInfo m_texture_bindings[16]; // an entry for each sampler slot.  These are ALIASES - DO NOT DELETE.
-    tex_code m_texcode[16];             // if ==TEX_VS, forget the pointer - texture bound @ that stage is the double-buffered VS.
+    tex_code m_texcode[16]; // if ==TEX_VS, forget the pointer - texture bound @ that stage is the double-buffered VS.
 
     void Clear();
     void CacheParams(CConstantTable* pCT, bool bHardErrors);
@@ -456,7 +456,7 @@ class CPlugin : public CPluginShell
     bool m_bPreventScollLockHandling;
     int m_nMaxPSVersion_ConfigPanel; // -1 = auto, 0 = disable shaders, 2 = ps_2_0, 3 = ps_3_0
     int m_nMaxPSVersion_DX9;         // 0 = no shader support, 2 = ps_2_0, 3 = ps_3_0
-    int m_nMaxPSVersion;             // this one will be the ~min of the other two.  0/2/3.
+    int m_nMaxPSVersion;             // this one will be the ~min of the other two. 0/2/3.
     int m_nMaxImages;
     int m_nMaxBytes;
 
@@ -535,7 +535,6 @@ class CPlugin : public CPluginShell
     float m_fMotionVectorsTempDx;
     float m_fMotionVectorsTempDy;
 
-
     int m_nPresets;          // number of entries in the file listing. Includes directories and then files, sorted alphabetically.
     int m_nDirs;             // number of presets that are actually directories. Always between 0 and m_nPresets.
     int m_nPresetListCurPos; // index of the currently-HIGHLIGHTED preset (the user must press Enter on it to select it).
@@ -552,7 +551,7 @@ class CPlugin : public CPluginShell
     bool m_bInitialPresetSelected;
 
     // PRESET HISTORY
-#define PRESET_HIST_LEN (64 + 2)                   // this is 2 more than the DESIRED number to be able to go back
+#define PRESET_HIST_LEN (64 + 2) // this is 2 more than the DESIRED number to be able to go back
     std::wstring m_presetHistory[PRESET_HIST_LEN]; // circular
     int m_presetHistoryPos;
     int m_presetHistoryBackFence;
@@ -565,7 +564,7 @@ class CPlugin : public CPluginShell
     td_mdsounddata mdsound;
 
     // Displaying text to user.
-    //int m_nTextHeightPixels;    // this is for the menu/detail font; NOT the "fancy font"
+    //int m_nTextHeightPixels; // this is for the menu/detail font; NOT the "fancy font"
     //int m_nTextHeightPixels_Fancy;
     bool m_bShowFPS;
     bool m_bShowRating;
@@ -748,7 +747,7 @@ class CPlugin : public CPluginShell
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     //virtual void OnAltK();
     virtual void DumpDebugMessage(const wchar_t* s);
-    virtual void PopupMessage(int message_id, int title_id, bool dump=false);
+    virtual void PopupMessage(int message_id, int title_id, bool dump = false);
     virtual void ConsoleMessage(int message_id, int title_id);
 
     /*

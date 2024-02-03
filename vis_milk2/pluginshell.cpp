@@ -40,7 +40,7 @@
 //#include "../nu/AutoCharFn.h"
 #include <mmsystem.h>
 #include "DirectXHelpers.h"
-#pragma comment(lib,"winmm.lib") // for timeGetTime
+#pragma comment(lib, "winmm.lib") // for timeGetTime
 
 // STATE VALUES & VERTEX FORMATS FOR HELP SCREEN TEXTURE:
 #define TEXT_SURFACE_NOT_READY 0
@@ -142,7 +142,7 @@ void CPluginShell::CleanUpDX11(int final_cleanup)
 
     if (!m_vj_mode)
     {
-        for (int i=0; i<NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+        for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
             SafeRelease(m_d3dx_font[i]);
         SafeRelease(m_lpDDSText);
     }
@@ -583,7 +583,7 @@ wchar_t* BuildSettingName(const wchar_t* name, const int number)
 
 void CPluginShell::ReadFont(const int /*n*/)
 {
-#if 0
+#ifndef _FOOBAR
     GetPrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_fontinfo[n].szFace, ARRAYSIZE(m_fontinfo[n].szFace), m_szConfigIniFile);
     m_fontinfo[n].nSize = GetPrivateProfileInt(L"settings", BuildSettingName(L"nFontSize", n), m_fontinfo[n].nSize, m_szConfigIniFile);
     m_fontinfo[n].bBold = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontBold", n), m_fontinfo[n].bBold, m_szConfigIniFile);
@@ -594,7 +594,7 @@ void CPluginShell::ReadFont(const int /*n*/)
 
 void CPluginShell::ReadConfig()
 {
-#if 0
+#ifndef _FOOBAR
     int old_ver = GetPrivateProfileInt(L"settings", L"version", -1, m_szConfigIniFile);
     int old_subver = GetPrivateProfileInt(L"settings", L"subversion", -1, m_szConfigIniFile);
 
@@ -675,7 +675,7 @@ void CPluginShell::ReadConfig()
 
 void CPluginShell::WriteFont(const int /*n*/)
 {
-#if 0
+#ifndef _FOOBAR
     WritePrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_szConfigIniFile);
     WritePrivateProfileIntW(m_fontinfo[n].bBold, BuildSettingName(L"bFontBold", n), m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_fontinfo[n].bItalic, BuildSettingName(L"bFontItalic", n), m_szConfigIniFile, L"settings");
@@ -686,7 +686,7 @@ void CPluginShell::WriteFont(const int /*n*/)
 
 void CPluginShell::WriteConfig()
 {
-#if 0
+#ifndef _FOOBAR
     WritePrivateProfileIntW(m_multisample_fullscreen.Count, L"multisample_fullscreen", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_multisample_desktop.Count, L"multisample_desktop", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_multisample_windowed.Count, L"multisample_windowed", m_szConfigIniFile, L"settings");
@@ -854,13 +854,13 @@ void CPluginShell::DrawAndDisplay(int redraw)
 void CPluginShell::EnforceMaxFPS()
 {
     int max_fps = 60;
-//	switch (m_screenmode)
-//	{
-//	case WINDOWED:        max_fps = m_max_fps_w;  break;
-//	case FULLSCREEN:      max_fps = m_max_fps_fs; break;
-//	case FAKE_FULLSCREEN: max_fps = m_max_fps_fs; break;
-//	case DESKTOP:         max_fps = m_max_fps_dm; break;
-//	}
+    //switch (m_screenmode)
+    //{
+    //    case WINDOWED:        max_fps = m_max_fps_w;  break;
+    //    case FULLSCREEN:      max_fps = m_max_fps_fs; break;
+    //    case FAKE_FULLSCREEN: max_fps = m_max_fps_fs; break;
+    //    case DESKTOP:         max_fps = m_max_fps_dm; break;
+    //}
 
     if (max_fps <= 0)
         return;
@@ -895,8 +895,8 @@ void CPluginShell::EnforceMaxFPS()
         float det = b * b - 4 * a * c;
         if (det > 0)
         {
-            float t1 = (-b + sqrtf(det)) / (2*a);
-            //float t2 = (-b - sqrtf(det)) / (2*a);
+            float t1 = (-b + sqrtf(det)) / (2 * a);
+            //float t2 = (-b - sqrtf(det)) / (2 * a);
 
             if (t1 > 1.0f)
             {
@@ -979,28 +979,28 @@ void CPluginShell::DoTime()
 
     if (m_high_perf_timer_freq.QuadPart != 0)
     {
-    // Get high-precision time.
-    // Precision is usually from 1..6 us (MICROseconds), depending on the CPU speed
-    // (higher CPU speeds tend to have better precision).
-    // Note: On systems that run Windows XP or later, `QueryPerformanceCounter()`
-    //        will always succeed and will thus never return zero.
+        // Get high-precision time.
+        // Precision is usually from 1..6 us (MICROseconds), depending on the CPU speed
+        // (higher CPU speeds tend to have better precision).
+        // Note: On systems that run Windows XP or later, `QueryPerformanceCounter()`
+        //        will always succeed and will thus never return zero.
         LARGE_INTEGER t;
         if (!QueryPerformanceCounter(&t))
         {
-            m_high_perf_timer_freq.QuadPart = 0;   // something went wrong (exception thrown) -> revert to crappy timer
+            m_high_perf_timer_freq.QuadPart = 0; // something went wrong (exception thrown) -> revert to crappy timer
         }
         else
         {
             new_raw_time = (double)t.QuadPart;
-            elapsed = (float)((new_raw_time - m_last_raw_time)/(double)m_high_perf_timer_freq.QuadPart);
+            elapsed = (float)((new_raw_time - m_last_raw_time) / (double)m_high_perf_timer_freq.QuadPart);
         }
     }
 
     if (m_high_perf_timer_freq.QuadPart == 0)
     {
-    //    // Get low-precision time.
-    //    // Precision is usually 1 ms (MILLIsecond) for Windows 98, and 10 ms for Windows 2000.
-        new_raw_time = (double)(GetTickCount64()*0.001);
+        // Get low-precision time.
+        // Precision is usually 1 ms (MILLIsecond) for Windows 98, and 10 ms for Windows 2000.
+        new_raw_time = (double)(GetTickCount64() * 0.001);
         elapsed = (float)(new_raw_time - m_last_raw_time);
     }
 
@@ -1064,14 +1064,14 @@ void CPluginShell::DoTime()
     // Synchronize the audio and video by telling Winamp how many milliseconds we want the audio data,
     // before it's actually audible.  If we set this to the amount of time it takes to display 1 frame
     // (1/fps), the video and audio should be perfectly synchronized.
-/*
+    /*
     if (m_fps < 2.0f)
         mod1.latencyMs = 500;
     else if (m_fps > 125.0f)
         mod1.latencyMs = 8;
     else
         mod1.latencyMs = (int)(1000.0f/m_fps*m_lpDX->m_frame_delay + 0.5f);
-        */
+     */
 }
 
 // We get 576 samples in from winamp.
@@ -1136,7 +1136,8 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     }
 
     // Some code to find empirical long-term averages for `imm[0..2]`.
-    /*{
+    /*
+    {
         static float sum[3];
         static int count = 0;
 
@@ -1177,7 +1178,8 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
                 count++;
             }
         }
-    }*/
+    }
+    */
 
     // multiply by long-term, empirically-determined inverse averages:
     // (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
