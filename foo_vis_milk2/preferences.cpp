@@ -1123,7 +1123,7 @@ void milk2_config::parse(ui_element_config_parser& parser)
         parser >> version;
         switch (version)
         {
-            case 0:
+            case 1:
                 //parser >> m_multisample_fullscreen;
                 //parser >> m_multisample_windowed;
 
