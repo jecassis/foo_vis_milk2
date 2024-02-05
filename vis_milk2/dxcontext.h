@@ -49,27 +49,28 @@
 #define DXC_ERR_USER_CANCELED -11
 #define DXC_ERR_CREATEDEV_NOT_AVAIL -12
 #define DXC_ERR_CREATEDDRAW -13
+#define DXC_ERR_SWAPFAIL -14
 
 typedef struct _DXCONTEXT_PARAMS
 {
-    eScrMode screenmode; // WINDOWED, FULLSCREEN, or FAKE FULLSCREEN
-    int nbackbuf;
-    int allow_page_tearing;
+    unsigned int allow_page_tearing;
     unsigned int enable_hdr;
+    DXGI_FORMAT back_buffer_format;
+    DXGI_FORMAT depth_buffer_format;
+    UINT back_buffer_count;
+    DXGI_SAMPLE_DESC msaa;
+    D3D_FEATURE_LEVEL min_feature_level;
     LUID adapter_guid;
     wchar_t adapter_devicename[256];
-    DXGI_MODE_DESC1 display_mode; // only valid for FULLSCREEN mode
-    DXGI_SAMPLE_DESC multisamp;
-    HWND parent_window;
-    int m_dualhead_horz; // 0 = span both, 1 = left only, 2 = right only
-    int m_dualhead_vert; // 0 = span both, 1 = top only, 2 = bottom only
+    eScrMode screenmode; // WINDOWED, DESKTOP, FULLSCREEN, or FAKE FULLSCREEN
     int m_skin;
+    HWND parent_window;
 } DXCONTEXT_PARAMS;
 
 class DXContext final : public DX::IDeviceNotify
 {
   public:
-    DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniFile) noexcept(false);
+    DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false);
     ~DXContext();
 
     //DXContext(DXContext&&) = default;
@@ -80,15 +81,14 @@ class DXContext final : public DX::IDeviceNotify
 
     BOOL StartOrRestartDevice(DXCONTEXT_PARAMS* pParams); // also serves as Init() function
     BOOL OnWindowSizeChanged(int width, int height);
+    BOOL OnWindowSwap(HWND window, int width, int height);
     void OnWindowMoved();
     void OnDisplayChange();
     inline HWND GetHwnd() const { return m_hwnd; };
     void Show();
     void Clear();
     void RestoreTarget();
-    void UpdateMonitorWorkRect();
     int GetBitDepth() const { return m_bpp; };
-    void SaveWindow();
 
     void OnDeviceLost() override;
     void OnDeviceRestored() override;
@@ -101,16 +101,13 @@ class DXContext final : public DX::IDeviceNotify
     int m_REAL_client_width; // actual (raw) width: only valid in windowed mode
     int m_REAL_client_height; // actual (raw) height: only valid in windowed mode
     int m_frame_delay;
-    wchar_t m_szIniFile[MAX_PATH];
     DXCONTEXT_PARAMS m_current_mode;
     std::unique_ptr<D3D11Shim> m_lpDevice;
 
   protected:
     HWND m_hwnd;
-    //wchar_t m_szIniFile[MAX_PATH];
     int m_bpp;
 
-    int GetWindowedModeAutoSize(int iteration);
     BOOL Internal_Init(DXCONTEXT_PARAMS* pParams, BOOL bFirstInit);
     void Internal_CleanUp();
 

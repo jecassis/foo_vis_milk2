@@ -164,6 +164,12 @@ void CPluginShell::OnWindowSizeChanged(int width, int height)
     //}
 }
 
+void CPluginShell::OnWindowSwap(HWND window, int width, int height)
+{
+    if (!m_lpDX->OnWindowSwap(window, width, height))
+        return;
+}
+
 void CPluginShell::OnWindowMoved()
 {
     m_lpDX->OnWindowMoved();
@@ -177,35 +183,35 @@ void CPluginShell::OnDisplayChange()
 void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
 {
     pParams->screenmode = m_screenmode;
-    pParams->display_mode = m_disp_mode_fs;
-    pParams->nbackbuf = 2;
-    pParams->m_dualhead_horz = m_dualhead_horz;
-    pParams->m_dualhead_vert = m_dualhead_vert;
+    pParams->back_buffer_format = static_cast<DXGI_FORMAT>(m_back_buffer_format);
+    pParams->depth_buffer_format = static_cast<DXGI_FORMAT>(m_depth_buffer_format);
+    pParams->back_buffer_count = m_back_buffer_count;
+    pParams->min_feature_level = static_cast<D3D_FEATURE_LEVEL>(m_min_feature_level);
     pParams->m_skin = (m_screenmode == WINDOWED) ? m_skin : 0;
-    pParams->enable_hdr = 0;
+    pParams->enable_hdr = m_enable_hdr;
     switch (m_screenmode)
     {
         case WINDOWED:
             pParams->allow_page_tearing = m_allow_page_tearing_w;
             pParams->adapter_guid = m_adapter_guid_windowed;
-            pParams->multisamp = m_multisample_windowed;
+            pParams->msaa = m_multisample_windowed;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_windowed);
             break;
         case FULLSCREEN:
         case FAKE_FULLSCREEN:
             pParams->allow_page_tearing = m_allow_page_tearing_fs;
             pParams->adapter_guid = m_adapter_guid_fullscreen;
-            pParams->multisamp = m_multisample_fullscreen;
+            pParams->msaa = m_multisample_fullscreen;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
             break;
         case DESKTOP:
             pParams->allow_page_tearing = m_allow_page_tearing_dm;
             pParams->adapter_guid = m_adapter_guid_desktop;
-            pParams->multisamp = m_multisample_desktop;
+            pParams->msaa = m_multisample_desktop;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_desktop);
             break;
     }
-    //pParams->parent_window = (m_screenmode==DESKTOP) ? m_hWndDesktopListView : NULL;
+    pParams->parent_window = m_hWndWinamp; //(m_screenmode == DESKTOP) ? m_hWndDesktopListView : NULL;
 }
 
 void CPluginShell::ToggleFullScreen()
@@ -254,7 +260,7 @@ int CPluginShell::InitDirectX()
     DXCONTEXT_PARAMS params{};
     StuffParams(&params);
 
-    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp, &params, m_szConfigIniFile); // m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp
+    m_lpDX = std::make_unique<DXContext>(m_hWndWinamp, &params); //, m_szConfigIniFile, m_hInstance, CLASSNAME, WINDOWCAPTION, CPluginShell::WindowProc, (LONG_PTR)this, m_minimize_winamp
 
     if (!m_lpDX)
     {
@@ -301,9 +307,9 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_fake_fullscreen_mode = 0;
     m_max_fps_fs = 30;
     m_max_fps_dm = 30;
-    m_max_fps_w = 60;
+    m_max_fps_w = 30;
     m_show_press_f1_msg = 1;
-    m_allow_page_tearing_w = 1;
+    m_allow_page_tearing_w = 0;
     m_allow_page_tearing_fs = 0;
     m_allow_page_tearing_dm = 0;
     m_minimize_winamp = 1;
@@ -316,6 +322,12 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_save_cpu = 1;
     m_skin = 1;
     m_fix_slow_text = 0;
+    m_enable_hdr = 0;
+    m_enable_downmix = 0;
+    m_back_buffer_format = DXGI_FORMAT_UNKNOWN; 
+    m_depth_buffer_format = DXGI_FORMAT_UNKNOWN;
+    m_back_buffer_count = 2;
+    m_min_feature_level = D3D_FEATURE_LEVEL_9_1;
 
     // Initialize font settings.
     wcscpy_s(m_fontinfo[SIMPLE_FONT].szFace, SIMPLE_FONT_DEFAULT_FACE);
@@ -374,11 +386,6 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_fontinfo[NUM_BASIC_FONTS + 4].bItalic = EXTRA_FONT_5_DEFAULT_ITAL;
     m_fontinfo[NUM_BASIC_FONTS + 4].bAntiAliased = EXTRA_FONT_5_DEFAULT_AA;
 #endif
-
-    m_disp_mode_fs.Width = DEFAULT_FULLSCREEN_WIDTH;
-    m_disp_mode_fs.Height = DEFAULT_FULLSCREEN_HEIGHT;
-    m_disp_mode_fs.Format = DXGI_FORMAT_UNKNOWN;
-    m_disp_mode_fs.RefreshRate = {60 * 1000, 1000};
 
     // PROTECTED STRUCTURES/POINTERS
     for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
@@ -460,18 +467,18 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
         swprintf(m_szConfigIniFile, L"%s%s", m_szPluginsDirPath, INIFILE);
     }
     lstrcpyn(m_szConfigIniFileA,AutoCharFn(m_szConfigIniFile),MAX_PATH);
+    */
 
     // PRIVATE CONFIG PANEL SETTINGS
-    m_multisample_fullscreen = D3DMULTISAMPLE_NONE;
-    m_multisample_desktop = D3DMULTISAMPLE_NONE;
-    m_multisample_windowed = D3DMULTISAMPLE_NONE;
+    m_multisample_fullscreen = {1u, 0u}; //D3DMULTISAMPLE_NONE;
+    m_multisample_desktop = {1u, 0u}; //D3DMULTISAMPLE_NONE;
+    m_multisample_windowed = {1u, 0u}; //D3DMULTISAMPLE_NONE;
     ZeroMemory(&m_adapter_guid_fullscreen, sizeof(GUID));
     ZeroMemory(&m_adapter_guid_desktop , sizeof(GUID));
     ZeroMemory(&m_adapter_guid_windowed , sizeof(GUID));
-    m_adapter_devicename_windowed[0]   = 0;
-    m_adapter_devicename_fullscreen[0] = 0;
-    m_adapter_devicename_desktop[0]    = 0;
-    */
+    m_adapter_devicename_windowed[0] = '\0';
+    m_adapter_devicename_fullscreen[0] = '\0';
+    m_adapter_devicename_desktop[0] = '\0';
 
     // PRIVATE RUNTIME SETTINGS
     m_lost_focus = 0;
@@ -543,34 +550,23 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     return TRUE;
 }
 
-int CPluginShell::PluginInitialize(std::unique_ptr<DXContext> pContext, int iWidth, int iHeight, bool fullscreen, bool recover)
+int CPluginShell::PluginInitialize(int iWidth, int iHeight)
 {
-    assert(!(fullscreen && recover));
-    if (fullscreen)
-        m_lpDX_paused = std::move(m_lpDX);
-    m_lpDX = std::move(pContext);
-    if (recover)
-        m_lpDX = std::move(m_lpDX_paused);
-
-    m_disp_mode_fs.Width = iWidth;
-    m_disp_mode_fs.Height = iHeight;
-
-    if (!recover && !InitDirectX()) return FALSE;
+    if (!InitDirectX()) return FALSE;
     m_lpDX->m_client_width = iWidth;
     m_lpDX->m_client_height = iHeight;
-    if (!fullscreen && !recover && !InitNonDX11()) return FALSE;
+    if (!InitNonDX11()) return FALSE;
     if (!AllocateDX11()) return FALSE;
     //if (!InitVJ()) return FALSE;
 
     return TRUE;
 }
 
-void CPluginShell::PluginQuit(BOOL destroy)
+void CPluginShell::PluginQuit()
 {
     //CleanUpVJ();
     CleanUpDX11(1);
-    if (destroy)
-        CleanUpNonDX11();
+    CleanUpNonDX11();
     CleanUpDirectX();
 }
 

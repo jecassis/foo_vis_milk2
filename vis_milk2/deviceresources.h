@@ -41,6 +41,7 @@ class DeviceResources
     void CreateWindowSizeDependentResources();
     void SetWindow(HWND window, int width, int height) noexcept;
     bool WindowSizeChanged(int width, int height);
+    bool WindowSwap(HWND window, int width, int height);
     void HandleDeviceLost();
     void RegisterDeviceNotify(IDeviceNotify* deviceNotify) noexcept { m_deviceNotify = deviceNotify; }
     void Present();

@@ -307,18 +307,12 @@ typedef std::vector<PresetInfo> PresetList;
 typedef struct
 {
     //--- CPluginShell::ReadConfig()
-    //DXGI_SAMPLE_DESC m_multisample_fullscreen;
-    //DXGI_SAMPLE_DESC m_multisample_windowed;
+    DXGI_SAMPLE_DESC m_multisample_fullscreen;
 
     //uint32_t m_start_fullscreen;
     uint32_t m_max_fps_fs;
-    uint32_t m_max_fps_w;
     uint32_t m_show_press_f1_msg;
-    uint32_t m_allow_page_tearing_w;
     uint32_t m_allow_page_tearing_fs;
-    //uint32_t m_minimize_winamp;
-    //uint32_t m_dualhead_horz;
-    //uint32_t m_dualhead_vert;
     //uint32_t m_save_cpu;
     //uint32_t m_skin;
     //uint32_t m_fix_slow_text;
@@ -384,7 +378,6 @@ typedef struct
 
     //--- Extras
     bool m_bEnableDownmix;
-    bool m_bAllowTearing;
     bool m_bEnableHDR;
     uint32_t m_nBackBufferFormat;
     uint32_t m_nDepthBufferFormat;
@@ -578,6 +571,7 @@ class CPlugin : public CPluginShell
     //char m_szUserMessage[512];
     //bool m_bUserMessageIsError;
     bool m_bEnableDownmix;
+    bool m_bEnableHDR;
 
     ErrorMsgList m_errors;
     void AddError(wchar_t* szMsg, float fDuration, ErrorCategory category = ERR_ALL, bool bBold = true);
@@ -679,7 +673,7 @@ class CPlugin : public CPluginShell
     void LoadCustomWavePerFrameEvallibVars(CState* pState, int i);
     void LoadCustomShapePerFrameEvallibVars(CState* pState, int i, int instance);
     void WriteRealtimeConfig(); // called on Finish()
-    bool OverrideSettings(plugin_config* settings);
+    bool PanelSettings(plugin_config* settings);
     void Randomize();
     void LoadRandomPreset(float fBlendTime);
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);

@@ -18,7 +18,7 @@
 
 #define APPLICATION_VERSION_MAJOR 0
 #define APPLICATION_VERSION_MINOR 0
-#define APPLICATION_VERSION_BUILD INT_VERSION
+#define APPLICATION_VERSION_BUILD 226 // INT_VERSION
 #define APPLICATION_VERSION_REVISION -3 // -3: alpha, -2: beta, -1: release candidate, >= 0 && < 32768: not development version
 
 #define LIBRARY_VERSION_MAJOR 2 // INT_VERSION / 100
@@ -49,7 +49,7 @@
 #error Expected APPLICATION_FILE_NAME
 #endif
 
-#if !(defined(APPLICATION_FILE_IS_DLL) ^ defined(APPLICATION_FILE_IS_EXE))
+#if !defined(APPLICATION_FILE_IS_DLL) == !defined(APPLICATION_FILE_IS_EXE)
 #error Expected either APPLICATION_FILE_IS_DLL or APPLICATION_FILE_IS_EXE to be defined
 #endif
 

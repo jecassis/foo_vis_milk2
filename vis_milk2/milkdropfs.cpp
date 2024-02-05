@@ -3509,6 +3509,9 @@ void CPlugin::UvToMathSpace(float u, float v, float* rad, float* ang)
 void CPlugin::RestoreShaderParams()
 {
     D3D11Shim* lpDevice = GetDevice();
+    if (!lpDevice)
+        return;
+
     for (int i = 0; i < 2; i++)
     {
         lpDevice->SetSamplerState(i, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
@@ -3531,6 +3534,8 @@ void CPlugin::RestoreShaderParams()
 void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* pState)
 {
     D3D11Shim* lpDevice = GetDevice();
+    if (!lpDevice)
+        return;
 
     //if (p->texbind_vs >= 0) lpDevice->SetTexture(p->texbind_vs, m_lpVS[0]);
     //if (p->texbind_noise >= 0) lpDevice->SetTexture(p->texbind_noise, m_pTexNoise);
@@ -3663,10 +3668,9 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
     }
 }
 
+// Note: this one has to draw the whole screen! (one big quad)
 void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 {
-    // note: this one has to draw the whole screen!  (one big quad)
-
     D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return;

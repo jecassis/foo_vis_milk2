@@ -32,12 +32,15 @@
 #include "shell_defines.h"
 #include "utility.h"
 
-DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniFile) noexcept(false)
+DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false)
 {
     m_hwnd = hWndWinamp;
     m_bpp = 32;
     m_frame_delay = 0;
-    wcscpy_s(m_szIniFile, szIniFile);
+    m_client_height = 0;
+    m_client_width = 0;
+    m_REAL_client_height = 0;
+    m_REAL_client_width = 0;
     memcpy_s(&m_current_mode, sizeof(m_current_mode), pParams, sizeof(DXCONTEXT_PARAMS));
 
     // Clear the error register.
@@ -49,12 +52,12 @@ DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams, wchar_t* szIniF
     // Create the device.
     // Provide parameters for swap chain format, depth/stencil format, and back buffer count.
     m_deviceResources = std::make_unique<DX::DeviceResources>(
-        DXGI_FORMAT_B8G8R8A8_UNORM, // backBufferFormat
-        DXGI_FORMAT_D24_UNORM_S8_UINT, // depthBufferFormat
-        m_current_mode.nbackbuf, // backBufferCount
-        D3D_FEATURE_LEVEL_9_1, // minFeatureLevel
+        m_current_mode.back_buffer_format, // backBufferFormat (default: DXGI_FORMAT_B8G8R8A8_UNORM)
+        m_current_mode.depth_buffer_format, // depthBufferFormat (default: DXGI_FORMAT_D24_UNORM_S8_UINT)
+        m_current_mode.back_buffer_count, // backBufferCount (default: 2)
+        m_current_mode.min_feature_level, // minFeatureLevel (default: D3D_FEATURE_LEVEL_9_1)
         DX::DeviceResources::c_FlipPresent | ((m_current_mode.allow_page_tearing << 1) & DX::DeviceResources::c_AllowTearing) |
-            ((m_current_mode.enable_hdr << 2) & DX::DeviceResources::c_EnableHDR) // flags
+            ((m_current_mode.enable_hdr << 2) & DX::DeviceResources::c_EnableHDR) // flags (default: flip, noTearing, noHDR)
     );
     m_deviceResources->RegisterDeviceNotify(this);
 }
@@ -76,16 +79,10 @@ void DXContext::Internal_CleanUp()
 
 BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* /* pParams */, BOOL /* bFirstInit */)
 {
-    // Screen mode check.
-    if (m_current_mode.screenmode != WINDOWED)
-        m_current_mode.m_skin = 0;
-
     RECT r;
     GetClientRect(m_hwnd, &r);
-    m_client_width = std::max(1l, r.right - r.left);
-    m_client_height = std::max(1l, r.bottom - r.top);
-    m_REAL_client_width = std::max(1l, r.right - r.left);
-    m_REAL_client_height = std::max(1l, r.bottom - r.top);
+    m_client_width = m_REAL_client_width = std::max(1l, r.right - r.left);
+    m_client_height = m_REAL_client_height = std::max(1l, r.bottom - r.top);
 
     m_deviceResources->SetWindow(m_hwnd, m_client_width, m_client_height);
 
@@ -151,10 +148,9 @@ BOOL DXContext::StartOrRestartDevice(DXCONTEXT_PARAMS* pParams)
         // but destroy and re-create the DX11 device (m_lpDevice).
         m_ready = FALSE;
 
-        //SafeRelease(m_lpDevice);
+        m_lpDevice.reset();
 
         // But leave the D3D object!
-        //RestoreWinamp();
         return Internal_Init(pParams, FALSE);
     }
 }
@@ -198,6 +194,33 @@ BOOL DXContext::OnWindowSizeChanged(int width, int height)
     return TRUE;
 }
 
+BOOL DXContext::OnWindowSwap(HWND window, int width, int height)
+{
+    if (!m_ready)
+        return FALSE;
+
+    if (!window)
+        return FALSE;
+
+    Clear();
+
+    m_hwnd = window;
+    m_client_width = m_REAL_client_width = width;
+    m_client_height = m_REAL_client_height = height;
+
+    if (!m_deviceResources->WindowSwap(m_hwnd, m_client_width, m_client_height))
+    {
+        m_lastErr = DXC_ERR_SWAPFAIL;
+        m_ready = FALSE;
+        return FALSE;
+    }
+
+    CreateWindowSizeDependentResources();
+
+    m_ready = TRUE;
+    return TRUE;
+}
+
 #pragma region Direct3D Resources
 // These are the resources that depend on the device.
 void DXContext::CreateDeviceDependentResources()
@@ -216,6 +239,7 @@ void DXContext::CreateWindowSizeDependentResources()
 
 void DXContext::OnDeviceLost()
 {
+    m_lpDevice.reset();
 }
 
 void DXContext::OnDeviceRestored()

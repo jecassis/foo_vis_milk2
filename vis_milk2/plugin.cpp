@@ -302,16 +302,18 @@ void CPlugin::OverrideDefaults()
     //m_start_fullscreen      = 0;   // 0 or 1
     //m_start_desktop         = 0;   // 0 or 1
     //m_fake_fullscreen_mode  = 0;   // 0 or 1
-    //m_max_fps_fs            = 30;  // 1-120, or 0 for 'unlimited'
+    m_max_fps_fs            = 30;  // 1-120, or 0 for 'unlimited'
     //m_max_fps_dm            = 30;  // 1-120, or 0 for 'unlimited'
     //m_max_fps_w             = 30;  // 1-120, or 0 for 'unlimited'
-    //m_show_press_f1_msg     = 1;   // 0 or 1
-    m_allow_page_tearing_w = 0; // 0 or 1
-    //m_allow_page_tearing_fs = 0;   // 0 or 1
+    m_show_press_f1_msg     = 1;   // 0 or 1
+    //m_allow_page_tearing_w  = 0;   // 0 or 1
+    m_allow_page_tearing_fs = 0;   // 0 or 1
     //m_allow_page_tearing_dm = 1;   // 0 or 1
     //m_minimize_winamp       = 1;   // 0 or 1
     //m_desktop_textlabel_boxes = 1; // 0 or 1
-    //m_save_cpu              = 0;   // 0 or 1
+    m_save_cpu              = 0;   // 0 or 1
+    m_skin                  = 0;
+    m_fix_slow_text         = 1;
 
     //wcscpy_s(m_fontinfo[0].szFace, "Trebuchet MS"); // system font
     //m_fontinfo[0].nSize     = 18;
@@ -687,17 +689,15 @@ void CPlugin::MilkDropWriteConfig()
 #endif
 }
 
-bool CPlugin::OverrideSettings(plugin_config* settings)
+bool CPlugin::PanelSettings(plugin_config* settings)
 {
     // CPluginShell::ReadConfig()
-    //m_multisample_fullscreen = {settings->m_multisample_fullscreen.Count, 0U};
+    m_multisample_fullscreen = {settings->m_multisample_fullscreen.Count, settings->m_multisample_fullscreen.Quality};
     //m_multisample_windowed = {settings->m_multisample_windowed.Count, 0U};
 
     //m_start_fullscreen = settings->m_start_fullscreen;
     m_max_fps_fs = settings->m_max_fps_fs;
-    m_max_fps_w = settings->m_max_fps_w;
     m_show_press_f1_msg = settings->m_show_press_f1_msg;
-    m_allow_page_tearing_w = settings->m_allow_page_tearing_w;
     m_allow_page_tearing_fs = settings->m_allow_page_tearing_fs;
     //m_minimize_winamp = settings->m_minimize_winamp;
     //m_dualhead_horz = settings->m_dualhead_horz;
@@ -705,12 +705,6 @@ bool CPlugin::OverrideSettings(plugin_config* settings)
     //m_save_cpu = settings->m_save_cpu;
     //m_skin = settings->m_skin;
     //m_fix_slow_text = settings->m_fix_slow_text;
-
-    //m_disp_mode_fs.Width = settings->m_disp_mode_fs.Width;
-    //m_disp_mode_fs.Height = settings->m_disp_mode_fs.Height;
-    //m_disp_mode_fs.RefreshRate.Numerator = settings->m_disp_mode_fs.RefreshRate.Numerator;
-    //m_disp_mode_fs.RefreshRate.Denominator = settings->m_disp_mode_fs.RefreshRate.Denominator;
-    //m_disp_mode_fs.Format = settings->m_disp_mode_fs.Format;
 
     // CPlugin::MilkDropReadConfig()
     m_bEnableRating = settings->m_bEnableRating;
@@ -768,7 +762,12 @@ bool CPlugin::OverrideSettings(plugin_config* settings)
     m_bPresetLockedByUser = settings->m_bPresetLockedByUser;
     //m_bMilkdropScrollLockState = settings->m_bMilkdropScrollLockState;
 
-    m_bEnableDownmix = settings->m_bEnableDownmix;
+    m_enable_downmix = static_cast<int>(settings->m_bEnableDownmix);
+    m_enable_hdr = static_cast<int>(settings->m_bEnableHDR);
+    m_back_buffer_format = settings->m_nBackBufferFormat;
+    m_depth_buffer_format = settings->m_nDepthBufferFormat;
+    m_back_buffer_count = settings->m_nBackBufferCount;
+    m_min_feature_level = settings->m_nMinFeatureLevel;
 
     return true;
 }
@@ -1746,6 +1745,8 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
 {
     //wchar_t buf[2048], title[64];
     D3D11Shim* lpDevice = GetDevice();
+    if (!lpDevice)
+        return false;
 
     // Synthesize noise texture(s)
     ID3D11Texture2D *pNoiseTex = NULL, *pStaging = NULL;
@@ -1895,6 +1896,9 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
 {
     //wchar_t buf[2048], title[64];
     D3D11Shim* lpDevice = GetDevice();
+    if (!lpDevice)
+        return false;
+
     // Synthesize noise texture(s)
     ID3D11Texture3D *pNoiseTex = NULL, *pStaging = NULL;
     // try twice - once with mips, once without.
@@ -3243,7 +3247,9 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     // The "random" state should be preserved from session to session.
     // It's pretty safe to do, because the Scroll Lock key is hard to
     //   accidentally click... :)
-    //WritePrivateProfileIntW(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
+#ifndef _FOOBAR
+    WritePrivateProfileIntW(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
+#endif
 }
 
 // Renders a frame of animation.

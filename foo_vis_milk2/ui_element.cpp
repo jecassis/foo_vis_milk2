@@ -45,7 +45,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void initialize_window(HWND parent)
     {
 #ifdef _DEBUG
-        WCHAR szParent[11], szWnd[11];
+        WCHAR szParent[19], szWnd[19];
         swprintf_s(szParent, TEXT("0x%p"), parent);
         swprintf_s(szWnd, TEXT("0x%p"), get_wnd());
         MILK2_CONSOLE_LOG("Init ", szParent, ", ", szWnd)
@@ -60,20 +60,21 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_TIMER(OnTimer)
         MSG_WM_PAINT(OnPaint)
-        //MSG_WM_DISPLAYCHANGE(OnDisplayChange)
         MSG_WM_SIZE(OnSize)
         MSG_WM_MOVE(OnMove)
         MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
         MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_COPYDATA(OnCopyData)
+        MSG_WM_DISPLAYCHANGE(OnDisplayChange)
+        MSG_WM_DPICHANGED(OnDpiChanged)
+        MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo);
         MSG_WM_ACTIVATEAPP(OnActivateApp)
         MSG_WM_KEYDOWN(OnKeyDown)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
         MSG_WM_POWERBROADCAST(OnPowerBroadcast)
-        //MSG_WM_DPICHANGED(OnDPIChanged)
         MESSAGE_HANDLER(WM_MILK2, OnMilk2Message)
         MESSAGE_HANDLER_EX(WM_CONFIG_CHANGE, OnConfigurationChange)
     END_MSG_MAP()
@@ -97,13 +98,15 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnDestroy();
     void OnTimer(UINT_PTR nIDEvent);
     void OnPaint(CDCHandle dc);
-    void OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen);
     void OnSize(UINT nType, CSize size);
     void OnMove(CPoint ptPos);
     void OnEnterSizeMove();
     void OnExitSizeMove();
     BOOL OnEraseBkgnd(CDCHandle dc);
     BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
+    void OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen);
+    void OnDpiChanged(UINT nDpiX, UINT nDpiY, PRECT pRect);
+    void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
     void OnActivateApp(BOOL bActive, DWORD dwThreadID);
     BOOL OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData);
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -180,7 +183,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // MilkDrop status
     bool m_milk2;
-    WCHAR m_szWnd[11];
+    WCHAR m_szWnd[19];
 
     // Device resources
     std::unique_ptr<DXContext> g_vis;
@@ -313,10 +316,7 @@ void milk2_ui_element::OnDestroy()
     //DestroyMenu();
 
     if (m_milk2)
-    {
-        g_plugin.PluginQuit(FALSE);
         m_milk2 = false;
-    }
     s_count = 0ull;
     //PostQuitMessage(0);
 }
@@ -325,7 +325,7 @@ void milk2_ui_element::OnTimer(UINT_PTR nIDEvent)
 {
     MILK2_CONSOLE_LOG_LIMIT("OnTimer ", GetWnd())
     KillTimer(ID_REFRESH_TIMER);
-    Invalidate();
+    InvalidateRect(NULL, TRUE);
 }
 
 void milk2_ui_element::OnPaint(CDCHandle dc)
@@ -341,7 +341,7 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
         std::ignore = BeginPaint(&ps);
         EndPaint(&ps);
     }
-    //ValidateRect(NULL);
+    ValidateRect(NULL);
 
     ULONGLONG now = GetTickCount64();
     if (m_vis_stream.is_valid())
@@ -356,15 +356,6 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
         SetTimer(ID_REFRESH_TIMER, static_cast<UINT>(next_refresh - now));
     }
     m_last_refresh = now;
-}
-
-void milk2_ui_element::OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen)
-{
-    MILK2_CONSOLE_LOG("OnDisplayChange ", GetWnd())
-    if (m_milk2)
-    {
-        g_plugin.OnDisplayChange();
-    }
 }
 
 void milk2_ui_element::OnMove(CPoint ptPos)
@@ -485,6 +476,25 @@ BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
     }
 
     return TRUE;
+}
+
+void milk2_ui_element::OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen)
+{
+    MILK2_CONSOLE_LOG("OnDisplayChange ", GetWnd())
+    if (m_milk2)
+    {
+        g_plugin.OnDisplayChange();
+    }
+}
+
+void milk2_ui_element::OnDpiChanged(UINT nDpiX, UINT nDpiY, PRECT pRect)
+{
+}
+
+void milk2_ui_element::OnGetMinMaxInfo(LPMINMAXINFO lpMMI)
+{
+    lpMMI->ptMinTrackSize.x = 320;
+    lpMMI->ptMinTrackSize.y = 200;
 }
 
 void milk2_ui_element::OnActivateApp(BOOL bActive, DWORD dwThreadID)
@@ -654,9 +664,9 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING, IDM_NEXT_PRESET, TEXT("Next Preset"));
     menu.AppendMenu(MF_STRING, IDM_PREVIOUS_PRESET, TEXT("Previous Preset"));
     menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
-    menu.AppendMenu(MF_STRING | (g_plugin.m_bPresetLockedByUser ? MF_CHECKED : 0) | (s_fullscreen ? MF_DISABLED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
+    menu.AppendMenu(MF_STRING | (IsPresetLock() ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING | (g_plugin.m_bEnableDownmix ? MF_CHECKED : 0) | (s_fullscreen ? MF_DISABLED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+    menu.AppendMenu(MF_STRING | (g_plugin.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
 #ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
@@ -681,7 +691,7 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             PrevPreset();
             break;
         case IDM_LOCK_PRESET:
-            LockPreset(!g_plugin.m_bPresetLockedByUser);
+            LockPreset(!IsPresetLock());
             break;
         case IDM_SHUFFLE_PRESET:
             RandomPreset();
@@ -722,7 +732,7 @@ LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM
         case 0: // Preferences Dialog
             {
                 m_config.reset();
-                g_plugin.OverrideSettings(&m_config.settings);
+                g_plugin.PanelSettings(&m_config.settings);
                 break;
             }
         case 1: // Advanced Preferences
@@ -745,7 +755,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;
-        if (!g_plugin.OverrideSettings(&m_config.settings))
+        if (!g_plugin.PanelSettings(&m_config.settings))
             return false;
 
         if (!s_fullscreen)
@@ -753,29 +763,16 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
     }
 
     g_plugin.SetWinampWindow(window);
-    if (!s_milk2 == !s_fullscreen)
-    {
-        DXCONTEXT_PARAMS params{};
-        g_plugin.StuffParams(&params);
-        g_vis = std::make_unique<DXContext>(window, &params, g_plugin.m_szConfigIniFile);
-        SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_vis.get()));
-    }
 
-    if (!s_milk2 && !s_fullscreen)
+    if (!s_milk2)
     {
-        if (FALSE == g_plugin.PluginInitialize(std::move(g_vis), width, height, false, false))
+        if (FALSE == g_plugin.PluginInitialize(width, height))
             return false;
         s_milk2 = true;
     }
-    else if (s_milk2 && s_fullscreen)
+    else
     {
-        if (FALSE == g_plugin.PluginInitialize(std::move(g_vis), width, height, true, false))
-            return false;
-    }
-    else if (s_milk2 && !m_milk2 && !s_fullscreen)
-    {
-        if (FALSE == g_plugin.PluginInitialize(nullptr, width, height, false, true))
-            return false;
+        g_plugin.OnWindowSwap(window, width, height);
     }
 
     m_milk2 = true;
@@ -977,7 +974,7 @@ void milk2_ui_element::LockPreset(bool lockUnlock)
 
 bool milk2_ui_element::IsPresetLock()
 {
-    return g_plugin.m_bPresetLockedByUser;
+    return g_plugin.m_bPresetLockedByUser || g_plugin.m_bPresetLockedByCode;
 }
 
 void milk2_ui_element::RandomPreset()
@@ -1054,7 +1051,8 @@ FB2K_SERVICE_FACTORY(milk2_initquit);
 void ExitVis() noexcept
 {
     MILK2_CONSOLE_LOG("ExitVis")
-    g_plugin.PluginQuit(TRUE);
+    g_plugin.PluginQuit();
+    //g_vis.reset();
     PostQuitMessage(0);
 }
 // clang-format on

@@ -377,6 +377,19 @@ bool DeviceResources::WindowSizeChanged(int width, int height)
     return true;
 }
 
+// This method is called when the output needs to be moved to a different window.
+bool DeviceResources::WindowSwap(HWND window, int width, int height)
+{
+    m_d3dDepthStencilView.Reset();
+    m_d3dRenderTargetView.Reset();
+    m_renderTarget.Reset();
+    m_depthStencil.Reset();
+    m_swapChain.Reset();
+
+    SetWindow(window, 0, 0);
+    return WindowSizeChanged(width, height);
+}
+
 // Recreate all device resources and set them back to the current state.
 void DeviceResources::HandleDeviceLost()
 {

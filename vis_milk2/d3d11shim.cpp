@@ -59,13 +59,7 @@ D3D11Shim::~D3D11Shim()
     SafeRelease(m_pCBuffer);
     SafeRelease(m_pState);
     SafeRelease(m_pImmContext);
-    m_states.reset(nullptr);
-
-    //m_pContext->Flush();
-    //m_pContext->ClearState();
-
-    //m_pContext->Release();
-    //m_pDevice->Release();
+    m_states.reset();
 }
 
 void D3D11Shim::Initialize()

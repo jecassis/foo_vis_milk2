@@ -20,18 +20,12 @@ static constexpr GUID guid_cfg_bWarningsDisabled = {
 static constexpr GUID guid_cfg_bEnableRating = {
     0x99902062, 0xe27a, 0x483c, {0x80, 0x83, 0xe2, 0x7b, 0x85, 0xec, 0x5e, 0x7a}
 }; // {99902062-E27A-483C-8083-E27B85EC5E7A}
-static constexpr GUID guid_cfg_max_fps_w = {
-    0x2ffda0b0, 0x632a, 0x49c0, {0x90, 0xc7, 0x52, 0xd1, 0x6c, 0x93, 0xee, 0x5a}
-}; // {2FFDA0B0-632A-49C0-90C7-52D16C93EE5A}
 static constexpr GUID guid_cfg_max_fps_fs = {
     0x2c669890, 0x66fb, 0x4419, {0xa9, 0xb7, 0x93, 0xc8, 0x24, 0xf2, 0xfd, 0x19}
 }; // {2C669890-66FB-4419-A9B7-93C824F2FD19}
 static constexpr GUID guid_cfg_bShowPressF1ForHelp = {
     0x4c2e81ab, 0xfbde, 0x4c22, {0x81, 0x95, 0xe9, 0x1f, 0x74, 0x9, 0x59, 0x9c}
 }; // {4C2E81AB-FBDE-4C22-8195-E91F7409599C}
-static constexpr GUID guid_cfg_allow_page_tearing_w = {
-    0x3b384b04, 0x7a0c, 0x4634, {0xab, 0xef, 0xa2, 0xf6, 0x9d, 0x33, 0xbb, 0x15}
-}; // {3B384B04-7A0C-4634-ABEF-A2F69D33BB15}
 static constexpr GUID guid_cfg_allow_page_tearing_fs = {
     0x1df637d, 0xb5ee, 0x455d, {0xa6, 0xe6, 0x15, 0x61, 0x94, 0x4f, 0xfe, 0x60}
 }; // {01DF637D-B5EE-455D-A6E6-1561944FFE60}
@@ -157,15 +151,12 @@ static constexpr float default_fSongTitleAnimDuration = 1.7f;
 static constexpr float default_fTimeBetweenRandomSongTitles = -1.0f;
 static constexpr float default_fTimeBetweenRandomCustomMsgs = -1.0f;
 static constexpr bool default_bEnableDownmix = false;
-static constexpr bool default_bAllowTearing = false;
 static constexpr bool default_bEnableHDR = false;
 static constexpr int default_nBackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 static constexpr int default_nDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 static constexpr int default_nBackBufferCount = 2;
 static constexpr int default_nMinFeatureLevel = D3D_FEATURE_LEVEL_9_1;
-static constexpr UINT default_max_fps_w = 60;
 static constexpr UINT default_max_fps_fs = 30;
-static constexpr bool default_allow_page_tearing_w = true;
 static constexpr bool default_allow_page_tearing_fs = false;
 
 static WCHAR default_szPluginsDirPath[MAX_PATH];
@@ -189,12 +180,10 @@ static cfg_bool cfg_bPreventScollLockHandling(guid_cfg_bPreventScollLockHandling
 static cfg_bool cfg_bWarningsDisabled(guid_cfg_bWarningsDisabled, default_bWarningsDisabled2);
 static cfg_bool cfg_bEnableRating(guid_cfg_bEnableRating, !default_bEnableRating);
 static cfg_bool cfg_bShowPressF1ForHelp(guid_cfg_bShowPressF1ForHelp, default_bShowPressF1ForHelp);
-static cfg_bool cfg_allow_page_tearing_w(guid_cfg_allow_page_tearing_w, default_allow_page_tearing_w);
 static cfg_bool cfg_allow_page_tearing_fs(guid_cfg_allow_page_tearing_fs, default_allow_page_tearing_fs);
 static cfg_bool cfg_bSongTitleAnims(guid_cfg_bSongTitleAnims, default_bSongTitleAnims);
 static cfg_bool cfg_bAutoGamma(guid_cfg_bAutoGamma, default_bAutoGamma);
 static cfg_bool cfg_bHardCutsDisabled(guid_cfg_bHardCutsDisabled, default_bHardCutsDisabled);
-static cfg_int cfg_max_fps_w(guid_cfg_max_fps_w, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_max_fps_fs(guid_cfg_max_fps_fs, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_n16BitGamma(guid_cfg_n16BitGamma, static_cast<int64_t>(default_n16BitGamma));
 static cfg_int cfg_nMaxBytes(guid_cfg_nMaxBytes, static_cast<int64_t>(default_nMaxBytes));
@@ -305,9 +294,7 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
 
     // Maximum FPS.
-    CheckDlgButton(IDC_CB_WPT, static_cast<UINT>(cfg_allow_page_tearing_w));
     CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
-    UpdateMaxFps(WINDOWED);
     UpdateMaxFps(FULLSCREEN);
 
     // Soft cuts.
@@ -586,9 +573,7 @@ void milk2_preferences_page::reset()
     CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!cfg_bEnableRating));
     CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
 
-    CheckDlgButton(IDC_CB_WPT, static_cast<UINT>(cfg_allow_page_tearing_w));
     CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
-    UpdateMaxFps(WINDOWED);
     UpdateMaxFps(FULLSCREEN);
 
     swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresets));
@@ -650,9 +635,7 @@ void milk2_preferences_page::apply()
     cfg_bEnableRating = !static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2));
     cfg_bShowPressF1ForHelp = static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG));
 
-    cfg_allow_page_tearing_w = static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT));
     cfg_allow_page_tearing_fs = static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT));
-    SaveMaxFps(WINDOWED);
     SaveMaxFps(FULLSCREEN);
 
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
@@ -738,7 +721,6 @@ bool milk2_preferences_page::HasChanged() const
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3)) != cfg_bWarningsDisabled) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2)) == cfg_bEnableRating) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG)) != cfg_bShowPressF1ForHelp) ||
-                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_WPT)) != cfg_allow_page_tearing_w) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT)) != cfg_allow_page_tearing_fs) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS)) != cfg_bHardCutsDisabled) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2)) != cfg_bAutoGamma) ||
@@ -747,13 +729,6 @@ bool milk2_preferences_page::HasChanged() const
     HWND ctrl = nullptr;
     LRESULT n = 0;
     bool combobox_changes = false;
-    n = SendMessage(GetDlgItem(IDC_W_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        if (n > 0)
-            n = MAX_MAX_FPS + 1 - n;
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != cfg_max_fps_w);
-    }
     n = SendMessage(GetDlgItem(IDC_FS_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
@@ -949,9 +924,6 @@ void milk2_preferences_page::UpdateMaxFps(int screenmode) const
     UINT max_fps = 0;
     switch (screenmode)
     {
-        case WINDOWED:
-            max_fps = static_cast<UINT>(cfg_max_fps_w);
-            break;
         case FULLSCREEN:
             max_fps = static_cast<UINT>(cfg_max_fps_fs);
             break;
@@ -967,9 +939,6 @@ void milk2_preferences_page::SaveMaxFps(int screenmode) const
     HWND ctrl = nullptr;
     switch (screenmode)
     {
-        case WINDOWED:
-            ctrl = GetDlgItem(IDC_W_MAXFPS2);
-            break;
         case FULLSCREEN:
             ctrl = GetDlgItem(IDC_FS_MAXFPS2);
             break;
@@ -986,9 +955,6 @@ void milk2_preferences_page::SaveMaxFps(int screenmode) const
 
             switch (screenmode)
             {
-                case WINDOWED:
-                    cfg_max_fps_w = static_cast<UINT>(n);
-                    break;
                 case FULLSCREEN:
                     cfg_max_fps_fs = static_cast<UINT>(n);
                     break;
@@ -1019,22 +985,15 @@ uint32_t milk2_config::get_sentinel() const
 void milk2_config::reset()
 {
     //--- CPluginShell::ReadConfig()
-    //settings.m_multisample_fullscreen;
-    //settings.m_multisample_windowed;
+    settings.m_multisample_fullscreen = {1u, 0u};
 
     //settings.m_start_fullscreen;
     settings.m_max_fps_fs = static_cast<uint32_t>(cfg_max_fps_fs);
-    settings.m_max_fps_w = static_cast<uint32_t>(cfg_max_fps_w);
     settings.m_show_press_f1_msg = static_cast<uint32_t>(cfg_bShowPressF1ForHelp);
-    settings.m_allow_page_tearing_w = static_cast<uint32_t>(cfg_allow_page_tearing_w);
     settings.m_allow_page_tearing_fs = static_cast<uint32_t>(cfg_allow_page_tearing_fs);
-    //settings.m_minimize_winamp;
-    //settings.m_dualhead_horz;
-    //settings.m_dualhead_vert;
     //settings.m_save_cpu;
     //settings.m_skin;
     //settings.m_fix_slow_text;
-
     //settings.m_disp_mode_fs;
 
     //--- CPlugin::MilkDropReadConfig()
@@ -1100,7 +1059,6 @@ void milk2_config::reset()
 
     //--- Extras
     settings.m_bEnableDownmix = default_bEnableDownmix;
-    settings.m_bAllowTearing = default_bAllowTearing;
     settings.m_bEnableHDR = default_bEnableHDR;
     settings.m_nBackBufferFormat = default_nBackBufferFormat;
     settings.m_nDepthBufferFormat = default_nDepthBufferFormat;
@@ -1171,9 +1129,7 @@ void milk2_config::parse(ui_element_config_parser& parser)
 
                 //parser >> m_start_fullscreen;
                 //parser >> m_max_fps_fs;
-                //parser >> m_max_fps_w;
                 //parser >> m_show_press_f1_msg;
-                //parser >> m_allow_page_tearing_w;
                 //parser >> m_allow_page_tearing_fs;
                 //parser >> m_minimize_winamp;
                 //parser >> m_dualhead_horz;
@@ -1242,7 +1198,6 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 //parser >> settings.m_nFpsLimit;
 
                 parser >> settings.m_bEnableDownmix;
-                parser >> settings.m_bAllowTearing;
                 parser >> settings.m_bEnableHDR;
                 parser >> settings.m_nBackBufferFormat;
                 parser >> settings.m_nDepthBufferFormat;
@@ -1278,9 +1233,7 @@ void milk2_config::build(ui_element_config_builder& builder)
 
     //builder << settings.m_start_fullscreen;
     cfg_max_fps_fs = settings.m_max_fps_fs;
-    cfg_max_fps_w = settings.m_max_fps_w;
     //builder << settings.m_show_press_f1_msg;
-    cfg_allow_page_tearing_w = settings.m_allow_page_tearing_w;
     cfg_allow_page_tearing_fs = settings.m_allow_page_tearing_fs;
     //builder << settings.m_minimize_winamp;
     //builder << settings.m_dualhead_horz;
@@ -1349,7 +1302,6 @@ void milk2_config::build(ui_element_config_builder& builder)
     //builder << settings.m_nFpsLimit;
 
     builder << settings.m_bEnableDownmix;
-    builder << settings.m_bAllowTearing;
     builder << settings.m_bEnableHDR;
     builder << settings.m_nBackBufferFormat;
     builder << settings.m_nDepthBufferFormat;

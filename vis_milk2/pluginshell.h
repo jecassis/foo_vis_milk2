@@ -67,10 +67,11 @@ class CPluginShell
     virtual ~CPluginShell();
 
     int PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance); // called by "vis.cpp" on behalf of Winamp
-    int PluginInitialize(std::unique_ptr<DXContext> pContext, int iWidth, int iHeight, bool fullscreen, bool recover);
+    int PluginInitialize(int iWidth, int iHeight);
     int PluginRender(unsigned char* pWaveL, unsigned char* pWaveR);
-    void PluginQuit(BOOL destroy);
+    void PluginQuit();
     void OnWindowSizeChanged(int width, int height);
+    void OnWindowSwap(HWND window, int width, int height);
     void OnWindowMoved();
     void OnDisplayChange();
 
@@ -178,8 +179,14 @@ class CPluginShell
     int m_save_cpu;                  // 0 or 1
     int m_skin;                      // 0 or 1
     int m_fix_slow_text;             // 0 or 1
+    int m_enable_hdr;                // 0 or 1
+    int m_enable_downmix;            // 0 or 1
+    int m_back_buffer_format;
+    int m_depth_buffer_format;
+    int m_back_buffer_count;         // 2
+    int m_min_feature_level;
     td_fontinfo m_fontinfo[NUM_BASIC_FONTS + NUM_EXTRA_FONTS];
-    DXGI_MODE_DESC1 m_disp_mode_fs;  // specifies the width, height, refresh rate, and color format to use when the plugin goes fullscreen
+    DXGI_SAMPLE_DESC m_multisample_fullscreen;
 
   private:
     // GENERAL PRIVATE STUFF
@@ -205,7 +212,7 @@ class CPluginShell
     HFONT m_font_desktop;
 
     // PRIVATE CONFIG PANEL SETTINGS
-    DXGI_SAMPLE_DESC m_multisample_fullscreen;
+    //DXGI_MODE_DESC1 m_disp_mode_fs;  // specifies the width, height, refresh rate, and color format to use when the plugin goes fullscreen
     DXGI_SAMPLE_DESC m_multisample_desktop;
     DXGI_SAMPLE_DESC m_multisample_windowed;
     LUID m_adapter_guid_fullscreen;
