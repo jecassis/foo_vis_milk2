@@ -37,7 +37,7 @@ class FFT
     ~FFT();
     void Init(int samples_in, int samples_out, int bEqualize = 1, float envelope_power = 1.0f);
     void time_to_frequency_domain(float* in_wavedata, float* out_spectraldata);
-    int GetNumFreq() { return NFREQ; };
+    int GetNumFreq() const { return NFREQ; };
     void CleanUp();
 
   private:

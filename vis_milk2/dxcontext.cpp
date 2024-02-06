@@ -39,8 +39,6 @@ DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false)
     m_frame_delay = 0;
     m_client_height = 0;
     m_client_width = 0;
-    m_REAL_client_height = 0;
-    m_REAL_client_width = 0;
     memcpy_s(&m_current_mode, sizeof(m_current_mode), pParams, sizeof(DXCONTEXT_PARAMS));
 
     // Clear the error register.
@@ -81,8 +79,8 @@ BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* /* pParams */, BOOL /* bFirstIni
 {
     RECT r;
     GetClientRect(m_hwnd, &r);
-    m_client_width = m_REAL_client_width = std::max(1l, r.right - r.left);
-    m_client_height = m_REAL_client_height = std::max(1l, r.bottom - r.top);
+    m_client_width = std::max(1l, r.right - r.left);
+    m_client_height = std::max(1l, r.bottom - r.top);
 
     m_deviceResources->SetWindow(m_hwnd, m_client_width, m_client_height);
 
@@ -178,8 +176,8 @@ BOOL DXContext::OnWindowSizeChanged(int width, int height)
     if ((m_client_width == width) && (m_client_height == height))
         return TRUE;
 
-    m_client_width = m_REAL_client_width = width;
-    m_client_height = m_REAL_client_height = height;
+    m_client_width = width;
+    m_client_height = height;
 
     if (!m_deviceResources->WindowSizeChanged(width, height))
     {
@@ -205,8 +203,8 @@ BOOL DXContext::OnWindowSwap(HWND window, int width, int height)
     Clear();
 
     m_hwnd = window;
-    m_client_width = m_REAL_client_width = width;
-    m_client_height = m_REAL_client_height = height;
+    m_client_width = width;
+    m_client_height = height;
 
     if (!m_deviceResources->WindowSwap(m_hwnd, m_client_width, m_client_height))
     {

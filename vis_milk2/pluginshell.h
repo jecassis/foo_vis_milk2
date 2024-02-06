@@ -112,7 +112,7 @@ class CPluginShell
     //  Calling these from `OverrideDefaults()`, `MilkDropPreInitialize()`, or `MilkDropReadConfig()`,
     //  they will return NULL (zero).
     // ------------------------------------------------------------
-    HWND GetPluginWindow(); // returns handle to the plugin window.  NOT persistent; can change!
+    HWND GetPluginWindow() const; // returns handle to the plugin window.  NOT persistent; can change!
     int GetWidth(); // returns width of plugin window interior, in pixels.  Note: in windowed mode, this is a fudged, larger, aligned value, and on final display, it gets cropped.
     int GetHeight(); // returns height of plugin window interior, in pixels. Note: in windowed mode, this is a fudged, larger, aligned value, and on final display, it gets cropped.
     int GetBitDepth(); // returns 8, 16, 24 (rare), or 32
@@ -288,15 +288,6 @@ class CPluginShell
   protected:
     void RenderPlaylist();
     void EnforceMaxFPS();
-
-    // DESKTOP MODE FUNCTIONS (found in desktop_mode.cpp)
-    //int InitDesktopMode();
-    //void CleanUpDesktopMode();
-    //int CreateDesktopIconTexture(IDirect3DTexture9** ppTex);
-    void DeselectDesktop();
-    void UpdateDesktopBitmaps();
-    int StuffIconBitmaps(int iStartIconIdx, int iTexNum, int* show_msgs);
-    void RenderDesktop();
 
     // SEPARATE TEXT WINDOW (FOR VJ MODE)
     int m_vj_mode;

@@ -35,7 +35,7 @@ static const GUID VisMilk2LangGUID = {
 static bool s_fullscreen = false;
 static bool s_milk2 = false;
 static ULONGLONG s_count = 0ull;
-static constexpr ULONGLONG DebugLimit = 50ull;
+static constexpr ULONGLONG DebugLimit = 1ull;
 
 class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>
 {
@@ -75,14 +75,14 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
         MSG_WM_POWERBROADCAST(OnPowerBroadcast)
-        MESSAGE_HANDLER(WM_MILK2, OnMilk2Message)
+        MESSAGE_HANDLER_EX(WM_MILK2, OnMilk2Message)
         MESSAGE_HANDLER_EX(WM_CONFIG_CHANGE, OnConfigurationChange)
     END_MSG_MAP()
     // clang-format on
 
     milk2_ui_element(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback);
     HWND get_wnd() { return *this; }
-    void set_configuration(ui_element_config::ptr config);
+    void set_configuration(ui_element_config::ptr p_data);
     ui_element_config::ptr get_configuration();
     static GUID g_get_guid() { return guid_milk2; }
     static GUID g_get_subclass() { return ui_element_subclass_playback_visualisation; }
@@ -113,7 +113,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point);
-    LRESULT OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& handled);
+    LRESULT OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam);
     PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p"), get_wnd()); return m_szWnd; }
 
@@ -167,8 +167,6 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnDeactivated();
     void OnSuspending();
     void OnResuming();
-    void OnWindowMoved();
-    void OnDisplayChange();
 
     // Properties
     void GetDefaultSize(int& width, int& height) const noexcept;
@@ -201,7 +199,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 };
 
 milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
-    m_callback(p_callback)
+    m_callback(p_callback), m_bMsgHandled(TRUE)
 {
     m_milk2 = false;
     m_refresh_interval = 33;
@@ -706,9 +704,8 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     Invalidate();
 }
 
-LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& handled)
+LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    handled = TRUE;
     if (uMsg != WM_MILK2)
         return 1;
     if (LOBYTE(wParam) == 0x21 && HIBYTE(wParam) == 0x09)

@@ -96,10 +96,8 @@ class DXContext final : public DX::IDeviceNotify
     // DO NOT WRITE TO THESE FROM OUTSIDE THE CLASS
     int m_ready;
     HRESULT m_lastErr;
-    int m_client_width; // width: in windowed mode, SNAPPED (locked to nearest 32x32) width
-    int m_client_height; // height: in windowed mode, SNAPPED (locked to nearest 32x32) height
-    int m_REAL_client_width; // actual (raw) width: only valid in windowed mode
-    int m_REAL_client_height; // actual (raw) height: only valid in windowed mode
+    int m_client_width;
+    int m_client_height;
     int m_frame_delay;
     DXCONTEXT_PARAMS m_current_mode;
     std::unique_ptr<D3D11Shim> m_lpDevice;

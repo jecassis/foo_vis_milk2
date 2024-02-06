@@ -79,11 +79,11 @@ eScrMode CPluginShell::GetScreenMode() { return m_screenmode; }
 int CPluginShell::GetFrame() { return m_frame; }
 float CPluginShell::GetTime() { return m_time; }
 float CPluginShell::GetFps() { return m_fps; }
-HWND CPluginShell::GetPluginWindow() { if (m_lpDX) return m_lpDX->GetHwnd(); else return NULL; }
+HWND CPluginShell::GetPluginWindow() const { if (m_lpDX) return m_lpDX->GetHwnd(); else return NULL; }
 int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else return 0; }
 int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; }
-int CPluginShell::GetCanvasMarginX() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_width - m_lpDX->m_REAL_client_width) / 2; else return 0; }
-int CPluginShell::GetCanvasMarginY() { if (m_lpDX && m_screenmode == WINDOWED) return (m_lpDX->m_client_height - m_lpDX->m_REAL_client_height) / 2; else return 0; }
+int CPluginShell::GetCanvasMarginX() { return 0; }
+int CPluginShell::GetCanvasMarginY() { return 0; }
 HWND CPluginShell::GetWinampWindow() { return m_hWndWinamp; }
 void CPluginShell::SetWinampWindow(HWND window) { m_hWndWinamp = window; }
 HINSTANCE CPluginShell::GetInstance() { return m_hInstance; }
