@@ -26,14 +26,6 @@ jobs:
           msbuild-architecture: ${{ matrix.platform }}
       - name: Set up NuGet and add to PATH
         uses: nuget/setup-nuget@v2
-      - name: Cache NuGet packages (DirectXTK and WTL)
-        uses: actions/cache@v4
-        id: nuget
-        with:
-          path: |
-            ${{ github.workspace }}\external\directxtk
-            ${{ github.workspace }}\external\wtl
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
       - name: Cache foobar2000 SDK
         uses: actions/cache@v4
         id: sdk
@@ -42,10 +34,7 @@ jobs:
             ${{ github.workspace }}\external\foobar2000
             ${{ github.workspace }}\external\libppui
             ${{ github.workspace }}\external\pfc
-          key: ${{ runner.os }}-foobar2000_${{ env.SDK_SHA256 }}-${{ hashFiles('**/fb2ksdk.patch') }}
-      - name: Restore cached NuGet packages (DirectXTK and WTL)
-        if: steps.nuget.outputs.cache-hit != 'true'
-        run: nuget restore foo_vis_milk2.sln
+          key: ${{ runner.os }}-foobar2000_${{ env.SDK_VERSION }}-${{ hashFiles('**/fb2ksdk.patch') }}
       - name: Download and install foobar2000 SDK
         if: steps.sdk.outputs.cache-hit != 'true'
         run: |
@@ -61,7 +50,18 @@ jobs:
           Rename-Item -Path "$(Get-Location)\external\foobar2000\SDK" -NewName sdk
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client
           Set-Location -Path "$(Get-Location)\external"
-          git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn "$(Get-Location)\fb2ksdk.patch"
+          git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn --reject --verbose "$(Get-Location)\fb2ksdk.patch"
+      - name: Cache NuGet packages (DirectXTK and WTL)
+        uses: actions/cache@v4
+        id: nuget
+        with:
+          path: |
+            ${{ github.workspace }}\external\directxtk
+            ${{ github.workspace }}\external\wtl
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+      - name: Restore cached NuGet packages (DirectXTK and WTL)
+        if: steps.nuget.outputs.cache-hit != 'true'
+        run: nuget restore foo_vis_milk2.sln
       #- name: Prepare build
       #  run: |
       #    Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
