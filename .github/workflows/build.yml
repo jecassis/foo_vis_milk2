@@ -50,7 +50,7 @@ jobs:
           Rename-Item -Path "$(Get-Location)\external\foobar2000\SDK" -NewName sdk
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client
           Set-Location -Path "$(Get-Location)\external"
-          git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn --reject --verbose "$(Get-Location)\fb2ksdk.patch"
+          git apply --ignore-whitespace --whitespace=nowarn --check --apply --verbose "$(Get-Location)\fb2ksdk.patch"
       - name: Cache NuGet packages (DirectXTK and WTL)
         uses: actions/cache@v4
         id: nuget
