@@ -12,7 +12,6 @@ class milk2_config
     void reset();
     void parse(ui_element_config_parser& parser);
     void build(ui_element_config_builder& builder);
-    static LPCSTR get_preset_dir();
 
     // `milk2.ini`
     plugin_config settings;

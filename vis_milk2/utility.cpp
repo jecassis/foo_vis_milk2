@@ -103,7 +103,7 @@ bool WritePrivateProfileIntW(int d, const wchar_t* szKeyName, const wchar_t* szI
     return (WritePrivateProfileString(szSectionName, szKeyName, szValue, szIniFile) != 0);
 }
 
-void SetScrollLock(int /* bNewState */, bool /* bPreventHandling */)
+void SetScrollLock(int bNewState, bool bPreventHandling)
 {
 #if 0
     if (bPreventHandling)
@@ -117,6 +117,9 @@ void SetScrollLock(int /* bNewState */, bool /* bPreventHandling */)
         // Simulate a key release
         keybd_event(VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
     }
+#else
+	UNREFERENCED_PARAMETER(bNewState);
+	UNREFERENCED_PARAMETER(bPreventHandling);
 #endif
 }
 

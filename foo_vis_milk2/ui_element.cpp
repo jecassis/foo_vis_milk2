@@ -45,7 +45,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void initialize_window(HWND parent)
     {
 #ifdef _DEBUG
-        WCHAR szParent[19], szWnd[19];
+        WCHAR szParent[19]{}, szWnd[19]{};
         swprintf_s(szParent, TEXT("0x%p"), parent);
         swprintf_s(szWnd, TEXT("0x%p"), get_wnd());
         MILK2_CONSOLE_LOG("Init ", szParent, ", ", szWnd)
@@ -148,9 +148,14 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     bool Initialize(HWND window, int width, int height);
     void ReadConfig();
 
-    // Basic visualization loop
+    // Visualization loop
     void Tick();
+    void Update(DX::StepTimer const& timer);
+    HRESULT Render();
+    void Clear();
+    void BuildWaves();
 
+    // Preset information and navigation
     void PrevPreset();
     void NextPreset();
     bool LoadPreset(int select);
@@ -158,9 +163,6 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void LockPreset(bool lockUnlock);
     bool IsPresetLock();
     std::wstring GetCurrentPreset();
-    bool GetPresets(std::vector<std::string>& presets);
-    int GetActivePreset() const;
-    char* WideToUTF8(const wchar_t* WFilename);
 
     // Window Messages
     void OnActivated();
@@ -173,11 +175,6 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void SetPwd(std::string pwd) noexcept;
     void UpdateChannelMode();
     void ToggleFullScreen();
-
-    void Update(DX::StepTimer const& timer);
-    HRESULT Render();
-    void Clear();
-    void BuildWaves();
 
     // MilkDrop status
     bool m_milk2;
@@ -192,6 +189,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     // Component paths
     std::string m_pwd;
 
+    // Audio data
     unsigned char waves[2][576];
 
   protected:
@@ -214,17 +212,18 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
 
 ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
 {
-    ui_element_config_builder builder;
     try
     {
+        ui_element_config_builder builder;
         milk2_config config;
         config.build(builder);
+        return builder.finish(g_get_guid());
     }
     catch (exception_io& exc)
     {
         FB2K_console_print(core_api::get_my_file_name(), ": Exception while building default configuration data - ", exc);
+        return ui_element_config::g_create_empty(g_get_guid());
     }
-    return builder.finish(g_get_guid());
 }
 
 void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
@@ -237,8 +236,6 @@ void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
 
     ui_element_config_parser parser(p_data);
     m_config.parse(parser);
-
-    UpdateChannelMode();
 }
 
 ui_element_config::ptr milk2_ui_element::get_configuration()
@@ -468,7 +465,7 @@ BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
         case 0x09: // PRINT STDOUT
             {
                 LPCTSTR lpszString = (LPCTSTR)((ErrorCopy*)(pcds->lpData))->error;
-                FB2K_console_print(core_api::get_my_file_name(), ": ", WideToUTF8(lpszString));
+                FB2K_console_print(core_api::get_my_file_name(), ": ", lpszString);
                 break;
             }
     }
@@ -664,7 +661,7 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
     menu.AppendMenu(MF_STRING | (IsPresetLock() ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING | (g_plugin.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+    menu.AppendMenu(MF_STRING | (m_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
 #ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
@@ -696,7 +693,6 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             break;
         case IDM_ENABLE_DOWNMIX:
             m_config.settings.m_bEnableDownmix = !m_config.settings.m_bEnableDownmix;
-            g_plugin.m_bEnableDownmix = m_config.settings.m_bEnableDownmix;
             UpdateChannelMode();
             break;
     }
@@ -979,50 +975,12 @@ void milk2_ui_element::RandomPreset()
     g_plugin.LoadRandomPreset(1.0f);
 }
 
-bool milk2_ui_element::GetPresets(std::vector<std::string>& presets)
-{
-    if (!m_milk2)
-        return false;
-
-    while (!g_plugin.m_bPresetListReady)
-    {
-    }
-
-    for (int i = 0; i < g_plugin.m_nPresets - g_plugin.m_nDirs; ++i)
-    {
-        PresetInfo& Info = g_plugin.m_presets[i + g_plugin.m_nDirs];
-        presets.push_back(WideToUTF8(Info.szFilename.c_str()));
-    }
-
-    return true;
-}
-
-int milk2_ui_element::GetActivePreset() const
-{
-    //if (m_milk2)
-    //{
-    //    int CurrentPreset = g_plugin.m_nCurrentPreset;
-    //    CurrentPreset -= g_plugin.m_nDirs;
-    //    return CurrentPreset;
-    //}
-
-    return -1;
-}
-
-char* milk2_ui_element::WideToUTF8(const wchar_t* WFilename)
-{
-    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
-    char* utf8Name = new char[SizeNeeded];
-    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
-    return utf8Name;
-}
-
 // clang-format off
 void milk2_ui_element::UpdateChannelMode()
 {
     if (m_vis_stream.is_valid())
     {
-        m_vis_stream->set_channel_mode(g_plugin.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
+        m_vis_stream->set_channel_mode(m_config.settings.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
     }
 }
 

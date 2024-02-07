@@ -570,8 +570,6 @@ class CPlugin : public CPluginShell
     //float m_fShowUserMessageUntilThisTime;
     //char m_szUserMessage[512];
     //bool m_bUserMessageIsError;
-    bool m_bEnableDownmix;
-    bool m_bEnableHDR;
 
     ErrorMsgList m_errors;
     void AddError(wchar_t* szMsg, float fDuration, ErrorCategory category = ERR_ALL, bool bBold = true);

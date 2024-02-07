@@ -143,13 +143,6 @@ class CPluginShell
     virtual void PopupMessage(int message_id, int title_id, bool dump = false) = 0;
     virtual void ConsoleMessage(int message_id, int title_id) = 0;
 
-    // FONTS & TEXT
-    // ------------------------------------------------------------
-  public:
-    IUnknown* GetFont(eFontIndex idx); // returns a D3DX font handle for drawing text; see shell_defines.h for the definition of the 'eFontIndex' enum.
-    int GetFontHeight(eFontIndex idx); // returns the height of the font, in pixels; see shell_defines.h for the definition of the 'eFontIndex' enum.
-    //CTextManager m_text;
-
     // MISCELLANEOUS
     // ------------------------------------------------------------
   protected:
@@ -306,8 +299,6 @@ class CPluginShell
 
     // WINDOWPROC FUNCTIONS
     //LRESULT PluginShellWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam); // in "windowproc.cpp"
-    //LRESULT PluginShellDesktopWndProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
-    //LRESULT PluginShellVJModeWndProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
 
     // CONFIGURATION PANEL FUNCTIONS
     LRESULT PluginShellConfigDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -327,7 +318,6 @@ class CPluginShell
     void SaveAdapter(int screenmode);
     void SaveMaxFps(int screenmode);
     void OnTabChanged(int nNewTab);
-    //D3D11Shim* GetTextDevice() { return (m_vjd3d9_device) ? m_vjd3d9_device : m_lpDX->m_lpDevice.get(); }
 
     // CHANGES
     friend class CShaderParams;

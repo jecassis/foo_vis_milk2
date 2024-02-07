@@ -597,9 +597,11 @@ void CPlugin::RenderFrame(int bRedraw)
             }
             else
             {
-                /* float halflife_modified = m_fHardCutHalflife*0.5f;
-                //thresh = (thresh - 1.5f)*0.99f + 1.5f;
-                float k = -0.69315f / halflife_modified; */
+                /*
+                float halflife_modified = m_fHardCutHalflife * 0.5f;
+                //thresh = (thresh - 1.5f) * 0.99f + 1.5f;
+                float k = -0.69315f / halflife_modified;
+                */
                 float k = -1.3863f / (m_fHardCutHalflife * GetFps());
                 //float single_frame_multiplier = powf(2.7183f, k / GetFps());
                 float single_frame_multiplier = expf(k);

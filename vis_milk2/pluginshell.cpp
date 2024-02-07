@@ -98,7 +98,6 @@ D3DCAPS9* CPluginShell::GetCaps() { if (m_lpDX) return &(m_lpDX->m_caps); else r
 D3DFORMAT CPluginShell::GetBackBufFormat() { if (m_lpDX) return m_lpDX->m_current_mode.display_mode.Format; else return D3DFMT_UNKNOWN; };
 D3DFORMAT CPluginShell::GetBackBufZFormat() { if (m_lpDX) return m_lpDX->GetZFormat(); else return D3DFMT_UNKNOWN; };
 #endif
-IUnknown* CPluginShell::GetFont(eFontIndex idx) { if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_d3dx_font[idx]; else return NULL; };
 char* CPluginShell::GetDriverFilename() { static char fake[1] = {0}; return fake; }
 char* CPluginShell::GetDriverDescription() { static char fake[1] = {0}; return fake; }
 
@@ -113,9 +112,6 @@ int CPluginShell::InitNonDX11()
 
 void CPluginShell::CleanUpNonDX11()
 {
-#ifdef TARGET_WINDOWS_DESKTOP
-    timeEndPeriod(1);
-#endif
     CleanUpMilkDropNonDX11();
     m_fftobj.CleanUp();
 }

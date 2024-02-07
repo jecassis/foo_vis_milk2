@@ -210,7 +210,7 @@ static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPre
 class milk2_preferences_page : public preferences_page_instance, public CDialogImpl<milk2_preferences_page>
 {
   public:
-    milk2_preferences_page(preferences_page_callback::ptr callback) : m_callback(callback) {}
+    milk2_preferences_page(preferences_page_callback::ptr callback) : m_callback(callback), m_bMsgHandled(TRUE) {}
 
     enum milk2_dialog_id
     {
