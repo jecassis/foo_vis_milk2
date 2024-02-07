@@ -985,6 +985,7 @@ void milk2_ui_element::UpdateChannelMode()
 }
 
 class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element> {};
+// clang-format on
 
 // Service factory publishes the class.
 static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
@@ -1010,4 +1011,3 @@ void ExitVis() noexcept
     //g_vis.reset();
     PostQuitMessage(0);
 }
-// clang-format on

@@ -31,6 +31,7 @@
         .\clang-format-all.ps1 -File 'S:\repos\calculator\src\CalcViewModel\UnitConverterViewModel.h', 'S:\repos\calculator\src\CalcViewModel\MemoryItemViewModel.cpp'
         Formats the specified files.
 #>
+
 [CmdletBinding( DefaultParameterSetName = 'Search' )]
 param(
     [Parameter( ParameterSetName = 'Search' )]

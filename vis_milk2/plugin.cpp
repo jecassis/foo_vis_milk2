@@ -50,7 +50,7 @@
               +--> { CleanUpMilkDropDX11 + AllocateMilkDropDX11 }  // called together when user resizes window or toggles fullscreen<->windowed.
               |    MilkDropRenderFrame
               |    MilkDropRenderUI
-              |    { MilkDropWindowProc } // called, between frames, on mouse/keyboard/system events. 100% thread safe.
+              |    { MilkDropWindowProc }  // called, between frames, on mouse/keyboard/system events. 100% thread safe.
               +----<< repeat >>
           CLEANUP
               CleanUpMilkDropDX11
@@ -65,9 +65,9 @@
               MilkDropReadConfig
               << DirectX gets initialized at this point >>
           RUNNING
-              { MilkDropConfigTabProc }                  // called on startup & on keyboard events
+              { MilkDropConfigTabProc }  // called on startup & on keyboard events
           CLEANUP
-              [ MilkDropWriteConfig ]                    // only called if user clicked 'OK' to exit
+              [ MilkDropWriteConfig ]  // only called if user clicked 'OK' to exit
               << DirectX gets uninitialized at this point >>
 */
 

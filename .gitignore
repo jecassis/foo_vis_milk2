@@ -128,6 +128,8 @@ CMakeLists.txt
 ############
 ## MilkDrop
 ############
+/component/
+*.fb2k-component
 
 # FXC-generated files
 /vis_milk2/*.inc
@@ -141,7 +143,9 @@ CMakeLists.txt
 /external/directxtk*/
 /external/wtl*/
 /external/eel2/*
+/external/winamp/*
 /external/unused/
+!/external/winamp/data/
 !/external/eel2/nseel-cfunc.c
 !/external/eel2/nseel-compiler.c
 !/external/eel2/nseel-eval.c
