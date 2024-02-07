@@ -1,5 +1,5 @@
 diff --git a/foobar2000/sdk/foobar2000-versions.h b/foobar2000/sdk/foobar2000-versions.h
-index 5f7c3c2..d304748 100644
+index 5f7c3c2..4e96fab 100644
 --- a/foobar2000/sdk/foobar2000-versions.h
 +++ b/foobar2000/sdk/foobar2000-versions.h
 @@ -6,8 +6,8 @@
@@ -13,13 +13,6 @@ index 5f7c3c2..d304748 100644
  
  
  #ifdef _M_IX86
-@@ -38,4 +38,4 @@
- // Takes effect with FOOBAR2000_TARGET_VERSION 80 only.
- // Place FOOBAR2000_IMPLEMENT_CFG_VAR_DOWNGRADE somewhere in your code to declare init calls for cfg_var downgrade. Or, if you wish to call manually, call cfg_var_reader::downgrade_main() before accessing your cfg_vars.
- // Spurious calls to cfg_var_reader::downgrade_main() will be ignored, only first one will take effect.
--#define FOOBAR2000_SUPPORT_CFG_VAR_DOWNGRADE 0
-\ No newline at end of file
-+#define FOOBAR2000_SUPPORT_CFG_VAR_DOWNGRADE 0
 diff --git a/foobar2000/sdk/foobar2000-winver.h b/foobar2000/sdk/foobar2000-winver.h
 index 7aab1d8..35c463f 100644
 --- a/foobar2000/sdk/foobar2000-winver.h
@@ -56,3 +49,1569 @@ index 7aab1d8..35c463f 100644
  #define FOOBAR2000_SUPPORT_DLLS 1
  #define FOOBAR2000_HAVE_KEYBOARD_SHORTCUTS
  #endif
+diff --git a/foobar2000/sdk/foobar2000_SDK.vcxproj b/foobar2000/sdk/foobar2000_SDK.vcxproj
+index fa8b8dc..55abebc 100644
+--- a/foobar2000/sdk/foobar2000_SDK.vcxproj
++++ b/foobar2000/sdk/foobar2000_SDK.vcxproj
+@@ -36,7 +36,9 @@
+   </ItemGroup>
+   <PropertyGroup Label="Globals">
+     <ProjectGuid>{E8091321-D79D-4575-86EF-064EA1A4A20D}</ProjectGuid>
+-    <RootNamespace>foobar2000_SDK</RootNamespace>
++    <RootNamespace>foobar2000_sdk</RootNamespace>
++    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <ProjectName>foobar2000_SDK</ProjectName>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+@@ -122,6 +124,38 @@
+   <PropertyGroup>
+     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+   </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+@@ -134,9 +168,10 @@
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -158,9 +193,10 @@
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -182,9 +218,10 @@
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -206,9 +243,10 @@
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -231,15 +269,15 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -262,15 +300,15 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -293,15 +331,15 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -324,15 +362,15 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -585,6 +623,5 @@
+     <ClCompile Include="utility.cpp" />
+   </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+-  <ImportGroup Label="ExtensionTargets">
+-  </ImportGroup>
++  <ImportGroup Label="ExtensionTargets" />
+ </Project>
+\ No newline at end of file
+diff --git a/foobar2000/component_client/foobar2000_component_client.vcxproj b/foobar2000/component_client/foobar2000_component_client.vcxproj
+index 51a2fdb..78c9276 100644
+--- a/foobar2000/component_client/foobar2000_component_client.vcxproj
++++ b/foobar2000/component_client/foobar2000_component_client.vcxproj
+@@ -37,6 +37,7 @@
+   <PropertyGroup Label="Globals">
+     <ProjectGuid>{71AD2674-065B-48F5-B8B0-E1F9D3892081}</ProjectGuid>
+     <RootNamespace>foobar2000_component_client</RootNamespace>
++    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+@@ -121,10 +122,34 @@
+   <PropertyGroup Label="UserMacros" />
+   <PropertyGroup>
+     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</OutDir>
+-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</OutDir>
+-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <ClCompile>
+@@ -137,9 +162,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -160,9 +186,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -183,9 +210,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -206,9 +234,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -229,13 +258,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -256,13 +285,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -283,13 +312,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -310,13 +339,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -343,6 +372,5 @@
+     </ClCompile>
+   </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+-  <ImportGroup Label="ExtensionTargets">
+-  </ImportGroup>
++  <ImportGroup Label="ExtensionTargets" />
+ </Project>
+\ No newline at end of file
+diff --git a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
+index 2e38ddd..1c9c3c0 100644
+--- a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
++++ b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
+@@ -37,6 +37,8 @@
+   <PropertyGroup Label="Globals">
+     <ProjectGuid>{EE47764E-A202-4F85-A767-ABDAB4AFF35F}</ProjectGuid>
+     <RootNamespace>foobar2000_sdk_helpers</RootNamespace>
++    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <ProjectName>foobar2000_SDK_helpers</ProjectName>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+@@ -93,6 +95,7 @@
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
++    <Import Project="..\..\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" />
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+@@ -119,8 +122,37 @@
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+   <PropertyGroup Label="UserMacros" />
+-  <PropertyGroup>
+-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+     <ClCompile>
+@@ -135,14 +167,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -165,14 +197,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -195,14 +227,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -225,14 +257,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -252,11 +284,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -276,11 +309,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -300,11 +334,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -324,11 +359,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -429,7 +465,7 @@
+     <ClCompile Include="packet_decoder_mp3_common.cpp" />
+     <ClCompile Include="readers.cpp" />
+     <ClCompile Include="seekabilizer.cpp" />
+-    <ClCompile Include="StdAfx.cpp">
++    <ClCompile Include="stdafx.cpp">
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+@@ -574,7 +610,7 @@
+     <ClInclude Include="readWriteLock.h" />
+     <ClInclude Include="rethrow.h" />
+     <ClInclude Include="seekabilizer.h" />
+-    <ClInclude Include="StdAfx.h" />
++    <ClInclude Include="stdafx.h" />
+     <ClInclude Include="stream_buffer_helper.h" />
+     <ClInclude Include="tag_write_callback_impl.h" />
+     <ClInclude Include="text_file_loader.h" />
+@@ -595,4 +631,10 @@
+   </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+   <ImportGroup Label="ExtensionTargets" />
++  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
++    <PropertyGroup>
++      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
++    </PropertyGroup>
++    <Error Condition="!Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\wtl.10.0.10320\build\native\wtl.targets'))" />
++  </Target>
+ </Project>
+\ No newline at end of file
+diff --git a/libppui/libPPUI.vcxproj b/libppui/libPPUI.vcxproj
+index 0420ed3..57a975f 100644
+--- a/libppui/libPPUI.vcxproj
++++ b/libppui/libPPUI.vcxproj
+@@ -39,6 +39,8 @@
+     <ProjectGuid>{7729EB82-4069-4414-964B-AD399091A03F}</ProjectGuid>
+     <Keyword>Win32Proj</Keyword>
+     <RootNamespace>libPPUI</RootNamespace>
++    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <ProjectName>libPPUI</ProjectName>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+@@ -95,6 +97,7 @@
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
++    <Import Project="..\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\wtl.10.0.10320\build\native\wtl.targets')" />
+   </ImportGroup>
+   <ImportGroup Label="Shared">
+   </ImportGroup>
+@@ -125,27 +128,43 @@
+   <PropertyGroup Label="UserMacros" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <LinkIncremental>true</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+     <LinkIncremental>true</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+     <LinkIncremental>true</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
+     <LinkIncremental>true</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+     <LinkIncremental>false</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+     <LinkIncremental>false</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+     <LinkIncremental>false</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
+     <LinkIncremental>false</LinkIncremental>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <ClCompile>
+@@ -153,7 +172,7 @@
+       <WarningLevel>Level3</WarningLevel>
+       <Optimization>Disabled</Optimization>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+@@ -161,6 +180,7 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -175,10 +195,11 @@
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -193,9 +214,10 @@
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -210,9 +232,10 @@
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -227,16 +250,16 @@
+       <FunctionLevelLinking>true</FunctionLevelLinking>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <FloatingPointModel>Fast</FloatingPointModel>
+       <OmitFramePointers>true</OmitFramePointers>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -256,11 +279,11 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -280,11 +303,11 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -304,11 +327,11 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <Link>
+       <SubSystem>Windows</SubSystem>
+@@ -425,10 +448,12 @@
+     <ClCompile Include="win32_utility.cpp" />
+     <ClCompile Include="wtl-pp.cpp" />
+   </ItemGroup>
+-  <ItemGroup>
+-    <Text Include="libPPUI-license.txt" />
+-    <Text Include="libPPUI-readme.txt" />
+-  </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+   <ImportGroup Label="ExtensionTargets" />
++  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
++    <PropertyGroup>
++      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
++    </PropertyGroup>
++    <Error Condition="!Exists('..\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\wtl.10.0.10320\build\native\wtl.targets'))" />
++  </Target>
+ </Project>
+\ No newline at end of file
+diff --git a/pfc/pfc.vcxproj b/pfc/pfc.vcxproj
+index 082eab7..cc4b7b4 100644
+--- a/pfc/pfc.vcxproj
++++ b/pfc/pfc.vcxproj
+@@ -1,14 +1,6 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+ <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+-    <ProjectConfiguration Include="Debug FB2K|ARM64">
+-      <Configuration>Debug FB2K</Configuration>
+-      <Platform>ARM64</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Debug FB2K|ARM64EC">
+-      <Configuration>Debug FB2K</Configuration>
+-      <Platform>ARM64EC</Platform>
+-    </ProjectConfiguration>
+     <ProjectConfiguration Include="Debug|ARM64">
+       <Configuration>Debug</Configuration>
+       <Platform>ARM64</Platform>
+@@ -25,30 +17,6 @@
+       <Configuration>Debug</Configuration>
+       <Platform>x64</Platform>
+     </ProjectConfiguration>
+-    <ProjectConfiguration Include="Debug FB2K|Win32">
+-      <Configuration>Debug FB2K</Configuration>
+-      <Platform>Win32</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Debug FB2K|x64">
+-      <Configuration>Debug FB2K</Configuration>
+-      <Platform>x64</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release FB2K|ARM64">
+-      <Configuration>Release FB2K</Configuration>
+-      <Platform>ARM64</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release FB2K|ARM64EC">
+-      <Configuration>Release FB2K</Configuration>
+-      <Platform>ARM64EC</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release FB2K|Win32">
+-      <Configuration>Release FB2K</Configuration>
+-      <Platform>Win32</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release FB2K|x64">
+-      <Configuration>Release FB2K</Configuration>
+-      <Platform>x64</Platform>
+-    </ProjectConfiguration>
+     <ProjectConfiguration Include="Release|ARM64">
+       <Configuration>Release</Configuration>
+       <Platform>ARM64</Platform>
+@@ -70,6 +38,7 @@
+     <ProjectGuid>{EBFFFB4E-261D-44D3-B89C-957B31A0BF9C}</ProjectGuid>
+     <RootNamespace>pfc</RootNamespace>
+     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <ProjectName>PFC</ProjectName>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+@@ -78,12 +47,6 @@
+     <PlatformToolset>v143</PlatformToolset>
+     <CharacterSet>Unicode</CharacterSet>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|Win32'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
+@@ -102,34 +65,11 @@
+     <PlatformToolset>v143</PlatformToolset>
+     <CharacterSet>Unicode</CharacterSet>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <PlatformToolset>v143</PlatformToolset>
+     <CharacterSet>Unicode</CharacterSet>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <PlatformToolset>v143</PlatformToolset>
+@@ -145,30 +85,12 @@
+     <PlatformToolset>v143</PlatformToolset>
+     <CharacterSet>Unicode</CharacterSet>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'" Label="Configuration">
+-    <ConfigurationType>StaticLibrary</ConfigurationType>
+-    <PlatformToolset>v143</PlatformToolset>
+-    <CharacterSet>Unicode</CharacterSet>
+-  </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|Win32'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+@@ -178,21 +100,9 @@
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+@@ -202,18 +112,38 @@
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'" Label="PropertySheets">
+-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+-  </ImportGroup>
+   <PropertyGroup Label="UserMacros" />
+-  <PropertyGroup>
+-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <ClCompile>
+@@ -231,31 +161,7 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">
+-    <ClCompile>
+-      <Optimization>Disabled</Optimization>
+-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <FloatingPointModel>Fast</FloatingPointModel>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -280,6 +186,7 @@
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -304,6 +211,7 @@
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -328,78 +236,7 @@
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">
+-    <ClCompile>
+-      <Optimization>Disabled</Optimization>
+-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">
+-    <ClCompile>
+-      <Optimization>Disabled</Optimization>
+-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">
+-    <ClCompile>
+-      <Optimization>Disabled</Optimization>
+-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -421,42 +258,13 @@
+       <WarningLevel>Level3</WarningLevel>
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <IntrinsicFunctions>true</IntrinsicFunctions>
+-      <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|Win32'">
+-    <ClCompile>
+-      <Optimization>MaxSpeed</Optimization>
+-      <StringPooling>true</StringPooling>
+-      <BufferSecurityCheck>false</BufferSecurityCheck>
+-      <FloatingPointModel>Fast</FloatingPointModel>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -479,14 +287,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <IntrinsicFunctions>true</IntrinsicFunctions>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -509,14 +316,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <IntrinsicFunctions>true</IntrinsicFunctions>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -539,101 +345,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <IntrinsicFunctions>true</IntrinsicFunctions>
+-      <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">
+-    <ClCompile>
+-      <Optimization>MaxSpeed</Optimization>
+-      <StringPooling>true</StringPooling>
+-      <BufferSecurityCheck>false</BufferSecurityCheck>
+-      <FloatingPointModel>Fast</FloatingPointModel>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">
+-    <ClCompile>
+-      <Optimization>MaxSpeed</Optimization>
+-      <StringPooling>true</StringPooling>
+-      <BufferSecurityCheck>false</BufferSecurityCheck>
+-      <FloatingPointModel>Fast</FloatingPointModel>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
+-    </ClCompile>
+-    <ResourceCompile>
+-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <Culture>0x0409</Culture>
+-    </ResourceCompile>
+-    <Lib>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-    </Lib>
+-  </ItemDefinitionGroup>
+-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">
+-    <ClCompile>
+-      <Optimization>MaxSpeed</Optimization>
+-      <StringPooling>true</StringPooling>
+-      <BufferSecurityCheck>false</BufferSecurityCheck>
+-      <FloatingPointModel>Fast</FloatingPointModel>
+-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+-      <PrecompiledHeader>Use</PrecompiledHeader>
+-      <PrecompiledHeaderFile>pfc-lite.h</PrecompiledHeaderFile>
+-      <WarningLevel>Level3</WarningLevel>
+-      <SuppressStartupBanner>true</SuppressStartupBanner>
+-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -740,35 +458,19 @@
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Disabled</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">MaxSpeed</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+     </ClCompile>
+     <ClCompile Include="charDownConvert.cpp" />
+     <ClCompile Include="cpuid.cpp" />
+@@ -779,98 +481,58 @@
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Disabled</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">MaxSpeed</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+     </ClCompile>
+     <ClCompile Include="nix-objects.cpp">
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|Win32'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">true</ExcludedFromBuild>
+       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
+     </ClCompile>
+     <ClCompile Include="other.cpp">
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Disabled</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">MaxSpeed</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+     </ClCompile>
+     <ClCompile Include="pathUtils.cpp" />
+     <ClCompile Include="pfc-fb2k-hooks.cpp">
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|Win32'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">true</ExcludedFromBuild>
+-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
+     </ClCompile>
+     <ClCompile Include="printf.cpp" />
+     <ClCompile Include="selftest.cpp" />
+@@ -879,86 +541,46 @@
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Disabled</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">MaxSpeed</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+     </ClCompile>
+     <ClCompile Include="splitString2.cpp" />
+     <ClCompile Include="stdafx.cpp">
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Disabled</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">Create</PrecompiledHeader>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Create</PrecompiledHeader>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">MaxSpeed</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release FB2K|Win32'">Create</PrecompiledHeader>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
+       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">Create</PrecompiledHeader>
+-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">Create</PrecompiledHeader>
+     </ClCompile>
+     <ClCompile Include="string-compare.cpp" />
+     <ClCompile Include="string-conv-lite.cpp" />
+@@ -972,44 +594,23 @@
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">Disabled</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">Disabled</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|Win32'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|x64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64'">EnableFastChecks</BasicRuntimeChecks>
+-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug FB2K|ARM64EC'">EnableFastChecks</BasicRuntimeChecks>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MaxSpeed</Optimization>
+       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">MaxSpeed</Optimization>
+-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">MaxSpeed</Optimization>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release FB2K|ARM64EC'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+     </ClCompile>
+     <ClCompile Include="wildcard.cpp" />
+     <ClCompile Include="win-objects.cpp" />
+   </ItemGroup>
+-  <ItemGroup>
+-    <None Include="pfc-license.txt" />
+-    <None Include="pfc-readme.txt" />
+-  </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+-  <ImportGroup Label="ExtensionTargets">
+-  </ImportGroup>
++  <ImportGroup Label="ExtensionTargets" />
+ </Project>
+\ No newline at end of file

@@ -155,6 +155,7 @@ CMakeLists.txt
 !/external/eel2/ns-eel.h
 !/external/eel2/ns-eel-int.h
 !/external/eel2/ns-eel-addfuncs.h
+!/external/eel2/y.tab.c
 !/external/eel2/y.tab.h
 !/external/eel2/denormal.h
 !/external/eel2/glue_x86.h
