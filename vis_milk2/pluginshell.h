@@ -143,6 +143,13 @@ class CPluginShell
     virtual void PopupMessage(int message_id, int title_id, bool dump = false) = 0;
     virtual void ConsoleMessage(int message_id, int title_id) = 0;
 
+    // FONTS & TEXT
+    // ------------------------------------------------------------
+  public:
+    IUnknown* GetFont(eFontIndex idx); // returns a D3DX font handle for drawing text; see shell_defines.h for the definition of the 'eFontIndex' enum.
+    int GetFontHeight(eFontIndex idx); // returns the height of the font, in pixels; see shell_defines.h for the definition of the 'eFontIndex' enum.
+    //CTextManager m_text;
+
     // MISCELLANEOUS
     // ------------------------------------------------------------
   protected:

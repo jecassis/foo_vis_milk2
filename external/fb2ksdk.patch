@@ -619,6 +619,82 @@ index 2e38ddd..1c9c3c0 100644
 +  </Target>
  </Project>
 \ No newline at end of file
+diff --git a/foobar2000/shared/shared.vcxproj b/foobar2000/shared/shared.vcxproj
+index db8b677..c323c06 100644
+--- a/foobar2000/shared/shared.vcxproj
++++ b/foobar2000/shared/shared.vcxproj
+@@ -114,14 +114,26 @@
+   <PropertyGroup Label="UserMacros" />
+   <PropertyGroup>
+     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</LinkIncremental>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</LinkIncremental>
+-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</LinkIncremental>
+@@ -240,7 +252,6 @@
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -274,7 +285,6 @@
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -307,7 +317,6 @@
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -340,7 +349,6 @@
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -415,6 +423,5 @@
+     </ProjectReference>
+   </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+-  <ImportGroup Label="ExtensionTargets">
+-  </ImportGroup>
++  <ImportGroup Label="ExtensionTargets" />
+ </Project>
+\ No newline at end of file
 diff --git a/libppui/libPPUI.vcxproj b/libppui/libPPUI.vcxproj
 index 0420ed3..57a975f 100644
 --- a/libppui/libPPUI.vcxproj

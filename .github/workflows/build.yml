@@ -42,7 +42,7 @@ jobs:
             ${{ github.workspace }}\external\foobar2000
             ${{ github.workspace }}\external\libppui
             ${{ github.workspace }}\external\pfc
-          key: ${{ runner.os }}-foobar2000-${{ env.SDK_SHA256 }}
+          key: ${{ runner.os }}-foobar2000_${{ env.SDK_SHA256 }}-${{ hashFiles('**/fb2ksdk.patch') }}
       - name: Restore cached NuGet packages (DirectXTK and WTL)
         if: steps.nuget.outputs.cache-hit != 'true'
         run: nuget restore foo_vis_milk2.sln
@@ -62,11 +62,11 @@ jobs:
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client
           Set-Location -Path "$(Get-Location)\external"
           git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn "$(Get-Location)\fb2ksdk.patch"
-      - name: Prepare build
-        run: |
-          Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
+      #- name: Prepare build
+      #  run: |
+      #    Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
       - name: Build ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }} # https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022
-        run: msbuild.exe "${{ github.workspace }}\foo_vis_milk2_.sln" --% -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} #-verbosity:diagnostic
+        run: msbuild.exe "${{ github.workspace }}\foo_vis_milk2.sln" --% -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} #-verbosity:diagnostic
       - name: Validate ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
         # Notes: FILEVERSION appears in File Properties Details as `File version` and Get-Item as `FileVersionRaw`.
         #        PRODUCTVERSION does not appear in File Properties Details and apears in Get-Item as `ProductVersionRaw`.
