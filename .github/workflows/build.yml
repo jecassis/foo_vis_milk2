@@ -80,7 +80,7 @@ jobs:
         #        ProductVersion appears in File Properties Details as `Product version` and Get-Item as `ProductVersion`.
         id: validate
         run: |
-          Write-Output "::set-output name=bin::('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}')"
+          ('binpath=${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}') | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host '${{ matrix.platform }} ${{ matrix.configuration }} foo_vis_milk2.dll'
           Write-Host -NoNewline 'File Size: '
           Write-Host ((Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
@@ -101,8 +101,8 @@ jobs:
         with:
           name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}
           path: |
-            ${{ steps.validate.outputs.bin }}\foo_vis_milk2.dll
-            ${{ steps.validate.outputs.bin }}\foo_vis_milk2.pdb
+            ${{ steps.validate.outputs.binpath }}\foo_vis_milk2.dll
+            ${{ steps.validate.outputs.binpath }}\foo_vis_milk2.pdb
   package:
     name: Package foobar2000 MilkDrop 2 component
     needs: build
