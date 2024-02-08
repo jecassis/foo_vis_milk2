@@ -117,7 +117,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     LRESULT OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam);
     PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p"), get_wnd()); return m_szWnd; }
 
-    milk2_config m_config;
+    milk2_config m_config; //ui_element_config::ptr m_config;
     visualisation_stream_v3::ptr m_vis_stream;
 
     ULONGLONG m_last_refresh;
@@ -178,7 +178,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // MilkDrop status
     bool m_milk2;
-    WCHAR m_szWnd[19];
+    WCHAR m_szWnd[19]; // 19 = 2 ("0x") + 16 (64 / 4 -> 64-bit address in hexadecimal) + 1 ('\0')
 
     // Device resources
     std::unique_ptr<DXContext> g_vis;

@@ -1,3 +1,363 @@
+diff --git a/foobar2000/component_client/foobar2000_component_client.vcxproj b/foobar2000/component_client/foobar2000_component_client.vcxproj
+index 51a2fdb..71a9de7 100644
+--- a/foobar2000/component_client/foobar2000_component_client.vcxproj
++++ b/foobar2000/component_client/foobar2000_component_client.vcxproj
+@@ -121,10 +121,34 @@
+   <PropertyGroup Label="UserMacros" />
+   <PropertyGroup>
+     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</OutDir>
+-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</OutDir>
+-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <ClCompile>
+@@ -137,9 +161,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -160,9 +185,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -183,9 +209,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -206,9 +233,10 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -229,13 +257,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -256,13 +284,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -283,13 +311,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -310,13 +338,13 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -343,6 +371,5 @@
+     </ClCompile>
+   </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+-  <ImportGroup Label="ExtensionTargets">
+-  </ImportGroup>
++  <ImportGroup Label="ExtensionTargets" />
+ </Project>
+\ No newline at end of file
+diff --git a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
+index 2e38ddd..6820f3d 100644
+--- a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
++++ b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
+@@ -37,6 +37,7 @@
+   <PropertyGroup Label="Globals">
+     <ProjectGuid>{EE47764E-A202-4F85-A767-ABDAB4AFF35F}</ProjectGuid>
+     <RootNamespace>foobar2000_sdk_helpers</RootNamespace>
++    <ProjectName>foobar2000_SDK_helpers</ProjectName>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+@@ -93,6 +94,7 @@
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
++    <Import Project="..\..\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" />
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+@@ -119,8 +121,37 @@
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+   <PropertyGroup Label="UserMacros" />
+-  <PropertyGroup>
+-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+     <ClCompile>
+@@ -135,14 +166,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -165,14 +196,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -195,14 +226,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -225,14 +256,14 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -252,11 +283,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -276,11 +308,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -300,11 +333,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -324,11 +358,12 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+-      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -595,4 +630,10 @@
+   </ItemGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+   <ImportGroup Label="ExtensionTargets" />
++  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
++    <PropertyGroup>
++      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
++    </PropertyGroup>
++    <Error Condition="!Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\wtl.10.0.10320\build\native\wtl.targets'))" />
++  </Target>
+ </Project>
+\ No newline at end of file
 diff --git a/foobar2000/sdk/foobar2000-versions.h b/foobar2000/sdk/foobar2000-versions.h
 index 5f7c3c2..4e96fab 100644
 --- a/foobar2000/sdk/foobar2000-versions.h
@@ -50,21 +410,20 @@ index 7aab1d8..35c463f 100644
  #define FOOBAR2000_HAVE_KEYBOARD_SHORTCUTS
  #endif
 diff --git a/foobar2000/sdk/foobar2000_SDK.vcxproj b/foobar2000/sdk/foobar2000_SDK.vcxproj
-index fa8b8dc..55abebc 100644
+index fa8b8dc..de3c4d8 100644
 --- a/foobar2000/sdk/foobar2000_SDK.vcxproj
 +++ b/foobar2000/sdk/foobar2000_SDK.vcxproj
-@@ -36,7 +36,9 @@
+@@ -36,7 +36,8 @@
    </ItemGroup>
    <PropertyGroup Label="Globals">
      <ProjectGuid>{E8091321-D79D-4575-86EF-064EA1A4A20D}</ProjectGuid>
 -    <RootNamespace>foobar2000_SDK</RootNamespace>
 +    <RootNamespace>foobar2000_sdk</RootNamespace>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
 +    <ProjectName>foobar2000_SDK</ProjectName>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-@@ -122,6 +124,38 @@
+@@ -122,6 +123,38 @@
    <PropertyGroup>
      <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
    </PropertyGroup>
@@ -103,7 +462,7 @@ index fa8b8dc..55abebc 100644
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
      <ClCompile>
        <Optimization>Disabled</Optimization>
-@@ -134,9 +168,10 @@
+@@ -134,9 +167,10 @@
        <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -115,52 +474,10 @@ index fa8b8dc..55abebc 100644
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -158,9 +193,10 @@
+@@ -158,9 +192,10 @@
        <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
--      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -182,9 +218,10 @@
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
--      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -206,9 +243,10 @@
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
--      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -231,15 +269,15 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <IntrinsicFunctions>true</IntrinsicFunctions>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
@@ -168,8 +485,32 @@ index fa8b8dc..55abebc 100644
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -262,15 +300,15 @@
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -182,9 +217,10 @@
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -206,9 +242,10 @@
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -231,15 +268,15 @@
        <SuppressStartupBanner>true</SuppressStartupBanner>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -187,7 +528,7 @@ index fa8b8dc..55abebc 100644
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -293,15 +331,15 @@
+@@ -262,15 +299,15 @@
        <SuppressStartupBanner>true</SuppressStartupBanner>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -198,14 +539,14 @@ index fa8b8dc..55abebc 100644
        <IntrinsicFunctions>true</IntrinsicFunctions>
        <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
        <LanguageStandard>stdcpp17</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -324,15 +362,15 @@
+@@ -293,15 +330,15 @@
        <SuppressStartupBanner>true</SuppressStartupBanner>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -216,14 +557,32 @@ index fa8b8dc..55abebc 100644
        <IntrinsicFunctions>true</IntrinsicFunctions>
        <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
        <LanguageStandard>stdcpp17</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -585,6 +623,5 @@
+@@ -324,15 +361,15 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
+       <ConformanceMode>true</ConformanceMode>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -585,6 +622,5 @@
      <ClCompile Include="utility.cpp" />
    </ItemGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -232,398 +591,19 @@ index fa8b8dc..55abebc 100644
 +  <ImportGroup Label="ExtensionTargets" />
  </Project>
 \ No newline at end of file
-diff --git a/foobar2000/component_client/foobar2000_component_client.vcxproj b/foobar2000/component_client/foobar2000_component_client.vcxproj
-index 51a2fdb..78c9276 100644
---- a/foobar2000/component_client/foobar2000_component_client.vcxproj
-+++ b/foobar2000/component_client/foobar2000_component_client.vcxproj
-@@ -37,6 +37,7 @@
+diff --git a/foobar2000/shared/shared.vcxproj b/foobar2000/shared/shared.vcxproj
+index db8b677..c1eb790 100644
+--- a/foobar2000/shared/shared.vcxproj
++++ b/foobar2000/shared/shared.vcxproj
+@@ -37,7 +37,6 @@
    <PropertyGroup Label="Globals">
-     <ProjectGuid>{71AD2674-065B-48F5-B8B0-E1F9D3892081}</ProjectGuid>
-     <RootNamespace>foobar2000_component_client</RootNamespace>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+     <ProjectGuid>{054C606B-17BF-4540-AC4E-A9A7243628B8}</ProjectGuid>
+     <RootNamespace>shared</RootNamespace>
+-    <Keyword>Win32Proj</Keyword>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-@@ -121,10 +122,34 @@
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
-     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
--    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</OutDir>
--    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
--    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</OutDir>
--    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
-+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-   </PropertyGroup>
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <ClCompile>
-@@ -137,9 +162,10 @@
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -160,9 +186,10 @@
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -183,9 +210,10 @@
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -206,9 +234,10 @@
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -229,13 +258,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -256,13 +285,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -283,13 +312,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -310,13 +339,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
--      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -343,6 +372,5 @@
-     </ClCompile>
-   </ItemGroup>
-   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
--  <ImportGroup Label="ExtensionTargets">
--  </ImportGroup>
-+  <ImportGroup Label="ExtensionTargets" />
- </Project>
-\ No newline at end of file
-diff --git a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
-index 2e38ddd..1c9c3c0 100644
---- a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
-+++ b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
-@@ -37,6 +37,8 @@
-   <PropertyGroup Label="Globals">
-     <ProjectGuid>{EE47764E-A202-4F85-A767-ABDAB4AFF35F}</ProjectGuid>
-     <RootNamespace>foobar2000_sdk_helpers</RootNamespace>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-+    <ProjectName>foobar2000_SDK_helpers</ProjectName>
-   </PropertyGroup>
-   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-@@ -93,6 +95,7 @@
-   </PropertyGroup>
-   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-   <ImportGroup Label="ExtensionSettings">
-+    <Import Project="..\..\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" />
-   </ImportGroup>
-   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-@@ -119,8 +122,37 @@
-     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
--  <PropertyGroup>
--    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-+  </PropertyGroup>
-+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-   </PropertyGroup>
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-     <ClCompile>
-@@ -135,14 +167,14 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -165,14 +197,14 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -195,14 +227,14 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -225,14 +257,14 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -252,11 +284,12 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -276,11 +309,12 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -300,11 +334,12 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -324,11 +359,12 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
--      <AdditionalIncludeDirectories>../..;..</AdditionalIncludeDirectories>
-+      <AdditionalIncludeDirectories>..\;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -429,7 +465,7 @@
-     <ClCompile Include="packet_decoder_mp3_common.cpp" />
-     <ClCompile Include="readers.cpp" />
-     <ClCompile Include="seekabilizer.cpp" />
--    <ClCompile Include="StdAfx.cpp">
-+    <ClCompile Include="stdafx.cpp">
-       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
-@@ -574,7 +610,7 @@
-     <ClInclude Include="readWriteLock.h" />
-     <ClInclude Include="rethrow.h" />
-     <ClInclude Include="seekabilizer.h" />
--    <ClInclude Include="StdAfx.h" />
-+    <ClInclude Include="stdafx.h" />
-     <ClInclude Include="stream_buffer_helper.h" />
-     <ClInclude Include="tag_write_callback_impl.h" />
-     <ClInclude Include="text_file_loader.h" />
-@@ -595,4 +631,10 @@
-   </ItemGroup>
-   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-   <ImportGroup Label="ExtensionTargets" />
-+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-+    <PropertyGroup>
-+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-+    </PropertyGroup>
-+    <Error Condition="!Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\wtl.10.0.10320\build\native\wtl.targets'))" />
-+  </Target>
- </Project>
-\ No newline at end of file
-diff --git a/foobar2000/shared/shared.vcxproj b/foobar2000/shared/shared.vcxproj
-index db8b677..c323c06 100644
---- a/foobar2000/shared/shared.vcxproj
-+++ b/foobar2000/shared/shared.vcxproj
-@@ -114,14 +114,26 @@
+@@ -114,14 +113,26 @@
    <PropertyGroup Label="UserMacros" />
    <PropertyGroup>
      <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
@@ -654,7 +634,7 @@ index db8b677..c323c06 100644
      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</LinkIncremental>
-@@ -240,7 +252,6 @@
+@@ -240,7 +251,6 @@
        <WarningLevel>Level3</WarningLevel>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -662,7 +642,7 @@ index db8b677..c323c06 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <OmitFramePointers>true</OmitFramePointers>
        <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -274,7 +285,6 @@
+@@ -274,7 +284,6 @@
        <WarningLevel>Level3</WarningLevel>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -670,7 +650,7 @@ index db8b677..c323c06 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <OmitFramePointers>true</OmitFramePointers>
        <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -307,7 +317,6 @@
+@@ -307,7 +316,6 @@
        <WarningLevel>Level3</WarningLevel>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -678,7 +658,7 @@ index db8b677..c323c06 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <OmitFramePointers>true</OmitFramePointers>
        <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -340,7 +349,6 @@
+@@ -340,7 +348,6 @@
        <WarningLevel>Level3</WarningLevel>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -686,7 +666,7 @@ index db8b677..c323c06 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <OmitFramePointers>true</OmitFramePointers>
        <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SHARED_EXPORTS;_WINDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -415,6 +423,5 @@
+@@ -415,6 +422,5 @@
      </ProjectReference>
    </ItemGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -696,19 +676,18 @@ index db8b677..c323c06 100644
  </Project>
 \ No newline at end of file
 diff --git a/libppui/libPPUI.vcxproj b/libppui/libPPUI.vcxproj
-index 0420ed3..57a975f 100644
+index 0420ed3..9e9cc56 100644
 --- a/libppui/libPPUI.vcxproj
 +++ b/libppui/libPPUI.vcxproj
-@@ -39,6 +39,8 @@
+@@ -39,6 +39,7 @@
      <ProjectGuid>{7729EB82-4069-4414-964B-AD399091A03F}</ProjectGuid>
      <Keyword>Win32Proj</Keyword>
      <RootNamespace>libPPUI</RootNamespace>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
 +    <ProjectName>libPPUI</ProjectName>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-@@ -95,6 +97,7 @@
+@@ -95,6 +96,7 @@
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
@@ -716,7 +695,7 @@ index 0420ed3..57a975f 100644
    </ImportGroup>
    <ImportGroup Label="Shared">
    </ImportGroup>
-@@ -125,27 +128,43 @@
+@@ -125,27 +127,43 @@
    <PropertyGroup Label="UserMacros" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
      <LinkIncremental>true</LinkIncremental>
@@ -760,7 +739,7 @@ index 0420ed3..57a975f 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
      <ClCompile>
-@@ -153,7 +172,7 @@
+@@ -153,7 +171,7 @@
        <WarningLevel>Level3</WarningLevel>
        <Optimization>Disabled</Optimization>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -769,7 +748,7 @@ index 0420ed3..57a975f 100644
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-@@ -161,6 +180,7 @@
+@@ -161,6 +179,7 @@
        <FloatingPointModel>Fast</FloatingPointModel>
        <LanguageStandard>stdcpp17</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
@@ -777,7 +756,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -175,10 +195,11 @@
+@@ -175,10 +194,11 @@
        <BufferSecurityCheck>false</BufferSecurityCheck>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -790,7 +769,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -193,9 +214,10 @@
+@@ -193,9 +213,10 @@
        <BufferSecurityCheck>false</BufferSecurityCheck>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -802,7 +781,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -210,9 +232,10 @@
+@@ -210,9 +231,10 @@
        <BufferSecurityCheck>false</BufferSecurityCheck>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -814,7 +793,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -227,16 +250,16 @@
+@@ -227,16 +249,16 @@
        <FunctionLevelLinking>true</FunctionLevelLinking>
        <IntrinsicFunctions>true</IntrinsicFunctions>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -833,7 +812,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -256,11 +279,11 @@
+@@ -256,11 +278,11 @@
        <FloatingPointModel>Fast</FloatingPointModel>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -847,7 +826,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -280,11 +303,11 @@
+@@ -280,11 +302,11 @@
        <FloatingPointModel>Fast</FloatingPointModel>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -861,7 +840,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -304,11 +327,11 @@
+@@ -304,11 +326,11 @@
        <FloatingPointModel>Fast</FloatingPointModel>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -875,7 +854,7 @@ index 0420ed3..57a975f 100644
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-@@ -425,10 +448,12 @@
+@@ -425,10 +447,12 @@
      <ClCompile Include="win32_utility.cpp" />
      <ClCompile Include="wtl-pp.cpp" />
    </ItemGroup>
@@ -893,8 +872,22 @@ index 0420ed3..57a975f 100644
 +  </Target>
  </Project>
 \ No newline at end of file
+diff --git a/libppui/libPPUI.vcxproj.filters b/libppui/libPPUI.vcxproj.filters
+index 3128d60..493b43f 100644
+--- a/libppui/libPPUI.vcxproj.filters
++++ b/libppui/libPPUI.vcxproj.filters
+@@ -299,8 +299,4 @@
+       <Filter>Source Files</Filter>
+     </ClCompile>
+   </ItemGroup>
+-  <ItemGroup>
+-    <Text Include="libPPUI-license.txt" />
+-    <Text Include="libPPUI-readme.txt" />
+-  </ItemGroup>
+ </Project>
+\ No newline at end of file
 diff --git a/pfc/pfc.vcxproj b/pfc/pfc.vcxproj
-index 082eab7..cc4b7b4 100644
+index 082eab7..49060cf 100644
 --- a/pfc/pfc.vcxproj
 +++ b/pfc/pfc.vcxproj
 @@ -1,14 +1,6 @@
@@ -943,15 +936,16 @@ index 082eab7..cc4b7b4 100644
      <ProjectConfiguration Include="Release|ARM64">
        <Configuration>Release</Configuration>
        <Platform>ARM64</Platform>
-@@ -70,6 +38,7 @@
+@@ -69,7 +37,7 @@
+   <PropertyGroup Label="Globals">
      <ProjectGuid>{EBFFFB4E-261D-44D3-B89C-957B31A0BF9C}</ProjectGuid>
      <RootNamespace>pfc</RootNamespace>
-     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
 +    <ProjectName>PFC</ProjectName>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-@@ -78,12 +47,6 @@
+@@ -78,12 +46,6 @@
      <PlatformToolset>v143</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
@@ -964,7 +958,7 @@ index 082eab7..cc4b7b4 100644
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
      <WholeProgramOptimization>true</WholeProgramOptimization>
-@@ -102,34 +65,11 @@
+@@ -102,34 +64,11 @@
      <PlatformToolset>v143</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
@@ -999,7 +993,7 @@ index 082eab7..cc4b7b4 100644
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
      <PlatformToolset>v143</PlatformToolset>
-@@ -145,30 +85,12 @@
+@@ -145,30 +84,12 @@
      <PlatformToolset>v143</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
@@ -1030,7 +1024,7 @@ index 082eab7..cc4b7b4 100644
    <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
    </ImportGroup>
-@@ -178,21 +100,9 @@
+@@ -178,21 +99,9 @@
    <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
    </ImportGroup>
@@ -1052,7 +1046,7 @@ index 082eab7..cc4b7b4 100644
    <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
    </ImportGroup>
-@@ -202,18 +112,38 @@
+@@ -202,18 +111,38 @@
    <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="PropertySheets">
      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
    </ImportGroup>
@@ -1102,7 +1096,7 @@ index 082eab7..cc4b7b4 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
      <ClCompile>
-@@ -231,31 +161,7 @@
+@@ -231,31 +160,7 @@
        <FloatingPointModel>Fast</FloatingPointModel>
        <LanguageStandard>stdcpp17</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
@@ -1135,7 +1129,7 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -280,6 +186,7 @@
+@@ -280,6 +185,7 @@
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
        <LanguageStandard>stdcpp17</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
@@ -1143,7 +1137,7 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -304,6 +211,7 @@
+@@ -304,6 +210,7 @@
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
        <LanguageStandard>stdcpp17</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
@@ -1151,7 +1145,7 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -328,78 +236,7 @@
+@@ -328,78 +235,7 @@
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
        <LanguageStandard>stdcpp17</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
@@ -1231,18 +1225,18 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -421,42 +258,13 @@
+@@ -421,7 +257,6 @@
        <WarningLevel>Level3</WarningLevel>
        <SuppressStartupBanner>true</SuppressStartupBanner>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
--      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
--      <MultiProcessorCompilation>true</MultiProcessorCompilation>
--      <OmitFramePointers>true</OmitFramePointers>
--      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
--      <LanguageStandard>stdcpp17</LanguageStandard>
--      <IntrinsicFunctions>true</IntrinsicFunctions>
--      <ConformanceMode>true</ConformanceMode>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+@@ -429,34 +264,7 @@
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <ConformanceMode>true</ConformanceMode>
 -    </ClCompile>
 -    <ResourceCompile>
 -      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1265,60 +1259,60 @@ index 082eab7..cc4b7b4 100644
 -      <SuppressStartupBanner>true</SuppressStartupBanner>
 -      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-       <ConformanceMode>true</ConformanceMode>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -479,14 +287,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
--      <IntrinsicFunctions>true</IntrinsicFunctions>
-       <ConformanceMode>true</ConformanceMode>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -509,14 +316,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
--      <IntrinsicFunctions>true</IntrinsicFunctions>
-       <ConformanceMode>true</ConformanceMode>
-+      <LanguageStandard_C>stdc17</LanguageStandard_C>
-     </ClCompile>
-     <ResourceCompile>
-       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -539,101 +345,13 @@
-       <SuppressStartupBanner>true</SuppressStartupBanner>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
--      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
 -      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
 -      <MultiProcessorCompilation>true</MultiProcessorCompilation>
 -      <OmitFramePointers>true</OmitFramePointers>
 -      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 -      <LanguageStandard>stdcpp17</LanguageStandard>
--      <IntrinsicFunctions>true</IntrinsicFunctions>
 -      <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -479,7 +287,6 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+@@ -487,6 +294,7 @@
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -509,7 +317,6 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+@@ -517,6 +324,7 @@
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <ConformanceMode>true</ConformanceMode>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
+     </ClCompile>
+     <ResourceCompile>
+       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+@@ -539,7 +347,6 @@
+       <SuppressStartupBanner>true</SuppressStartupBanner>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+-      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
+       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <OmitFramePointers>true</OmitFramePointers>
+@@ -547,93 +354,7 @@
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <ConformanceMode>true</ConformanceMode>
 -    </ClCompile>
 -    <ResourceCompile>
 -      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1400,17 +1394,17 @@ index 082eab7..cc4b7b4 100644
 -      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
 -      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
-       <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-       <OmitFramePointers>true</OmitFramePointers>
-       <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-       <ConformanceMode>true</ConformanceMode>
+-      <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
+-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+-      <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
+-      <ConformanceMode>true</ConformanceMode>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-@@ -740,35 +458,19 @@
+@@ -740,35 +461,19 @@
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
@@ -1446,7 +1440,7 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ClCompile Include="charDownConvert.cpp" />
      <ClCompile Include="cpuid.cpp" />
-@@ -779,98 +481,58 @@
+@@ -779,98 +484,58 @@
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
@@ -1557,7 +1551,7 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ClCompile Include="printf.cpp" />
      <ClCompile Include="selftest.cpp" />
-@@ -879,86 +541,46 @@
+@@ -879,86 +544,46 @@
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
@@ -1644,7 +1638,7 @@ index 082eab7..cc4b7b4 100644
      </ClCompile>
      <ClCompile Include="string-compare.cpp" />
      <ClCompile Include="string-conv-lite.cpp" />
-@@ -972,44 +594,23 @@
+@@ -972,44 +597,23 @@
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Disabled</Optimization>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">Disabled</Optimization>
@@ -1691,3 +1685,25 @@ index 082eab7..cc4b7b4 100644
 +  <ImportGroup Label="ExtensionTargets" />
  </Project>
 \ No newline at end of file
+diff --git a/pfc/pfc.vcxproj.filters b/pfc/pfc.vcxproj.filters
+index d1a820d..474bd91 100644
+--- a/pfc/pfc.vcxproj.filters
++++ b/pfc/pfc.vcxproj.filters
+@@ -359,17 +359,6 @@
+     </ClInclude>
+   </ItemGroup>
+   <ItemGroup>
+-    <None Include="pfc-license.txt">
+-      <Filter>Doc</Filter>
+-    </None>
+-    <None Include="pfc-readme.txt">
+-      <Filter>Doc</Filter>
+-    </None>
+-  </ItemGroup>
+-  <ItemGroup>
+-    <Filter Include="Doc">
+-      <UniqueIdentifier>{70b1137d-0c8f-4bb0-8adb-d406ad38bdd0}</UniqueIdentifier>
+-    </Filter>
+     <Filter Include="Source Files">
+       <UniqueIdentifier>{225fc8b6-5fca-4e3f-b56e-1ad97e992841}</UniqueIdentifier>
+     </Filter>
