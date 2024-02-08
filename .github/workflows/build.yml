@@ -36,7 +36,7 @@ jobs:
             ${{ github.workspace }}\external\pfc
           key: ${{ runner.os }}-foobar2000_${{ env.SDK_VERSION }}-${{ hashFiles('**/fb2ksdk.patch') }}
       - name: Download and install foobar2000 SDK
-        if: steps.sdk.outputs.cache-hit != 'true'
+        if: ${{ steps.sdk.outputs.cache-hit != 'true' }}
         run: |
           Invoke-WebRequest -Uri "https://www.foobar2000.org/files/SDK-${Env:SDK_VERSION}.7z" -OutFile "$(Get-Location)\fb2ksdk.7z"
           (Get-FileHash -Path "$(Get-Location)\fb2ksdk.7z" -Algorithm SHA256).Hash -eq "${Env:SDK_SHA256}"
@@ -62,11 +62,11 @@ jobs:
         id: nuget
         with:
           path: |
-            ${{ github.workspace }}\external\directxtk
-            ${{ github.workspace }}\external\wtl
+            ${{ github.workspace }}\external\directxtk*
+            ${{ github.workspace }}\external\wtl*
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
       - name: Restore cached NuGet packages (DirectXTK and WTL)
-        if: steps.nuget.outputs.cache-hit != 'true'
+        if: ${{ steps.nuget.outputs.cache-hit != 'true' }}
         run: nuget restore foo_vis_milk2.sln
       #- name: Prepare build
       #  run: |
@@ -78,7 +78,9 @@ jobs:
         #        PRODUCTVERSION does not appear in File Properties Details and apears in Get-Item as `ProductVersionRaw`.
         #        FileVersion does not appear in File Properties Details and apears in Get-Item as `FileVersion`.
         #        ProductVersion appears in File Properties Details as `Product version` and Get-Item as `ProductVersion`.
+        id: validate
         run: |
+          Write-Output "::set-output name=bin::('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}')"
           Write-Host '${{ matrix.platform }} ${{ matrix.configuration }} foo_vis_milk2.dll'
           Write-Host -NoNewline 'File Size: '
           Write-Host ((Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
@@ -99,8 +101,8 @@ jobs:
         with:
           name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}
           path: |
-            ${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll
-            ${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.pdb
+            ${{ steps.validate.outputs.bin }}\foo_vis_milk2.dll
+            ${{ steps.validate.outputs.bin }}\foo_vis_milk2.pdb
   package:
     name: Package foobar2000 MilkDrop 2 component
     needs: build
