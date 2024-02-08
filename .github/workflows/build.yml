@@ -24,19 +24,19 @@ jobs:
         uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: ${{ matrix.platform }}
-      - name: Set up NuGet and add to PATH
-        uses: nuget/setup-nuget@v2
-      - name: Cache foobar2000 SDK
-        uses: actions/cache@v4
-        id: sdk
-        with:
-          path: |
-            ${{ github.workspace }}\external\foobar2000
-            ${{ github.workspace }}\external\libppui
-            ${{ github.workspace }}\external\pfc
-          key: ${{ runner.os }}-foobar2000_${{ env.SDK_VERSION }}-${{ hashFiles('**/fb2ksdk.patch') }}
+      # - name: Set up NuGet and add to PATH
+      #   uses: nuget/setup-nuget@v2
+      # - name: Cache foobar2000 SDK
+      #   uses: actions/cache@v4
+      #   id: sdk
+      #   with:
+      #     path: |
+      #       ${{ github.workspace }}\external\foobar2000
+      #       ${{ github.workspace }}\external\libppui
+      #       ${{ github.workspace }}\external\pfc
+      #     key: ${{ runner.os }}-foobar2000_${{ env.SDK_VERSION }}-${{ hashFiles('**/fb2ksdk.patch') }}
       - name: Download and install foobar2000 SDK
-        if: steps.sdk.outputs.cache-hit != 'true'
+        # if: steps.sdk.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest -Uri "https://www.foobar2000.org/files/SDK-${Env:SDK_VERSION}.7z" -OutFile "$(Get-Location)\fb2ksdk.7z"
           (Get-FileHash -Path "$(Get-Location)\fb2ksdk.7z" -Algorithm SHA256).Hash -eq "${Env:SDK_SHA256}"
@@ -50,7 +50,11 @@ jobs:
           Rename-Item -Path "$(Get-Location)\external\foobar2000\SDK" -NewName sdk
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client
           Set-Location -Path "$(Get-Location)\external"
-          git apply --ignore-whitespace --whitespace=nowarn --check --apply --verbose "$(Get-Location)\fb2ksdk.patch"
+          git init
+          git add foobar2000\ libppui\ pfc\
+          git commit -m 'Initial commit'
+          git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
+          Remove-Item -Path "$(Get-Location)\.git" -Recurse -Force
       - name: Cache NuGet packages (DirectXTK and WTL)
         uses: actions/cache@v4
         id: nuget
