@@ -26,17 +26,17 @@ jobs:
           msbuild-architecture: ${{ matrix.platform }}
       # - name: Set up NuGet and add to PATH
       #   uses: nuget/setup-nuget@v2
-      # - name: Cache foobar2000 SDK
-      #   uses: actions/cache@v4
-      #   id: sdk
-      #   with:
-      #     path: |
-      #       ${{ github.workspace }}\external\foobar2000
-      #       ${{ github.workspace }}\external\libppui
-      #       ${{ github.workspace }}\external\pfc
-      #     key: ${{ runner.os }}-foobar2000_${{ env.SDK_VERSION }}-${{ hashFiles('**/fb2ksdk.patch') }}
+      - name: Cache foobar2000 SDK
+        uses: actions/cache@v4
+        id: sdk
+        with:
+          path: |
+            ${{ github.workspace }}\external\foobar2000
+            ${{ github.workspace }}\external\libppui
+            ${{ github.workspace }}\external\pfc
+          key: ${{ runner.os }}-foobar2000_${{ env.SDK_VERSION }}-${{ hashFiles('**/fb2ksdk.patch') }}
       - name: Download and install foobar2000 SDK
-        # if: steps.sdk.outputs.cache-hit != 'true'
+        if: steps.sdk.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest -Uri "https://www.foobar2000.org/files/SDK-${Env:SDK_VERSION}.7z" -OutFile "$(Get-Location)\fb2ksdk.7z"
           (Get-FileHash -Path "$(Get-Location)\fb2ksdk.7z" -Algorithm SHA256).Hash -eq "${Env:SDK_SHA256}"
@@ -51,6 +51,8 @@ jobs:
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client
           Set-Location -Path "$(Get-Location)\external"
           git init
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           git add foobar2000\ libppui\ pfc\
           git commit -m 'Initial commit'
           git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
@@ -77,10 +79,14 @@ jobs:
         #        FileVersion does not appear in File Properties Details and apears in Get-Item as `FileVersion`.
         #        ProductVersion appears in File Properties Details as `Product version` and Get-Item as `ProductVersion`.
         run: |
-          link.exe /dump /exports /nologo ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')
-          Write-Host ((Get-ItemProperty ('${{ github.workspace }}\foo_vis_milk2\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
+          Write-Host '${{ matrix.platform }} ${{ matrix.configuration }} foo_vis_milk2.dll'
+          Write-Host -NoNewline 'File Size: '
+          Write-Host ((Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
+          Write-Host -NoNewline 'File Version: '
           (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.FileVersion
+          Write-Host -NoNewline 'Product Version: '
           (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.ProductVersion
+          link.exe /dump /exports /nologo ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')
       #- name: Test ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
       #  working-directory: ${{ github.workspace }}
       #  run: |

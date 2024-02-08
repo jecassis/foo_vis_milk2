@@ -62,11 +62,12 @@ if (Test-Path -Path "${OutputPath}\Win32\Release\${TargetFileName}")
     if ($VerbosePreference)
     {
         Write-Host "DEBUG: Dumping Win32 `"$TargetFileName`" information..."
-        link.exe /dump /exports /nologo "${OutputPath}\Win32\Release\${TargetFileName}"
+        Write-Host -NoNewline 'File Size: '
         Write-Host ((Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").length/1KB) KiB -Separator ' '
         #(Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo.FileVersion
         #(Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo.ProductVersion
         (Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo | Format-List
+        link.exe /dump /exports /nologo "${OutputPath}\Win32\Release\${TargetFileName}"
     }
     Write-Host "INFO: Copying Win32 `"$TargetFileName`" to `"$PackagePath`"..."
     Copy-Item "${OutputPath}\Win32\Release\${TargetFileName}" -Destination "${PackagePath}" -Force
@@ -83,11 +84,12 @@ if (Test-Path -Path "${OutputPath}\x64\Release\${TargetFileName}")
     if ($VerbosePreference)
     {
         Write-Host "DEBUG: Dumping x64 `"$TargetFileName`" information..."
-        link.exe /dump /exports /nologo "${OutputPath}\x64\Release\${TargetFileName}"
+        Write-Host -NoNewline 'File Size: '
         Write-Host ((Get-ItemProperty "${OutputPath}\x64\Release\${TargetFileName}").length/1KB) KiB -Separator ' '
         #(Get-ItemProperty "${OutputPath}\x64\Release\${TargetFileName}").VersionInfo.FileVersion
         #(Get-ItemProperty "${OutputPath}\x64\Release\${TargetFileName}").VersionInfo.ProductVersion
         (Get-ItemProperty "${OutputPath}\x64\Release\${TargetFileName}").VersionInfo | Format-List
+        link.exe /dump /exports /nologo "${OutputPath}\x64\Release\${TargetFileName}"
     }
     Write-Host "INFO: Copying x64 `"$TargetFileName`" to `"${PackagePath}/x64`"..."
     Copy-Item "${OutputPath}\x64\Release\${TargetFileName}" -Destination "${PackagePath}/x64" -Force
