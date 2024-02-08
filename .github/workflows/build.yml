@@ -113,14 +113,14 @@ jobs:
         with:
           name: milk2-x86-Release
           path: ${{ github.workspace }}\Bin\Win32\Release
-      - name: Download results from x64 build
+      - name: Download x64 DLL
         uses: actions/download-artifact@v4
         with:
           name: milk2-x64-Release
           path: ${{ github.workspace }}\Bin\x64\Release
       - name: Package foobar2000 MilkDrop 2 component
         run: |
-          .\tools\build-fb2k_component.ps1 -Version ''
+          &"${{ github.workspace }}\tools\build-fb2k_component.ps1" -Version ''
       - uses: actions/upload-artifact@v4
         with:
           name: foo_vis_milk2-component

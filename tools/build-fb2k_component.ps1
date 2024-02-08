@@ -75,7 +75,7 @@ if (Test-Path -Path "${OutputPath}\Win32\Release\${TargetFileName}")
 else
 {
     Write-Host "FATAL: Missing Win32 build output."
-    exit
+    exit 1
 }
 
 # Copy x64 build output.
@@ -97,7 +97,7 @@ if (Test-Path -Path "${OutputPath}\x64\Release\${TargetFileName}")
 else
 {
     Write-Host "FATAL: Missing x64 build output."
-    exit
+    exit 1
 }
 
 # Copy data and presets.
@@ -109,7 +109,7 @@ if (Test-Path -Path "${DataPath}/data/*")
 else
 {
     Write-Host "FATAL: Missing or empty shader data."
-    exit
+    exit 1
 }
 
 if (Test-Path -Path "${DataPath}/presets/*")
@@ -129,7 +129,7 @@ $x64Version = (Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}")
 if ($x86Version -ne $x64Version)
 {
     Write-Host "FATAL: Win32 (${x86Version}) and x64 (${x64Version}) DLL version mismatch."
-    exit
+    exit 1
 }
 if ($Version -eq '')
 {
@@ -149,3 +149,5 @@ Write-Host "INFO: Creating component archive `"$ArchivePath`"..."
 Compress-Archive -Path "${PackagePath}/*" -DestinationPath "$ArchivePath" -CompressionLevel Optimal -Force
 
 Write-Host "INFO: Done."
+
+exit 0
