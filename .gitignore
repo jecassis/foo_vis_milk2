@@ -167,7 +167,7 @@ CMakeLists.txt
 !/external/eel2/wdlcstring.h
 !/external/eel2/asm-nseel-x86-msvc.c
 !/external/eel2/asm-nseel-x64.obj
-!/external/eel2/asm-nseel-arm64-msvc.obj
+!/external/eel2/asm-nseel-aarch64-msvc.obj
 !/external/eel2/asm-nseel-arm64ec.obj
 !/external/eel2/eel2.vcxproj
 !/external/eel2/eel2.vcxproj.filters

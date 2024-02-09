@@ -42,6 +42,11 @@ Write-Host "INFO: Building `"$TargetName`" component package..."
 
 $PackagePath = "$(Get-Location)\component"
 $DataPath = "$(Get-Location)\external\winamp"
+$x86Version = $null
+$x64Version = $null
+$arm64Version = $null
+$arm64ecVersion = $null
+
 
 # Create the package directory
 if (Test-Path -Path "$PackagePath")
