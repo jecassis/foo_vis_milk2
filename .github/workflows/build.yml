@@ -10,10 +10,11 @@ jobs:
   build:
     name: Build and test library
     runs-on: windows-latest
+    continue-on-error: ${{ (matrix.platform == 'ARM64') || (matrix.platform == 'ARM64EC') }}
     strategy:
       matrix:
         configuration: [Release] #, Debug]
-        platform: [x86, x64] #, arm64]
+        platform: [x86, x64, ARM64, ARM64EC]
     env:
       SDK_VERSION: '2023-09-23'
       SDK_SHA256: c64a9e972a77c4f49a9b67464e5a25f0353cf6758c8a537f8c972e55c93b4364
@@ -65,7 +66,7 @@ jobs:
             ${{ github.workspace }}\external\directxtk*
             ${{ github.workspace }}\external\wtl*
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-      - name: Restore cached NuGet packages (DirectXTK and WTL)
+      - name: Restore NuGet packages (DirectXTK and WTL)
         if: ${{ steps.nuget.outputs.cache-hit != 'true' }}
         run: nuget restore foo_vis_milk2.sln
       #- name: Prepare build
@@ -97,6 +98,7 @@ jobs:
       #    #msbuild.exe --% /t:Build /verbosity:quiet /nologo /m:4 /p:Configuration=${{ matrix.configuration }};Platform=Win32;OutDir=$(SolutionDir)${{ matrix.configuration }}\test ${{ github.workspace }}\src\vis_milk2\milkdrop.sln
       #    vstest.console.exe ${{ github.workspace }}\src\vis_milk2\${{ matrix.configuration }}\test.dll
       - name: Upload ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
+        if: ${{ (matrix.configuration == 'Release') && ((matrix.platform == 'x86') || (matrix.platform == 'x64')) }}
         uses: actions/upload-artifact@v4
         with:
           name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}

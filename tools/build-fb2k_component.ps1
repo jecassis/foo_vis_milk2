@@ -52,6 +52,8 @@ Write-Host "INFO: Creating directory `"$PackagePath`"...";
 $null = New-Item -Path `
     "${PackagePath}", `
     "${PackagePath}\x64", `
+    "${PackagePath}\arm64", `
+    "${PackagePath}\arm64ec", `
     "${PackagePath}\milkdrop2", `
     "${PackagePath}\milkdrop2\data", `
     "${PackagePath}\milkdrop2\presets" -Type Directory -Force
@@ -69,6 +71,7 @@ if (Test-Path -Path "${OutputPath}\Win32\Release\${TargetFileName}")
         (Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo | Format-List
         link.exe /dump /exports /nologo "${OutputPath}\Win32\Release\${TargetFileName}"
     }
+    $x86Version = (Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo.FileVersionRaw
     Write-Host "INFO: Copying Win32 `"$TargetFileName`" to `"$PackagePath`"..."
     Copy-Item "${OutputPath}\Win32\Release\${TargetFileName}" -Destination "${PackagePath}" -Force
 }
@@ -91,8 +94,9 @@ if (Test-Path -Path "${OutputPath}\x64\Release\${TargetFileName}")
         (Get-ItemProperty "${OutputPath}\x64\Release\${TargetFileName}").VersionInfo | Format-List
         link.exe /dump /exports /nologo "${OutputPath}\x64\Release\${TargetFileName}"
     }
-    Write-Host "INFO: Copying x64 `"$TargetFileName`" to `"${PackagePath}/x64`"..."
-    Copy-Item "${OutputPath}\x64\Release\${TargetFileName}" -Destination "${PackagePath}/x64" -Force
+    $x64Version = (Get-ItemProperty "${OutputPath}\x64\Release\${TargetFileName}").VersionInfo.FileVersionRaw
+    Write-Host "INFO: Copying x64 `"$TargetFileName`" to `"${PackagePath}\x64`"..."
+    Copy-Item "${OutputPath}\x64\Release\${TargetFileName}" -Destination "${PackagePath}\x64" -Force
 }
 else
 {
@@ -100,11 +104,57 @@ else
     exit 1
 }
 
+# Copy ARM64 build output.
+if (Test-Path -Path "${OutputPath}\ARM64\Release\${TargetFileName}")
+{
+    if ($VerbosePreference)
+    {
+        Write-Host "DEBUG: Dumping ARM64 `"$TargetFileName`" information..."
+        Write-Host -NoNewline 'File Size: '
+        Write-Host ((Get-ItemProperty "${OutputPath}\ARM64\Release\${TargetFileName}").length/1KB) KiB -Separator ' '
+        #(Get-ItemProperty "${OutputPath}\ARM64\Release\${TargetFileName}").VersionInfo.FileVersion
+        #(Get-ItemProperty "${OutputPath}\ARM64\Release\${TargetFileName}").VersionInfo.ProductVersion
+        (Get-ItemProperty "${OutputPath}\ARM64\Release\${TargetFileName}").VersionInfo | Format-List
+        link.exe /dump /exports /nologo "${OutputPath}\ARM64\Release\${TargetFileName}"
+    }
+    $arm64Version = (Get-ItemProperty "${OutputPath}\ARM64\Release\${TargetFileName}").VersionInfo.FileVersionRaw
+    Write-Host "INFO: Copying ARM64 `"$TargetFileName`" to `"${PackagePath}\arm64`"..."
+    Copy-Item "${OutputPath}\ARM64\Release\${TargetFileName}" -Destination "${PackagePath}\arm64" -Force
+}
+else
+{
+    Write-Host "WARNING: Missing ARM64 build output."
+    Remove-Item -Path "${PackagePath}\arm64" -Recurse -Force
+}
+
+# Copy ARM64EC build output.
+if (Test-Path -Path "${OutputPath}\ARM64EC\Release\${TargetFileName}")
+{
+    if ($VerbosePreference)
+    {
+        Write-Host "DEBUG: Dumping ARM64EC `"$TargetFileName`" information..."
+        Write-Host -NoNewline 'File Size: '
+        Write-Host ((Get-ItemProperty "${OutputPath}\ARM64EC\Release\${TargetFileName}").length/1KB) KiB -Separator ' '
+        #(Get-ItemProperty "${OutputPath}\ARM64EC\Release\${TargetFileName}").VersionInfo.FileVersion
+        #(Get-ItemProperty "${OutputPath}\ARM64EC\Release\${TargetFileName}").VersionInfo.ProductVersion
+        (Get-ItemProperty "${OutputPath}\ARM64EC\Release\${TargetFileName}").VersionInfo | Format-List
+        link.exe /dump /exports /nologo "${OutputPath}\ARM64EC\Release\${TargetFileName}"
+    }
+    $arm64ecVersion = (Get-ItemProperty "${OutputPath}\ARM64EC\Release\${TargetFileName}").VersionInfo.FileVersionRaw
+    Write-Host "INFO: Copying ARM64EC `"$TargetFileName`" to `"${PackagePath}\arm64ec`"..."
+    Copy-Item "${OutputPath}\ARM64EC\Release\${TargetFileName}" -Destination "${PackagePath}\arm64ec" -Force
+}
+else
+{
+    Write-Host "WARNING: Missing ARM64EC build output."
+    Remove-Item -Path "${PackagePath}\arm64ec" -Recurse -Force
+}
+
 # Copy data and presets.
-if (Test-Path -Path "${DataPath}/data/*")
+if (Test-Path -Path "${DataPath}\data\*")
 {
     Write-Host "INFO: Copying shaders to `"${PackagePath}\milkdrop2\data`"..."
-    Copy-Item "${DataPath}/data/*" -Destination "${PackagePath}\milkdrop2\data" -Force
+    Copy-Item "${DataPath}\data\*" -Destination "${PackagePath}\milkdrop2\data" -Force
 }
 else
 {
@@ -112,10 +162,10 @@ else
     exit 1
 }
 
-if (Test-Path -Path "${DataPath}/presets/*")
+if (Test-Path -Path "${DataPath}\presets\*")
 {
     Write-Host "INFO: Copying presets to `"${PackagePath}\milkdrop2\presets`"..."
-    Copy-Item "${DataPath}/presets/*" -Destination "${PackagePath}\milkdrop2\presets" -Force
+    Copy-Item "${DataPath}\presets\*" -Destination "${PackagePath}\milkdrop2\presets" -Force
 }
 else
 {
@@ -124,13 +174,23 @@ else
 }
 
 # Check versions.
-$x86Version = (Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo.FileVersionRaw
-$x64Version = (Get-ItemProperty "${OutputPath}\Win32\Release\${TargetFileName}").VersionInfo.FileVersionRaw
 if ($x86Version -ne $x64Version)
 {
-    Write-Host "FATAL: Win32 (${x86Version}) and x64 (${x64Version}) DLL version mismatch."
+    Write-Host "FATAL: Win32 (${x86Version}) and x64 (${x64Version}) DLL versions mismatch."
     exit 1
 }
+if ($arm64Version -and ($x86Version -ne $arm64Version))
+{
+    Write-Host "FATAL: Win32 (${x86Version}) and ARM64 (${$arm64Version}) DLL versions mismatch."
+    exit 1
+}
+if ($arm64ecVersion -and ($x86Version -ne $arm64ecVersion))
+{
+    Write-Host "FATAL: Win32 (${x86Version}) and ARM64EC (${$arm64ecVersion}) DLL versions mismatch."
+    exit 1
+}
+
+# Define component output file name.
 if ($Version -eq '')
 {
     $ArchivePath = "$(Get-Location)\${TargetName}.fb2k-component"
@@ -146,7 +206,7 @@ else
 
 # Create component archive.
 Write-Host "INFO: Creating component archive `"$ArchivePath`"..."
-Compress-Archive -Path "${PackagePath}/*" -DestinationPath "$ArchivePath" -CompressionLevel Optimal -Force
+Compress-Archive -Path "${PackagePath}\*" -DestinationPath "$ArchivePath" -CompressionLevel Optimal -Force
 
 Write-Host "INFO: Done."
 

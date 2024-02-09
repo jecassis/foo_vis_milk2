@@ -355,7 +355,7 @@ static void *GLUE_realAddress(void *fn, int *size)
   fn = p;
 
   while (memcmp(p,sig,sizeof(sig))) p+=4;
-  *size = p - (unsigned char *)fn;
+  *size = (int)(p - (unsigned char *)fn);
   return fn;
 }
 
