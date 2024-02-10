@@ -302,9 +302,9 @@ void CPlugin::OverrideDefaults()
     //m_start_fullscreen      = 0;   // 0 or 1
     //m_start_desktop         = 0;   // 0 or 1
     //m_fake_fullscreen_mode  = 0;   // 0 or 1
-    m_max_fps_fs            = 30;  // 1-120, or 0 for 'unlimited'
-    //m_max_fps_dm            = 30;  // 1-120, or 0 for 'unlimited'
-    //m_max_fps_w             = 30;  // 1-120, or 0 for 'unlimited'
+    m_max_fps_fs            = 30;  // 1-144, or 0 for 'unlimited'
+    //m_max_fps_dm            = 30;  // 1-144, or 0 for 'unlimited'
+    //m_max_fps_w             = 30;  // 1-144, or 0 for 'unlimited'
     m_show_press_f1_msg     = 1;   // 0 or 1
     //m_allow_page_tearing_w  = 0;   // 0 or 1
     m_allow_page_tearing_fs = 0;   // 0 or 1

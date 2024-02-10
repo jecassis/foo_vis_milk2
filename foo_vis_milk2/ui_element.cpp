@@ -1,3 +1,7 @@
+/*
+ *  ui_element.cpp - Implements the MilkDrop 2 visualization component.
+ */
+
 #include "pch.h"
 #include "config.h"
 #include "steptimer.h"
@@ -11,8 +15,6 @@
 
 CPlugin g_plugin;
 HWND g_hWindow;
-
-extern void ExitVis() noexcept;
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default.
 //extern "C" {
@@ -33,9 +35,10 @@ static const GUID VisMilk2LangGUID = {
 }; // {C5D175F1-E4E4-47EE-B85C-4EDC6B026A35}
 
 static bool s_fullscreen = false;
+static bool s_in_toggle = false;
 static bool s_milk2 = false;
 static ULONGLONG s_count = 0ull;
-static constexpr ULONGLONG DebugLimit = 1ull;
+static constexpr ULONGLONG s_debug_limit = 1ull;
 
 class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>
 {
@@ -60,11 +63,11 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_TIMER(OnTimer)
         MSG_WM_PAINT(OnPaint)
+        MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_SIZE(OnSize)
         MSG_WM_MOVE(OnMove)
         MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
         MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
-        MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_DISPLAYCHANGE(OnDisplayChange)
         MSG_WM_DPICHANGED(OnDpiChanged)
@@ -98,11 +101,11 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnDestroy();
     void OnTimer(UINT_PTR nIDEvent);
     void OnPaint(CDCHandle dc);
+    BOOL OnEraseBkgnd(CDCHandle dc);
     void OnSize(UINT nType, CSize size);
     void OnMove(CPoint ptPos);
     void OnEnterSizeMove();
     void OnExitSizeMove();
-    BOOL OnEraseBkgnd(CDCHandle dc);
     BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
     void OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen);
     void OnDpiChanged(UINT nDpiX, UINT nDpiY, PRECT pRect);
@@ -179,9 +182,6 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     // MilkDrop status
     bool m_milk2;
     WCHAR m_szWnd[19]; // 19 = 2 ("0x") + 16 (64 / 4 -> 64-bit address in hexadecimal) + 1 ('\0')
-
-    // Device resources
-    std::unique_ptr<DXContext> g_vis;
 
     // Rendering loop timer
     DX::StepTimer m_timer;
@@ -313,7 +313,21 @@ void milk2_ui_element::OnDestroy()
     if (m_milk2)
         m_milk2 = false;
     s_count = 0ull;
-    //PostQuitMessage(0);
+
+    if (!s_in_toggle)
+    {
+        MILK2_CONSOLE_LOG("ExitVis")
+        s_fullscreen = false;
+        s_in_toggle = false;
+        s_milk2 = false;
+        KillTimer(ID_REFRESH_TIMER);
+        g_plugin.PluginQuit();
+        //PostQuitMessage(0);
+    }
+    else
+    {
+        s_in_toggle = false;
+    }
 }
 
 void milk2_ui_element::OnTimer(UINT_PTR nIDEvent)
@@ -351,6 +365,42 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
         SetTimer(ID_REFRESH_TIMER, static_cast<UINT>(next_refresh - now));
     }
     m_last_refresh = now;
+}
+
+BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
+{
+    MILK2_CONSOLE_LOG_LIMIT("OnEraseBkgnd ", GetWnd())
+    ++s_count;
+
+#if 0
+    CRect r;
+    WIN32_OP_D(GetClientRect(&r));
+    CBrush brush;
+    WIN32_OP_D(brush.CreateSolidBrush(m_callback->query_std_color(ui_color_background)) != NULL);
+    WIN32_OP_D(dc.FillRect(&r, brush));
+#else
+    if (!m_milk2 && !s_fullscreen && s_milk2)
+    {
+        HRESULT hr = S_OK;
+        int w, h;
+        GetDefaultSize(w, h);
+
+        CRect r{};
+        WIN32_OP_D(GetClientRect(&r))
+        if (r.right - r.left > 0 && r.bottom - r.top > 0)
+        {
+            w = r.right - r.left;
+            h = r.bottom - r.top;
+        }
+        if (!Initialize(get_wnd(), w, h))
+        {
+            FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
+        }
+    }
+    Tick();
+#endif
+
+    return TRUE;
 }
 
 void milk2_ui_element::OnMove(CPoint ptPos)
@@ -414,42 +464,6 @@ void milk2_ui_element::OnExitSizeMove()
         WIN32_OP_D(GetClientRect(&rc));
         g_plugin.OnWindowSizeChanged(rc.right - rc.left, rc.bottom - rc.top);
     }
-}
-
-BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
-{
-    MILK2_CONSOLE_LOG_LIMIT("OnEraseBkgnd ", GetWnd())
-    ++s_count;
-
-#if 0
-    CRect r;
-    WIN32_OP_D(GetClientRect(&r));
-    CBrush brush;
-    WIN32_OP_D(brush.CreateSolidBrush(m_callback->query_std_color(ui_color_background)) != NULL);
-    WIN32_OP_D(dc.FillRect(&r, brush));
-#else
-    if (!m_milk2 && !s_fullscreen && s_milk2)
-    {
-        HRESULT hr = S_OK;
-        int w, h;
-        GetDefaultSize(w, h);
-
-        CRect r{};
-        WIN32_OP_D(GetClientRect(&r))
-        if (r.right - r.left > 0 && r.bottom - r.top > 0)
-        {
-            w = r.right - r.left;
-            h = r.bottom - r.top;
-        }
-        if (!Initialize(get_wnd(), w, h))
-        {
-            FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
-        }
-    }
-    Tick();
-#endif
-
-    return TRUE;
 }
 
 BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
@@ -725,6 +739,7 @@ LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM
         case 0: // Preferences Dialog
             {
                 m_config.reset();
+                m_refresh_interval = static_cast<DWORD>(lround(1000.0f / m_config.settings.m_max_fps_fs));
                 g_plugin.PanelSettings(&m_config.settings);
                 break;
             }
@@ -901,6 +916,7 @@ void milk2_ui_element::ToggleFullScreen()
             m_milk2 = false;
         }
         s_fullscreen = !s_fullscreen;
+        s_in_toggle = true;
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
 #if 0
         if (s_fullscreen)
@@ -1003,11 +1019,3 @@ class milk2_initquit : public initquit
 
 FB2K_SERVICE_FACTORY(milk2_initquit);
 } // namespace
-
-void ExitVis() noexcept
-{
-    MILK2_CONSOLE_LOG("ExitVis")
-    g_plugin.PluginQuit();
-    //g_vis.reset();
-    PostQuitMessage(0);
-}

@@ -164,13 +164,12 @@ void DXContext::OnDisplayChange()
     m_deviceResources->UpdateColorSpace();
 }
 
-// Call this function on `WM_EXITSIZEMOVE` when running windowed.
-// Do not call when fullscreen. Clean up all the DirectX stuff
-// first (textures, vertex buffers, etc...) and reallocate it
-// afterwards!
+// Call this function on `WM_EXITSIZEMOVE`.
+// Clean up all the DirectX stuff first (textures, vertex 
+// buffers, etc...) and reallocate it afterwards!
 BOOL DXContext::OnWindowSizeChanged(int width, int height)
 {
-    if (!m_ready) //|| (m_current_mode.screenmode != WINDOWED))
+    if (!m_ready)
         return FALSE;
 
     if ((m_client_width == width) && (m_client_height == height))

@@ -8,6 +8,10 @@
 #else
 #define _WIN32_WINNT 0x0603 // Windows 8.1
 #endif
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00 // Windows 10
+#endif
 
 // DirectX apps do not need GDI
 #define NODRAWTEXT // `DrawText()` and `DT_*` definitions --> From "WinUser.h"

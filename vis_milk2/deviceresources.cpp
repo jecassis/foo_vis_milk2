@@ -188,7 +188,7 @@ void DeviceResources::CreateDeviceResources()
                                context.GetAddressOf() // Returns the device immediate context.
         );
     }
-#if defined(NDEBUG)
+#ifdef NDEBUG
     else
     {
         throw std::runtime_error("No Direct3D hardware device found");
@@ -495,8 +495,7 @@ void DeviceResources::CreateFactory()
             dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
 
             DXGI_INFO_QUEUE_MESSAGE_ID hide[] = {
-                80 /* IDXGISwapChain::GetContainingOutput: The swap chain's adapter does not control the output on which the swap chain's window resides. */
-                ,
+                80, /* IDXGISwapChain::GetContainingOutput: The swap chain's adapter does not control the output on which the swap chain's window resides. */
             };
             DXGI_INFO_QUEUE_FILTER filter = {};
             filter.DenyList.NumIDs = static_cast<UINT>(std::size(hide));
@@ -507,7 +506,6 @@ void DeviceResources::CreateFactory()
 
     if (!debugDXGI)
 #endif
-
         ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(m_dxgiFactory.ReleaseAndGetAddressOf())));
 }
 

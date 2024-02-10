@@ -1,6 +1,6 @@
-//
-// preferences.cpp: Configuration settings accessible through a preferences page and advanced preferences.
-//
+/*
+ *  preferences.cpp - Configuration settings accessible through a preferences page and advanced preferences.
+ */
 
 #include "pch.h"
 #include "resource.h"
@@ -547,6 +547,14 @@ void milk2_preferences_page::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScro
         case IDC_BRIGHT_SLIDER2:
             switch (nSBCode)
             {
+                //case TB_BOTTOM:
+                //case TB_LINEDOWN:
+                //case TB_LINEUP:
+                //case TB_PAGEDOWN:
+                //case TB_PAGEUP:
+                //case TB_THUMBPOSITION:
+                //case TB_THUMBTRACK:
+                //case TB_TOP:
                 case TB_ENDTRACK:
                     OnChanged();
             }
@@ -1246,7 +1254,7 @@ void milk2_config::build(ui_element_config_builder& builder)
 
     cfg_bEnableRating = settings.m_bEnableRating;
     cfg_bHardCutsDisabled = settings.m_bHardCutsDisabled;
-    cfg_bDebugOutput = settings.g_bDebugOutput;
+    //cfg_bDebugOutput = settings.g_bDebugOutput;
     //builder << settings.m_bShowSongInfo;
     cfg_bShowPressF1ForHelp = settings.m_show_press_f1_msg;
     //builder << settings.m_bShowMenuToolTips;
