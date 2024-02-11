@@ -207,7 +207,8 @@ void DeviceResources::CreateDeviceResources()
                                featLevelCount,
                                D3D11_SDK_VERSION,
                                device.GetAddressOf(),
-                               &m_d3dFeatureLevel, context.GetAddressOf());
+                               &m_d3dFeatureLevel,
+                               context.GetAddressOf());
 
         if (SUCCEEDED(hr))
         {

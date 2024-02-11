@@ -73,10 +73,10 @@
 
 #include "pch.h"
 #include "plugin.h"
-#include <nu/AutoWide.h>
 #include "defines.h"
 #include "shell_defines.h"
 #include "utility.h"
+#include <nu/AutoWide.h>
 #include "support.h"
 //#include "resource.h"
 
@@ -285,18 +285,11 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
 }
 
 // Here, you have the option of overriding the "default defaults"
-//   for the stuff on tab 1 of the config panel, replacing them
-//   with custom defaults for your plugin.
+// for the stuff on tab 1 of the config panel, replacing them
+// with custom defaults for your plugin.
 // To override any of the defaults, just uncomment the line
-//   and change the value.
+// and change the value.
 // DO NOT modify these values from any function but this one!
-
-// This example plugin only changes the default width/height
-//   for fullscreen mode; the "default defaults" are just
-//   640 x 480.
-// If your plugin is very dependent on smooth animation and you
-//   wanted it plugin to have the 'save cpu' option OFF by default,
-//   for example, you could set 'm_save_cpu' to 0 here.
 void CPlugin::OverrideDefaults()
 {
     //m_start_fullscreen      = 0;   // 0 or 1

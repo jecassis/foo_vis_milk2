@@ -104,10 +104,10 @@ class DeviceResources
     D3D_FEATURE_LEVEL m_d3dFeatureLevel;
     RECT m_outputSize;
 
-    // HDR Support
+    // HDR support.
     DXGI_COLOR_SPACE_TYPE m_colorSpace;
 
-    // DeviceResources options (see flags above)
+    // DeviceResources options (see flags above).
     unsigned int m_options;
 
     // The IDeviceNotify can be held directly as it owns the DeviceResources.

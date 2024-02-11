@@ -12,6 +12,8 @@ AlignTrailingComments: false
 AllowShortFunctionsOnASingleLine: InlineOnly
 #AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
 BraceWrapping:
   AfterCaseLabel: true
   AfterExternBlock: false
@@ -20,6 +22,7 @@ BreakInheritanceList: AfterColon
 ColumnLimit: 140
 IndentCaseLabels: true
 IndentCaseBlocks: true
+PackConstructorInitializers: CurrentLine
 PointerAlignment: Left
 ReflowComments: false
 ShortNamespaceLines: 15

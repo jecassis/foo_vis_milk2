@@ -845,14 +845,14 @@ void CPluginShell::DrawAndDisplay(int redraw)
 
 void CPluginShell::EnforceMaxFPS()
 {
-    int max_fps = 60;
-    //switch (m_screenmode)
-    //{
-    //    case WINDOWED:        max_fps = m_max_fps_w;  break;
-    //    case FULLSCREEN:      max_fps = m_max_fps_fs; break;
-    //    case FAKE_FULLSCREEN: max_fps = m_max_fps_fs; break;
-    //    case DESKTOP:         max_fps = m_max_fps_dm; break;
-    //}
+    int max_fps = 0;
+    switch (m_screenmode)
+    {
+        case WINDOWED:        max_fps = m_max_fps_w;  break;
+        case FULLSCREEN:      max_fps = m_max_fps_fs; break;
+        case FAKE_FULLSCREEN: max_fps = m_max_fps_fs; break;
+        case DESKTOP:         max_fps = m_max_fps_dm; break;
+    }
 
     if (max_fps <= 0)
         return;
@@ -1234,7 +1234,7 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
     //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 
     // Set up a quad.
-    SIMPLEVERTEX verts[4];
+    SIMPLEVERTEX verts[4]{};
     for (int i = 0; i < 4; i++)
     {
         verts[i].x = (i % 2 == 0) ? (float)(-m_lpDX->m_client_width / 2 + pr->left) : (float)(-m_lpDX->m_client_width / 2 + pr->right);
@@ -1258,7 +1258,7 @@ void CPluginShell::AlignWaves()
 {
     int align_offset[2] = {0, 0};
 
-#if (NUM_WAVEFORM_SAMPLES < 576) // [don't let this code bloat our DLL size if it's not going to be used]
+#if (NUM_WAVEFORM_SAMPLES < 576) // [don't let this code bloat the DLL size if it's not going to be used]
     int nSamples = NUM_WAVEFORM_SAMPLES;
     constexpr auto MAX_OCTAVES = 10;
 
@@ -1337,7 +1337,7 @@ void CPluginShell::AlignWaves()
             // For example:
             //  space[octave] == 4
             //  spls[octave] == 36
-            //  (so we test 32 samples, w/4 offsets)
+            //  (so test 32 samples, with 4 offsets)
             //int compare_samples = spls[octave] - space[octave];
 
             int lowest_err_offset = -1;
@@ -1345,7 +1345,7 @@ void CPluginShell::AlignWaves()
             for (int n = n1; n < n2; n++)
             {
                 float err_sum = 0;
-                //for (int i=0; i<compare_samples; i++)
+                //for (int i = 0; i < compare_samples; i++)
                 for (int i = first_nonzero_weight[octave]; i <= last_nonzero_weight[octave]; i++)
                 {
                     float x = (temp_new[octave][i + n] - temp_old[octave][i]) * temp_weight[octave][i];
@@ -1365,10 +1365,10 @@ void CPluginShell::AlignWaves()
             // Now use `lowest_err_offset` to guide bounds of search in next octave:
             //  space[octave] == 8
             //  spls[octave] == 72
-            //     -say `lowest_err_offset` was 2
-            //     -that corresponds to samples 4 & 5 of the next octave
-            //     -also, expand about this by 2 samples?  YES.
-            //  (so we'd test 64 samples, w/8->4 offsets)
+            //     - Say `lowest_err_offset` was 2.
+            //     - That corresponds to samples 4 and 5 of the next octave.
+            //     - Also, expand about this by 2 samples? YES.
+            //  (so test 64 samples, with 8->4 offsets)
             if (octave > 0)
             {
                 n1 = lowest_err_offset * 2 - 1;
@@ -1386,14 +1386,14 @@ void CPluginShell::AlignWaves()
     m_prev_align_offset[0] = align_offset[0];
     m_prev_align_offset[1] = align_offset[1];
 
-    // finally, apply the results: modify m_sound.fWaveform[2][0..576]
+    // Finally, apply the results: modify m_sound.fWaveform[2][0..576]
     // by scooting the aligned samples so that they start at m_sound.fWaveform[2][0].
     for (int ch = 0; ch < 2; ch++)
         if (align_offset[ch] > 0)
         {
             for (int i = 0; i < nSamples; i++)
                 m_sound.fWaveform[ch][i] = m_sound.fWaveform[ch][i + align_offset[ch]];
-            // zero the rest out, so it's visually evident that these samples are now bogus:
+            // Zero the rest out, so it is visually evident that these samples are now bogus.
             memset(&m_sound.fWaveform[ch][nSamples], 0, (576 - nSamples) * sizeof(float));
         }
 }

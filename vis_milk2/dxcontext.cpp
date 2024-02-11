@@ -219,7 +219,7 @@ BOOL DXContext::OnWindowSwap(HWND window, int width, int height)
 }
 
 #pragma region Direct3D Resources
-// These are the resources that depend on the device.
+// Allocate the resources that depend on the device.
 void DXContext::CreateDeviceDependentResources()
 {
     auto device = m_deviceResources->GetD3DDevice();
