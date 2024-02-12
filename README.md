@@ -1,9 +1,9 @@
 # MilkDrop 2 Visualization Component for foobar2000
 
-Port of Winamp's MilkDrop 2 visualization library from its original DirectX 9 version to use DirectX 11.
+Port of Winamp's MilkDrop 2 visualization library from its original DirectX 9 version to use DirectX 11.1.
 MilkDrop 2 takes you flying through visualizations of the soundwaves you're hearing, and uses beat detection to trigger myriad psychedelic effects, creating a rich visual journey through sound.
 
-Prerequisites to build the DirectX 11 `foo_vis_milk2.dll` component for foobar2000:
+Prerequisites to build the DirectX 11.1 `foo_vis_milk2.dll` component for foobar2000:
 
 - [foobar2000 SDK](https://www.foobar2000.org/SDK): download the latest version and uncompress the contents in the `external/` folder.
 - [NS-EEL2](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
@@ -19,12 +19,12 @@ See [CHANGELOG](CHANGELOG.md) for additional details.
 
 ## Features
 
-- Uses DirectX 11 for rendering.
+- Uses DirectX 11.1 for rendering.
 - Supports the Default User Interface (Default UI) only.
 - Built for foobar2000 2.0 and later.
 - Can build 32-bit and 64-bit x86 component configurations as well as ARM64 and ARM64EC.
 - Configurable through foobar2000 preferences instead of `*.ini` files.
-- Tested on foobar2000 v2.1.2 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22621).
+- Tested on foobar2000 v2.1.2 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22621). In theory, Intel architecture versions work with Windows 8 or later and ARM architecture versions with Windows 10 or later.
 
 ## Run Requirements and Installation
 
@@ -62,8 +62,8 @@ The build assumes the following directory structure:
 
 MilkDrop 2 (`vis_milk2`) is a music visualizer - a "plug-in" to the Winamp music player. The changes to the [MilkDrop 2 source code release](https://sourceforge.net/projects/milkdrop2/) from 5/13/13 (version 2.25c) include:
 
-- Porting VMS from DirectX 9 to Direct X 11.1.
-<!--- Porting text layout and rendering from D3DX9 and GDI to DirectWrite and Direct2D, respectively.-->
+- Porting VMS from DirectX 9 to Direct X 11.1. DirectX 11.1 is Direct3D 11.1, Direct2D 1.1, DirectWrite 1.1, and DXGI 1.2.
+- Porting text layout and rendering from D3DX9 and GDI to DirectWrite and Direct2D, respectively.
 - Building DLL with Visual Studio 2022 (v143) Platform Toolset.
 - Minor bug and typo fixing so that the plug-in can be used in Winamp and foobar2000 music players without crashing.
 - Fixing of string resources to flow consistently with Segoe UI spacing and sizing.

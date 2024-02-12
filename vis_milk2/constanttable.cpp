@@ -32,7 +32,11 @@ bool ShaderConstantBuffer::HasChanges()
     return false;
 }
 
-CConstantTable::CConstantTable(ID3D11ShaderReflection* pReflection) : m_iRefCount(1), m_pReflection(pReflection)
+CConstantTable::CConstantTable(ID3D11ShaderReflection* pReflection) :
+    m_iRefCount(1),
+    m_pReflection(pReflection),
+    MinimumFeatureLevel(D3D_FEATURE_LEVEL_9_1),
+    ShaderDesc{}
 {
 }
 
@@ -92,7 +96,7 @@ bool CConstantTable::GrabShaderData(ID3D11Device* pDevice)
 
     for (UINT i = 0; i < ShaderDesc.BoundResources; i++)
     {
-        ShaderBinding shaderBinding;
+        ShaderBinding shaderBinding{};
         m_pReflection->GetResourceBindingDesc(i, &shaderBinding.Description);
         m_Bindings.push_back(shaderBinding);
     }

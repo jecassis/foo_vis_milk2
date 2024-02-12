@@ -29,8 +29,6 @@
 
 #include "pch.h"
 #include "dxcontext.h"
-#include "shell_defines.h"
-#include "utility.h"
 
 DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false)
 {
@@ -83,6 +81,11 @@ BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* /* pParams */, BOOL /* bFirstIni
     m_client_height = std::max(1l, r.bottom - r.top);
 
     m_deviceResources->SetWindow(m_hwnd, m_client_width, m_client_height);
+
+    m_deviceResources->CreateDeviceIndependentResources();
+    CreateDeviceIndependentResources();
+
+    m_deviceResources->SetDpi();
 
     m_deviceResources->CreateDeviceResources();
     CreateDeviceDependentResources();
@@ -219,6 +222,11 @@ BOOL DXContext::OnWindowSwap(HWND window, int width, int height)
 }
 
 #pragma region Direct3D Resources
+// Allocate the resources that do not depend on the device.
+void DXContext::CreateDeviceIndependentResources()
+{
+}
+
 // Allocate the resources that depend on the device.
 void DXContext::CreateDeviceDependentResources()
 {

@@ -7,6 +7,7 @@
 #include "deviceresources.h"
 
 using namespace DirectX;
+using namespace D2D1;
 using namespace DX;
 
 using Microsoft::WRL::ComPtr;
@@ -73,8 +74,28 @@ DeviceResources::DeviceResources(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depth
     m_outputSize{0, 0, 1, 1},
     m_colorSpace(DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709),
     m_options(flags | c_FlipPresent),
+    m_dpiX(-1.0f),
+    m_dpiY(-1.0f),
     m_deviceNotify(nullptr)
 {
+}
+
+// Configures resources that don't depend on the Direct3D device.
+void DeviceResources::CreateDeviceIndependentResources()
+{
+    // Initialize Direct2D resources.
+    D2D1_FACTORY_OPTIONS options = {};
+
+#if defined(_DEBUG)
+    // If the project is in a debug build, enable Direct2D debugging via SDK Layers.
+    options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
+
+    // Initialize the Direct2D Factory.
+    ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory1), &options, reinterpret_cast<void**>(m_d2dFactory.ReleaseAndGetAddressOf())));
+
+    // Initialize the DirectWrite Factory.
+    ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory1), reinterpret_cast<IUnknown**>(m_dwriteFactory.ReleaseAndGetAddressOf())));
 }
 
 // Configures the Direct3D device, and stores handles to it and the device context.
@@ -244,6 +265,12 @@ void DeviceResources::CreateDeviceResources()
     ThrowIfFailed(device.As(&m_d3dDevice));
     ThrowIfFailed(context.As(&m_d3dContext));
     ThrowIfFailed(context.As(&m_d3dAnnotation));
+
+    // Create the Direct2D device object and a corresponding context.
+    ComPtr<IDXGIDevice2> dxgiDevice;
+    ThrowIfFailed(m_d3dDevice.As(&dxgiDevice));
+    ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice));
+    ThrowIfFailed(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &m_d2dContext));
 }
 
 // These resources need to be recreated every time the window size is changed.
@@ -260,7 +287,10 @@ void DeviceResources::CreateWindowSizeDependentResources()
     m_d3dDepthStencilView.Reset();
     m_renderTarget.Reset();
     m_depthStencil.Reset();
+    m_d2dContext->SetTarget(nullptr);
+    m_d2dTargetBitmap.Reset();
     m_d3dContext->Flush();
+    m_d2dContext->Flush();
 
     // Determine the render target size in pixels.
     const UINT backBufferWidth = std::max<UINT>(static_cast<UINT>(m_outputSize.right - m_outputSize.left), 1u);
@@ -315,11 +345,11 @@ void DeviceResources::CreateWindowSizeDependentResources()
         // Create a SwapChain from a Win32 window.
         ThrowIfFailed(m_dxgiFactory->CreateSwapChainForHwnd(m_d3dDevice.Get(), m_window, &swapChainDesc, &fsSwapChainDesc, nullptr, m_swapChain.ReleaseAndGetAddressOf()));
 
-        // This class does not support exclusive full-screen mode and prevents DXGI from responding to the ALT+ENTER shortcut
+        // This class does not support exclusive full-screen mode and prevents DXGI from responding to the "ALT+ENTER" shortcut.
         ThrowIfFailed(m_dxgiFactory->MakeWindowAssociation(m_window, DXGI_MWA_NO_ALT_ENTER));
     }
 
-    // Handle color space settings for HDR
+    // Handle color space settings for HDR.
     UpdateColorSpace();
 
     // Create a render target view of the swap chain back buffer.
@@ -331,7 +361,9 @@ void DeviceResources::CreateWindowSizeDependentResources()
     if (m_depthBufferFormat != DXGI_FORMAT_UNKNOWN)
     {
         // Create a depth stencil view for use with 3D rendering if needed.
-        CD3D11_TEXTURE2D_DESC depthStencilDesc(m_depthBufferFormat, backBufferWidth, backBufferHeight,
+        CD3D11_TEXTURE2D_DESC depthStencilDesc(m_depthBufferFormat,
+                                               backBufferWidth,
+                                               backBufferHeight,
                                                1, // This depth stencil view has only one texture.
                                                1, // Use a single mipmap level.
                                                D3D11_BIND_DEPTH_STENCIL);
@@ -343,6 +375,27 @@ void DeviceResources::CreateWindowSizeDependentResources()
 
     // Set the 3D rendering viewport to target the entire window.
     m_screenViewport = {0.f, 0.f, static_cast<float>(backBufferWidth), static_cast<float>(backBufferHeight), 0.f, 1.f};
+
+    // Create a Direct2D target bitmap associated with the swap chain back buffer and set it as the current target.
+    D2D1_BITMAP_PROPERTIES1 bitmapProperties =
+        BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+                          PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+                          m_dpiX,
+                          m_dpiY,
+                          NULL);
+
+    ComPtr<IDXGIResource1> dxgiBackBuffer;
+    ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(dxgiBackBuffer.ReleaseAndGetAddressOf())));
+
+    ComPtr<IDXGISurface2> dxgiSurface;
+    ThrowIfFailed(dxgiBackBuffer->CreateSubresourceSurface(0, dxgiSurface.ReleaseAndGetAddressOf()));
+
+    ThrowIfFailed(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(), &bitmapProperties, m_d2dTargetBitmap.ReleaseAndGetAddressOf()));
+
+    m_d2dContext->SetTarget(m_d2dTargetBitmap.Get());
+
+    // Grayscale text anti-aliasing is recommended.
+    m_d2dContext->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
 }
 
 // This method is called when the Win32 window is created (or re-created).
@@ -353,6 +406,23 @@ void DeviceResources::SetWindow(HWND window, int width, int height) noexcept
     m_outputSize.left = m_outputSize.top = 0;
     m_outputSize.right = static_cast<long>(width);
     m_outputSize.bottom = static_cast<long>(height);
+}
+
+void DeviceResources::SetDpi()
+{
+#if _WIN32_WINNT >= 0x0A00
+    if (m_window)
+        m_dpiX = m_dpiY = GetDpiForWindow(m_window);
+#else
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+    m_d2dFactory->GetDesktopDpi(&m_dpiX, &m_dpiY);
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+#endif
 }
 
 // This method is called when the Win32 window changes size.
@@ -406,6 +476,9 @@ void DeviceResources::HandleDeviceLost()
     m_swapChain.Reset();
     m_d3dContext.Reset();
     m_d3dAnnotation.Reset();
+
+    m_d2dTargetBitmap.Reset();
+    m_d2dContext.Reset();
 
 #ifdef _DEBUG
     {

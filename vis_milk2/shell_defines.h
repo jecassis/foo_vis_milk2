@@ -32,10 +32,7 @@
 
 #define DEFAULT_FULLSCREEN_WIDTH 640
 #define DEFAULT_FULLSCREEN_HEIGHT 480
-#define MAX_ICON_TEXTURES 8
-#define ICON_TEXTURE_SIZE 256
 #define DEFAULT_WINDOW_SIZE 0.625f // as a portion of the width or height of the screen (whichever is smaller)
-#define DESKTOP_MODE_KEYBOARD_INPUT_WINDOW_CLASSNAME L"DESKTOP MODE KEYBOARD INPUT WINDOW"
 #define BGR2RGB(x) (((x >> 16) & 0xFF) | (x & 0xFF00) | ((x << 16) & 0xFF0000))
 #define PREFERRED_FORMAT DXGI_FORMAT_B8G8R8A8_UNORM
 
@@ -64,9 +61,7 @@ typedef enum
 {
     NOT_YET_KNOWN = -1,
     FULLSCREEN = 0,
-    WINDOWED = 1,
-    FAKE_FULLSCREEN = 2,
-    DESKTOP = 3 // doesn't use overlays! =)
+    WINDOWED = 1
 } eScrMode;
 
 #endif

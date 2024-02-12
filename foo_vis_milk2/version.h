@@ -1,8 +1,8 @@
-//
-// version.h: Defines common version information for the DLL's version resource
-//            and the component version shown in foobar2000.
-//            Note: Newline at EOF required for resource compiler (RC1004).
-//
+/*
+ *  version.h - Defines common version information for the DLL's version resource
+ *              and the component version shown in foobar2000.
+ *              Note: Newline at EOF required for resource compiler (RC1004).
+ */
 
 #pragma once
 
@@ -18,7 +18,7 @@
 
 #define APPLICATION_VERSION_MAJOR 0
 #define APPLICATION_VERSION_MINOR 0
-#define APPLICATION_VERSION_BUILD 228
+#define APPLICATION_VERSION_BUILD 229
 #define APPLICATION_VERSION_REVISION -3 // -3: alpha, -2: beta, -1: release candidate, >= 0 && < 32768: not development version
 
 #define LIBRARY_VERSION_MAJOR 2 // INT_VERSION / 100

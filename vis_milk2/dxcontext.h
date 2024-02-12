@@ -34,9 +34,6 @@
 #include "deviceresources.h"
 #include "d3d11shim.h"
 
-#define SNAP_WINDOWED_MODE_BLOCKSIZE 32 // or use 0 if disabling snapping
-#define MAX_DXC_ADAPTERS 32
-
 #define DXC_ERR_REGWIN -2
 #define DXC_ERR_CREATEWIN -3
 #define DXC_ERR_CREATE3D -4
@@ -73,12 +70,6 @@ class DXContext final : public DX::IDeviceNotify
     DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false);
     ~DXContext();
 
-    //DXContext(DXContext&&) = default;
-    //DXContext& operator=(DXContext&&) = default;
-
-    //DXContext(DXContext const&) = delete;
-    //DXContext& operator=(DXContext const&) = delete;
-
     BOOL StartOrRestartDevice(DXCONTEXT_PARAMS* pParams); // also serves as Init() function
     BOOL OnWindowSizeChanged(int width, int height);
     BOOL OnWindowSwap(HWND window, int width, int height);
@@ -92,6 +83,12 @@ class DXContext final : public DX::IDeviceNotify
 
     void OnDeviceLost() override;
     void OnDeviceRestored() override;
+
+    ID3D11Device1* GetD3DDevice() { return m_deviceResources->GetD3DDevice(); }
+    DXGI_FORMAT GetBackBufferFormat() { return m_deviceResources->GetBackBufferFormat(); }
+    ID2D1Device* GetD2DDevice() { return m_deviceResources->GetD2DDevice(); }
+    ID2D1DeviceContext* GetD2DDeviceContext() { return m_deviceResources->GetD2DDeviceContext(); }
+    IDWriteFactory1* GetDWriteFactory() { return m_deviceResources->GetDWriteFactory(); }
 
     // DO NOT WRITE TO THESE FROM OUTSIDE THE CLASS
     int m_ready;
@@ -110,6 +107,7 @@ class DXContext final : public DX::IDeviceNotify
     void Internal_CleanUp();
 
   private:
+    void CreateDeviceIndependentResources();
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 

@@ -37,9 +37,11 @@ class DeviceResources
     DeviceResources(DeviceResources const&) = delete;
     DeviceResources& operator=(DeviceResources const&) = delete;
 
+    void CreateDeviceIndependentResources();
     void CreateDeviceResources();
     void CreateWindowSizeDependentResources();
     void SetWindow(HWND window, int width, int height) noexcept;
+    void SetDpi();
     bool WindowSizeChanged(int width, int height);
     bool WindowSwap(HWND window, int width, int height);
     void HandleDeviceLost();
@@ -67,6 +69,15 @@ class DeviceResources
     UINT GetBackBufferCount() const noexcept { return m_backBufferCount; }
     DXGI_COLOR_SPACE_TYPE GetColorSpace() const noexcept { return m_colorSpace; }
     unsigned int GetDeviceOptions() const noexcept { return m_options; }
+
+    // Direct2D/DirectWrite Accessors.
+    auto GetD2DFactory() const noexcept { return m_d2dFactory.Get(); }
+    auto GetDWriteFactory() const noexcept { return m_dwriteFactory.Get(); }
+    auto GetD2DDevice() const noexcept { return m_d2dDevice.Get(); }
+    auto GetD2DDeviceContext() const noexcept { return m_d2dContext.Get(); }
+    auto GetD2DTargetBitmap() const noexcept { return m_d2dTargetBitmap.Get(); }
+    FLOAT GetDpiX() { return m_dpiX; }
+    FLOAT GetDpiY() { return m_dpiY; }
 
     // Performance events
     void PIXBeginEvent(_In_z_ const wchar_t* name) { m_d3dAnnotation->BeginEvent(name); }
@@ -98,6 +109,19 @@ class DeviceResources
     DXGI_FORMAT m_depthBufferFormat;
     UINT m_backBufferCount;
     D3D_FEATURE_LEVEL m_d3dMinFeatureLevel;
+
+    // Direct2D drawing components.
+    Microsoft::WRL::ComPtr<ID2D1Factory1> m_d2dFactory;
+    Microsoft::WRL::ComPtr<ID2D1Device> m_d2dDevice;
+    Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_d2dContext;
+    Microsoft::WRL::ComPtr<ID2D1Bitmap1> m_d2dTargetBitmap;
+
+    // DirectWrite layout components.
+    Microsoft::WRL::ComPtr<IDWriteFactory1> m_dwriteFactory;
+
+    // Direct2D properties.
+    FLOAT m_dpiX;
+    FLOAT m_dpiY;
 
     // Cached device properties.
     HWND m_window;

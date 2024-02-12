@@ -1,3 +1,7 @@
+/*
+ *  main.cpp - Sets the MilkDrop 2 visualization component's file name and version.
+ */
+
 #include "pch.h"
 #include "version.h"
 

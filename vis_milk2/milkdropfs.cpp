@@ -113,7 +113,7 @@ void RestoreFPCW(WORD wSave)
 //
 // UNRESOLVED ISSUES
 // -----------------
-// actual results of mixed gen. (0 < reg < 1) are about 1% too low
+// Actual results of mixed gen. (0 < reg < 1) are about 1% too low
 // in the long run (vs. analytical expectations). Decided not
 // to bother fixing it since it's only 1% (and VERY consistent).
 int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, int iNumSpawnedSoFar)

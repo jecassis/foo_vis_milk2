@@ -2,7 +2,9 @@ name: Win32 MSVC DLL Build and Package
 on:
   push:
     branches:
+      - debug
       - dev
+      - direct2d
   pull_request:
     branches:
       - master

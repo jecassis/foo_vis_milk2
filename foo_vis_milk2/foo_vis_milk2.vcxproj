@@ -166,7 +166,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <Manifest>
@@ -197,7 +197,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -229,7 +229,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <Manifest>
@@ -260,7 +260,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -292,7 +292,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <Manifest>
@@ -323,7 +323,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -356,7 +356,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\external\directxtk_desktop_win10.2024.1.1.1\native\lib\x64\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <Manifest>
@@ -388,7 +388,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\external\directxtk_desktop_win10.2024.1.1.1\native\lib\x64\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

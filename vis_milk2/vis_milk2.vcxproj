@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -302,6 +302,7 @@
     <ClInclude Include="state.h" />
     <ClInclude Include="support.h" />
     <ClInclude Include="texmgr.h" />
+    <ClInclude Include="textmgr.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="..\external\nu\AutoWide.h" />
   </ItemGroup>
@@ -336,6 +337,7 @@
     <ClCompile Include="state.cpp" />
     <ClCompile Include="support.cpp" />
     <ClCompile Include="texmgr.cpp" />
+    <ClCompile Include="textmgr.cpp" />
     <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>

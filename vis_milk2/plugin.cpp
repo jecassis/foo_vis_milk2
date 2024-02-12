@@ -284,6 +284,14 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
     return true;
 }
 
+// Modify the help screen text here.
+// Watch the number of lines, though; if there are too many, they will get cut off;
+// and watch the length of the lines, since there is no wordwrap.
+// A good guideline: your entire help screen should be visible when fullscreen
+// at 640x480 and using the default help screen font.
+wchar_t* g_szHelp = 0;
+int g_szHelp_W = 0;
+
 // Here, you have the option of overriding the "default defaults"
 // for the stuff on tab 1 of the config panel, replacing them
 // with custom defaults for your plugin.
@@ -301,7 +309,6 @@ void CPlugin::OverrideDefaults()
     m_show_press_f1_msg     = 1;   // 0 or 1
     //m_allow_page_tearing_w  = 0;   // 0 or 1
     m_allow_page_tearing_fs = 0;   // 0 or 1
-    //m_allow_page_tearing_dm = 1;   // 0 or 1
     //m_minimize_winamp       = 1;   // 0 or 1
     //m_desktop_textlabel_boxes = 1; // 0 or 1
     m_save_cpu              = 0;   // 0 or 1
@@ -320,8 +327,8 @@ void CPlugin::OverrideDefaults()
     // Don't override default FS mode here; shell is now smart and sets it to match
     // the current desktop display mode, by default.
 
-    //m_disp_mode_fs.Width    = 1024;             // normally 640
-    //m_disp_mode_fs.Height   = 768;              // normally 480
+    //m_disp_mode_fs.Width = 1024; // normally 640
+    //m_disp_mode_fs.Height = 768; // normally 480
     // Use either D3DFMT_X8R8G8B8 or D3DFMT_R5G6B5.
     // The former will match to any 32-bit color format available,
     // and the latter will match to any 16-bit color available,
@@ -339,6 +346,11 @@ void CPlugin::OverrideDefaults()
 // the plugin shell (framework), do so from OverrideDefaults() above.)
 void CPlugin::MilkDropPreInitialize()
 {
+    // Attempt to load a Unicode `F1` help message, otherwise revert to the ANSI version.
+    g_szHelp = reinterpret_cast<wchar_t*>(GetTextResource(IDR_TEXT2, 1));
+    if (!g_szHelp) g_szHelp = reinterpret_cast<wchar_t*>(GetTextResource(IDR_HELP_TEXT, 0));
+    else g_szHelp_W = 1;
+
     // CONFIG PANEL SETTINGS THAT MilkDrop ADDED (TAB #2)
     m_bInitialPresetSelected = false;
     m_fBlendTimeUser = 1.7f;
@@ -388,9 +400,9 @@ void CPlugin::MilkDropPreInitialize()
     m_nMaxBytes = 16000000;
 
     //#ifdef _DEBUG
-    //    m_dwShaderFlags = D3DXSHADER_DEBUG|(1<<16);
+    //m_dwShaderFlags = D3DXSHADER_DEBUG | (1 << 16);
     //#else
-    //    m_dwShaderFlags = (1<<16);//D3DXSHADER_SKIPOPTIMIZATION|D3DXSHADER_NO_PRESHADER;
+    //m_dwShaderFlags = (1<<16); //D3DXSHADER_SKIPOPTIMIZATION | D3DXSHADER_NO_PRESHADER;
     //#endif
     //m_pFragmentLinker = NULL;
     //m_pCompiledFragments = NULL;
@@ -980,72 +992,10 @@ int CPlugin::AllocateMilkDropDX11()
         m_nMaxPSVersion = m_nMaxPSVersion_ConfigPanel;
     }
 
-    const char* szGPU = GetDriverDescription();
-    // GREY LIST - slow ps_2_0 cards
-    // In Canvas Stretch==Auto mode, for these cards, if they (claim to) run ps_2_0,
-    //   run at half resolution (because they are slow).
-    // THE GENERAL GUIDELINE HERE:
-    //   It should be at least as fast as a GeForce FX 5700 or my GeForce 6200 (TC)
-    //   if it's to run without stretch.
-    if (m_nCanvasStretch == 0) // && m_nMaxPSVersion_DX9 > 0)
-    {
-        // put cards on this list if you see them successfully run ps_2_0 (using override)
-        // and they run well at a low resolution (512x512 or less).
-        if (strstr(szGPU, "GeForce 4") ||     // probably not even ps_2_0
-            strstr(szGPU, "GeForce FX 52") || // chip's computer (FX 5200) - does do ps_2_0, but slow
-            strstr(szGPU, "GeForce FX 53") ||
-            strstr(szGPU, "GeForce FX 54") ||
-            strstr(szGPU, "GeForce FX 55") ||           // GeForce FX 5600 is 13 GB/s - 2.5x as fast as my 6200!
-            strstr(szGPU, "GeForce FX 56") ||           //...GeForce FX 5700 and up, let those run at full resolution on ps_2_0...
-            strstr(szGPU, "SiS 300/305/630/540/730") || // mom's computer - just slow.
-            strstr(szGPU, "Radeon 8") ||                // no shader model 2.
-            strstr(szGPU, "Radeon 90") ||               // from Valve.  no shader model 2.
-            strstr(szGPU, "Radeon 91") ||               // no shader model 2.
-            strstr(szGPU, "Radeon 92") ||               // from Valve.  no shader model 2.
-            strstr(szGPU, "Radeon 93") ||               // no shader model 2.
-            strstr(szGPU, "Radeon 94") ||               // no shader model 2.
-            // guessing that 9500+ are ok - they're all ps_2_0 and the 9600 is like an FX 5900.
-            strstr(szGPU, "Radeon 9550") || // *maybe* - kiv - super budget R200 chip.  def. ps_2_0 but possibly very slow.
-            strstr(szGPU, "Radeon X300") || // *maybe* - kiv - super budget R200 chip   def. ps_2_0 but possibly very slow.
-            0)
-        {
-            nNewCanvasStretch = 200;
-        }
-    }
-
-    // BLACK LIST
-    // In Pixel Shaders==Auto mode, for these cards, we avoid ps_2_0 completely.
-    // There shouldn't be much on this list... feel free to put anything you KNOW doesn't do ps_2_0 (why not),
-    // and to put anything that is slow to begin with, and HAS BUGGY DRIVERS (INTEL).
-    if (m_nMaxPSVersion_ConfigPanel == -1)
-    {
-        if (strstr(szGPU, "GeForce2") ||          // from Valve
-            strstr(szGPU, "GeForce3") ||          // from Valve
-            strstr(szGPU, "GeForce4") ||          // from Valve
-            strstr(szGPU, "Radeon 7") ||          // from Valve
-            strstr(szGPU, "Radeon 8") ||
-            strstr(szGPU, "SiS 661FX_760_741") || // from Valve
-            // FOR NOW, FOR THESE, ASSUME INTEL EITHER DOESN'T DO PS_2_0,
-            // OR DRIVERS SUCK AND IT WOULDN'T WORK ANYWAY!
-            (strstr(szGPU, "Intel") && strstr(szGPU, "945G")) ||
-            (strstr(szGPU, "Intel") && strstr(szGPU, "915G")) || // ben allison's laptop - snow, freezing when you try ps_2_0
-            (strstr(szGPU, "Intel") && strstr(szGPU, "910G")) ||
-            (strstr(szGPU, "Intel") && strstr(szGPU, "8291")) || // gonna guess that this supports ps_2_0 but is SLOW
-            (strstr(szGPU, "Intel") && strstr(szGPU, "8281")) || // definitely DOESN'T support pixel shaders
-            (strstr(szGPU, "Intel") && strstr(szGPU, "8283")) || // definitely DOESN'T support pixel shaders
-            (strstr(szGPU, "Intel") && strstr(szGPU, "8284")) || // definitely DOESN'T support pixel shaders
-            (strstr(szGPU, "Intel") && strstr(szGPU, "8285")) || // definitely DOESN'T support pixel shaders
-            (strstr(szGPU, "Intel") && strstr(szGPU, "8286")) || // definitely DOESN'T support pixel shaders.  Ben Allison's desktop (865) - no image w/ps_2_0.  Plus Nes's desktop - no ps_2_0.
-            0)
-        {
-            m_nMaxPSVersion = MD2_PS_NONE;
-            //if (m_nCanvasStretch==0)
-            //    nNewCanvasStretch = 100;
-        }
-    }
-
     // SHADERS
-    //-------------------------------------
+    // GREY LIST (slow ps_2_0 cards) and BLACK LIST (bad ps_2_0 support)
+    // not needed for DirectX 11.1.
+    //------------------------------------------------------------------
     if (m_nMaxPSVersion > MD2_PS_NONE)
     {
         /* DX11: vertex declarations not required. D3D11Shim uses needed layout
@@ -2641,7 +2591,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                 else if (!strncmp(cd.Name, "texsize_", 8))
                 {
                     // Remove "texsize_" prefix to find root file name.
-                    wchar_t szRootName[MAX_PATH];
+                    wchar_t szRootName[MAX_PATH]{};
                     if (!strncmp(cd.Name, "texsize_", 8))
                         wcscpy_s(szRootName, AutoWide(&cd.Name[8]));
                     else
@@ -2650,14 +2600,14 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                     // Check for request for random texture.
                     // It should be a previously-seen random index - just fetch/reuse the name.
                     if (!wcsncmp(L"rand", szRootName, 4) && IsNumericChar(szRootName[4]) && IsNumericChar(szRootName[5]) &&
-                        (szRootName[6] == 0 || szRootName[6] == L'_'))
+                        (szRootName[6] == L'\0' || szRootName[6] == L'_'))
                     {
                         int rand_slot = -1;
 
                         // Ditch filename prefix ("rand13_smalltiled", for example)
                         // and just go by the slot.
                         if (szRootName[6] == L'_')
-                            szRootName[6] = 0;
+                            szRootName[6] = L'\0';
 
                         swscanf_s(&szRootName[4], L"%d", &rand_slot);
                         if (rand_slot >= 0 && rand_slot <= 15) // otherwise, not a special filename - ignore it
@@ -3374,6 +3324,80 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     LeaveCriticalSection(&g_cs);
 }
 
+// clang-format off
+#define MTO_UPPER_RIGHT 0
+#define MTO_UPPER_LEFT 1
+#define MTO_LOWER_RIGHT 2
+#define MTO_LOWER_LEFT 3
+
+#define SelectFont(n) { \
+    pFont = GetFont(n); \
+    h = GetFontHeight(n); \
+}
+
+#define MilkDropTextOut_Box(str, element, corner, color, bDarkBox, boxColor) { \
+    D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
+    D2D1_COLOR_F fBox = D2D1::ColorF(boxColor, GetAlpha(boxColor)); \
+    if (!element.IsVisible()) element.Initialize(m_lpDX->GetD2DDeviceContext()); \
+    element.SetAlignment(AlignCenter, AlignCenter); \
+    element.SetTextColor(fText); \
+    element.SetTextOpacity(fText.a); \
+    /* Calculate rendered rectangle size. */ \
+    r = D2D1::RectF(0.0f, 0.0f, static_cast<FLOAT>(xR - xL), 2048.0f); \
+    element.SetContainer(r); \
+    element.SetText(str); \
+    element.SetTextStyle(pFont); \
+    element.SetTextShadow(false); \
+    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | DT_CALCRECT | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, false, boxColor); \
+    int w = static_cast<int>(r.right - r.left); \
+    if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
+    else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
+    else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
+    else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
+    /* Draw the text. */ \
+    element.SetContainer(r); \
+    element.SetTextBox(fBox, r); \
+    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, bDarkBox, boxColor); \
+    if (!element.IsVisible()) m_text.RegisterElement(&element); \
+    element.SetVisible(true); \
+    if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
+    else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
+    else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
+    else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
+}
+
+#define MilkDropTextOut(str, element, corner, bDarkBox) MilkDropTextOut_Box(str, element, corner, 0xFFFFFFFF, bDarkBox, 0xFF000000)
+
+#define MilkDropTextOut_Shadow(str, element, color, corner) { \
+    D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
+    if (!element.IsVisible()) element.Initialize(m_lpDX->GetD2DDeviceContext()); \
+    element.SetAlignment(AlignCenter, AlignCenter); \
+    element.SetTextColor(fText); \
+    element.SetTextOpacity(fText.a); \
+    /* Calculate rendered rectangle size. */ \
+    r = D2D1::RectF(0.0f, 0.0f, static_cast<FLOAT>(xR - xL), 2048.0f); \
+    element.SetContainer(r); \
+    element.SetText(str); \
+    element.SetTextStyle(pFont); \
+    element.SetTextShadow(true); \
+    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, color, false, 0xFF000000); \
+    int w = static_cast<int>(r.right - r.left); \
+    if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
+    else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
+    else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
+    else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
+    /* Draw the text. */ \
+    element.SetContainer(r); \
+    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS, color, false, 0xFF000000); \
+    if (!element.IsVisible()) m_text.RegisterElement(&element); \
+    element.SetVisible(true); \
+    if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
+    else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
+    else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
+    else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
+}
+// clang-format on
+
 void CPlugin::AddError(wchar_t* szMsg, float fDuration, ErrorCategory category, bool bBold)
 {
     if (category == ERR_NOTIFY)
@@ -3419,9 +3443,8 @@ void CPlugin::ClearErrors(int category) // 0 = all categories
 //       hate that; in that case should probably draw the text just once,
 //       to a texture, and then display the texture each frame. This is
 //       how the help screen is done; see "pluginshell.cpp" for example.
-void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_corner_y*/, int* /*lower_left_corner_y*/, int* /*lower_right_corner_y*/, int /*xL*/, int /*xR*/)
+void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR)
 {
-#if 0
     D2D1_RECT_F r{};
     wchar_t buf[512]{};
     TextStyle* pFont = GetFont(DECORATIVE_FONT);
@@ -3443,7 +3466,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_presetName.IsVisible())
             {
                 m_presetName.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_presetName);
+                m_text.UnregisterElement(&m_presetName);
             }
         }
 
@@ -3462,7 +3485,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_presetRating.IsVisible())
             {
                 m_presetRating.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_presetRating);
+                m_text.UnregisterElement(&m_presetRating);
             }
         }
 
@@ -3479,7 +3502,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_fpsDisplay.IsVisible())
             {
                 m_fpsDisplay.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_fpsDisplay);
+                m_text.UnregisterElement(&m_fpsDisplay);
             }
         }
 
@@ -3495,13 +3518,14 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_debugInfo.IsVisible())
             {
                 m_debugInfo.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_debugInfo);
+                m_text.UnregisterElement(&m_debugInfo);
             }
         }
 
         // NOTE: Custom timed message comes at the end!!
     }
 
+    /*
     // 2. Render text in lower-right corner.
     {
         // "waitstring" tooltip.
@@ -3514,6 +3538,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             ClearTooltip();
         }
     }
+    */
 
     // 3. Render text in lower-left corner.
     {
@@ -3530,7 +3555,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_songTitle.IsVisible())
             {
                 m_songTitle.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_songTitle);
+                m_text.UnregisterElement(&m_songTitle);
             }
         }
 
@@ -3562,7 +3587,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_songStats.IsVisible())
             {
                 m_songStats.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_songStats);
+                m_text.UnregisterElement(&m_songStats);
             }
         }
     }
@@ -3603,7 +3628,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                 {
                     // Draw dark box based on longest line and number of lines...
                     r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
-                    CTextManager::GetInstance().DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r,
+                    m_text.DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r,
                                                             DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false,
                                                             0xFF000000);
                     D2D1_RECT_F darkbox = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y - 2),
@@ -3832,7 +3857,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                         D2D1_RECT_F r2 = rect;
                         r2.bottom = 4096.0f;
                         r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
-                        CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2,
+                        m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2,
                                                                 DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
                         float fH = r2.bottom - r2.top;
                         ypixels += fH;
@@ -3891,7 +3916,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                         DWORD color = MENU_COLOR;
                         if (m_waitstring.nCursorPos >= start && m_waitstring.nCursorPos <= pos)
                             color = MENU_HILITE_COLOR;
-                        rect.top += CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &rect,
+                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &rect,
                                                                             0 /*| DT_WORDBREAK*/, color, false);
                         buf0A[pos] = ch;
 
@@ -3914,7 +3939,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                 box.bottom = 4096.0f;
                 swprintf_s(buf2, L"    %sX",
                            buf0); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
-                CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &box, DT_CALCRECT, MENU_COLOR, false);
+                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &box, DT_CALCRECT, MENU_COLOR, false);
 
                 // Use r2 to draw a dark box.
                 box.top -= PLAYLIST_INNER_MARGIN;
@@ -3925,7 +3950,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                 *upper_left_corner_y += static_cast<int>(box.bottom - box.top + PLAYLIST_INNER_MARGIN * 3.0f);
 
                 swprintf_s(buf2, L"    %s ", buf0);
-                CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &rect, 0, MENU_COLOR, false);
+                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &rect, 0, MENU_COLOR, false);
             }
         }
         else if (m_UI_mode == UI_MENU)
@@ -4316,9 +4341,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                 orig_rect.top += PLAYLIST_INNER_MARGIN;
             }
         }
-        else
-#endif
-            if (m_UI_mode == UI_LOAD)
+        else if (m_UI_mode == UI_LOAD)
         {
             if (m_nPresets == 0)
             {
@@ -4457,7 +4480,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                                 color = PLAYLIST_COLOR_HILITE_TRACK;
 
                             D2D1_COLOR_F fColor = D2D1::ColorF(color, GetAlpha(color));
-                            m_loadPresetItem[i].Initialize();
+                            m_loadPresetItem[i].Initialize(m_lpDX->GetD2DDeviceContext());
                             m_loadPresetItem[i].SetAlignment(AlignNear, AlignNear);
                             m_loadPresetItem[i].SetTextColor(fColor);
                             m_loadPresetItem[i].SetTextOpacity(fColor.a);
@@ -4466,19 +4489,23 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                             m_loadPresetItem[i].SetText(str2);
                             m_loadPresetItem[i].SetTextStyle(GetFont(SIMPLE_FONT));
                             m_loadPresetItem[i].SetTextShadow(false);
-                            CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2,
-                                                                    DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color,
-                                                                    false);
+                            m_text.DrawD2DText(GetFont(SIMPLE_FONT),
+                                               &m_loadPresetItem[i],
+                                               str2,
+                                               &r2,
+                                               DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT,
+                                               color,
+                                               false);
                         }
                         else
                         {
                             m_loadPresetItem[i].SetContainer(r2);
                             int nHeight =
-                                CTextManager::GetInstance().DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2,
+                                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2,
                                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
                             FLOAT fHeight = static_cast<FLOAT>(std::max(nFontHeight, nHeight));
                             rect.top += fHeight;
-                            CTextManager::GetInstance().RegisterElement(&m_loadPresetItem[i]);
+                            m_text.RegisterElement(&m_loadPresetItem[i]);
 
                             // Calculate dark box rectangle
                             box.right = std::max(box.right, box.left + r2.right - r2.left);
@@ -4505,22 +4532,22 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
             if (m_loadPresetInstruction.IsVisible())
             {
                 m_loadPresetInstruction.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_loadPresetInstruction);
+                m_text.UnregisterElement(&m_loadPresetInstruction);
             }
             if (m_loadPresetDir.IsVisible())
             {
                 m_loadPresetDir.SetVisible(false);
-                CTextManager::GetInstance().UnregisterElement(&m_loadPresetDir);
+                m_text.UnregisterElement(&m_loadPresetDir);
             }
             for (int i = 0; i < MAX_PRESETS_PER_PAGE; ++i)
                 if (m_loadPresetItem[i].IsVisible())
                 {
                     m_loadPresetItem[i].SetVisible(false);
-                    CTextManager::GetInstance().UnregisterElement(&m_loadPresetItem[i]);
+                    m_text.UnregisterElement(&m_loadPresetItem[i]);
                 }
         }
-    }
 #endif
+    }
 
     // 5. Render *remaining* text to upper-right corner.
     {
@@ -4548,7 +4575,7 @@ void CPlugin::MilkDropRenderUI(int* /*upper_left_corner_y*/, int* /*upper_right_
                     if (it->text.IsVisible())
                     {
                         it->text.SetVisible(false);
-                        CTextManager::GetInstance().UnregisterElement(&it->text);
+                        m_text.UnregisterElement(&it->text);
                     }
                     it = m_errors.erase(it);
                 }
@@ -5248,7 +5275,7 @@ retry:
         bool bIsDir = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
         float fRating = 0;
 
-        wchar_t szFilename[512];
+        wchar_t szFilename[512]{};
         wcscpy_s(szFilename, fd.cFileName);
 
         if (bIsDir)

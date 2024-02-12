@@ -28,18 +28,14 @@
 */
 
 #include "pch.h"
-//#include "api.h"
 #include "pluginshell.h"
 #include "utility.h"
 #include "defines.h"
 #include "shell_defines.h"
-//#include "resource.h"
-//#include "vis.h"
-//#include <multimon.h>
-//#include "../Winamp/wa_ipc.h"
-//#include "../nu/AutoCharFn.h"
-#include <mmsystem.h>
+#include "utility.h"
+#include <nu/AutoWide.h>
 #include "DirectXHelpers.h"
+#include <mmsystem.h>
 #pragma comment(lib, "winmm.lib") // for timeGetTime
 
 // STATE VALUES & VERTEX FORMATS FOR HELP SCREEN TEXTURE:
@@ -69,37 +65,28 @@ extern wchar_t* g_szHelp;
 extern int g_szHelp_W;
 //extern winampVisModule mod1;
 
-// Resides in `vms_desktop.dll/lib`.
-void getItemData(int x);
-
 CPluginShell::CPluginShell() { /* This should remain empty! */ }
 CPluginShell::~CPluginShell() { /* This should remain empty! */ }
 
-eScrMode CPluginShell::GetScreenMode() { return m_screenmode; }
-int CPluginShell::GetFrame() { return m_frame; }
-float CPluginShell::GetTime() { return m_time; }
-float CPluginShell::GetFps() { return m_fps; }
+eScrMode CPluginShell::GetScreenMode() const { return m_screenmode; }
+int CPluginShell::GetFrame() const { return m_frame; }
+float CPluginShell::GetTime() const { return m_time; }
+float CPluginShell::GetFps() const { return m_fps; }
 HWND CPluginShell::GetPluginWindow() const { if (m_lpDX) return m_lpDX->GetHwnd(); else return NULL; }
-int CPluginShell::GetWidth() { if (m_lpDX) return m_lpDX->m_client_width; else return 0; }
-int CPluginShell::GetHeight() { if (m_lpDX) return m_lpDX->m_client_height; else return 0; }
+int CPluginShell::GetWidth() const { if (m_lpDX) return m_lpDX->m_client_width; else return 0; }
+int CPluginShell::GetHeight() const { if (m_lpDX) return m_lpDX->m_client_height; else return 0; }
 int CPluginShell::GetCanvasMarginX() { return 0; }
 int CPluginShell::GetCanvasMarginY() { return 0; }
-HWND CPluginShell::GetWinampWindow() { return m_hWndWinamp; }
+HWND CPluginShell::GetWinampWindow() const { return m_hWndWinamp; }
 void CPluginShell::SetWinampWindow(HWND window) { m_hWndWinamp = window; }
-HINSTANCE CPluginShell::GetInstance() { return m_hInstance; }
+HINSTANCE CPluginShell::GetInstance() const { return m_hInstance; }
 wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; }
 wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; }
 char* CPluginShell::GetConfigIniFileA() { return m_szConfigIniFileA; }
-int CPluginShell::GetFontHeight(eFontIndex idx) { if (idx >= 0 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_fontinfo[idx].nSize; else return 0; };
-int CPluginShell::GetBitDepth() { return m_lpDX->GetBitDepth(); };
-D3D11Shim* CPluginShell::GetDevice() { return m_lpDX->m_lpDevice.get(); };
-#if 0
-D3DCAPS9* CPluginShell::GetCaps() { if (m_lpDX) return &(m_lpDX->m_caps); else return NULL; };
-D3DFORMAT CPluginShell::GetBackBufFormat() { if (m_lpDX) return m_lpDX->m_current_mode.display_mode.Format; else return D3DFMT_UNKNOWN; };
-D3DFORMAT CPluginShell::GetBackBufZFormat() { if (m_lpDX) return m_lpDX->GetZFormat(); else return D3DFMT_UNKNOWN; };
-#endif
-char* CPluginShell::GetDriverFilename() { static char fake[1] = {0}; return fake; }
-char* CPluginShell::GetDriverDescription() { static char fake[1] = {0}; return fake; }
+TextStyle* CPluginShell::GetFont(eFontIndex idx) { if (idx >= eFontIndex::SIMPLE_FONT && idx < eFontIndex::EXTRA_5 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) { return m_dwrite_font[idx].get(); } else { return NULL; } }
+int CPluginShell::GetFontHeight(eFontIndex idx) const { if (idx >= eFontIndex::SIMPLE_FONT  && idx < eFontIndex::EXTRA_5 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_fontinfo[idx].nSize; else return 0; }
+int CPluginShell::GetBitDepth() const { return m_lpDX->GetBitDepth(); };
+D3D11Shim* CPluginShell::GetDevice() const { return m_lpDX->m_lpDevice.get(); };
 
 int CPluginShell::InitNonDX11()
 {
@@ -116,12 +103,94 @@ void CPluginShell::CleanUpNonDX11()
     m_fftobj.CleanUp();
 }
 
+int CPluginShell::AllocateFonts()
+{
+    // Create system fonts.
+    for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+    {
+        m_dwrite_font[i] = std::make_unique<TextStyle>(
+            m_fontinfo[i].szFace,
+            static_cast<float>(m_fontinfo[i].nSize), //* 4 / 10),
+            m_fontinfo[i].bBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_REGULAR,
+            m_fontinfo[i].bItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
+            DWRITE_TEXT_ALIGNMENT_LEADING
+        );
+    }
+
+    // Get actual font heights.
+    //for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+    //{
+    //    RECT r;
+    //    SetRect(&r, 0, 0, 1024, 1024);
+    //    int h = m_dwrite_font[i]->DrawTextW(NULL, L"M", -1, &r, DT_CALCRECT, 0xFFFFFFFF);
+    //    if (h > 0)
+    //        m_fontinfo[i].nSize = h;
+    //}
+
+    return true;
+}
+
+void CPluginShell::CleanUpFonts()
+{
+    //for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+    //    SafeDelete(m_dwrite_font[i]);
+}
+
+void CPluginShell::AllocateTextSurface()
+{
+    ID3D11Device* pDevice = m_lpDX->GetD3DDevice();
+    int w = GetWidth();
+    int h = GetHeight();
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = static_cast<UINT>(w);
+    desc.Height = static_cast<UINT>(h);
+    desc.MipLevels = 0;
+    desc.ArraySize = 1;
+    desc.Format = m_lpDX->GetBackBufferFormat();
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+
+    //const uint32_t s_pixel = 0xFFFFFFFF;
+    //D3D11_SUBRESOURCE_DATA initData = {&s_pixel, sizeof(uint32_t), 0};
+
+    if (FAILED(pDevice->CreateTexture2D(&desc, NULL, &m_lpDDSText)))
+    {
+        m_lpDDSText.Reset(); // OK if there is not enough memory for it!
+    }
+    else
+    {
+        // If `m_lpDDSText` does not cover enough of screen, cancel it.
+        desc = {};
+        m_lpDDSText->GetDesc(&desc);
+        if ((desc.Width < 256 && w >= 256) ||
+            (desc.Height < 256 && h >= 256) ||
+            (static_cast<float>(desc.Width / w) < 0.74f) ||
+            (desc.Height / (float)h < 0.74f))
+        {
+            m_lpDDSText.Reset();
+        }
+    }
+}
+
 int CPluginShell::AllocateDX11()
 {
+    AllocateFonts();
+    if (m_fix_slow_text)
+        AllocateTextSurface();
     int ret = AllocateMilkDropDX11();
 
     // Invalidate various 'caches' here.
     m_playlist_top_idx = -1; // Invalidating playlist cache forces recompute of playlist width
+
+    if (m_lpDX)
+    {
+        m_text.Init(m_lpDX.get(), /*nullptr,*/ 1);
+    }
 
     return ret;
 }
@@ -136,13 +205,9 @@ void CPluginShell::CleanUpDX11(int final_cleanup)
             m_lpDX->m_lpDevice->SetTexture(i, NULL);
     }
 
-    if (!m_vj_mode)
-    {
-        for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
-            SafeRelease(m_d3dx_font[i]);
-        SafeRelease(m_lpDDSText);
-    }
-
+    CleanUpFonts();
+    m_text.Finish();
+    m_lpDDSText.Reset();
     CleanUpMilkDropDX11(final_cleanup);
 }
 
@@ -194,20 +259,13 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_windowed);
             break;
         case FULLSCREEN:
-        case FAKE_FULLSCREEN:
             pParams->allow_page_tearing = m_allow_page_tearing_fs;
             pParams->adapter_guid = m_adapter_guid_fullscreen;
             pParams->msaa = m_multisample_fullscreen;
             wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
             break;
-        case DESKTOP:
-            pParams->allow_page_tearing = m_allow_page_tearing_dm;
-            pParams->adapter_guid = m_adapter_guid_desktop;
-            pParams->msaa = m_multisample_desktop;
-            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_desktop);
-            break;
     }
-    pParams->parent_window = m_hWndWinamp; //(m_screenmode == DESKTOP) ? m_hWndDesktopListView : NULL;
+    pParams->parent_window = m_hWndWinamp;
 }
 
 void CPluginShell::ToggleFullScreen()
@@ -216,14 +274,8 @@ void CPluginShell::ToggleFullScreen()
 
     switch (m_screenmode)
     {
-        case DESKTOP:
-        case WINDOWED:
-            m_screenmode = FULLSCREEN;
-            break;
-        case FULLSCREEN:
-        case FAKE_FULLSCREEN:
-            m_screenmode = WINDOWED;
-            break;
+        case WINDOWED: m_screenmode = FULLSCREEN; break;
+        case FULLSCREEN: m_screenmode = WINDOWED; break;
     }
 
     DXCONTEXT_PARAMS params{};
@@ -249,6 +301,19 @@ void CPluginShell::ToggleFullScreen()
     //SetForegroundWindow(m_lpDX->GetHwnd());
     //SetActiveWindow(m_lpDX->GetHwnd());
     //SetFocus(m_lpDX->GetHwnd());
+}
+
+void CPluginShell::ToggleHelp()
+{
+    m_show_help = !m_show_help;
+    //int ret = CheckMenuItem(m_context_menu, ID_SHOWHELP, MF_BYCOMMAND | (m_show_help ? MF_CHECKED : MF_UNCHECKED));
+}
+
+void CPluginShell::TogglePlaylist()
+{
+    m_show_playlist = !m_show_playlist;
+    m_playlist_top_idx = -1; // <- invalidates playlist cache
+    //int ret = CheckMenuItem(m_context_menu, ID_SHOWPLAYLIST, MF_BYCOMMAND | (m_show_playlist ? MF_CHECKED : MF_UNCHECKED));
 }
 
 int CPluginShell::InitDirectX()
@@ -300,19 +365,12 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     // PROTECTED CONFIG PANEL SETTINGS (also see 'private' settings, below)
     m_start_fullscreen = 0;
     m_start_desktop = 0;
-    m_fake_fullscreen_mode = 0;
     m_max_fps_fs = 30;
-    m_max_fps_dm = 30;
     m_max_fps_w = 30;
     m_show_press_f1_msg = 1;
     m_allow_page_tearing_w = 0;
     m_allow_page_tearing_fs = 0;
-    m_allow_page_tearing_dm = 0;
     m_minimize_winamp = 1;
-    m_desktop_show_icons = 1;
-    m_desktop_textlabel_boxes = 1;
-    m_desktop_manual_icon_scoot = 0;
-    m_desktop_555_fix = 2;
     m_dualhead_horz = 2;
     m_dualhead_vert = 1;
     m_save_cpu = 1;
@@ -384,10 +442,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 #endif
 
     // PROTECTED STRUCTURES/POINTERS
-    for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
-        m_d3dx_font[i] = NULL;
-    m_d3dx_desktop_font = nullptr;
-    m_lpDDSText = nullptr;
+    m_lpDDSText.Reset();
     ZeroMemory(&m_sound, sizeof(td_soundinfo));
     for (int ch = 0; ch < 2; ch++)
         for (int i = 0; i < 3; i++)
@@ -467,21 +522,18 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 
     // PRIVATE CONFIG PANEL SETTINGS
     m_multisample_fullscreen = {1u, 0u}; //D3DMULTISAMPLE_NONE;
-    m_multisample_desktop = {1u, 0u}; //D3DMULTISAMPLE_NONE;
     m_multisample_windowed = {1u, 0u}; //D3DMULTISAMPLE_NONE;
     ZeroMemory(&m_adapter_guid_fullscreen, sizeof(GUID));
-    ZeroMemory(&m_adapter_guid_desktop , sizeof(GUID));
     ZeroMemory(&m_adapter_guid_windowed , sizeof(GUID));
     m_adapter_devicename_windowed[0] = '\0';
     m_adapter_devicename_fullscreen[0] = '\0';
-    m_adapter_devicename_desktop[0] = '\0';
 
     // PRIVATE RUNTIME SETTINGS
     m_lost_focus = 0;
     m_hidden = 0;
     m_resizing = 0;
-    m_show_help = 0;
-    m_show_playlist = 0;
+    m_show_help = false;
+    m_show_playlist = false;
     m_playlist_pos = 0;
     m_playlist_pageups = 0;
     m_playlist_top_idx = -1;
@@ -497,12 +549,14 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_right_edge = 0;
     m_force_accept_WM_WINDOWPOSCHANGING = 0;
 
+    /*
     // PRIVATE - GDI STUFF
     m_main_menu = NULL;
     m_context_menu = NULL;
     for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
         m_font[i] = NULL;
     m_font_desktop = NULL;
+    */
 
     // PRIVATE - MORE TIMEKEEPING
     m_last_raw_time = 0;
@@ -521,17 +575,6 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_prev_align_offset[0] = 0;
     m_prev_align_offset[1] = 0;
     m_align_weights_ready = 0;
-
-    // SEPARATE TEXT WINDOW (FOR VJ MODE)
-    m_vj_mode = 0;
-    m_hidden_textwnd = 0;
-    m_resizing_textwnd = 0;
-    m_hTextWnd = NULL;
-    m_nTextWndWidth = 0;
-    m_nTextWndHeight = 0;
-    m_bTextWindowClassRegistered = false;
-    //m_vjd3d9 = NULL;
-    //m_vjd3d9_device = NULL;
 
     //-----
 
@@ -836,10 +879,11 @@ void CPluginShell::DrawAndDisplay(int redraw)
     //m_lpDX->Clear();
 
     MilkDropRenderFrame(redraw);
-    //RenderBuiltInTextMsgs();
+    RenderBuiltInTextMsgs();
     MilkDropRenderUI(&m_upper_left_corner_y, &m_upper_right_corner_y, &m_lower_left_corner_y, &m_lower_right_corner_y, m_left_edge, m_right_edge);
-    //RenderPlaylist();
+    RenderPlaylist();
 
+    m_text.DrawNow();
     m_lpDX->Show();
 }
 
@@ -848,10 +892,8 @@ void CPluginShell::EnforceMaxFPS()
     int max_fps = 0;
     switch (m_screenmode)
     {
-        case WINDOWED:        max_fps = m_max_fps_w;  break;
-        case FULLSCREEN:      max_fps = m_max_fps_fs; break;
-        case FAKE_FULLSCREEN: max_fps = m_max_fps_fs; break;
-        case DESKTOP:         max_fps = m_max_fps_dm; break;
+        case WINDOWED:   max_fps = m_max_fps_w;  break;
+        case FULLSCREEN: max_fps = m_max_fps_fs; break;
     }
 
     if (max_fps <= 0)
@@ -1214,7 +1256,7 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 
 // Parameter `pr` is the rectangle that some text will occupy;
 // a black box will be drawn around it, plus a bit of extra margin space.
-void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
+void CPluginShell::DrawDarkTranslucentBox(D2D1_RECT_F* pr)
 {
     m_lpDX->m_lpDevice->SetVertexShader(NULL, NULL);
     m_lpDX->m_lpDevice->SetPixelShader(NULL, NULL);
@@ -1240,7 +1282,7 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
         verts[i].x = (i % 2 == 0) ? (float)(-m_lpDX->m_client_width / 2 + pr->left) : (float)(-m_lpDX->m_client_width / 2 + pr->right);
         verts[i].y = (i / 2 == 0) ? (float)-(-m_lpDX->m_client_height / 2 + pr->bottom) : (float)-(-m_lpDX->m_client_height / 2 + pr->top);
         verts[i].z = 0;
-        verts[i].Diffuse = (m_screenmode == DESKTOP) ? 0xE0000000 : 0xD0000000;
+        verts[i].Diffuse = 0xD0000000;
     }
 
     m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
@@ -1250,6 +1292,269 @@ void CPluginShell::DrawDarkTranslucentBox(RECT* pr)
     m_lpDX->m_lpDevice->SetBlendState(false);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
     //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+}
+
+void CPluginShell::RenderBuiltInTextMsgs()
+{
+    int _show_press_f1_NOW = (m_show_press_f1_msg & int(m_time < PRESS_F1_DUR));
+
+    {
+        D2D1_RECT_F r{};
+        DWORD textColor = 0xFFFFFFFF;
+        DWORD backColor = 0xD0000000;
+        D2D1_COLOR_F fTextColor = D2D1::ColorF(textColor, static_cast<FLOAT>(((textColor & 0xFF000000) >> 24) / 255.0f));
+        D2D1_COLOR_F fBackColor = D2D1::ColorF(backColor, static_cast<FLOAT>(((backColor & 0xFF000000) >> 24) / 255.0f));
+
+        if (m_show_help)
+        {
+            if (!m_helpManual.IsVisible()) m_helpManual.Initialize(m_lpDX->GetD2DDeviceContext());
+            m_helpManual.SetAlignment(AlignNear, AlignNear);
+            m_helpManual.SetTextColor(fTextColor);
+            m_helpManual.SetTextOpacity(fTextColor.a);
+            m_helpManual.SetTextShadow(false);
+            m_helpManual.SetTextStyle(GetFont(HELPSCREEN_FONT));
+
+            //int y = m_upper_left_corner_y;
+
+            r = D2D1::RectF(0.0f, 0.0f, static_cast<FLOAT>(GetWidth()), static_cast<FLOAT>(GetHeight()));
+            m_helpManual.SetContainer(r);
+            m_helpManual.SetVisible(true);
+
+            if (!g_szHelp_W)
+            {
+                m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
+                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, DT_CALCRECT, textColor, true, backColor);
+            }
+            else
+            {
+                m_helpManual.SetText(g_szHelp);
+                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, g_szHelp, &r, DT_CALCRECT, textColor, true, backColor);
+            }
+
+            r.top += static_cast<FLOAT>(m_upper_left_corner_y);
+            r.left += static_cast<FLOAT>(m_left_edge);
+            r.right += static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN * 2.0f);
+            r.bottom += static_cast<FLOAT>(m_upper_left_corner_y + PLAYLIST_INNER_MARGIN * 2.0f);
+            DrawDarkTranslucentBox(&r);
+            m_helpManual.SetTextBox(fBackColor, r);
+
+            r.top += PLAYLIST_INNER_MARGIN;
+            r.left += PLAYLIST_INNER_MARGIN;
+            r.right -= PLAYLIST_INNER_MARGIN;
+            r.bottom -= PLAYLIST_INNER_MARGIN;
+            m_helpManual.SetContainer(r);
+            if (!g_szHelp_W)
+            {
+                m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
+                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, 0, textColor, true, backColor);
+            }
+            else
+            {
+                m_helpManual.SetText(g_szHelp);
+                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, g_szHelp, &r, 0, textColor, true, backColor);
+            }
+            m_text.RegisterElement(&m_helpManual);
+
+            m_upper_left_corner_y += static_cast<int>(r.bottom - r.top + PLAYLIST_INNER_MARGIN * 3.0f);
+        }
+        else
+        {
+            if (m_helpManual.IsVisible())
+                m_helpManual.SetVisible(false);
+        }
+
+        // Render 'Press F1 for Help' message in lower-right corner.
+        if (_show_press_f1_NOW)
+        {
+            if (!m_helpMessage.IsVisible())
+            {
+                m_helpMessage.Initialize(m_lpDX->GetD2DDeviceContext());
+                m_helpMessage.SetAlignment(AlignFar, AlignFar);
+                m_helpMessage.SetTextColor(fTextColor);
+                m_helpMessage.SetTextOpacity(fTextColor.a);
+                m_helpMessage.SetTextShadow(true);
+                m_helpMessage.SetTextStyle(GetFont(DECORATIVE_FONT));
+                m_helpMessage.SetText(WASABI_API_LNGSTRINGW(IDS_PRESS_F1_MSG));
+            }
+
+            int dx = static_cast<int>(160.0f * powf(m_time / static_cast<float>(PRESS_F1_DUR), static_cast<float>(PRESS_F1_EXP)));
+            r = D2D1::RectF(static_cast<FLOAT>(m_left_edge), static_cast<FLOAT>(m_lower_right_corner_y - GetFontHeight(DECORATIVE_FONT)), static_cast<FLOAT>(m_right_edge + dx), static_cast<FLOAT>(m_lower_right_corner_y));
+            m_helpMessage.SetContainer(r);
+            if (!m_helpMessage.IsVisible())
+            {
+                m_helpMessage.SetVisible(true);
+
+                m_lower_right_corner_y -= m_text.DrawD2DText(GetFont(DECORATIVE_FONT), &m_helpMessage, WASABI_API_LNGSTRINGW(IDS_PRESS_F1_MSG), &r, DT_RIGHT, textColor, false);
+                m_text.RegisterElement(&m_helpMessage);
+            }
+        }
+        else
+        {
+            if (m_helpMessage.IsVisible())
+            {
+                m_helpMessage.SetVisible(false);
+                m_text.UnregisterElement(&m_helpMessage);
+            }
+        }
+    }
+}
+
+// Draws playlist.
+void CPluginShell::RenderPlaylist()
+{
+    if (m_show_playlist)
+    {
+#if 0
+        D2D1_RECT_F r;
+        int nSongs = SendMessage(m_hWndWinamp, WM_USER, 0, 124);
+        int now_playing = SendMessage(m_hWndWinamp, WM_USER, 0, 125);
+        DWORD dwFlags = DT_SINGLELINE; //| DT_NOPREFIX | DT_WORD_ELLIPSIS; // Note: `dwFlags` is used for both DDRAW and DX9
+        int nFontHeight = GetFontHeight(PLAYLIST_FONT);
+
+        if (nSongs <= 0)
+        {
+            m_show_playlist = 0;
+        }
+        else
+        {
+            int playlist_vert_pixels = m_lower_left_corner_y - m_upper_left_corner_y;
+            int disp_lines =
+                std::min(MAX_SONGS_PER_PAGE, (playlist_vert_pixels - static_cast<int>(PLAYLIST_INNER_MARGIN) * 2) / nFontHeight);
+            //int total_pages = nSongs / disp_lines;
+
+            if (disp_lines <= 0)
+                return;
+
+            // Apply PgUp/PgDn keypresses since last time.
+            m_playlist_pos -= m_playlist_pageups * disp_lines;
+            m_playlist_pageups = 0;
+
+            if (m_playlist_pos < 0)
+                m_playlist_pos = 0;
+            if (m_playlist_pos >= nSongs)
+                m_playlist_pos = nSongs - 1;
+
+            int cur_page = m_playlist_pos / disp_lines;
+            //int cur_line = (m_playlist_pos + disp_lines - 1) % disp_lines;
+            int new_top_idx = cur_page * disp_lines;
+            int new_btm_idx = new_top_idx + disp_lines;
+            wchar_t buf[1024] = {};
+
+            // Ask Winamp for the song names, but DO IT BEFORE getting the DC,
+            // otherwise might crash (~DDRAW port).
+            if (m_playlist_top_idx != new_top_idx || m_playlist_btm_idx != new_btm_idx)
+            {
+                for (int i = 0; i < disp_lines; i++)
+                {
+                    int j = new_top_idx + i;
+                    if (j < nSongs)
+                    {
+                        // Clip maximum length of song name to 240 characters, to prevent overflows.
+                        wcsncpy_s(buf, reinterpret_cast<wchar_t*>(SendMessage(m_hWndWinamp, WM_USER, j, IPC_GETPLAYLISTTITLEW)), 240);
+                        swprintf_s(m_playlist[i], L"%d. %s ", j + 1, buf); // leave an extra space at end, so italicized fonts do not get clipped
+                    }
+                }
+            }
+
+            // Update playlist cache, if necessary.
+            if (m_playlist_top_idx != new_top_idx || m_playlist_btm_idx != new_btm_idx)
+            {
+                m_playlist_top_idx = new_top_idx;
+                m_playlist_btm_idx = new_btm_idx;
+                m_playlist_width_pixels = 0.0f;
+
+                FLOAT max_w = static_cast<FLOAT>(std::min(m_right_edge - m_left_edge, m_lpDX->m_client_width - TEXT_MARGIN * 2 -
+                                                                                          static_cast<int>(PLAYLIST_INNER_MARGIN) * 2));
+
+                for (int i = 0; i < disp_lines; i++)
+                {
+                    int j = new_top_idx + i;
+                    if (j < nSongs)
+                    {
+                        // Clip maximum length of song name to 240 characters, to prevent overflows.
+                        //buf[240] = '\0';
+                        //wcsncpy_s(buf, static_cast<wchar*>SendMessage(m_hWndWinamp, WM_USER, j, 213), 240);
+                        //swprintf_s(m_playlist[i], "%d. %s ", j + 1, buf); // leave an extra space @ end, so italicized fonts don't get clipped
+
+                        r = {0.0f, 0.0f, max_w, 1024.0f};
+                        if (!m_playlist_song[i].IsVisible())
+                            m_playlist_song[i].Initialize();
+                        m_playlist_song[i].SetAlignment(AlignNear, AlignNear);
+                        m_playlist_song[i].SetTextColor(D2D1::ColorF(0xFFFFFFFF));
+                        m_playlist_song[i].SetTextOpacity(1.0f);
+                        m_playlist_song[i].SetContainer(r);
+                        m_playlist_song[i].SetVisible(true);
+                        m_playlist_song[i].SetText(m_playlist[i]);
+                        m_playlist_song[i].SetTextStyle(GetFont(PLAYLIST_FONT));
+                        m_playlist_song[i].SetTextShadow(false);
+                        int h = m_text.DrawD2DText(GetFont(PLAYLIST_FONT), &m_playlist_song[i], m_playlist[i], &r,
+                                                                        dwFlags | DT_CALCRECT, 0xFFFFFFFF, false);
+                        float w = r.right - r.left;
+                        if (w > 0)
+                            m_playlist_width_pixels = std::max(m_playlist_width_pixels, w);
+                        if (h > 0)
+                            nFontHeight = std::max(nFontHeight, h);
+                    }
+                    else
+                    {
+                        m_playlist[i][0] = 0;
+                        if (m_playlist_song[i].IsVisible())
+                            m_playlist_song[i].SetVisible(false);
+                    }
+                }
+
+                if (m_playlist_width_pixels == 0 || m_playlist_width_pixels > max_w)
+                    m_playlist_width_pixels = max_w;
+            }
+
+            int start = std::max(0, cur_page * disp_lines);
+            int end = std::min(nSongs, (cur_page + 1) * disp_lines);
+
+            // Draw dark box around where the playlist will go.
+            DWORD dwBoxColor = 0xD0000000;
+            D2D1_COLOR_F fBoxColor = D2D1::ColorF(dwBoxColor, GetAlpha(dwBoxColor));
+            r.top = static_cast<FLOAT>(m_upper_left_corner_y);
+            r.left = static_cast<FLOAT>(m_left_edge);
+            r.right = static_cast<FLOAT>(m_left_edge + m_playlist_width_pixels + PLAYLIST_INNER_MARGIN * 2.0f);
+            r.bottom = static_cast<FLOAT>(m_upper_left_corner_y + (end - start) * nFontHeight + PLAYLIST_INNER_MARGIN * 2.0f);
+            DrawDarkTranslucentBox(&r);
+            m_playlist_song[0].SetTextBox(fBoxColor, r);
+
+            // Draw playlist text.
+            int y = m_upper_left_corner_y + static_cast<int>(PLAYLIST_INNER_MARGIN);
+            for (int i = start; i < end; i++)
+            {
+                r = {static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN), static_cast<FLOAT>(y),
+                     static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN + m_playlist_width_pixels),
+                     static_cast<FLOAT>(y + nFontHeight)};
+                m_playlist_song[i - start].SetContainer(r);
+                DWORD color;
+                if (m_lpDX->GetBitDepth() == 8)
+                    color =
+                        (i == m_playlist_pos) ? (i == now_playing ? 0xFFFFFFFF : 0xFFFFFFFF) : (i == now_playing ? 0xFFFFFFFF : 0xFF707070);
+                else
+                    color = (i == m_playlist_pos) ? (i == now_playing ? PLAYLIST_COLOR_BOTH : PLAYLIST_COLOR_HILITE_TRACK)
+                                                  : (i == now_playing ? PLAYLIST_COLOR_PLAYING_TRACK : PLAYLIST_COLOR_NORMAL);
+
+                D2D1_COLOR_F fColor = D2D1::ColorF(color, GetAlpha(color));
+                m_playlist_song[i - start].SetTextColor(fColor);
+                m_playlist_song[i - start].SetTextOpacity(fColor.a);
+                y += nFontHeight;
+                m_text.DrawD2DText(GetFont(PLAYLIST_FONT), &m_playlist_song[i - start], m_playlist[i - start], &r,
+                                                        dwFlags, color, false);
+                m_text.RegisterElement(&m_playlist_song[i - start]);
+            }
+        }
+#endif
+    }
+    else
+        for (unsigned int i = 0; i < MAX_SONGS_PER_PAGE; ++i)
+            if (m_playlist_song[i].IsVisible())
+            {
+                m_playlist_song[i].SetVisible(false);
+                m_text.UnregisterElement(&m_playlist_song[i]);
+            }
+
 }
 
 // Aligns waves, using recursive (mipmap-style) least-error matching.

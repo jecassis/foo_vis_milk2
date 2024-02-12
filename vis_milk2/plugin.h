@@ -32,9 +32,8 @@
 
 #include <list>
 #include <vector>
-#include "pluginshell.h"
 #include "md_defines.h"
-//#include "menu.h"
+#include "pluginshell.h"
 #include "support.h"
 #include "texmgr.h"
 #include "state.h"
@@ -49,8 +48,6 @@ typedef enum { TEX_DISK, TEX_VS, TEX_BLUR0, TEX_BLUR1, TEX_BLUR2, TEX_BLUR3, TEX
 typedef enum { UI_REGULAR, UI_MENU, UI_LOAD, UI_LOAD_DEL, UI_LOAD_RENAME, UI_SAVEAS, UI_SAVE_OVERWRITE, UI_EDIT_MENU_STRING, UI_CHANGEDIR, UI_IMPORT_WAVE, UI_EXPORT_WAVE, UI_IMPORT_SHAPE, UI_EXPORT_SHAPE, UI_UPGRADE_PIXEL_SHADER, UI_MASHUP } ui_mode;
 typedef struct { float rad; float ang; float a; float c; } td_vertinfo; //blending: mix = std::max(0, std::min(1, a * t + c));
 // clang-format on
-typedef char* CHARPTR;
-LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 #define MD_FFT_SAMPLES 512 // for old [pre-vms] milkdrop sound analysis
 typedef struct
@@ -69,7 +66,7 @@ typedef struct
     int bActive;
     int bFilterBadChars;  // if true, it will filter out any characters that don't belong in a filename, plus the & symbol (because it doesn't display properly with DrawText)
     int bDisplayAsCode;   // if true, semicolons will be followed by a newline, for display
-    size_t nMaxLen; // can't be more than 511
+    size_t nMaxLen;       // can't be more than 511
     size_t nCursorPos;
     int nSelAnchorPos;    // -1 if no selection made
     int bOvertypeMode;
@@ -524,6 +521,8 @@ class CPlugin : public CPluginShell
     //td_playlist_entry *m_szPlaylist; // array of 128-char strings
     //int m_nPlaylistCurPos;
     //int m_nPlaylistLength;
+    //int m_nTrackPlaying;
+    //int m_nSongPosMS;
     //int m_nSongLenMS;
     float m_fMotionVectorsTempDx;
     float m_fMotionVectorsTempDy;
@@ -672,7 +671,6 @@ class CPlugin : public CPluginShell
     void LoadCustomShapePerFrameEvallibVars(CState* pState, int i, int instance);
     void WriteRealtimeConfig(); // called on Finish()
     bool PanelSettings(plugin_config* settings);
-    void Randomize();
     void LoadRandomPreset(float fBlendTime);
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);
     void LoadPresetTick();
@@ -689,8 +687,8 @@ class CPlugin : public CPluginShell
     int HandleRegularKey(WPARAM wParam);
     bool OnResizeGraphicsWindow();
     //bool InitFont();
-    //void ToggleControlWindow(); // for Desktop Mode only
     //void DrawUI();
+    //void ClearGraphicsWindow(); // for windowed mode only
     //bool Update_Overlay();
     //void UpdatePlaylist();
     void LaunchCustomMessage(int nMsgNum);
@@ -778,6 +776,21 @@ class CPlugin : public CPluginShell
     td_soundinfo m_sound;           // a structure always containing the most recent sound analysis information; defined in pluginshell.h.
     void SuggestHowToFreeSomeMem(); // gives the user a 'smart' messagebox that suggests how they can free up some video memory.
     */
+
+  private:
+    TextElement m_presetName;
+    TextElement m_presetRating;
+    TextElement m_fpsDisplay;
+    TextElement m_debugInfo;
+    TextElement m_toolTip;
+    TextElement m_songTitle;
+    TextElement m_songStats;
+    TextElement m_waitText;
+    TextElement m_menuText;
+    TextElement m_loadPresetInstruction;
+    TextElement m_loadPresetDir;
+    TextElement m_loadPresetItem[MAX_PRESETS_PER_PAGE];
+    TextElement m_warningText;
 };
 
 #endif

@@ -75,9 +75,12 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_ACTIVATEAPP(OnActivateApp)
         MSG_WM_KEYDOWN(OnKeyDown)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
+        MSG_WM_GETDLGCODE(OnGetDlgCode)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
         MSG_WM_POWERBROADCAST(OnPowerBroadcast)
+        MESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
+        MESSAGE_HANDLER_EX(WM_QUIT, OnQuit)
         MESSAGE_HANDLER_EX(WM_MILK2, OnMilk2Message)
         MESSAGE_HANDLER_EX(WM_CONFIG_CHANGE, OnConfigurationChange)
     END_MSG_MAP()
@@ -114,8 +117,11 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     BOOL OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData);
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+    UINT OnGetDlgCode(LPMSG lpMsg);
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point);
+    LRESULT OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnQuit(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam);
     PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p"), get_wnd()); return m_szWnd; }
@@ -144,7 +150,9 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         IDM_PREVIOUS_PRESET,
         IDM_LOCK_PRESET,
         IDM_SHUFFLE_PRESET,
-        IDM_ENABLE_DOWNMIX
+        IDM_ENABLE_DOWNMIX,
+        IDM_SHOW_HELP,
+        IDM_SHOW_PLAYLIST
     };
 
     // Initialization and management
@@ -178,6 +186,8 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void SetPwd(std::string pwd) noexcept;
     void UpdateChannelMode();
     void ToggleFullScreen();
+    void ToggleHelp();
+    void TogglePlaylist();
 
     // MilkDrop status
     bool m_milk2;
@@ -550,12 +560,7 @@ BOOL milk2_ui_element::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
 void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     MILK2_CONSOLE_LOG("OnLButtonDblClk ", GetWnd())
-#ifndef NO_FULLSCREEN
     ToggleFullScreen();
-#else
-    UNREFERENCED_PARAMETER(nFlags);
-    UNREFERENCED_PARAMETER(point);
-#endif
 }
 
 // NOTE: Keyboard messages from foobar2000 propagate to the component
@@ -563,14 +568,16 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnKeyDown ", GetWnd())
-#ifndef NO_FULLSCREEN
     switch (nChar)
     {
         case VK_ESCAPE:
-            if (s_fullscreen)
+            if (g_plugin.m_show_help)
+                ToggleHelp();
+            else if (s_fullscreen)
                 ToggleFullScreen();
             return;
         case VK_F1:
+            ToggleHelp();
             return;
         case VK_F2:
             m_config.settings.m_bShowSongTitle = !m_config.settings.m_bShowSongTitle;
@@ -622,17 +629,11 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             }
             return;
     }
-#else
-    UNREFERENCED_PARAMETER(nChar);
-    UNREFERENCED_PARAMETER(nRepCnt);
-    UNREFERENCED_PARAMETER(nFlags);
-#endif
 }
 
 void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnSysKeyDown ", GetWnd())
-#ifndef NO_FULLSCREEN
     // Bit 29: The context code. The value is 1 if the ALT key is down while the
     //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
     //         the active window because no window has the keyboard focus.
@@ -642,11 +643,12 @@ void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     {
         ToggleFullScreen();
     }
-#else
-    UNREFERENCED_PARAMETER(nChar);
-    UNREFERENCED_PARAMETER(nRepCnt);
-    UNREFERENCED_PARAMETER(nFlags);
-#endif
+}
+
+UINT milk2_ui_element::OnGetDlgCode(LPMSG lpMsg)
+{
+    MILK2_CONSOLE_LOG("OnGetDlgCode ", GetWnd())
+    return WM_GETDLGCODE;
 }
 
 void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
@@ -676,6 +678,9 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING | (IsPresetLock() ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (m_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
+    menu.AppendMenu(MF_STRING | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
 #ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
@@ -709,9 +714,33 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             m_config.settings.m_bEnableDownmix = !m_config.settings.m_bEnableDownmix;
             UpdateChannelMode();
             break;
+        case IDM_SHOW_HELP:
+            ToggleHelp();
+            break;
+        case IDM_SHOW_PLAYLIST:
+            TogglePlaylist();
+            break;
     }
 
     Invalidate();
+}
+
+LRESULT milk2_ui_element::OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if (uMsg != WM_IME_NOTIFY)
+        return 1;
+    if (wParam == IMN_CLOSESTATUSWINDOW)
+    {
+        if (s_fullscreen)
+            ToggleFullScreen();
+    }
+    return 0;
+}
+
+LRESULT milk2_ui_element::OnQuit(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    MILK2_CONSOLE_LOG("OnQuit ", GetWnd())
+    return 0;
 }
 
 LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -907,6 +936,7 @@ void milk2_ui_element::SetPwd(std::string pwd) noexcept
 
 void milk2_ui_element::ToggleFullScreen()
 {
+#ifndef NO_FULLSCREEN
     MILK2_CONSOLE_LOG("ToggleFullScreen ", GetWnd())
     if (m_milk2)
     {
@@ -943,6 +973,17 @@ void milk2_ui_element::ToggleFullScreen()
 #endif
         MILK2_CONSOLE_LOG("ToggleFullScreen2 ", GetWnd())
     }
+#endif
+}
+
+void milk2_ui_element::ToggleHelp()
+{
+    g_plugin.ToggleHelp();
+}
+
+void milk2_ui_element::TogglePlaylist()
+{
+    g_plugin.TogglePlaylist();
 }
 
 void milk2_ui_element::NextPreset()

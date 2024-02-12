@@ -21,7 +21,7 @@ struct ShaderVariable
     bool IsDirty;
     void* Value;
 
-    ShaderVariable() : Value(nullptr), IsDirty(false) {}
+    ShaderVariable() : Value(nullptr), IsDirty(false), Description{}, Type{} {}
 };
 
 struct ShaderBinding
@@ -31,14 +31,14 @@ struct ShaderBinding
 
 struct ShaderConstantBuffer
 {
-    ID3D11Buffer* Data = nullptr;
+    ID3D11Buffer* Data;
     D3D11_SHADER_BUFFER_DESC Description;
     std::vector<ShaderVariable> Variables;
 
     bool Create(ID3D11Device* pDevice);
     bool HasChanges();
 
-    ShaderConstantBuffer() : Data(nullptr) {}
+    ShaderConstantBuffer() : Data(nullptr), Description{} {}
     ~ShaderConstantBuffer() { Variables.clear(); }
 };
 

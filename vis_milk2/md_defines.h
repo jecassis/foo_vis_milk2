@@ -39,8 +39,7 @@
 //#define TITLE "MilkDrop"
 //#define CLASSNAME "MilkDrop" // window class name
 
-#define TEXT_WINDOW_CLASSNAME L"MilkDrop Console [VJ Mode]"
-#define DEBUGFILE L"m_debug.txt"
+#define DEBUGFILE L"milkdrop_debug.txt"
 #define CONFIG_INIFILE "milkdrop_config.ini"
 #define PRESET_INIFILE "milkdrop_presets.ini"
 #define DEBUGFILEHEADER "[milkdrop debug file]\n"
