@@ -412,7 +412,7 @@ void DeviceResources::SetDpi()
 {
 #if _WIN32_WINNT >= 0x0A00
     if (m_window)
-        m_dpiX = m_dpiY = GetDpiForWindow(m_window);
+        m_dpiX = m_dpiY = static_cast<FLOAT>(GetDpiForWindow(m_window));
 #else
 #ifdef _MSC_VER
 #pragma warning(push)
