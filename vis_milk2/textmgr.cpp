@@ -336,7 +336,7 @@ void TextElement::CreateTextLayout(IDWriteFactory* dwriteFactory)
         m_textLayout = nullptr;
 
         ThrowIfFailed(dwriteFactory->CreateTextLayout(m_text.data(),
-                                                      m_text.size(),
+                                                      static_cast<UINT32>(m_text.size()),
                                                       m_textStyle->GetTextFormat(dwriteFactory),
                                                       m_container.right - m_container.left,
                                                       m_container.bottom - m_container.top,
