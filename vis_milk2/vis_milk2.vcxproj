@@ -305,6 +305,7 @@
     <ClInclude Include="textmgr.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="..\external\nu\AutoWide.h" />
+    <ClInclude Include="..\external\winamp\wa_ipc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

@@ -39,8 +39,9 @@ static bool s_in_toggle = false;
 static bool s_milk2 = false;
 static ULONGLONG s_count = 0ull;
 static constexpr ULONGLONG s_debug_limit = 1ull;
+static milk2_config s_config;
 
-class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>
+class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base
 {
   public:
     DECLARE_WND_CLASS_EX(CLASSNAME, CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));
@@ -73,6 +74,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_DPICHANGED(OnDpiChanged)
         MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo);
         MSG_WM_ACTIVATEAPP(OnActivateApp)
+        MSG_WM_CHAR(OnChar)
         MSG_WM_KEYDOWN(OnKeyDown)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
         MSG_WM_GETDLGCODE(OnGetDlgCode)
@@ -115,6 +117,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
     void OnActivateApp(BOOL bActive, DWORD dwThreadID);
     BOOL OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData);
+    void OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags);
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     UINT OnGetDlgCode(LPMSG lpMsg);
@@ -126,7 +129,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     LRESULT OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam);
     PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p"), get_wnd()); return m_szWnd; }
 
-    milk2_config m_config; //ui_element_config::ptr m_config;
+    //ui_element_config::ptr m_config;
     visualisation_stream_v3::ptr m_vis_stream;
 
     ULONGLONG m_last_refresh;
@@ -174,6 +177,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void LockPreset(bool lockUnlock);
     bool IsPresetLock();
     std::wstring GetCurrentPreset();
+    void SetPresetRating(float inc_dec);
 
     // Window Messages
     void OnActivated();
@@ -188,6 +192,12 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void ToggleFullScreen();
     void ToggleHelp();
     void TogglePlaylist();
+    void ToggleSongTitle();
+    void ToggleSongLength();
+    void TogglePresetInfo();
+    void ToggleFps();
+    void ToggleRating();
+    void ToggleShaderHelp();
 
     // MilkDrop status
     bool m_milk2;
@@ -204,6 +214,26 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
   protected:
     const ui_element_instance_callback_ptr m_callback;
+
+  private:
+    // Playback control
+    static_api_ptr_t<playback_control> m_playback_control;
+    titleformat_object::ptr m_script;
+    pfc::string_formatter m_state;
+
+    // Playback callback methods.
+    void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { UpdateTrack(); }
+    void on_playback_new_track(metadb_handle_ptr p_track) { UpdateTrack(); }
+    void on_playback_stop(play_control::t_stop_reason p_reason) { UpdateTrack(); }
+    void on_playback_seek(double p_time) { UpdateTrack(); }
+    void on_playback_pause(bool p_state) { UpdateTrack(); }
+    void on_playback_edited(metadb_handle_ptr p_track) { UpdateTrack(); }
+    void on_playback_dynamic_info(const file_info& p_info) { UpdateTrack(); }
+    void on_playback_dynamic_info_track(const file_info& p_info) { UpdateTrack(); }
+    void on_playback_time(double p_time) { UpdateTrack(); }
+    void on_volume_change(float p_new_val) {}
+
+    void UpdateTrack();
 };
 
 milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
@@ -240,18 +270,21 @@ void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
 {
     //LPVOID dataptr = const_cast<LPVOID>(p_data->get_data());
     //if (dataptr && p_data->get_data_size() >= 4 && static_cast<DWORD*>(dataptr)[0] == ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K'))
-    //    m_config = p_data;
+    //    s_config = p_data;
     //else
-    //    m_config = g_get_default_configuration();
+    //    s_config = g_get_default_configuration();
+
+    if (s_milk2)
+        return;
 
     ui_element_config_parser parser(p_data);
-    m_config.parse(parser);
+    s_config.parse(parser);
 }
 
 ui_element_config::ptr milk2_ui_element::get_configuration()
 {
     ui_element_config_builder builder;
-    m_config.build(builder);
+    s_config.build(builder);
     return builder.finish(g_get_guid());
 }
 
@@ -264,6 +297,9 @@ void milk2_ui_element::notify(const GUID& p_what, t_size p_param1, const void* p
 int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 {
     MILK2_CONSOLE_LOG("OnCreate ", cs->x, ", ", cs->y, ", ", GetWnd())
+
+    if (!s_milk2)
+        s_config.init();
 
     if (!m_milk2)
     {
@@ -563,71 +599,184 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
     ToggleFullScreen();
 }
 
-// NOTE: Keyboard messages from foobar2000 propagate to the component
-// only during full screen.
+void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
+{
+    MILK2_CONSOLE_LOG("OnChar ", GetWnd())
+    if (!g_plugin.m_show_playlist)
+    {
+        switch (chChar)
+        {
+            case L'z':
+            case L'Z':
+                m_playback_control->start(playback_control::track_command_prev);
+                return;
+            case L'x':
+            case L'X':
+                m_playback_control->start();
+                return;
+            case L'c':
+            case L'C':
+                m_playback_control->toggle_pause();
+                return;
+            case L'v':
+            case L'V':
+                m_playback_control->stop();
+                return;
+            case L'b':
+            case L'B':
+                m_playback_control->start(playback_control::track_command_next);
+                return;
+            case L's':
+            case L'S':
+            case L'u':
+            case L'U':
+                return;
+            case L'r':
+            case L'R':
+                RandomPreset();
+                return;
+            case L'p':
+            case L'P':
+                TogglePlaylist();
+                return;
+            case L'l':
+            case L'L':
+                LoadPreset(0);
+                return;
+            case L'j':
+                return;
+            case L'h':
+            case L'H':
+                NextPreset();
+                return;
+            case L'-':
+                SetPresetRating(-1.0f);
+                return;
+            case L'+':
+                SetPresetRating(1.0f);
+                return;
+        }
+    }
+}
+
 void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnKeyDown ", GetWnd())
-    switch (nChar)
+    USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // Get the highest-order bit
+    bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0; // or "< 0" without masking
+    bool bCtrlHeldDown = (GetKeyState(VK_CONTROL) & mask) != 0; // or "< 0" without masking
+    //bool bAltHeldDown: most keys come in under WM_SYSKEYDOWN when ALT is depressed.
+
+    if (g_plugin.m_show_playlist)
     {
-        case VK_ESCAPE:
-            if (g_plugin.m_show_help)
+        switch (nChar)
+        {
+            case VK_ESCAPE:
+                if (g_plugin.m_show_playlist)
+                    TogglePlaylist();
+                return;
+            case VK_UP:
+                {
+                    if (GetKeyState(VK_SHIFT) & mask)
+                        g_plugin.m_playlist_pos -= 10 * nRepCnt;
+                    else
+                        g_plugin.m_playlist_pos -= nRepCnt;
+                }
+                return;
+            case VK_DOWN:
+                {
+                    if (GetKeyState(VK_SHIFT) & mask)
+                        g_plugin.m_playlist_pos += 10 * nRepCnt;
+                    else
+                        g_plugin.m_playlist_pos += nRepCnt;
+                }
+                return;
+            case VK_HOME:
+                g_plugin.m_playlist_pos = 0;
+                return;
+            case VK_PRIOR:
+                if (GetKeyState(VK_SHIFT) & mask)
+                    g_plugin.m_playlist_pageups += 10;
+                else
+                    g_plugin.m_playlist_pageups++;
+                return;
+            case VK_NEXT:
+                if (GetKeyState(VK_SHIFT) & mask)
+                    g_plugin.m_playlist_pageups -= 10;
+                else
+                    g_plugin.m_playlist_pageups--;
+                return;
+        }
+    }
+    else
+    {
+        switch (nChar)
+        {
+            case VK_ESCAPE:
+                if (g_plugin.m_show_help)
+                    ToggleHelp();
+                else if (s_fullscreen)
+                    ToggleFullScreen();
+                return;
+            case VK_SPACE:
+                NextPreset();
+                return;
+            case VK_BACK:
+                PrevPreset();
+                return;
+            case VK_UP:
+                m_playback_control->volume_up();
+                return;
+            case VK_DOWN:
+                m_playback_control->volume_down();
+                return;
+            case VK_LEFT:
+            case VK_RIGHT:
+                {
+                    int reps = (bShiftHeldDown) ? 6 * nRepCnt : 1 * nRepCnt;
+                    for (int i = 0; i < reps; ++i)
+                        m_playback_control->playback_seek_delta(VK_LEFT ? -5.0 : 5.0);
+                }
+                return;
+            case VK_SUBTRACT:
+                SetPresetRating(-1.0f);
+                return;
+            case VK_ADD:
+                SetPresetRating(1.0f);
+                return;
+            case VK_F1:
+                //g_plugin.m_show_press_f1_msg = 0u;
                 ToggleHelp();
-            else if (s_fullscreen)
-                ToggleFullScreen();
-            return;
-        case VK_F1:
-            ToggleHelp();
-            return;
-        case VK_F2:
-            m_config.settings.m_bShowSongTitle = !m_config.settings.m_bShowSongTitle;
-            g_plugin.m_bShowSongTitle = m_config.settings.m_bShowSongTitle;
-            return;
-        case VK_F3:
-            if (m_config.settings.m_bShowSongTime && m_config.settings.m_bShowSongLen)
-            {
-                m_config.settings.m_bShowSongTime = false;
-                m_config.settings.m_bShowSongLen = false;
-            }
-            else if (m_config.settings.m_bShowSongTime && !m_config.settings.m_bShowSongLen)
-            {
-                m_config.settings.m_bShowSongLen = true;
-            }
-            else
-            {
-                m_config.settings.m_bShowSongTime = true;
-                m_config.settings.m_bShowSongLen = false;
-            }
-            g_plugin.m_bShowSongTime = m_config.settings.m_bShowSongTime;
-            g_plugin.m_bShowSongLen = m_config.settings.m_bShowSongLen;
-            return;
-        case VK_F4:
-            m_config.settings.m_bShowPresetInfo = !m_config.settings.m_bShowPresetInfo;
-            g_plugin.m_bShowPresetInfo = m_config.settings.m_bShowPresetInfo;
-            return;
-        case VK_F5:
-            m_config.settings.m_bShowFPS = !m_config.settings.m_bShowFPS;
-            g_plugin.m_bShowFPS = m_config.settings.m_bShowFPS;
-            return;
-        case VK_F6:
-            m_config.settings.m_bShowRating = !m_config.settings.m_bShowRating;
-            g_plugin.m_bShowRating = m_config.settings.m_bShowRating;
-            return;
-        case VK_F7:
-            return;
-        case VK_F8:
-            return;
-        case VK_F9:
-            m_config.settings.m_bShowShaderHelp = !m_config.settings.m_bShowShaderHelp;
-            g_plugin.m_bShowShaderHelp = m_config.settings.m_bShowShaderHelp;
-            //SetMsgHandled(FALSE);
-            return;
-        case VK_SCROLL:
-            {
-                SHORT lock = GetKeyState(VK_SCROLL) & 0x0001;
-                LockPreset(static_cast<bool>(lock));
-            }
-            return;
+                return;
+            case VK_F2:
+                ToggleSongTitle();
+                return;
+            case VK_F3:
+                ToggleSongLength();
+                return;
+            case VK_F4:
+                TogglePresetInfo();
+                return;
+            case VK_F5:
+                ToggleFps();
+                return;
+            case VK_F6:
+                ToggleRating();
+                return;
+            case VK_F7:
+                return;
+            case VK_F8:
+                return;
+            case VK_F9:
+                ToggleShaderHelp();
+                return;
+            case VK_SCROLL:
+                {
+                    SHORT lock = GetKeyState(VK_SCROLL) & 0x0001;
+                    LockPreset(static_cast<bool>(lock));
+                }
+                return;
+        }
     }
 }
 
@@ -677,10 +826,10 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING, IDM_SHUFFLE_PRESET, TEXT("Random Preset"));
     menu.AppendMenu(MF_STRING | (IsPresetLock() ? MF_CHECKED : 0), IDM_LOCK_PRESET, TEXT("Lock Preset"));
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING | (m_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
+    menu.AppendMenu(MF_STRING | (s_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
-    menu.AppendMenu(MF_STRING | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
+    menu.AppendMenu(MF_STRING | MF_DISABLED | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
 #ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
@@ -711,7 +860,7 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             RandomPreset();
             break;
         case IDM_ENABLE_DOWNMIX:
-            m_config.settings.m_bEnableDownmix = !m_config.settings.m_bEnableDownmix;
+            s_config.settings.m_bEnableDownmix = !s_config.settings.m_bEnableDownmix;
             UpdateChannelMode();
             break;
         case IDM_SHOW_HELP:
@@ -746,13 +895,66 @@ LRESULT milk2_ui_element::OnQuit(UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg != WM_MILK2)
-        return 1;
+        return -1;
     if (LOBYTE(wParam) == 0x21 && HIBYTE(wParam) == 0x09)
     {
         wchar_t buf[2048], title[64];
         LoadString(core_api::get_my_instance(), LOWORD(lParam), buf, 2048);
         LoadString(core_api::get_my_instance(), HIWORD(lParam), title, 64);
         MILK2_CONSOLE_LOG("milk2 -> title: ", title, ", message: ", buf)
+        return 1;
+    }
+    else if (lParam == IPC_GETVERSION)
+    {
+        MILK2_CONSOLE_LOG("IPC_GETVERSION")
+        //const t_core_version_data v = core_version_info_v2::get_version();
+        return 0;
+    }
+    else if (lParam == IPC_GETVERSIONSTRING)
+    {
+        MILK2_CONSOLE_LOG("IPC_GETVERSIONSTRING")
+        return reinterpret_cast<LRESULT>(core_version_info_v2::g_get_version_string()); // "foobar2000 v2.1.2"
+        return 0;
+    }
+    else if (lParam == IPC_ISPLAYING)
+    {
+        MILK2_CONSOLE_LOG("IPC_ISPLAYING")
+        if (m_playback_control->is_playing())
+            return 1;
+        else if (m_playback_control->is_paused())
+            return 3;
+        else
+            return 0;
+    }
+    else if (lParam == IPC_GETLISTPOS)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GETLISTPOS")
+        return 0;
+    }
+    else if (lParam == IPC_GETPLAYLISTTITLEW)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GETPLAYLISTTITLEW")
+        return reinterpret_cast<LRESULT>(m_state.c_str());
+    }
+    else if (lParam == IPC_GETOUTPUTTIME)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GETOUTPUTTIME")
+        if (wParam == 0)
+        {
+            if (m_playback_control->is_playing())
+                return static_cast<LRESULT>(m_playback_control->playback_get_position() * 1000);
+        }
+        else if (wParam == 1)
+        {
+            if (m_playback_control->is_playing())
+                return static_cast<LRESULT>(m_playback_control->playback_get_length());
+        }
+        else if (wParam == 2)
+        {
+            if (m_playback_control->is_playing())
+                return static_cast<LRESULT>(m_playback_control->playback_get_length() * 1000);
+        }
+        return -1;
     }
 
     return 0;
@@ -767,9 +969,9 @@ LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM
     {
         case 0: // Preferences Dialog
             {
-                m_config.reset();
-                m_refresh_interval = static_cast<DWORD>(lround(1000.0f / m_config.settings.m_max_fps_fs));
-                g_plugin.PanelSettings(&m_config.settings);
+                s_config.reset();
+                m_refresh_interval = static_cast<DWORD>(lround(1000.0f / s_config.settings.m_max_fps_fs));
+                g_plugin.PanelSettings(&s_config.settings);
                 break;
             }
         case 1: // Advanced Preferences
@@ -792,7 +994,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;
-        if (!g_plugin.PanelSettings(&m_config.settings))
+        if (!g_plugin.PanelSettings(&s_config.settings))
             return false;
 
         if (!s_fullscreen)
@@ -983,7 +1185,59 @@ void milk2_ui_element::ToggleHelp()
 
 void milk2_ui_element::TogglePlaylist()
 {
+#if 0
     g_plugin.TogglePlaylist();
+#endif
+}
+
+void milk2_ui_element::ToggleSongTitle()
+{
+    s_config.settings.m_bShowSongTitle = !s_config.settings.m_bShowSongTitle;
+    g_plugin.m_bShowSongTitle = s_config.settings.m_bShowSongTitle;
+}
+
+void milk2_ui_element::ToggleSongLength()
+{
+    if (s_config.settings.m_bShowSongTime && s_config.settings.m_bShowSongLen)
+    {
+        s_config.settings.m_bShowSongTime = false;
+        s_config.settings.m_bShowSongLen = false;
+    }
+    else if (s_config.settings.m_bShowSongTime && !s_config.settings.m_bShowSongLen)
+    {
+        s_config.settings.m_bShowSongLen = true;
+    }
+    else
+    {
+        s_config.settings.m_bShowSongTime = true;
+        s_config.settings.m_bShowSongLen = false;
+    }
+    g_plugin.m_bShowSongTime = s_config.settings.m_bShowSongTime;
+    g_plugin.m_bShowSongLen = s_config.settings.m_bShowSongLen;
+}
+
+void milk2_ui_element::TogglePresetInfo()
+{
+    s_config.settings.m_bShowPresetInfo = !s_config.settings.m_bShowPresetInfo;
+    g_plugin.m_bShowPresetInfo = s_config.settings.m_bShowPresetInfo;
+}
+
+void milk2_ui_element::ToggleFps()
+{
+    s_config.settings.m_bShowFPS = !s_config.settings.m_bShowFPS;
+    g_plugin.m_bShowFPS = s_config.settings.m_bShowFPS;
+}
+
+void milk2_ui_element::ToggleRating()
+{
+    s_config.settings.m_bShowRating = !s_config.settings.m_bShowRating;
+    g_plugin.m_bShowRating = s_config.settings.m_bShowRating;
+}
+
+void milk2_ui_element::ToggleShaderHelp()
+{
+    s_config.settings.m_bShowShaderHelp = !s_config.settings.m_bShowShaderHelp;
+    g_plugin.m_bShowShaderHelp = s_config.settings.m_bShowShaderHelp;
 }
 
 void milk2_ui_element::NextPreset()
@@ -1032,12 +1286,40 @@ void milk2_ui_element::RandomPreset()
     g_plugin.LoadRandomPreset(1.0f);
 }
 
+void milk2_ui_element::SetPresetRating(float inc_dec)
+{
+    g_plugin.SetCurrentPresetRating(g_plugin.m_pState->m_fRating + inc_dec);
+}
+
 // clang-format off
 void milk2_ui_element::UpdateChannelMode()
 {
     if (m_vis_stream.is_valid())
     {
-        m_vis_stream->set_channel_mode(m_config.settings.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
+        m_vis_stream->set_channel_mode(s_config.settings.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
+    }
+}
+
+void milk2_ui_element::UpdateTrack()
+{
+    if (m_script.is_empty())
+    {
+        pfc::string8 pattern = "%title%"; //"%codec% | %bitrate% kbps | %__bitspersample% bit$ifequal(%__bitspersample%,1,,s) | %samplerate% Hz | $caps(%channels%) | %playback_time%[ / %length%]$if(%ispaused%, | paused,)";
+        static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
+    }
+
+    if (m_playback_control->playback_format_title(NULL, m_state, m_script, NULL, playback_control::display_level_all))
+    {
+        // Succeeded already.
+    }
+    else if (m_playback_control->is_playing())
+    {
+        // Starting playback but not done opening the first track yet.
+        m_state = "Opening...";
+    }
+    else
+    {
+        m_state = "Stopped.";
     }
 }
 

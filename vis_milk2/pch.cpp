@@ -1,5 +1,5 @@
-//
-// pch.cpp - Source file corresponding to the pre-compiled header.
-//
+/*
+ *  pch.cpp - Pre-compiled header's source file.
+ */
 
 #include "pch.h"

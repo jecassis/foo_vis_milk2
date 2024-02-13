@@ -1,6 +1,6 @@
-//
-// constanttable.h - Direct3D 11 constant table.
-//
+/*
+ *  constanttable.h - Direct3D 11 constant table header.
+ */
 
 #pragma once
 

@@ -75,7 +75,7 @@ jobs:
         id: prepare
         run: |
           ('binpath=${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}') | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          ('tz=' + ("`"{0:d2}{1:d2}`"" -f ((Get-TimeZone).BaseUtcOffset.Hours), ((Get-TimeZone).BaseUtcOffset.Minutes))) | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          ('tz=' + ("{0:d2}{1:d2}" -f ((Get-TimeZone).BaseUtcOffset.Hours), ((Get-TimeZone).BaseUtcOffset.Minutes))) | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           #Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
       - name: Build ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }} # https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022
         run: msbuild.exe "${{ github.workspace }}\foo_vis_milk2.sln" --% -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }};TimeZone=${{ steps.prepare.outputs.tz }} #-verbosity:diagnostic

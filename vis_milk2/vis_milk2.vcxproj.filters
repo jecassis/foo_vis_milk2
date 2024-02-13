@@ -65,13 +65,16 @@
     <ClInclude Include="texmgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="textmgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\external\nu\AutoWide.h">
       <Filter>Utility Files</Filter>
     </ClInclude>
-    <ClInclude Include="textmgr.h">
+    <ClInclude Include="..\external\winamp\wa_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,10 +115,10 @@
     <ClCompile Include="texmgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utility.cpp">
+    <ClCompile Include="textmgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="textmgr.cpp">
+    <ClCompile Include="utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

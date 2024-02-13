@@ -318,8 +318,8 @@ void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg
     // Note: These identifiers were gathered from "WinUser.h" and https://blog.airesoft.co.uk/2009/11/wm_messages/
     // Note: This function does NOT log WM_MOUSEMOVE, WM_NCHITTEST, or WM_SETCURSOR
     //       messages, since they are so frequent.
-    //if (msg == WM_MOUSEMOVE || msg == WM_NCHITTEST || msg == WM_SETCURSOR)
-    //    return;
+    if (msg == WM_MOUSEMOVE || msg == WM_NCHITTEST || msg == WM_SETCURSOR)
+        return;
 
     wchar_t buf[64];
 
@@ -658,6 +658,7 @@ void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg
 #endif
         case 0x0380: wcscat_s(buf, L"PENWINFIRST"); break;
         case 0x038F: wcscat_s(buf, L"PENWINLAST"); break;
+        case 0x0400: wcscat_s(buf, L"USER/WA_IPC/MILK2"); break;
         default: swprintf_s(buf, L"unknown/0x%08x", msg); break;
     }
 

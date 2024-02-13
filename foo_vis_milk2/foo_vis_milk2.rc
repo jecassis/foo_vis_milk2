@@ -74,16 +74,16 @@ BEGIN
     CONTROL         "Start MilkDrop with preset lock [Scroll Lock key] on",IDC_CB_SCROLLON3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,7,170,10
     CONTROL         "Disable preset rating (all presets have equal chance)",IDC_CB_NORATING2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,19,171,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,19,177,10
     CONTROL         "Suppress all errors and warnings",IDC_CB_NOWARN3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,31,114,10
     CONTROL         "Show ""Press F1 for Help"" message at startup",IDC_CB_PRESS_F1_MSG,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,43,157,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,43,157,10
     CONTROL         "Prevent MilkDrop from controlling Scroll Lock key",IDC_CB_SCROLLON4,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,12,55,163,10
     GROUPBOX        "",IDC_STATIC,7,69,167,33
     RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,7,78,53,10
     COMBOBOX        IDC_FS_MAXFPS2,61,77,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,88,70,10
+    CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,89,70,10
     GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,7,107,167,72
     RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,13,119,115,10
     EDITTEXT        IDC_BETWEEN_TIME,130,118,32,13,ES_CENTER | ES_AUTOHSCROLL
@@ -555,7 +555,7 @@ BEGIN
             VALUE "FileDescription", APPLICATION_DESCRIPTION
             VALUE "FileVersion", APPLICATION_VERSION
             VALUE "InternalName", APPLICATION_PRODUCT_NAME
-            VALUE "LegalCopyright", "© " APPLICATION_COPYRIGHT
+            VALUE "LegalCopyright", "ï¿½ " APPLICATION_COPYRIGHT
             VALUE "OriginalFilename", APPLICATION_FILE_NAME _APPLICATION_VERSION_EXTENSION
             VALUE "ProductName", APPLICATION_PRODUCT_NAME
             VALUE "ProductVersion", LIBRARY_VERSION

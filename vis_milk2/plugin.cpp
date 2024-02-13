@@ -3493,8 +3493,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         if (m_bShowFPS)
         {
             SelectFont(DECORATIVE_FONT);
-            swprintf_s(buf, L"%s: %4.2f ", WASABI_API_LNGSTRINGW(IDS_FPS),
-                       GetFps()); // leave extra space at end, so italicized fonts do not get clipped
+            swprintf_s(buf, L"%s: %4.2f ", WASABI_API_LNGSTRINGW(IDS_FPS), GetFps()); // leave extra space at end, so italicized fonts do not get clipped
             MilkDropTextOut_Shadow(buf, m_fpsDisplay, 0xFFFFFFFF, MTO_UPPER_RIGHT);
         }
         else
@@ -3629,8 +3628,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     // Draw dark box based on longest line and number of lines...
                     r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
                     m_text.DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r,
-                                                            DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false,
-                                                            0xFF000000);
+                                       DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT,
+                                       0xFFFFFFFF, false, 0xFF000000);
                     D2D1_RECT_F darkbox = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y - 2),
                                                       static_cast<FLOAT>(xL + r.right - r.left),
                                                       static_cast<FLOAT>(*upper_left_corner_y + (r.bottom - r.top) * 13 + 2));
@@ -3858,7 +3857,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         r2.bottom = 4096.0f;
                         r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
                         m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2,
-                                                                DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
+                                           DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
                         float fH = r2.bottom - r2.top;
                         ypixels += fH;
                         buf0A[pos] = ch;
@@ -5643,6 +5642,52 @@ void CPlugin::MergeSortPresets(int left, int right)
             m_presets[left] = m_presets[right];
             m_presets[right] = temp;
         }
+    }
+}
+
+void CPlugin::SetCurrentPresetRating(float fNewRating)
+{
+    if (!m_bEnableRating)
+        return;
+
+    if (fNewRating < 0)
+        fNewRating = 0;
+    if (fNewRating > 5)
+        fNewRating = 5;
+    float change = (fNewRating - m_pState->m_fRating);
+
+    // Update the file on disk.
+    //char szPresetFileNoPath[512];
+    //char szPresetFileWithPath[512];
+    //sprintf_s(szPresetFileNoPath, "%s.milk", m_pState->m_szDesc);
+    //sprintf_s(szPresetFileWithPath, "%s%s.milk", GetPresetDir(), m_pState->m_szDesc);
+    WritePrivateProfileFloatW(fNewRating, L"fRating", m_szCurrentPresetFile, L"preset00");
+
+    // Update the copy of the preset in memory.
+    m_pState->m_fRating = fNewRating;
+
+    // Update the cumulative internal listing.
+    m_presets[m_nCurrentPreset].fRatingThis += change;
+    if (m_nCurrentPreset !=
+        -1) //&& m_nRatingReadProgress >= m_nCurrentPreset) // (can be -1 if dir. changed but no new preset was loaded yet)
+        for (int i = m_nCurrentPreset; i < m_nPresets; i++)
+            m_presets[i].fRatingCum += change;
+
+    /* keep in view:
+        -test switching dirs w/o loading a preset, and trying to change the rating
+            ->m_nCurrentPreset is out of range!
+        -soln: when adjusting rating:
+            1. file to modify is m_szCurrentPresetFile
+            2. only update CDF if m_nCurrentPreset is not -1
+        -> set m_nCurrentPreset to -1 whenever dir. changes
+        -> set m_szCurrentPresetFile whenever you load a preset
+    */
+
+    // Show a message.
+    if (!m_bShowRating)
+    {
+        // See also `DrawText()` in `milkdropfs.cpp`.
+        m_fShowRatingUntilThisTime = GetTime() + 2.0f;
     }
 }
 

@@ -978,8 +978,6 @@ static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_mil
 
 milk2_config::milk2_config()
 {
-    initialize_paths();
-    reset();
 }
 
 uint32_t milk2_config::g_get_version() const
@@ -990,6 +988,12 @@ uint32_t milk2_config::g_get_version() const
 uint32_t milk2_config::get_sentinel() const
 {
     return m_sentinel;
+}
+
+void milk2_config::init()
+{
+    initialize_paths();
+    reset();
 }
 
 void milk2_config::reset()

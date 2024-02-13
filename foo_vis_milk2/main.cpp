@@ -22,7 +22,7 @@ DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
                           "MilkDrop 2.25k\n"
                           "Copyright (c) 2005-2013 Nullsoft, Inc. All rights reserved.\n\n"
                           "foobar2000 plugin and DirectX 11 port by " APPLICATION_COMPANY_NAME ".\n"
-                          "Built with foobar2000 SDK " STR(FOOBAR2000_SDK_VERSION) " on " __DATE__ " " __TIME__ " " BUILD_TIMEZONE ".\n\n"
+                          "Built with foobar2000 SDK " STR(FOOBAR2000_SDK_VERSION) " on " __DATE__ " " __TIME__ " " STR(BUILD_TIMEZONE) ".\n\n"
                           "Documentation and source code can be obtained from:\n"
                           APPLICATION_SOURCE_URLS)
 // clang-format on

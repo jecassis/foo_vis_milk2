@@ -1,9 +1,6 @@
-//
-// constanttable.cpp - Direct3D 11 constant table.
-//                     References:
-//                      - https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-d3d9-to-d3d10-considerations
-//                      - https://learn.microsoft.com/en-us/windows/win32/direct3d11/d3d11-programming-guide-migrating
-//
+/*
+ *  constanttable.cpp - Direct3D 11 constant table.
+ */
 
 #include "pch.h"
 #include "constanttable.h"

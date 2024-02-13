@@ -30,6 +30,8 @@
 #include "pch.h"
 #include "support.h"
 #include "utility.h"
+#include <nu/AutoWide.h>
+#include <winamp/wa_ipc.h>
 
 bool g_bDebugOutput = false;
 bool g_bDumpFileCleared = false;
@@ -185,25 +187,27 @@ void MakeProjectionMatrix(
     *pOut = XMMATRIX(w, 0.0f, 0.0f, 0.0f, 0.0f, h, 0.0f, 0.0f, 0.0f, 0.0f, Q, 1.0f, 0.0f, 0.0f, -Q * near_plane, 0.0f);
 }
 
-void GetWinampSongTitle(HWND /*hWndWinamp*/, wchar_t* /*szSongTitle*/, size_t /*nSize*/)
+void GetWinampSongTitle(HWND hWndWinamp, wchar_t* szSongTitle, size_t nSize)
 {
-    //wcsncpy_s(szSongTitle, nSize, (wchar_t*)SendMessage(hWndWinamp, WM_WA_IPC, SendMessage(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS), IPC_GETPLAYLISTTITLEW), nSize - 1);
+    LRESULT nPos = SendMessage(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS);
+    LRESULT szStr = SendMessage(hWndWinamp, WM_WA_IPC, nPos, IPC_GETPLAYLISTTITLEW);
+    wcsncpy_s(szSongTitle, nSize, AutoWide(reinterpret_cast<char*>(szStr)), nSize - 1);
 }
 
 void GetWinampSongPosAsText(HWND hWndWinamp, wchar_t* szSongPos)
 {
     // Note: `sizeof(szSongPos[])` must be at least 64.
     szSongPos[0] = 0;
-    LRESULT nSongPosMS = SendMessage(hWndWinamp, WM_USER, 0, 105);
+    LRESULT nSongPosMS = SendMessage(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME);
     if (nSongPosMS > 0)
     {
         wchar_t tmp[16];
         float time_s = nSongPosMS * 0.001f;
-        int minutes = (int)(time_s / 60);
+        unsigned int minutes = static_cast<unsigned int>(time_s / 60);
         time_s -= minutes * 60;
-        int seconds = (int)time_s;
+        unsigned int seconds = static_cast<unsigned int>(time_s);
         time_s -= seconds;
-        int dsec = (int)(time_s * 100);
+        unsigned int dsec = static_cast<unsigned int>(time_s * 100);
         swprintf_s(tmp, L"%.02f", dsec / 100.0f);
         swprintf_s(szSongPos, 64, L"%d:%02d%s", minutes, seconds, tmp + 1);
     }
@@ -213,7 +217,7 @@ void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen)
 {
     // Note: `sizeof(szSongLen[])` must be at least 64.
     szSongLen[0] = '\0';
-    LRESULT nSongLenMS = SendMessage(hWndWinamp, WM_USER, 1, 105) * 1000;
+    LRESULT nSongLenMS = SendMessage(hWndWinamp, WM_USER, 2, IPC_GETOUTPUTTIME);
     if (nSongLenMS > 0)
     {
         unsigned int len_s = static_cast<unsigned int>(nSongLenMS / 1000);

@@ -198,6 +198,8 @@ class CPluginShell
     // RUNTIME SETTINGS
     bool m_show_help;
     bool m_show_playlist;
+    LRESULT m_playlist_pos; // current selection on (plugin's) playlist menu
+    int m_playlist_pageups; // can be + or -
   private:
     // FONTS
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_lpDDSText;
@@ -221,8 +223,8 @@ class CPluginShell
     int m_resizing;   // ~mostly for windowed mode
     //int m_show_help;
     //int m_show_playlist;
-    LRESULT m_playlist_pos;        // current selection on (plugin's) playlist menu
-    int m_playlist_pageups;        // can be + or -
+    //LRESULT m_playlist_pos;
+    //int m_playlist_pageups;
     int m_playlist_top_idx;        // used to track when our little playlist cache (m_playlist) needs updated.
     int m_playlist_btm_idx;        // used to track when our little playlist cache (m_playlist) needs updated.
     float m_playlist_width_pixels; // considered invalid whenever 'm_playlist_top_idx' is -1.

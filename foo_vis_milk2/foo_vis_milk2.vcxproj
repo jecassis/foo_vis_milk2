@@ -402,7 +402,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(TimeZone)' != ''">
     <ClCompile>
-      <AdditionalOptions>/DBUILD_TIMEZONE=$(TimeZone) %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/D BUILD_TIMEZONE=$(TimeZone) %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

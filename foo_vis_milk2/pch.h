@@ -27,12 +27,15 @@
 
 #include <helpers/foobar2000-lite+atl.h>
 #include <sdk/componentversion.h>
+#include <sdk/coreversion.h>
 #include <sdk/preferences_page.h>
+#include <sdk/cfg_var.h>
+#include <sdk/advconfig_impl.h>
 #include <sdk/audio_chunk.h>
 #include <sdk/console.h>
 #include <sdk/initquit.h>
-#include <sdk/cfg_var.h>
-#include <sdk/advconfig_impl.h>
+#include <sdk/playback_control.h>
+#include <sdk/play_callback.h>
 #include <sdk/vis.h>
 #include <sdk/ui_element.h>
 #include <helpers/atl-misc.h>
@@ -55,6 +58,7 @@
 #include <vis_milk2/pluginshell.h>
 #include <vis_milk2/plugin.h>
 #include <vis_milk2/dxcontext.h>
+#include <winamp/wa_ipc.h>
 
 #define MAX_PROPERTY_PAGES 8
 #define MAX_DISPLAY_ADAPTERS 16

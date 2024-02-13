@@ -8,10 +8,10 @@ Prerequisites to build the DirectX 11.1 `foo_vis_milk2.dll` component for foobar
 - [foobar2000 SDK](https://www.foobar2000.org/SDK): download the latest version and uncompress the contents in the `external/` folder.
 - [NS-EEL2](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
 - [DirectXTK](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are fetched via the NuGet package manager.
-- [Windows Template Library (WTL)](https://wtl.sourceforge.io/): the files required to build the DLL are imported .
+- [Windows Template Library (WTL)](https://wtl.sourceforge.io/): the files required to build the DLL are fetched via the NuGet package manager.
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`foo_vis_milk2`](foo_vis_milk2.sln) solution, set `foo_vis_milk2` as the Startup Project, install WTL and DirectXTK as NuGet packages, select a configuration, and build the solution.
-  - [Active Template Library (ATL)](https://learn.microsoft.com/en-us/cpp/mfc/mfc-and-atl)
-  - [NuGet Package Manager](https://www.nuget.org/)
+
+> Import the Visual Studio [installation configuration](.vsconfig) file to install required components such as [Active Template Library (ATL)](https://learn.microsoft.com/en-us/cpp/mfc/mfc-and-atl) and [NuGet Package Manager](https://www.nuget.org/).
 
 Refer to the [build pipeline](.github/workflows/build.yml) jobs for a step-by-step guide on how to build. _Only x86 and x64 Intel architecture platforms are tested._
 

@@ -1,3 +1,7 @@
+/*
+ *  framework.h - Common headers for MilkDrop 2 library.
+ */
+
 #pragma once
 
 #include <winsdkver.h>

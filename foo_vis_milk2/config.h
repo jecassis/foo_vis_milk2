@@ -14,6 +14,7 @@ class milk2_config
 
     uint32_t g_get_version() const;
     uint32_t get_sentinel() const;
+    void init();
     void reset();
     void parse(ui_element_config_parser& parser);
     void build(ui_element_config_builder& builder);
