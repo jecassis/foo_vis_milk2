@@ -1,5 +1,7 @@
 /*
- *  preferences.cpp - Configuration settings accessible through a preferences page and advanced preferences.
+ *  preferences.cpp - Configuration settings for the MilkDrop 2
+ *                    visualization component accessible through a
+ *                    preferences page and advanced preferences.
  */
 
 #include "pch.h"

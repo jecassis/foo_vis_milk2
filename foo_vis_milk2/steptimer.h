@@ -1,5 +1,6 @@
 /*
- *  steptimer.h - A simple timer that provides elapsed time information.
+ *  steptimer.h - A high-resolution timer that provides elapsed time
+ *                information.
  */
 
 #pragma once

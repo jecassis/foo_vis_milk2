@@ -71,19 +71,20 @@ jobs:
       - name: Restore NuGet packages (DirectXTK and WTL)
         if: ${{ steps.nuget.outputs.cache-hit != 'true' }}
         run: nuget restore foo_vis_milk2.sln
-      #- name: Prepare build
-      #  run: |
-      #    Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
+      - name: Prepare build
+        id: prepare
+        run: |
+          ('binpath=${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}') | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          ('tz=' + ("`"{0:d2}{1:d2}`"" -f ((Get-TimeZone).BaseUtcOffset.Hours), ((Get-TimeZone).BaseUtcOffset.Minutes))) | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          #Get-Content "$(Get-Location)\foo_vis_milk2.sln" | % {$_ -replace 'EBFFFB4E-(.*)(Debug|Release)\|', 'EBFFFB4E-$1$2 FB2K|'} | Set-Content "$(Get-Location)\foo_vis_milk2_.sln"
       - name: Build ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }} # https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022
-        run: msbuild.exe "${{ github.workspace }}\foo_vis_milk2.sln" --% -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }} #-verbosity:diagnostic
+        run: msbuild.exe "${{ github.workspace }}\foo_vis_milk2.sln" --% -m:4 -t:Build -p:Configuration=${{ matrix.configuration }};Platform=${{ matrix.platform }};TimeZone=${{ steps.prepare.outputs.tz }} #-verbosity:diagnostic
       - name: Validate ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
         # Notes: FILEVERSION appears in File Properties Details as `File version` and Get-Item as `FileVersionRaw`.
         #        PRODUCTVERSION does not appear in File Properties Details and apears in Get-Item as `ProductVersionRaw`.
         #        FileVersion does not appear in File Properties Details and apears in Get-Item as `FileVersion`.
         #        ProductVersion appears in File Properties Details as `Product version` and Get-Item as `ProductVersion`.
-        id: validate
         run: |
-          ('binpath=${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}') | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host '${{ matrix.platform }} ${{ matrix.configuration }} foo_vis_milk2.dll'
           Write-Host -NoNewline 'File Size: '
           Write-Host ((Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).length/1KB) KiB -Separator ' '
@@ -107,8 +108,8 @@ jobs:
         with:
           name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}
           path: |
-            ${{ steps.validate.outputs.binpath }}\foo_vis_milk2.dll
-            ${{ steps.validate.outputs.binpath }}\foo_vis_milk2.pdb
+            ${{ steps.prepare.outputs.binpath }}\foo_vis_milk2.dll
+            ${{ steps.prepare.outputs.binpath }}\foo_vis_milk2.pdb
   package:
     name: Package foobar2000 MilkDrop 2 component
     needs: build

@@ -3,9 +3,6 @@
 //                     References:
 //                      - https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-d3d9-to-d3d10-considerations
 //                      - https://learn.microsoft.com/en-us/windows/win32/direct3d11/d3d11-programming-guide-migrating
-//                      - https://github.com/walbourn/directx-vs-templates/tree/main/d3d11game_win32_dr
-//                      - https://bitbucket.org/zao/foo_vis_osc_dx110
-//                      - https://github.com/stuerp/foo_vis_spectrum_analyzer
 //
 
 #include "pch.h"

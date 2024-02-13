@@ -400,6 +400,11 @@
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TimeZone)' != ''">
+    <ClCompile>
+      <AdditionalOptions>/DBUILD_TIMEZONE=$(TimeZone) %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">

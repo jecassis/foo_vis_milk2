@@ -1,3 +1,8 @@
+/*
+ *  config.h - MilkDrop 2 visualization component's configuration header
+ *             file.
+ */
+
 #pragma once
 
 #include <vis_milk2/plugin.h>

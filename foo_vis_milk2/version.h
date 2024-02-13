@@ -1,6 +1,6 @@
 /*
- *  version.h - Defines common version information for the DLL's version resource
- *              and the component version shown in foobar2000.
+ *  version.h - Defines common version information for the DLL's version
+ *              resource and the component version shown in foobar2000.
  *              Note: Newline at EOF required for resource compiler (RC1004).
  */
 
@@ -25,6 +25,10 @@
 #define LIBRARY_VERSION_MINOR 25 // INT_VERSION % 100
 #define LIBRARY_VERSION_REVISION INT_SUBVERSION
 #define LIBRARY_VERSION_BUILD 0
+
+#ifndef BUILD_TIMEZONE
+#define BUILD_TIMEZONE "-0800"
+#endif
 
 #define APPLICATION_COPYRIGHT "2024 " APPLICATION_COMPANY_NAME
 #define LIBRARY_COPYRIGHT COPYRIGHT
