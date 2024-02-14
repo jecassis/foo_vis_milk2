@@ -3352,22 +3352,22 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     element.SetTextStyle(pFont); \
     element.SetTextShadow(false); \
     if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | DT_CALCRECT | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, false, boxColor) != 0) { \
-    int w = static_cast<int>(r.right - r.left); \
-    if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
-    else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
-    else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
-    else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
+        int w = static_cast<int>(r.right - r.left); \
+        if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
+        else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
+        else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
+        else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
     } \
     /* Draw the text. */ \
     element.SetContainer(r); \
     element.SetTextBox(fBox, r); \
     if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, bDarkBox, boxColor) != 0) { \
-    if (!element.IsVisible()) m_text.RegisterElement(&element); \
-    element.SetVisible(true); \
-    if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
-    else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
-    else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
-    else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
+        if (!element.IsVisible()) m_text.RegisterElement(&element); \
+        element.SetVisible(true); \
+        if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
+        else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
+        else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
+        else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
     } \
 }
 
@@ -3386,21 +3386,21 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     element.SetTextStyle(pFont); \
     element.SetTextShadow(true); \
     if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, color, false, 0xFF000000) != 0) { \
-    int w = static_cast<int>(r.right - r.left); \
-    if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
-    else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
-    else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
-    else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
+        int w = static_cast<int>(r.right - r.left); \
+        if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
+        else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
+        else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
+        else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
     } \
     /* Draw the text. */ \
     element.SetContainer(r); \
     if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS, color, false, 0xFF000000) != 0) { \
-    if (!element.IsVisible()) m_text.RegisterElement(&element); \
-    element.SetVisible(true); \
-    if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
-    else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
-    else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
-    else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
+        if (!element.IsVisible()) m_text.RegisterElement(&element); \
+        element.SetVisible(true); \
+        if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
+        else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
+        else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
+        else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
     } \
 }
 // clang-format on
@@ -3416,7 +3416,8 @@ void CPlugin::AddError(wchar_t* szMsg, float fDuration, ErrorCategory category, 
     x.birthTime = GetTime();
     x.expireTime = GetTime() + fDuration;
     x.category = category;
-    x.bBold = bBold;
+    x.bold = bBold;
+    x.printed = false;
     m_errors.push_back(x);
 }
 
@@ -3425,6 +3426,11 @@ void CPlugin::ClearErrors(int category) // 0 = all categories
     for (ErrorMsgList::iterator it = m_errors.begin(); it != m_errors.end();)
         if (category == ERR_ALL || it->category == category)
         {
+            if (it->text.IsVisible())
+            {
+                it->text.SetVisible(false);
+                m_text.UnregisterElement(&it->text);
+            }
             it = m_errors.erase(it);
         }
         else
@@ -4560,9 +4566,16 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         // e) Custom timed message.
         if (!m_bWarningsDisabled2)
         {
-#ifndef _FOOBAR
             SelectFont(SIMPLE_FONT);
             float t = GetTime();
+#ifdef _FOOBAR
+            // https://learn.microsoft.com/en-us/windows/win32/dataxchg/using-data-copy
+            ErrorCopy msg;
+            COPYDATASTRUCT cds{};
+            cds.dwData = 0x09; // PRINT_CONSOLE
+            cds.cbData = sizeof(msg);
+            cds.lpData = &msg;
+#endif
             for (ErrorMsgList::iterator it = m_errors.begin(); it != m_errors.end();)
             {
                 if (t >= it->birthTime && t < it->expireTime)
@@ -4573,7 +4586,15 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     DWORD cg = 0; //static_cast<DWORD>(136 - 135 * powf(age_rel, 1));
                     DWORD cb = 0;
                     DWORD z = 0xFF000000 | (cr << 16) | (cg << 8) | cb;
-                    MilkDropTextOut_Box(buf, it->text, 0xFFFFFFFF, MTO_UPPER_RIGHT, true, it->bBold ? z : 0xFF000000);
+                    MilkDropTextOut_Box(buf, it->text, 0xFFFFFFFF, MTO_UPPER_RIGHT, true, it->bold ? z : 0xFF000000);
+#ifdef _FOOBAR
+                    if (!it->printed)
+                    {
+                        _snwprintf_s(msg.error, 1024, L"%s ", it->msg.c_str());
+                        SendMessage(GetWinampWindow(), WM_COPYDATA, (WPARAM)(HWND)GetWinampWindow(), (LPARAM)(LPVOID)&cds);
+                        it->printed = true;
+                    }
+#endif
                     ++it;
                 }
                 else
@@ -4586,29 +4607,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     it = m_errors.erase(it);
                 }
             }
-#else
-            // https://learn.microsoft.com/en-us/windows/win32/dataxchg/using-data-copy
-            ErrorCopy msg;
-            COPYDATASTRUCT cds{};
-            cds.dwData = 0x09; // PRINT_CONSOLE
-            cds.cbData = sizeof(msg);
-            cds.lpData = &msg;
-            float t = GetTime();
-            for (ErrorMsgList::iterator it = m_errors.begin(); it != m_errors.end();)
-            {
-                if (t >= it->birthTime && t < it->expireTime)
-                {
-                    _snwprintf_s(msg.error, 1024, L"%s ", it->msg.c_str());
-                    SendMessage(GetWinampWindow(), WM_COPYDATA, (WPARAM)(HWND)GetWinampWindow(), (LPARAM)(LPVOID)&cds);
-                    it->expireTime = 0.0f;
-                    ++it;
-                }
-                else
-                {
-                    it = m_errors.erase(it);
-                }
-            }
-#endif
         }
     }
 }

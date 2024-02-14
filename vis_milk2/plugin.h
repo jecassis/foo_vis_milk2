@@ -197,9 +197,11 @@ enum ErrorCategory
 typedef struct
 {
     std::wstring msg;
-    bool bBold; // true == red background; false == black background
+    bool bold; // true -> red background, false -> black background
+    bool printed;
     float birthTime;
     float expireTime;
+    TextElement text;
     ErrorCategory category;
 } ErrorMsg;
 typedef std::list<ErrorMsg> ErrorMsgList;

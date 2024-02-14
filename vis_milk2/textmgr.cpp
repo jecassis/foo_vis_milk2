@@ -382,6 +382,11 @@ void CTextManager::Init(DXContext* lpDX /*, ID3D11Texture2D* lpTextSurface*/, in
 
 void CTextManager::Finish()
 {
+    for (auto it = m_elements.begin(); it != m_elements.end();)
+    {
+        (*it)->ReleaseDeviceDependentResources();
+        it = m_elements.erase(it);
+    }
     ReleaseDeviceDependentResources();
 
     m_stateBlock.Reset();
