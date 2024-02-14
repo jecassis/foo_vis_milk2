@@ -66,7 +66,7 @@ typedef struct
     int bActive;
     int bFilterBadChars;  // if true, it will filter out any characters that don't belong in a filename, plus the & symbol (because it doesn't display properly with DrawText)
     int bDisplayAsCode;   // if true, semicolons will be followed by a newline, for display
-    size_t nMaxLen;       // can't be more than 511
+    size_t nMaxLen;       // cannot be more than 511
     size_t nCursorPos;
     int nSelAnchorPos;    // -1 if no selection made
     int bOvertypeMode;
@@ -304,7 +304,7 @@ typedef std::vector<PresetInfo> PresetList;
 typedef struct
 {
     //--- CPluginShell::ReadConfig()
-    DXGI_SAMPLE_DESC m_multisample_fullscreen;
+    DXGI_SAMPLE_DESC m_multisample_fs;
 
     //uint32_t m_start_fullscreen;
     uint32_t m_max_fps_fs;
@@ -493,7 +493,7 @@ class CPlugin : public CPluginShell
     // Vertex declarations.
     //IDirect3DVertexDeclaration9* m_pSpriteVertDecl;
     //IDirect3DVertexDeclaration9* m_pWfVertDecl;
-    //IDirect3DVertexDeclaration9* m_pMyVertDecl;
+    //IDirect3DVertexDeclaration9* m_pMilkDropVertDecl;
 
     XMFLOAT4 m_rand_frame; // 4 random floats (0..1); randomized once per frame; fed to pixel shaders.
 
@@ -581,17 +581,18 @@ class CPlugin : public CPluginShell
                         // 1=legible font (the main font)
                         // 2=tooltip font (for tooltips in the menu system)
     //HFONT m_htitlefont[NUM_TITLE_FONTS]; // ~25 different sizes
+
     // Stuff for the menu system.
-    /* CMilkMenu *m_pCurMenu; // should always be valid!
-    CMilkMenu m_menuPreset;
-    CMilkMenu _menuWave;
-    CMilkMenu _menuAugment;
-    CMilkMenu _menuCustomWave;
-    CMilkMenu _menuCustomShape;
-    CMilkMenu _menuMotion;
-    CMilkMenu _menuPost;
-    CMilkMenu m_menuWavecode[MAX_CUSTOM_WAVES];
-    CMilkMenu m_menuShapecode[MAX_CUSTOM_SHAPES]; */
+    //CMilkMenu *m_pCurMenu; // should always be valid!
+    //CMilkMenu m_menuPreset;
+    //CMilkMenu _menuWave;
+    //CMilkMenu _menuAugment;
+    //CMilkMenu _menuCustomWave;
+    //CMilkMenu _menuCustomShape;
+    //CMilkMenu _menuMotion;
+    //CMilkMenu _menuPost;
+    //CMilkMenu m_menuWavecode[MAX_CUSTOM_WAVES];
+    //CMilkMenu m_menuShapecode[MAX_CUSTOM_SHAPES];
     bool m_bShowShaderHelp;
 
     wchar_t m_szMilkdrop2Path[MAX_PATH]; // ends in a backslash

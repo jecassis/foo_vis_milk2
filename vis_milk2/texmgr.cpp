@@ -29,6 +29,7 @@
 
 #include "pch.h"
 #include "texmgr.h"
+
 #include "support.h"
 #include "plugin.h"
 #include "utility.h"

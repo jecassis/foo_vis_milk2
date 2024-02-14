@@ -29,6 +29,7 @@
 
 #include "pch.h"
 #include "support.h"
+
 #include "utility.h"
 #include <nu/AutoWide.h>
 #include <winamp/wa_ipc.h>
@@ -191,13 +192,13 @@ void GetWinampSongTitle(HWND hWndWinamp, wchar_t* szSongTitle, size_t nSize)
 {
     LRESULT nPos = SendMessage(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS);
     LRESULT szStr = SendMessage(hWndWinamp, WM_WA_IPC, nPos, IPC_GETPLAYLISTTITLEW);
-    wcsncpy_s(szSongTitle, nSize, AutoWide(reinterpret_cast<char*>(szStr)), nSize - 1);
+    wcsncpy_s(szSongTitle, nSize, reinterpret_cast<wchar_t*>(szStr), nSize - 1);
 }
 
 void GetWinampSongPosAsText(HWND hWndWinamp, wchar_t* szSongPos)
 {
     // Note: `sizeof(szSongPos[])` must be at least 64.
-    szSongPos[0] = 0;
+    szSongPos[0] = L'\0';
     LRESULT nSongPosMS = SendMessage(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME);
     if (nSongPosMS > 0)
     {
@@ -216,7 +217,7 @@ void GetWinampSongPosAsText(HWND hWndWinamp, wchar_t* szSongPos)
 void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen)
 {
     // Note: `sizeof(szSongLen[])` must be at least 64.
-    szSongLen[0] = '\0';
+    szSongLen[0] = L'\0';
     LRESULT nSongLenMS = SendMessage(hWndWinamp, WM_USER, 2, IPC_GETOUTPUTTIME);
     if (nSongLenMS > 0)
     {

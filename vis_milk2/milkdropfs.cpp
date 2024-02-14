@@ -2513,7 +2513,7 @@ void CPlugin::DrawWave(float* fL, float* fR)
                 if (!m_pState->m_bBlending)
                 {
                     nVerts++;
-                    memcpy(&v[nVerts - 1], &v[0], sizeof(WFVERTEX));
+                    memcpy_s(&v[nVerts - 1], sizeof(v[nVerts - 1]), &v[0], sizeof(WFVERTEX));
                 }
                 break;
 
@@ -3141,8 +3141,6 @@ void CPlugin::DrawUserSprites()
     {
         if (m_texmgr.m_tex[iSlot].pSurface)
         {
-            int k;
-
             // Set values of input variables.
             *(m_texmgr.m_tex[iSlot].var_time) = (double)(GetTime() - m_texmgr.m_tex[iSlot].fStartTime);
             *(m_texmgr.m_tex[iSlot].var_frame) = (double)(GetFrame() - m_texmgr.m_tex[iSlot].nStartFrame);
@@ -3167,21 +3165,20 @@ void CPlugin::DrawUserSprites()
             bool bBurnIn = (*m_texmgr.m_tex[iSlot].var_burn != 0.0);
 
             // Remember the original backbuffer and zbuffer
-            ID3D11Texture2D* pBackBuffer = NULL; // , *pZBuffer=NULL;
+            ID3D11Texture2D* pBackBuffer = NULL; //, *pZBuffer=NULL;
             lpDevice->GetRenderTarget(&pBackBuffer);
-            //lpDevice->GetDepthStencilSurface( &pZBuffer );
+            //lpDevice->GetDepthStencilSurface(&pZBuffer);
 
             if (/*bKillSprite &&*/ bBurnIn)
             {
-                // set up to render [from NULL] to VS1 (for burn-in).
-
+                // Set up to render [from NULL] to VS1 (for burn-in).
                 lpDevice->SetTexture(0, NULL);
                 lpDevice->SetRenderTarget(m_lpVS[1]);
 
                 lpDevice->SetTexture(0, NULL);
             }
 
-            // finally, use the results to draw the sprite.
+            // Finally, use the results to draw the sprite.
             lpDevice->SetTexture(0, m_texmgr.m_tex[iSlot].pSurface);
             //if (lpDevice->SetTexture(0, m_texmgr.m_tex[iSlot].pSurface) != D3D_OK)
             //  return;
@@ -3233,10 +3230,10 @@ void CPlugin::DrawUserSprites()
                 float aspect = m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].img_w;
 
                 if (aspect < 1)
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                         v3[k].y *= aspect; // wide image
                 else
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                         v3[k].x /= aspect; // tall image
             }
 
@@ -3244,7 +3241,7 @@ void CPlugin::DrawUserSprites()
             {
                 float cos_rot = cosf(rot);
                 float sin_rot = sinf(rot);
-                for (k = 0; k < 4; k++)
+                for (int k = 0; k < 4; k++)
                 {
                     float x2 = v3[k].x * cos_rot - v3[k].y * sin_rot;
                     float y2 = v3[k].x * sin_rot + v3[k].y * cos_rot;
@@ -3254,7 +3251,7 @@ void CPlugin::DrawUserSprites()
             }
 
             // Translation.
-            for (k = 0; k < 4; k++)
+            for (int k = 0; k < 4; k++)
             {
                 v3[k].x += x;
                 v3[k].y += y;
@@ -3264,43 +3261,44 @@ void CPlugin::DrawUserSprites()
             {
                 float aspect = GetWidth() / (float)(GetHeight());
                 if (aspect > 1)
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                         v3[k].y *= aspect;
                 else
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                         v3[k].x /= aspect;
             }
 
-            // third aspect ratio: adjust for burn-in
+            // Third aspect ratio: adjust for burn-in.
             if (bKillSprite && bBurnIn) // final render-to-VS1
             {
                 float aspect = GetWidth() / (float)(GetHeight() * 4.0f / 3.0f);
                 if (aspect < 1.0f)
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                         v3[k].x *= aspect;
                 else
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                         v3[k].y /= aspect;
             }
 
-            // finally, flip 'y' for annoying DirectX
-            //for (k=0; k<4; k++) v3[k].y *= -1.0f;
+            // Finally, flip 'y' for annoying DirectX.
+            //for (int k=0; k<4; k++)
+            //    v3[k].y *= -1.0f;
 
             // set u,v coords
             {
                 float dtu = 0.5f; // / (float)m_texmgr.m_tex[iSlot].tex_w;
                 float dtv = 0.5f; // / (float)m_texmgr.m_tex[iSlot].tex_h;
                 v3[0].tu = -dtu;
-                v3[1].tu = dtu; ///*m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w*/ - dtu;
+                v3[1].tu =  dtu; // /*m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w*/ - dtu;
                 v3[2].tu = -dtu;
-                v3[3].tu = dtu; ///*m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w*/ - dtu;
+                v3[3].tu =  dtu; // /*m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w*/ - dtu;
                 v3[0].tv = -dtv;
                 v3[1].tv = -dtv;
-                v3[2].tv = dtv; ///*m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h*/ - dtv;
-                v3[3].tv = dtv; ///*m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h*/ - dtv;
+                v3[2].tv =  dtv; // /*m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h*/ - dtv;
+                v3[3].tv =  dtv; // /*m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h*/ - dtv;
 
-                // repeat on x,y
-                for (k = 0; k < 4; k++)
+                // Repeat on x,y.
+                for (int k = 0; k < 4; k++)
                 {
                     v3[k].tu = (v3[k].tu - 0.0f) * repeatx + 0.5f;
                     v3[k].tv = (v3[k].tv - 0.0f) * repeaty + 0.5f;
@@ -3351,7 +3349,7 @@ void CPlugin::DrawUserSprites()
                     //lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
                     //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
                     //for (k = 0; k < 4; k++) v3[k].Diffuse = D3DCOLOR_RGBA_01(r, g, b, a);
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                     {
                         v3[k].a = COLOR_NORM(a);
                         v3[k].r = COLOR_NORM(r);
@@ -3360,13 +3358,13 @@ void CPlugin::DrawUserSprites()
                     }
                     break;
                 case 1:
-                    // decal
+                    // Decal.
                     lpDevice->SetBlendState(false);
                     //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
                     //lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
                     //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
                     //for (k = 0; k < 4; k++) v3[k].Diffuse = D3DCOLOR_RGBA_01(r * a,g * a, b * a, 1);
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                     {
                         v3[k].a = 1.0f;
                         v3[k].r = COLOR_NORM(r * a);
@@ -3381,7 +3379,7 @@ void CPlugin::DrawUserSprites()
                     //lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
                     //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
                     //for (k = 0; k < 4; k++) v3[k].Diffuse = D3DCOLOR_RGBA_01(r * a,g * a, b * a, 1);
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                     {
                         v3[k].a = 1.0f;
                         v3[k].r = COLOR_NORM(r * a);
@@ -3390,13 +3388,13 @@ void CPlugin::DrawUserSprites()
                     }
                     break;
                 case 3:
-                    // srccolor
+                    // Source color.
                     lpDevice->SetBlendState(true, D3D11_BLEND_SRC_COLOR, D3D11_BLEND_INV_SRC_COLOR);
                     //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
                     //lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
                     //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
                     //for (k = 0; k < 4; k++) v3[k].Diffuse = D3DCOLOR_RGBA_01(1, 1, 1, 1);
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                     {
                         v3[k].a = 1.0f;
                         v3[k].r = 1.0f;
@@ -3421,13 +3419,13 @@ void CPlugin::DrawUserSprites()
                     //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
                     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
-                    // also, smoothly blend this in-between texels:
+                    // Also, smoothly blend this in-between texels.
                     lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_SRC_ALPHA);
                     //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
                     //lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
                     //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
                     //for (k = 0; k < 4; k++) v3[k].Diffuse = D3DCOLOR_RGBA_01(r, g, b, a);
-                    for (k = 0; k < 4; k++)
+                    for (int k = 0; k < 4; k++)
                     {
                         v3[k].a = COLOR_NORM(a);
                         v3[k].r = COLOR_NORM(r);
@@ -3441,20 +3439,20 @@ void CPlugin::DrawUserSprites()
 
             if (/*bKillSprite &&*/ bBurnIn) // final render-to-VS1
             {
-                // Change the rendertarget back to the original setup
+                // Change the render target back to the original setup.
                 lpDevice->SetTexture(0, NULL);
                 lpDevice->SetRenderTarget(pBackBuffer);
-                //lpDevice->SetDepthStencilSurface( pZBuffer );
+                //lpDevice->SetDepthStencilSurface(pZBuffer);
                 lpDevice->SetTexture(0, m_texmgr.m_tex[iSlot].pSurface);
 
-                // undo aspect ratio changes (that were used to fit it to VS1):
+                // Undo aspect ratio changes (that were used to fit it to VS1).
                 {
                     float aspect = GetWidth() / (float)(GetHeight() * 4.0f / 3.0f);
                     if (aspect < 1.0f)
-                        for (k = 0; k < 4; k++)
+                        for (int k = 0; k < 4; k++)
                             v3[k].x /= aspect;
                     else
-                        for (k = 0; k < 4; k++)
+                        for (int k = 0; k < 4; k++)
                             v3[k].y *= aspect;
                 }
 
@@ -3470,8 +3468,8 @@ void CPlugin::DrawUserSprites()
             }
 
             lpDevice->SetShader(0);
-            //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-            //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
+            //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+            //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
             //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
         }
     }
@@ -3670,7 +3668,7 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
     }
 }
 
-// Note: this one has to draw the whole screen! (one big quad)
+// Note: Draws the whole screen! (one big quad)
 void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 {
     D3D11Shim* lpDevice = GetDevice();
@@ -4078,10 +4076,10 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
                 shade[i][k] /= max;
                 shade[i][k] = 0.5f + 0.5f * shade[i][k];
             }
-            // Note: we now pass the raw hue shader colors down; the shader can only use a certain % if it wants.
-            //for (k=0; k<3; k++)
-            //    shade[i][k] = shade[i][k]*(fShaderAmount) + 1.0f*(1.0f - fShaderAmount);
-            //m_comp_verts[i].Diffuse = D3DCOLOR_RGBA_01(shade[i][0],shade[i][1],shade[i][2],1);
+            // Note: now pass the raw hue shader colors down; the shader can only use a certain % if it wants.
+            //for (int k = 0; k < 3; k++)
+            //    shade[i][k] = shade[i][k] * (fShaderAmount) + 1.0f * (1.0f - fShaderAmount);
+            //m_comp_verts[i].Diffuse = D3DCOLOR_RGBA_01(shade[i][0], shade[i][1], shade[i][2], 1);
         }
 
         // Interpolate the 4 colors & apply to all the verts.
@@ -4245,7 +4243,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
     lpDevice->SetTexture(0, m_lpDDSTitle);
     lpDevice->SetVertexShader(NULL, NULL);
     lpDevice->SetShader(0);
-    //lpDevice->SetFVF( SPRITEVERTEX_FORMAT );
+    //lpDevice->SetFVF(SPRITEVERTEX_FORMAT);
 
     lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
     //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -4426,11 +4424,11 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
                 t = CosineInterp(std::min(1.0f, (fProgress / m_supertext.fFadeTime)));
 
             if (it == 0)
-                //v3[0].Diffuse = D3DCOLOR_RGBA_01(t,t,t,t);
+                //v3[0].Diffuse = D3DCOLOR_RGBA_01(t, t, t, t);
                 v3[0].r = v3[0].g = v3[0].b = v3[0].a = t;
             else
             {
-                //v3[0].Diffuse = D3DCOLOR_RGBA_01(t*m_supertext.nColorR/255.0f,t*m_supertext.nColorG/255.0f,t*m_supertext.nColorB/255.0f,t);
+                //v3[0].Diffuse = D3DCOLOR_RGBA_01(t * m_supertext.nColorR/255.0f, t * m_supertext.nColorG / 255.0f, t * m_supertext.nColorB / 255.0f, t);
                 v3[0].r = COLOR_NORM(t * m_supertext.nColorR / 255.0f);
                 v3[0].g = COLOR_NORM(t * m_supertext.nColorG / 255.0f);
                 v3[0].b = COLOR_NORM(t * m_supertext.nColorB / 255.0f);

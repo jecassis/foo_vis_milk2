@@ -36,12 +36,14 @@
 #include <sdk/initquit.h>
 #include <sdk/playback_control.h>
 #include <sdk/play_callback.h>
+#include <sdk/playlist.h>
 #include <sdk/vis.h>
 #include <sdk/ui_element.h>
 #include <helpers/atl-misc.h>
 #include <helpers/advconfig_impl.h>
 #include <helpers/BumpableElem.h>
 #include <helpers/DarkMode.h>
+#include <pfc/string-conv-lite.h>
 #include <libppui/win32_op.h>
 
 #include <wrl/client.h>
@@ -58,6 +60,9 @@
 #include <vis_milk2/pluginshell.h>
 #include <vis_milk2/plugin.h>
 #include <vis_milk2/dxcontext.h>
+#ifdef _DEBUG
+#include <vis_milk2/utility.h>
+#endif
 #include <winamp/wa_ipc.h>
 
 #define MAX_PROPERTY_PAGES 8

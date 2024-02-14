@@ -100,7 +100,8 @@ void D3D11Shim::Initialize()
     bDesc.CPUAccessFlags = 0;
     D3D11_SUBRESOURCE_DATA bData = {indices.data()};
 
-    m_pDevice->CreateBuffer(&bDesc, &bData, &m_pIFanBuffer);
+    if (FAILED(m_pDevice->CreateBuffer(&bDesc, &bData, &m_pIFanBuffer)))
+        return;
 
     XMStoreFloat4x4(&m_transforms.world, XMMatrixTranspose(XMMatrixIdentity()));
     XMStoreFloat4x4(&m_transforms.view, XMMatrixTranspose(XMMatrixIdentity()));
@@ -245,26 +246,26 @@ void D3D11Shim::SetBlendState(bool bEnable, D3D11_BLEND srcBlend, D3D11_BLEND de
     D3D11_BLEND_DESC desc{};
     //desc.RenderTarget[0].BlendEnable = (srcBlend != D3D11_BLEND_ONE) || (destBlend != D3D11_BLEND_ZERO);
 
-    desc.RenderTarget[0].BlendEnable = bEnable;
+    desc.RenderTarget[0].BlendEnable = bEnable; //(srcBlend != D3D11_BLEND_ONE) || (destBlend != D3D11_BLEND_ZERO);
     desc.RenderTarget[0].SrcBlend = srcBlend;
     desc.RenderTarget[0].DestBlend = destBlend;
     desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 
     D3D11_BLEND srcAlphaBlend = srcBlend;
-    D3D11_BLEND destBAlhalend = destBlend;
+    D3D11_BLEND destAlphaBlend = destBlend;
 
     if (srcBlend == 3 || srcBlend == 4)
-        srcAlphaBlend = (D3D11_BLEND)(srcAlphaBlend + 2);
+        srcAlphaBlend = static_cast<D3D11_BLEND>(srcAlphaBlend + 2);
     else if (srcBlend == 9 || srcBlend == 10)
-        srcAlphaBlend = (D3D11_BLEND)(srcAlphaBlend - 2);
+        srcAlphaBlend = static_cast<D3D11_BLEND>(srcAlphaBlend - 2);
 
     if (destBlend == 3 || destBlend == 4)
-        destBAlhalend = (D3D11_BLEND)(destBAlhalend + 2);
+        destAlphaBlend = static_cast<D3D11_BLEND>(destAlphaBlend + 2);
     else if (destBlend == 9 || destBlend == 10)
-        destBAlhalend = (D3D11_BLEND)(destBAlhalend - 2);
+        destAlphaBlend = static_cast<D3D11_BLEND>(destAlphaBlend - 2);
 
     desc.RenderTarget[0].SrcBlendAlpha = srcAlphaBlend;
-    desc.RenderTarget[0].DestBlendAlpha = destBAlhalend;
+    desc.RenderTarget[0].DestBlendAlpha = destAlphaBlend;
     desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
@@ -375,8 +376,8 @@ void D3D11Shim::SetTexture(unsigned int iSlot, ID3D11Resource* pResource)
     ID3D11ShaderResourceView* views[1] = {NULL};
     if (pResource)
     {
-        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-        D3D11_RESOURCE_DIMENSION dim;
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        D3D11_RESOURCE_DIMENSION dim{};
         pResource->GetType(&dim);
 
         if (dim == D3D11_RESOURCE_DIMENSION_TEXTURE2D)

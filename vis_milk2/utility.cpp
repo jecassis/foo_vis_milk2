@@ -204,8 +204,8 @@ void TextToLuidA(char* str, LUID* pLUID)
     if (!str || !pLUID)
         return;
 
-    DWORD l;
-    LONG h;
+    DWORD l = 0u;
+    LONG h = 0;
 
     sscanf_s(str, "%08X%08X", &h, &l);
 
@@ -318,7 +318,9 @@ void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg
     // Note: These identifiers were gathered from "WinUser.h" and https://blog.airesoft.co.uk/2009/11/wm_messages/
     // Note: This function does NOT log WM_MOUSEMOVE, WM_NCHITTEST, or WM_SETCURSOR
     //       messages, since they are so frequent.
-    if (msg == WM_MOUSEMOVE || msg == WM_NCHITTEST || msg == WM_SETCURSOR)
+    if (msg == WM_MOUSEMOVE || msg == WM_NCHITTEST || msg == WM_SETCURSOR ||
+        msg == WM_TIMER || msg == WM_PAINT || msg == WM_ERASEBKGND ||
+        msg == WM_USER)
         return;
 
     wchar_t buf[64];

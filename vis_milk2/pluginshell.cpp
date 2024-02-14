@@ -29,11 +29,12 @@
 
 #include "pch.h"
 #include "pluginshell.h"
-#include "utility.h"
+
 #include "defines.h"
 #include "shell_defines.h"
 #include "utility.h"
 #include <nu/AutoWide.h>
+#include <winamp/wa_ipc.h>
 #include "DirectXHelpers.h"
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib") // for timeGetTime
@@ -254,15 +255,15 @@ void CPluginShell::StuffParams(DXCONTEXT_PARAMS* pParams)
     {
         case WINDOWED:
             pParams->allow_page_tearing = m_allow_page_tearing_w;
-            pParams->adapter_guid = m_adapter_guid_windowed;
-            pParams->msaa = m_multisample_windowed;
-            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_windowed);
+            pParams->adapter_guid = m_adapter_guid_w;
+            pParams->msaa = m_multisample_w;
+            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_w);
             break;
         case FULLSCREEN:
             pParams->allow_page_tearing = m_allow_page_tearing_fs;
-            pParams->adapter_guid = m_adapter_guid_fullscreen;
-            pParams->msaa = m_multisample_fullscreen;
-            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_fullscreen);
+            pParams->adapter_guid = m_adapter_guid_fs;
+            pParams->msaa = m_multisample_fs;
+            wcscpy_s(pParams->adapter_devicename, m_adapter_devicename_fs);
             break;
     }
     pParams->parent_window = m_hWndWinamp;
@@ -364,7 +365,6 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
 {
     // PROTECTED CONFIG PANEL SETTINGS (also see 'private' settings, below)
     m_start_fullscreen = 0;
-    m_start_desktop = 0;
     m_max_fps_fs = 30;
     m_max_fps_w = 30;
     m_show_press_f1_msg = 1;
@@ -521,12 +521,12 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     */
 
     // PRIVATE CONFIG PANEL SETTINGS
-    m_multisample_fullscreen = {1u, 0u}; //D3DMULTISAMPLE_NONE;
-    m_multisample_windowed = {1u, 0u}; //D3DMULTISAMPLE_NONE;
-    ZeroMemory(&m_adapter_guid_fullscreen, sizeof(GUID));
-    ZeroMemory(&m_adapter_guid_windowed , sizeof(GUID));
-    m_adapter_devicename_windowed[0] = '\0';
-    m_adapter_devicename_fullscreen[0] = '\0';
+    m_multisample_fs = {1u, 0u}; //D3DMULTISAMPLE_NONE;
+    m_multisample_w = {1u, 0u}; //D3DMULTISAMPLE_NONE;
+    ZeroMemory(&m_adapter_guid_fs, sizeof(GUID));
+    ZeroMemory(&m_adapter_guid_w , sizeof(GUID));
+    m_adapter_devicename_w[0] = L'\0';
+    m_adapter_devicename_fs[0] = L'\0';
 
     // PRIVATE RUNTIME SETTINGS
     m_lost_focus = 0;
@@ -536,10 +536,8 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_show_playlist = false;
     m_playlist_pos = 0;
     m_playlist_pageups = 0;
-    m_playlist_top_idx = -1;
+    m_playlist_top_idx = -1; // `m_playlist_width_pixels` and `m_playlist[256][256]` will be considered invalid whenever `m_playlist_top_idx` is -1.
     m_playlist_btm_idx = -1;
-    // `m_playlist_width_pixels` will be considered invalid whenever `m_playlist_top_idx` is -1.
-    // `m_playlist[256][256]` will be considered invalid whenever `m_playlist_top_idx` is -1.
     m_exiting = 0;
     m_upper_left_corner_y = 0;
     m_lower_left_corner_y = 0;
@@ -616,7 +614,7 @@ wchar_t* BuildSettingName(const wchar_t* name, const int number)
     return temp;
 }
 
-void CPluginShell::ReadFont(const int /*n*/)
+void CPluginShell::ReadFont(const int n)
 {
 #ifndef _FOOBAR
     GetPrivateProfileString(L"settings", BuildSettingName(L"szFontFace", n), m_fontinfo[n].szFace, m_fontinfo[n].szFace, ARRAYSIZE(m_fontinfo[n].szFace), m_szConfigIniFile);
@@ -624,6 +622,8 @@ void CPluginShell::ReadFont(const int /*n*/)
     m_fontinfo[n].bBold = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontBold", n), m_fontinfo[n].bBold, m_szConfigIniFile);
     m_fontinfo[n].bItalic = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontItalic", n), m_fontinfo[n].bItalic, m_szConfigIniFile);
     m_fontinfo[n].bAntiAliased = GetPrivateProfileInt(L"settings", BuildSettingName(L"bFontAA", n), m_fontinfo[n].bItalic, m_szConfigIniFile);
+#else
+    UNREFERENCED_PARAMETER(n);
 #endif
 }
 
@@ -639,20 +639,20 @@ void CPluginShell::ReadConfig()
     else if (old_subver < INT_SUBVERSION)
         return;
 
-    m_multisample_fullscreen = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_fullscreen", m_multisample_fullscreen.Count, m_szConfigIniFile)), 0U};
-    m_multisample_desktop = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_desktop", m_multisample_desktop.Count, m_szConfigIniFile)), 0U};
-    m_multisample_windowed = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_windowed", m_multisample_windowed.Count, m_szConfigIniFile)), 0U};
+    m_multisample_fs = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_fullscreen", m_multisample_fs.Count, m_szConfigIniFile)), 0u};
+    m_multisample_d = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_desktop", m_multisample_d.Count, m_szConfigIniFile)), 0u};
+    m_multisample_w = {static_cast<UINT>(GetPrivateProfileInt(L"settings", L"multisample_windowed", m_multisample_w.Count, m_szConfigIniFile)), 0u};
 
     char str[256];
     GetPrivateProfileStringA("settings", "adapter_guid_fullscreen", "", str, sizeof(str), m_szConfigIniFileA);
-    TextToLuidA(str, &m_adapter_guid_fullscreen);
+    TextToLuidA(str, &m_adapter_guid_fs);
     GetPrivateProfileStringA("settings", "adapter_guid_desktop", "", str, sizeof(str), m_szConfigIniFileA);
-    TextToLuidA(str, &m_adapter_guid_desktop);
+    TextToLuidA(str, &m_adapter_guid_d);
     GetPrivateProfileStringA("settings", "adapter_guid_windowed", "", str, sizeof(str), m_szConfigIniFileA);
-    TextToLuidA(str, &m_adapter_guid_windowed);
-    GetPrivateProfileString(L"settings", L"adapter_devicename_fullscreen", L"", m_adapter_devicename_fullscreen, ARRAYSIZE(m_adapter_devicename_fullscreen), m_szConfigIniFile);
-    GetPrivateProfileString(L"settings", L"adapter_devicename_desktop", L"", m_adapter_devicename_desktop, ARRAYSIZE(m_adapter_devicename_desktop), m_szConfigIniFile);
-    GetPrivateProfileString(L"settings", L"adapter_devicename_windowed", L"", m_adapter_devicename_windowed, ARRAYSIZE(m_adapter_devicename_windowed), m_szConfigIniFile);
+    TextToLuidA(str, &m_adapter_guid_w);
+    GetPrivateProfileString(L"settings", L"adapter_devicename_fullscreen", L"", m_adapter_devicename_fs, ARRAYSIZE(m_adapter_devicename_fs), m_szConfigIniFile);
+    GetPrivateProfileString(L"settings", L"adapter_devicename_desktop", L"", m_adapter_devicename_d, ARRAYSIZE(m_adapter_devicename_d), m_szConfigIniFile);
+    GetPrivateProfileString(L"settings", L"adapter_devicename_windowed", L"", m_adapter_devicename_w, ARRAYSIZE(m_adapter_devicename_w), m_szConfigIniFile);
 
     // FONTS
     ReadFont(0);
@@ -679,12 +679,12 @@ void CPluginShell::ReadConfig()
     m_start_desktop = GetPrivateProfileInt(L"settings", L"start_desktop", m_start_desktop, m_szConfigIniFile);
     m_fake_fullscreen_mode = GetPrivateProfileInt(L"settings", L"fake_fullscreen_mode", m_fake_fullscreen_mode, m_szConfigIniFile);
     m_max_fps_fs = GetPrivateProfileInt(L"settings", L"max_fps_fs", m_max_fps_fs, m_szConfigIniFile);
-    m_max_fps_dm = GetPrivateProfileInt(L"settings", L"max_fps_dm", m_max_fps_dm, m_szConfigIniFile);
+    m_max_fps_d = GetPrivateProfileInt(L"settings", L"max_fps_dm", m_max_fps_d, m_szConfigIniFile);
     m_max_fps_w = GetPrivateProfileInt(L"settings", L"max_fps_w", m_max_fps_w, m_szConfigIniFile);
     m_show_press_f1_msg = GetPrivateProfileInt(L"settings", L"show_press_f1_msg", m_show_press_f1_msg, m_szConfigIniFile);
     m_allow_page_tearing_w = GetPrivateProfileInt(L"settings", L"allow_page_tearing_w", m_allow_page_tearing_w, m_szConfigIniFile);
     m_allow_page_tearing_fs = GetPrivateProfileInt(L"settings", L"allow_page_tearing_fs", m_allow_page_tearing_fs, m_szConfigIniFile);
-    m_allow_page_tearing_dm = GetPrivateProfileInt(L"settings", L"allow_page_tearing_dm", m_allow_page_tearing_dm, m_szConfigIniFile);
+    m_allow_page_tearing_d = GetPrivateProfileInt(L"settings", L"allow_page_tearing_dm", m_allow_page_tearing_d, m_szConfigIniFile);
     m_minimize_winamp = GetPrivateProfileInt(L"settings", L"minimize_winamp", m_minimize_winamp, m_szConfigIniFile);
     m_desktop_show_icons = GetPrivateProfileInt(L"settings", L"desktop_show_icons", m_desktop_show_icons, m_szConfigIniFile);
     m_desktop_textlabel_boxes = GetPrivateProfileInt(L"settings", L"desktop_textlabel_boxes", m_desktop_textlabel_boxes, m_szConfigIniFile);
@@ -722,20 +722,20 @@ void CPluginShell::WriteFont(const int /*n*/)
 void CPluginShell::WriteConfig()
 {
 #ifndef _FOOBAR
-    WritePrivateProfileIntW(m_multisample_fullscreen.Count, L"multisample_fullscreen", m_szConfigIniFile, L"settings");
-    WritePrivateProfileIntW(m_multisample_desktop.Count, L"multisample_desktop", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_multisample_fs.Count, L"multisample_fullscreen", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_multisample_d.Count, L"multisample_desktop", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_multisample_windowed.Count, L"multisample_windowed", m_szConfigIniFile, L"settings");
 
     char str[256];
-    LuidToTextA(&m_adapter_guid_fullscreen, str, sizeof(str));
+    LuidToTextA(&m_adapter_guid_fs, str, sizeof(str));
     WritePrivateProfileStringA("settings", "adapter_guid_fullscreen", str, m_szConfigIniFileA);
-    LuidToTextA(&m_adapter_guid_desktop, str, sizeof(str));
+    LuidToTextA(&m_adapter_guid_d, str, sizeof(str));
     WritePrivateProfileStringA("settings", "adapter_guid_desktop", str, m_szConfigIniFileA);
-    LuidToTextA(&m_adapter_guid_windowed, str, sizeof(str));
+    LuidToTextA(&m_adapter_guid_w, str, sizeof(str));
     WritePrivateProfileStringA("settings", "adapter_guid_windowed", str, m_szConfigIniFileA);
-    WritePrivateProfileString(L"settings", L"adapter_devicename_fullscreen", m_adapter_devicename_fullscreen, m_szConfigIniFile);
-    WritePrivateProfileString(L"settings", L"adapter_devicename_desktop", m_adapter_devicename_desktop, m_szConfigIniFile);
-    WritePrivateProfileString(L"settings", L"adapter_devicename_windowed", m_adapter_devicename_windowed, m_szConfigIniFile);
+    WritePrivateProfileString(L"settings", L"adapter_devicename_fullscreen", m_adapter_devicename_fs, m_szConfigIniFile);
+    WritePrivateProfileString(L"settings", L"adapter_devicename_desktop", m_adapter_devicename_d, m_szConfigIniFile);
+    WritePrivateProfileString(L"settings", L"adapter_devicename_windowed", m_adapter_devicename_w, m_szConfigIniFile);
 
     // FONTS
     WriteFont(0);
@@ -762,12 +762,12 @@ void CPluginShell::WriteConfig()
     WritePrivateProfileIntW(m_start_desktop, L"start_desktop", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_fake_fullscreen_mode, L"fake_fullscreen_mode", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_max_fps_fs, L"max_fps_fs", m_szConfigIniFile, L"settings");
-    WritePrivateProfileIntW(m_max_fps_dm, L"max_fps_dm", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_max_fps_d, L"max_fps_dm", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_max_fps_w, L"max_fps_w", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_show_press_f1_msg, L"show_press_f1_msg", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_allow_page_tearing_w, L"allow_page_tearing_w", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_allow_page_tearing_fs, L"allow_page_tearing_fs", m_szConfigIniFile, L"settings");
-    WritePrivateProfileIntW(m_allow_page_tearing_dm, L"allow_page_tearing_dm", m_szConfigIniFile, L"settings");
+    WritePrivateProfileIntW(m_allow_page_tearing_d, L"allow_page_tearing_dm", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_minimize_winamp, L"minimize_winamp", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_desktop_show_icons, L"desktop_show_icons", m_szConfigIniFile, L"settings");
     WritePrivateProfileIntW(m_desktop_textlabel_boxes, L"desktop_textlabel_boxes", m_szConfigIniFile, L"settings");
@@ -815,10 +815,9 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
     else
         m_lost_focus = (GetFocus() != GetPluginWindow());
 
-    if ((m_screenmode==WINDOWED   && m_hidden) ||
-        (m_screenmode==FULLSCREEN && m_lost_focus) ||
-        (m_screenmode==WINDOWED   && m_resizing)
-       )
+    if ((m_screenmode == WINDOWED   && m_hidden) ||
+        (m_screenmode == FULLSCREEN && m_lost_focus) ||
+        (m_screenmode == WINDOWED   && m_resizing))
     {
         Sleep(30);
         return true;
@@ -834,7 +833,7 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
         CleanUpDX9Stuff(0);
         if (m_lpDX->m_lpDevice->Reset(&m_lpDX->m_d3dpp) != D3D_OK)
         {
-            // note: a basic warning messagebox will have already been given.
+            // note: a basic warning message box will have already been given.
             // now suggest specific advice on how to regain more video memory:
     / *
             if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
@@ -1014,7 +1013,7 @@ void CPluginShell::DoTime()
     if (m_high_perf_timer_freq.QuadPart != 0)
     {
         // Get high-precision time.
-        // Precision is usually from 1..6 us (MICROseconds), depending on the CPU speed
+        // Precision is usually from 1..6 us, depending on the CPU speed
         // (higher CPU speeds tend to have better precision).
         // Note: On systems that run Windows XP or later, `QueryPerformanceCounter()`
         //        will always succeed and will thus never return zero.
@@ -1033,7 +1032,7 @@ void CPluginShell::DoTime()
     if (m_high_perf_timer_freq.QuadPart == 0)
     {
         // Get low-precision time.
-        // Precision is usually 1 ms (MILLIsecond) for Windows 98, and 10 ms for Windows 2000.
+        // Precision is usually 1 ms for Windows 98 and 10 ms for Windows 2000.
         new_raw_time = (double)(GetTickCount64() * 0.001);
         elapsed = (float)(new_raw_time - m_last_raw_time);
     }
@@ -1123,7 +1122,7 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
         m_sound.fWaveform[0][i] = (float)((pWaveL[i] ^ 128) - 128);
         m_sound.fWaveform[1][i] = (float)((pWaveR[i] ^ 128) - 128);
 
-        // simulating single frequencies from 200 to 11,025 Hz:
+        // Simulating single frequencies from 200 to 11,025 Hz.
         //float freq = 1.0f + 11050*(GetFrame() % 100)*0.01f;
         //m_sound.fWaveform[0][i] = 10*sinf(i*freq*6.28f/44100.0f);
 
@@ -1136,7 +1135,7 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     m_fftobj.time_to_frequency_domain(temp_wave[0], m_sound.fSpectrum[0]);
     m_fftobj.time_to_frequency_domain(temp_wave[1], m_sound.fSpectrum[1]);
 
-    // sum (left channel) spectrum up into 3 bands
+    // Sum (left channel) spectrum up into 3 bands.
     // [note: the new ranges do it so that the 3 bands are equally spaced, pitch-wise]
     float min_freq = 200.0f;
     float max_freq = 11025.0f;
@@ -1404,22 +1403,20 @@ void CPluginShell::RenderPlaylist()
 {
     if (m_show_playlist)
     {
-#if 0
         D2D1_RECT_F r;
-        int nSongs = SendMessage(m_hWndWinamp, WM_USER, 0, 124);
-        int now_playing = SendMessage(m_hWndWinamp, WM_USER, 0, 125);
+        int nSongs = static_cast<int>(SendMessage(m_hWndWinamp, WM_USER, 0, IPC_GETLISTLENGTH));
+        int now_playing = static_cast<int>(SendMessage(m_hWndWinamp, WM_USER, 0, IPC_GETLISTPOS));
         DWORD dwFlags = DT_SINGLELINE; //| DT_NOPREFIX | DT_WORD_ELLIPSIS; // Note: `dwFlags` is used for both DDRAW and DX9
         int nFontHeight = GetFontHeight(PLAYLIST_FONT);
 
         if (nSongs <= 0)
         {
-            m_show_playlist = 0;
+            m_show_playlist = false;
         }
         else
         {
             int playlist_vert_pixels = m_lower_left_corner_y - m_upper_left_corner_y;
-            int disp_lines =
-                std::min(MAX_SONGS_PER_PAGE, (playlist_vert_pixels - static_cast<int>(PLAYLIST_INNER_MARGIN) * 2) / nFontHeight);
+            int disp_lines = std::min(MAX_SONGS_PER_PAGE, (playlist_vert_pixels - static_cast<int>(PLAYLIST_INNER_MARGIN) * 2) / nFontHeight);
             //int total_pages = nSongs / disp_lines;
 
             if (disp_lines <= 0)
@@ -1434,11 +1431,11 @@ void CPluginShell::RenderPlaylist()
             if (m_playlist_pos >= nSongs)
                 m_playlist_pos = nSongs - 1;
 
-            int cur_page = m_playlist_pos / disp_lines;
+            int cur_page = static_cast<int>(m_playlist_pos / disp_lines);
             //int cur_line = (m_playlist_pos + disp_lines - 1) % disp_lines;
             int new_top_idx = cur_page * disp_lines;
             int new_btm_idx = new_top_idx + disp_lines;
-            wchar_t buf[1024] = {};
+            wchar_t buf[1024]{};
 
             // Ask Winamp for the song names, but DO IT BEFORE getting the DC,
             // otherwise might crash (~DDRAW port).
@@ -1450,7 +1447,8 @@ void CPluginShell::RenderPlaylist()
                     if (j < nSongs)
                     {
                         // Clip maximum length of song name to 240 characters, to prevent overflows.
-                        wcsncpy_s(buf, reinterpret_cast<wchar_t*>(SendMessage(m_hWndWinamp, WM_USER, j, IPC_GETPLAYLISTTITLEW)), 240);
+                        LRESULT szTitle = SendMessage(m_hWndWinamp, WM_WA_IPC, j, IPC_GETPLAYLISTTITLEW);
+                        wcsncpy_s(buf, reinterpret_cast<wchar_t*>(szTitle), 240);
                         swprintf_s(m_playlist[i], L"%d. %s ", j + 1, buf); // leave an extra space at end, so italicized fonts do not get clipped
                     }
                 }
@@ -1463,8 +1461,7 @@ void CPluginShell::RenderPlaylist()
                 m_playlist_btm_idx = new_btm_idx;
                 m_playlist_width_pixels = 0.0f;
 
-                FLOAT max_w = static_cast<FLOAT>(std::min(m_right_edge - m_left_edge, m_lpDX->m_client_width - TEXT_MARGIN * 2 -
-                                                                                          static_cast<int>(PLAYLIST_INNER_MARGIN) * 2));
+                FLOAT max_w = static_cast<FLOAT>(std::min(m_right_edge - m_left_edge, m_lpDX->m_client_width - TEXT_MARGIN * 2 - static_cast<int>(PLAYLIST_INNER_MARGIN) * 2));
 
                 for (int i = 0; i < disp_lines; i++)
                 {
@@ -1478,7 +1475,7 @@ void CPluginShell::RenderPlaylist()
 
                         r = {0.0f, 0.0f, max_w, 1024.0f};
                         if (!m_playlist_song[i].IsVisible())
-                            m_playlist_song[i].Initialize();
+                            m_playlist_song[i].Initialize(m_lpDX->GetD2DDeviceContext());
                         m_playlist_song[i].SetAlignment(AlignNear, AlignNear);
                         m_playlist_song[i].SetTextColor(D2D1::ColorF(0xFFFFFFFF));
                         m_playlist_song[i].SetTextOpacity(1.0f);
@@ -1487,8 +1484,7 @@ void CPluginShell::RenderPlaylist()
                         m_playlist_song[i].SetText(m_playlist[i]);
                         m_playlist_song[i].SetTextStyle(GetFont(PLAYLIST_FONT));
                         m_playlist_song[i].SetTextShadow(false);
-                        int h = m_text.DrawD2DText(GetFont(PLAYLIST_FONT), &m_playlist_song[i], m_playlist[i], &r,
-                                                                        dwFlags | DT_CALCRECT, 0xFFFFFFFF, false);
+                        int h = m_text.DrawD2DText(GetFont(PLAYLIST_FONT), &m_playlist_song[i], m_playlist[i], &r, dwFlags | DT_CALCRECT, 0xFFFFFFFF, false);
                         float w = r.right - r.left;
                         if (w > 0)
                             m_playlist_width_pixels = std::max(m_playlist_width_pixels, w);
@@ -1497,13 +1493,13 @@ void CPluginShell::RenderPlaylist()
                     }
                     else
                     {
-                        m_playlist[i][0] = 0;
+                        m_playlist[i][0] = L'\0';
                         if (m_playlist_song[i].IsVisible())
                             m_playlist_song[i].SetVisible(false);
                     }
                 }
 
-                if (m_playlist_width_pixels == 0 || m_playlist_width_pixels > max_w)
+                if (m_playlist_width_pixels == 0.0f || m_playlist_width_pixels > max_w)
                     m_playlist_width_pixels = max_w;
             }
 
@@ -1524,14 +1520,15 @@ void CPluginShell::RenderPlaylist()
             int y = m_upper_left_corner_y + static_cast<int>(PLAYLIST_INNER_MARGIN);
             for (int i = start; i < end; i++)
             {
-                r = {static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN), static_cast<FLOAT>(y),
+                r = {static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN),
+                     static_cast<FLOAT>(y),
                      static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN + m_playlist_width_pixels),
                      static_cast<FLOAT>(y + nFontHeight)};
                 m_playlist_song[i - start].SetContainer(r);
                 DWORD color;
                 if (m_lpDX->GetBitDepth() == 8)
-                    color =
-                        (i == m_playlist_pos) ? (i == now_playing ? 0xFFFFFFFF : 0xFFFFFFFF) : (i == now_playing ? 0xFFFFFFFF : 0xFF707070);
+                    color = (i == m_playlist_pos) ? (i == now_playing ? 0xFFFFFFFF : 0xFFFFFFFF)
+                                                  : (i == now_playing ? 0xFFFFFFFF : 0xFF707070);
                 else
                     color = (i == m_playlist_pos) ? (i == now_playing ? PLAYLIST_COLOR_BOTH : PLAYLIST_COLOR_HILITE_TRACK)
                                                   : (i == now_playing ? PLAYLIST_COLOR_PLAYING_TRACK : PLAYLIST_COLOR_NORMAL);
@@ -1540,12 +1537,10 @@ void CPluginShell::RenderPlaylist()
                 m_playlist_song[i - start].SetTextColor(fColor);
                 m_playlist_song[i - start].SetTextOpacity(fColor.a);
                 y += nFontHeight;
-                m_text.DrawD2DText(GetFont(PLAYLIST_FONT), &m_playlist_song[i - start], m_playlist[i - start], &r,
-                                                        dwFlags, color, false);
+                m_text.DrawD2DText(GetFont(PLAYLIST_FONT), &m_playlist_song[i - start], m_playlist[i - start], &r, dwFlags, color, false);
                 m_text.RegisterElement(&m_playlist_song[i - start]);
             }
         }
-#endif
     }
     else
         for (unsigned int i = 0; i < MAX_SONGS_PER_PAGE; ++i)

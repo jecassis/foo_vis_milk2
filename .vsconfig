@@ -4,24 +4,24 @@
     "Microsoft.Component.MSBuild",
     "Microsoft.VisualStudio.Component.Roslyn.Compiler",
     "Microsoft.VisualStudio.Component.SQL.LocalDB.Runtime",
-    "Microsoft.VisualStudio.Workload.CoreEditor",
-    "Microsoft.VisualStudio.Workload.NativeDesktop",
-    "Microsoft.VisualStudio.ComponentGroup.ArchitectureTools.Native",
     "Microsoft.VisualStudio.Component.CoreEditor",
+    "Microsoft.VisualStudio.Workload.CoreEditor",
     "Microsoft.VisualStudio.Component.TextTemplating",
     "Microsoft.VisualStudio.Component.ClassDesigner",
     "Microsoft.VisualStudio.Component.GraphDocument",
     "Microsoft.VisualStudio.Component.CodeMap",
-    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core",
     "Microsoft.VisualStudio.Component.VC.CoreIde",
     "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-    "Microsoft.VisualStudio.Component.VC.Tools.ARM64EC",
     "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
+    "Microsoft.VisualStudio.Component.Windows11SDK.22621",
     "Microsoft.VisualStudio.Component.VC.ATL",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
+    "Microsoft.VisualStudio.ComponentGroup.ArchitectureTools.Native",
     "Microsoft.VisualStudio.Component.VC.Redist.14.Latest",
-    "Microsoft.VisualStudio.Component.Graphics.Tools",
+    "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core",
+    "Microsoft.VisualStudio.Workload.NativeDesktop",
     "Microsoft.VisualStudio.Component.HLSL",
-    "Microsoft.VisualStudio.Component.Windows11SDK.22621"
-  ]
+    "Microsoft.VisualStudio.Component.NuGet"
+  ],
+  "extensions": []
 }

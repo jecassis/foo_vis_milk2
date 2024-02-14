@@ -41,7 +41,7 @@ static ULONGLONG s_count = 0ull;
 static constexpr ULONGLONG s_debug_limit = 1ull;
 static milk2_config s_config;
 
-class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base
+class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base
 {
   public:
     DECLARE_WND_CLASS_EX(CLASSNAME, CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));
@@ -98,7 +98,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     static ui_element_config::ptr g_get_default_configuration(); //{ return ui_element_config::g_create_empty(g_get_guid()); }
     static const char* g_get_description() { return "MilkDrop 2 Visualization using DirectX 11."; }
 
-    void notify(const GUID& p_what, t_size p_param1, const void* p_param2, t_size p_param2size);
+    void notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size);
 
   private:
     int OnCreate(LPCREATESTRUCT cs);
@@ -202,6 +202,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     // MilkDrop status
     bool m_milk2;
     WCHAR m_szWnd[19]; // 19 = 2 ("0x") + 16 (64 / 4 -> 64-bit address in hexadecimal) + 1 ('\0')
+    std::wstring m_szBuffer;
 
     // Rendering loop timer
     DX::StepTimer m_timer;
@@ -225,19 +226,46 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { UpdateTrack(); }
     void on_playback_new_track(metadb_handle_ptr p_track) { UpdateTrack(); }
     void on_playback_stop(play_control::t_stop_reason p_reason) { UpdateTrack(); }
-    void on_playback_seek(double p_time) { UpdateTrack(); }
-    void on_playback_pause(bool p_state) { UpdateTrack(); }
-    void on_playback_edited(metadb_handle_ptr p_track) { UpdateTrack(); }
-    void on_playback_dynamic_info(const file_info& p_info) { UpdateTrack(); }
-    void on_playback_dynamic_info_track(const file_info& p_info) { UpdateTrack(); }
-    void on_playback_time(double p_time) { UpdateTrack(); }
-    void on_volume_change(float p_new_val) {}
+    //void on_playback_seek(double p_time) { UpdateTrack(); }
+    //void on_playback_pause(bool p_state) { UpdateTrack(); }
+    //void on_playback_edited(metadb_handle_ptr p_track) { UpdateTrack(); }
+    //void on_playback_dynamic_info(const file_info& p_info) { UpdateTrack(); }
+    //void on_playback_dynamic_info_track(const file_info& p_info) { UpdateTrack(); }
+    //void on_playback_time(double p_time) { UpdateTrack(); }
+    //void on_volume_change(float p_new_val) {}
 
     void UpdateTrack();
+
+    // Playlist callback methods.
+    void on_items_added(size_t p_playlist, size_t p_start, metadb_handle_list_cref p_data, const bit_array& p_selection) { UpdatePlaylist(); }
+    void on_items_reordered(size_t p_playlist, const size_t* p_order, size_t p_count) { UpdatePlaylist(); }
+    //void on_items_removing(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) { UpdatePlaylist(); }
+    void on_items_removed(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) { UpdatePlaylist(); }
+    void on_items_selection_change(size_t p_playlist, const bit_array& p_affected, const bit_array& p_state) { UpdatePlaylist(); }
+    //void on_item_focus_change(size_t p_playlist, size_t p_from, size_t p_to) { UpdatePlaylist(); }
+    //void on_items_modified(size_t p_playlist, const bit_array& p_mask) { UpdatePlaylist(); }
+    //void on_items_modified_fromplayback(size_t p_playlist, const bit_array& p_mask, play_control::t_display_level p_level)  { UpdatePlaylist(); }
+    //void on_items_replaced(size_t p_playlist, const bit_array& p_mask, const pfc::list_base_const_t<t_on_items_replaced_entry>& p_data)  { UpdatePlaylist(); }
+    //void on_item_ensure_visible(size_t p_playlist, size_t p_idx) { UpdatePlaylist(); }
+    void on_playlist_activate(t_size p_old, t_size p_new) { UpdatePlaylist(); }
+    //virtual void on_playlist_created(t_size p_index, const char* p_name, t_size p_name_len) { UpdatePlaylist(); }
+    void on_playlists_reorder(const t_size* p_order, t_size p_count) { UpdatePlaylist(); }
+    //virtual void on_playlists_removing(const bit_array& p_mask, t_size p_old_count, t_size p_new_count) { UpdatePlaylist(); }
+    void on_playlists_removed(const bit_array& p_mask, t_size p_old_count, t_size p_new_count) { UpdatePlaylist(); }
+    //virtual void on_playlist_renamed(t_size p_index, const char* p_new_name, t_size p_new_name_len) { UpdatePlaylist(); }
+    //virtual void on_default_format_changed() { UpdatePlaylist(); }
+    void on_playback_order_changed(t_size p_new_index) { UpdatePlaylist(); }
+    //virtual void on_playlist_locked(t_size p_playlist, bool p_locked) { UpdatePlaylist(); }
+
+    void UpdatePlaylist();
+    void SetSingleSelection(int idx, bool toggle, bool focus, bool single_only);
 };
 
 milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
-    m_callback(p_callback), m_bMsgHandled(TRUE)
+    m_callback(p_callback), 
+    m_bMsgHandled(TRUE),
+    play_callback_impl_base(play_callback::flag_on_playback_all),
+    playlist_callback_impl_base(playlist_callback::flag_all)
 {
     m_milk2 = false;
     m_refresh_interval = 33;
@@ -288,7 +316,7 @@ ui_element_config::ptr milk2_ui_element::get_configuration()
     return builder.finish(g_get_guid());
 }
 
-void milk2_ui_element::notify(const GUID& p_what, t_size p_param1, const void* p_param2, t_size p_param2size)
+void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size)
 {
     if (p_what == ui_element_notify_colors_changed || p_what == ui_element_notify_font_changed)
         Invalidate();
@@ -602,13 +630,87 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnChar ", GetWnd())
-    if (!g_plugin.m_show_playlist)
+    if (g_plugin.m_show_playlist)
+    {
+        auto api = playlist_manager::get();
+        switch (chChar)
+        {
+            case 'j':
+            case 'J':
+                {
+                    size_t pos = api->activeplaylist_get_focus_item();
+                    if (pos == pfc::infinite_size)
+                        pos = -1;
+                    g_plugin.m_playlist_pos = static_cast<LRESULT>(pos);
+                }
+                return;
+            default:
+                {
+                    int nSongs = static_cast<int>(api->activeplaylist_get_item_count());
+                    bool found = false;
+                    LRESULT orig_pos = g_plugin.m_playlist_pos;
+                    int inc = (chChar >= L'A' && chChar <= L'Z') ? -1 : 1;
+                    while (true)
+                    {
+                        if (inc == 1 && g_plugin.m_playlist_pos >= nSongs - 1)
+                            break;
+                        if (inc == -1 && g_plugin.m_playlist_pos <= 0)
+                            break;
+                        g_plugin.m_playlist_pos += inc;
+
+                        if (m_script.is_empty())
+                        {
+                            pfc::string8 pattern = "%title%";
+                            static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
+                        }
+                        pfc::string_formatter state;
+                        metadb_handle_list list;
+                        api->activeplaylist_get_all_items(list);
+                        if (!(list.get_item(static_cast<size_t>(g_plugin.m_playlist_pos)))->format_title(NULL, state, m_script, NULL))
+                            state = "";
+                        m_szBuffer = pfc::wideFromUTF8(state);
+
+                        wchar_t buf[32];
+                        wcsncpy_s(buf, m_szBuffer.c_str(), 31);
+                        buf[31] = L'\0';
+
+                        // Remove song number and period from beginning.
+                        wchar_t* p = buf;
+                        while (*p >= L'0' && *p <= L'9')
+                            ++p;
+                        if (*p == L'.' && *(p + 1) == L' ')
+                        {
+                            p += 2;
+                            int pos = 0;
+                            while (*p != L'\0')
+                            {
+                                buf[pos++] = *p;
+                                p++;
+                            }
+                            buf[pos++] = L'\0';
+                        }
+
+                        int wParam2 = (chChar >= L'A' && chChar <= L'Z') ? (chChar + L'a' - L'A') : (chChar + L'A' - L'a');
+                        if (unsigned(buf[0]) == chChar || unsigned(buf[0]) == wParam2)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                        g_plugin.m_playlist_pos = orig_pos;
+                }
+                return;
+        }
+    }
+    else
     {
         switch (chChar)
         {
             case L'z':
             case L'Z':
-                m_playback_control->start(playback_control::track_command_prev);
+                m_playback_control->previous();
                 return;
             case L'x':
             case L'X':
@@ -624,7 +726,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 return;
             case L'b':
             case L'B':
-                m_playback_control->start(playback_control::track_command_next);
+                m_playback_control->next();
                 return;
             case L's':
             case L'S':
@@ -669,6 +771,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
     if (g_plugin.m_show_playlist)
     {
+        auto api = playlist_manager::get();
         switch (nChar)
         {
             case VK_ESCAPE:
@@ -676,35 +779,51 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     TogglePlaylist();
                 return;
             case VK_UP:
-                {
                     if (GetKeyState(VK_SHIFT) & mask)
                         g_plugin.m_playlist_pos -= 10 * nRepCnt;
                     else
                         g_plugin.m_playlist_pos -= nRepCnt;
-                }
+                SetSingleSelection(static_cast<int>(g_plugin.m_playlist_pos), false, true, true);
                 return;
             case VK_DOWN:
-                {
                     if (GetKeyState(VK_SHIFT) & mask)
                         g_plugin.m_playlist_pos += 10 * nRepCnt;
                     else
                         g_plugin.m_playlist_pos += nRepCnt;
-                }
+                SetSingleSelection(static_cast<int>(g_plugin.m_playlist_pos), false, true, true);
                 return;
             case VK_HOME:
                 g_plugin.m_playlist_pos = 0;
+                SetSingleSelection(static_cast<int>(g_plugin.m_playlist_pos), false, true, true);
+                return;
+            case VK_END:
+                {
+                    const size_t count = api->activeplaylist_get_item_count();
+                    g_plugin.m_playlist_pos = count - 1;
+                    SetSingleSelection(static_cast<int>(g_plugin.m_playlist_pos), false, true, true);
+                }
                 return;
             case VK_PRIOR:
                 if (GetKeyState(VK_SHIFT) & mask)
                     g_plugin.m_playlist_pageups += 10;
                 else
-                    g_plugin.m_playlist_pageups++;
+                    ++g_plugin.m_playlist_pageups;
                 return;
             case VK_NEXT:
                 if (GetKeyState(VK_SHIFT) & mask)
                     g_plugin.m_playlist_pageups -= 10;
                 else
-                    g_plugin.m_playlist_pageups--;
+                    --g_plugin.m_playlist_pageups;
+                return;
+            case VK_RETURN:
+                {
+                    size_t active = api->get_active_playlist();
+                    if (active == pfc::infinite_size)
+                        return;
+                    SetSingleSelection(static_cast<int>(g_plugin.m_playlist_pos), false, true, true);
+                    api->set_playing_playlist(active);
+                    m_playback_control->start();
+        }
                 return;
         }
     }
@@ -733,9 +852,11 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             case VK_LEFT:
             case VK_RIGHT:
                 {
+                    if (!m_playback_control->playback_can_seek())
+                        return;
                     int reps = (bShiftHeldDown) ? 6 * nRepCnt : 1 * nRepCnt;
                     for (int i = 0; i < reps; ++i)
-                        m_playback_control->playback_seek_delta(VK_LEFT ? -5.0 : 5.0);
+                        m_playback_control->playback_seek_delta(nChar == VK_LEFT ? -5.0 : 5.0);
                 }
                 return;
             case VK_SUBTRACT:
@@ -896,6 +1017,8 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
 {
     if (uMsg != WM_MILK2)
         return -1;
+
+    auto api = playlist_manager::get();
     if (LOBYTE(wParam) == 0x21 && HIBYTE(wParam) == 0x09)
     {
         wchar_t buf[2048], title[64];
@@ -926,15 +1049,46 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         else
             return 0;
     }
+    else if (lParam == IPC_SETPLAYLISTPOS)
+    {
+        //MILK2_CONSOLE_LOG("IPC_SETPLAYLISTPOS")
+        api->activeplaylist_set_focus_item(static_cast<size_t>(wParam));
+        return static_cast<LRESULT>(wParam);
+    }
+    else if (lParam == IPC_GETLISTLENGTH)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GETLISTLENGTH")
+        const size_t count = api->activeplaylist_get_item_count();
+        return static_cast<LRESULT>(count);
+    }
     else if (lParam == IPC_GETLISTPOS)
     {
         //MILK2_CONSOLE_LOG("IPC_GETLISTPOS")
-        return 0;
+        if (m_playback_control->is_playing())
+        {
+            size_t playing_index;
+            size_t playing_playlist;
+            api->get_playing_item_location(&playing_playlist, &playing_index);
+            if (playing_playlist == api->get_active_playlist())
+                return static_cast<LRESULT>(playing_index);
+        }
+        return -1;
     }
     else if (lParam == IPC_GETPLAYLISTTITLEW)
     {
         //MILK2_CONSOLE_LOG("IPC_GETPLAYLISTTITLEW")
-        return reinterpret_cast<LRESULT>(m_state.c_str());
+        if (m_script.is_empty())
+        {
+            pfc::string8 pattern = "%title%";
+            static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
+        }
+        pfc::string_formatter state;
+        metadb_handle_list list;
+        api->activeplaylist_get_all_items(list);
+        if (!(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, m_script, NULL))
+            state = "";
+        m_szBuffer = pfc::wideFromUTF8(state);
+        return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
     else if (lParam == IPC_GETOUTPUTTIME)
     {
@@ -955,6 +1109,16 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
                 return static_cast<LRESULT>(m_playback_control->playback_get_length() * 1000);
         }
         return -1;
+    }
+    else if (lParam == IPC_GETPLUGINDIRECTORYW)
+    {
+        m_szBuffer = s_config.settings.m_szPluginsDirPath;
+        return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
+    }
+    else if (lParam == IPC_GETINIDIRECTORYW)
+    {
+        m_szBuffer = s_config.settings.m_szConfigIniFile;
+        return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
 
     return 0;
@@ -1322,7 +1486,42 @@ void milk2_ui_element::UpdateTrack()
         m_state = "Stopped.";
     }
 }
+// clang-format on
 
+void milk2_ui_element::UpdatePlaylist()
+{
+    auto api = playlist_manager::get();
+    size_t total = api->activeplaylist_get_item_count();
+    for (size_t i = 0; i < total; ++i)
+    {
+        if (api->activeplaylist_is_item_selected(i))
+        {
+            g_plugin.m_playlist_pos = i;
+        }
+    }
+    g_plugin.m_playlist_top_idx = -1;
+}
+
+void milk2_ui_element::SetSingleSelection(int idx, bool toggle, bool focus, bool single_only)
+{
+    auto api = playlist_manager::get();
+    size_t total = api->activeplaylist_get_item_count();
+    size_t idx_focus = api->activeplaylist_get_focus_item();
+
+    bit_array_bittable mask(total);
+    //if (!single_only) playlist_api->activeplaylist_get_selection_mask(mask);
+    mask.set(idx, toggle ? !api->activeplaylist_is_item_selected(idx) : true);
+
+    //if (single_only)
+    //    playlist_api->activeplaylist_set_selection(bit_array_one(idx), mask);
+    //else
+    if (single_only || toggle || !api->activeplaylist_is_item_selected(idx))
+        api->activeplaylist_set_selection(single_only ? (bit_array&)bit_array_true() : (bit_array&)bit_array_one(idx), mask);
+    if (focus && idx_focus != idx)
+        api->activeplaylist_set_focus_item(idx);
+}
+
+// clang-format off
 class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element> {};
 // clang-format on
 

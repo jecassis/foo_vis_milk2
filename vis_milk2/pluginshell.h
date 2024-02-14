@@ -152,13 +152,11 @@ class CPluginShell
     // MISCELLANEOUS
     // ------------------------------------------------------------
     td_soundinfo m_sound; // a structure always containing the most recent sound analysis information; defined in "pluginshell.h".
-    //void SuggestHowToFreeSomeMem(); // gives the user a 'smart' message box that suggests how they can free up some video memory.
 
     // CONFIG PANEL SETTINGS
     // ------------------------------------------------------------
     // *** only read/write these values during CPlugin::OverrideDefaults! ***
     int m_start_fullscreen;          // 0 or 1
-    int m_start_desktop;             // 0 or 1
     int m_max_fps_fs;                // 1-144, or 0 for 'unlimited'
     int m_max_fps_w;                 // 1-144, or 0 for 'unlimited'
     int m_show_press_f1_msg;         // 0 or 1
@@ -177,7 +175,7 @@ class CPluginShell
     int m_back_buffer_count;         // 2
     int m_min_feature_level;
     td_fontinfo m_fontinfo[NUM_BASIC_FONTS + NUM_EXTRA_FONTS];
-    DXGI_SAMPLE_DESC m_multisample_fullscreen;
+    DXGI_SAMPLE_DESC m_multisample_fs;
 
   private:
     // GENERAL PRIVATE STUFF
@@ -187,19 +185,21 @@ class CPluginShell
     float m_fps; // current estimate of frames per second
     HWND m_hWndWinamp; // handle to Winamp window
     HINSTANCE m_hInstance; // handle to application instance
+
   public:
     std::unique_ptr<DXContext> m_lpDX; // pointer to DXContext object
     wchar_t m_szPluginsDirPath[MAX_PATH]; // usually 'c:\\program files\\winamp\\plugins\\'
     wchar_t m_szConfigIniFile[MAX_PATH]; // Unicode version: usually 'c:\\program files\\winamp\\plugins\\filename.ini' - filename is determined from identifiers in 'defines.h'
     char m_szConfigIniFileA[MAX_PATH]; // ANSI version
-    //ID3D11Device* m_device;
-    //ID3D11DeviceContext* m_context;
 
     // RUNTIME SETTINGS
     bool m_show_help;
     bool m_show_playlist;
     LRESULT m_playlist_pos; // current selection on (plugin's) playlist menu
     int m_playlist_pageups; // can be + or -
+    int m_playlist_top_idx; // used to track when the playlist cache (`m_playlist`) needs updating
+    int m_playlist_btm_idx; // used to track when the playlist cache (`m_playlist`) needs updating
+
   private:
     // FONTS
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_lpDDSText;
@@ -211,24 +211,24 @@ class CPluginShell
 
     // PRIVATE CONFIG PANEL SETTINGS
     //DXGI_MODE_DESC1 m_disp_mode_fs;  // specifies the width, height, refresh rate, and color format to use when the plugin goes fullscreen
-    DXGI_SAMPLE_DESC m_multisample_windowed;
-    LUID m_adapter_guid_fullscreen;
-    LUID m_adapter_guid_windowed;
-    wchar_t m_adapter_devicename_fullscreen[256];
-    wchar_t m_adapter_devicename_windowed[256];
+    DXGI_SAMPLE_DESC m_multisample_w;
+    LUID m_adapter_guid_fs;
+    LUID m_adapter_guid_w;
+    wchar_t m_adapter_devicename_fs[256];
+    wchar_t m_adapter_devicename_w[256];
 
     // PRIVATE RUNTIME SETTINGS
-    int m_lost_focus; // ~mostly for fullscreen mode
-    int m_hidden;     // ~mostly for windowed mode
-    int m_resizing;   // ~mostly for windowed mode
+    int m_lost_focus; // mostly for fullscreen mode
+    int m_hidden;     // mostly for windowed mode
+    int m_resizing;   // mostly for windowed mode
     //int m_show_help;
     //int m_show_playlist;
     //LRESULT m_playlist_pos;
     //int m_playlist_pageups;
-    int m_playlist_top_idx;        // used to track when our little playlist cache (m_playlist) needs updated.
-    int m_playlist_btm_idx;        // used to track when our little playlist cache (m_playlist) needs updated.
-    float m_playlist_width_pixels; // considered invalid whenever 'm_playlist_top_idx' is -1.
-    wchar_t m_playlist[MAX_SONGS_PER_PAGE][256]; // considered invalid whenever 'm_playlist_top_idx' is -1.
+    //int m_playlist_top_idx;
+    //int m_playlist_btm_idx;
+    float m_playlist_width_pixels; // considered invalid whenever 'm_playlist_top_idx' is -1
+    wchar_t m_playlist[MAX_SONGS_PER_PAGE][256]; // considered invalid whenever 'm_playlist_top_idx' is -1
     int m_exiting;
     int m_upper_left_corner_y;
     int m_lower_left_corner_y;
@@ -238,15 +238,14 @@ class CPluginShell
     int m_right_edge;
     int m_force_accept_WM_WINDOWPOSCHANGING;
 
-    // PRIVATE - GDI STUFF
+    // PRIVATE GDI STUFF
     HMENU m_main_menu;
     HMENU m_context_menu;
 
-    // PRIVATE - MORE TIMEKEEPING
-  protected:
+    // PRIVATE TIMEKEEPING
     double m_last_raw_time;
     LARGE_INTEGER m_high_perf_timer_freq; // 0 if high-precision timer not available
-  private:
+
     float m_time_hist[TIME_HIST_SLOTS]; // cumulative
     int m_time_hist_pos;
     LARGE_INTEGER m_prev_end_of_frame;
@@ -275,6 +274,7 @@ class CPluginShell
     void RenderBuiltInTextMsgs();
     int GetCanvasMarginX(); // returns the number of pixels that exist on the canvas, on each side, that the user will never see. Mainly used in windowed mode, where sometimes, up to 15 pixels get cropped at edges of the screen.
     int GetCanvasMarginY(); // returns the number of pixels that exist on the canvas, on each side, that the user will never see. Mainly used in windowed mode, where sometimes, up to 15 pixels get cropped at edges of the screen.
+
   public:
     void DrawDarkTranslucentBox(D2D1_RECT_F* pr);
     void StuffParams(DXCONTEXT_PARAMS* pParams);

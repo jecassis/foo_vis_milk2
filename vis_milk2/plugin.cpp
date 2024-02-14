@@ -73,6 +73,7 @@
 
 #include "pch.h"
 #include "plugin.h"
+
 #include "defines.h"
 #include "shell_defines.h"
 #include "utility.h"
@@ -304,7 +305,7 @@ void CPlugin::OverrideDefaults()
     //m_start_desktop         = 0;   // 0 or 1
     //m_fake_fullscreen_mode  = 0;   // 0 or 1
     m_max_fps_fs            = 30;  // 1-144, or 0 for 'unlimited'
-    //m_max_fps_dm            = 30;  // 1-144, or 0 for 'unlimited'
+    //m_max_fps_d             = 30;  // 1-144, or 0 for 'unlimited'
     //m_max_fps_w             = 30;  // 1-144, or 0 for 'unlimited'
     m_show_press_f1_msg     = 1;   // 0 or 1
     //m_allow_page_tearing_w  = 0;   // 0 or 1
@@ -697,8 +698,8 @@ void CPlugin::MilkDropWriteConfig()
 bool CPlugin::PanelSettings(plugin_config* settings)
 {
     // CPluginShell::ReadConfig()
-    m_multisample_fullscreen = {settings->m_multisample_fullscreen.Count, settings->m_multisample_fullscreen.Quality};
-    //m_multisample_windowed = {settings->m_multisample_windowed.Count, 0U};
+    m_multisample_fs = {settings->m_multisample_fs.Count, settings->m_multisample_fs.Quality};
+    //m_multisample_w = {settings->m_multisample_w.Count, 0U};
 
     //m_start_fullscreen = settings->m_start_fullscreen;
     m_max_fps_fs = settings->m_max_fps_fs;
@@ -1004,21 +1005,21 @@ int CPlugin::AllocateMilkDropDX11()
         {
             //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_MY_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
-            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             return false;
         }
         if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_WfVertDecl, &m_pWfVertDecl))
         {
             //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_WF_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
-            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             return false;
         }
         if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_SpriteVertDecl, &m_pSpriteVertDecl))
         {
             //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_SPRITE_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
-            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             return false;
         }*/
 
@@ -1043,7 +1044,7 @@ int CPlugin::AllocateMilkDropDX11()
             else
                 swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT), szSM, PSVersion);
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1052,7 +1053,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_WV_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1061,7 +1062,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_CV_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1070,7 +1071,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_FALLBACK_CP_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1081,7 +1082,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR1_VERTEX_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1090,7 +1091,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR1_PIXEL_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1099,7 +1100,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR2_VERTEX_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1108,7 +1109,7 @@ int CPlugin::AllocateMilkDropDX11()
             /*
             WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_COMPILE_BLUR2_PIXEL_SHADER, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1239,7 +1240,7 @@ int CPlugin::AllocateMilkDropDX11()
 
             WASABI_API_LNGSTRINGW_BUF(err_id, buf, sizeof(buf));
             DumpDebugMessage(buf);
-            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
             return false;
         }
@@ -1450,7 +1451,7 @@ int CPlugin::AllocateMilkDropDX11()
             sprintf(buf, "WARNING: Not enough video memory to make a dedicated text surface; \rtext will still be drawn directly to the back buffer.\r\rTo avoid seeing this error again, uncheck the 'fix slow text' option.");
             DumpDebugMessage(buf);
             if (!m_bWarningsDisabled)
-                MessageBox(GetPluginWindow(), buf, "WARNING", MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                MessageBox(GetPluginWindow(), buf, "WARNING", MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             m_lpDDSText = NULL;
         }
     }
@@ -1524,7 +1525,7 @@ int CPlugin::AllocateMilkDropDX11()
         /*
         swprintf(buf, L"couldn't allocate mesh - out of memory");
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         */
         return false;
     }
@@ -1704,7 +1705,7 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
                 /*
                 WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_NOISE_TEXTURE, buf, sizeof(buf));
                 DumpDebugMessage(buf);
-                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
                 */
                 return false;
             }
@@ -1724,7 +1725,7 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
         /*
         WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_LOCK_NOISE_TEXTURE, buf, sizeof(buf));
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         */
         return false;
     }
@@ -1734,7 +1735,7 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
         /*
         WASABI_API_LNGSTRINGW_BUF(IDS_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED, buf, sizeof(buf));
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         */
         return false;
     }
@@ -1746,7 +1747,8 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     for (int y = 0; y < size; y++)
     {
         LARGE_INTEGER q;
-        QueryPerformanceCounter(&q);
+        if (!QueryPerformanceCounter(&q))
+            throw std::exception();
         srand(q.LowPart ^ q.HighPart ^ warand());
         for (int x = 0; x < size; x++)
         {
@@ -1856,7 +1858,7 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
                 /*
                 WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_3D_NOISE_TEXTURE, buf, sizeof(buf));
                 DumpDebugMessage(buf);
-                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
                 */
                 return false;
             }
@@ -1880,7 +1882,7 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
         /*
         WASABI_API_LNGSTRINGW_BUF(IDS_3D_NOISE_TEXTURE_BYTE_LAYOUT_NOT_RECOGNISED, buf, sizeof(buf));
         DumpDebugMessage(buf);
-        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         */
         return false;
     }
@@ -1895,7 +1897,8 @@ bool CPlugin::AddNoiseVol(const wchar_t* szTexName, int size, int zoom_factor)
         for (int y = 0; y < size; y++)
         {
             LARGE_INTEGER q;
-            QueryPerformanceCounter(&q);
+            if (!QueryPerformanceCounter(&q))
+                throw std::exception();
             srand(q.LowPart ^ q.HighPart ^ warand());
             for (int x = 0; x < size; x++)
             {
@@ -2526,7 +2529,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                         swprintf(buf, WASABI_API_LNGSTRINGW(IDS_COULD_NOT_LOAD_TEXTURE_X), szRootName, szExtsWithSlashes);
                         g_plugin.DumpDebugMessage(buf);
                         if (bHardErrors)
-                            MessageBox(g_plugin.GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+                            MessageBox(g_plugin.GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
                         else
                             g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
                         */
@@ -2996,7 +2999,7 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
         SafeRelease(m_pShaderCompileErrors);
         //DumpDebugMessage(temp);
         //if (bHardErrors)
-        //    MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+        //    MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         //else
         //    AddError(temp, 8.0f, ERR_PRESET, true);
         return false;
@@ -3031,7 +3034,7 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
         WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_SHADER, temp, sizeof(temp));
         DumpDebugMessage(temp);
         if (bHardErrors)
-            MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST );
+            MessageBox(GetPluginWindow(), temp, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         else
             AddError(temp, 6.0f, ERR_PRESET, true);
         */
@@ -3335,7 +3338,7 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     h = GetFontHeight(n); \
 }
 
-#define MilkDropTextOut_Box(str, element, corner, color, bDarkBox, boxColor) { \
+#define MilkDropTextOut_Box(str, element, color, corner, bDarkBox, boxColor) { \
     D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
     D2D1_COLOR_F fBox = D2D1::ColorF(boxColor, GetAlpha(boxColor)); \
     if (!element.IsVisible()) element.Initialize(m_lpDX->GetD2DDeviceContext()); \
@@ -3348,25 +3351,27 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     element.SetText(str); \
     element.SetTextStyle(pFont); \
     element.SetTextShadow(false); \
-    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | DT_CALCRECT | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, false, boxColor); \
+    if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | DT_CALCRECT | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, false, boxColor) != 0) { \
     int w = static_cast<int>(r.right - r.left); \
     if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
     else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
     else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
     else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
+    } \
     /* Draw the text. */ \
     element.SetContainer(r); \
     element.SetTextBox(fBox, r); \
-    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, bDarkBox, boxColor); \
+    if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | (corner == MTO_UPPER_RIGHT ? 0 : DT_SINGLELINE) | DT_WORD_ELLIPSIS | (corner == MTO_UPPER_RIGHT ? DT_RIGHT : 0), color, bDarkBox, boxColor) != 0) { \
     if (!element.IsVisible()) m_text.RegisterElement(&element); \
     element.SetVisible(true); \
     if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
     else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
     else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
     else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
+    } \
 }
 
-#define MilkDropTextOut(str, element, corner, bDarkBox) MilkDropTextOut_Box(str, element, corner, 0xFFFFFFFF, bDarkBox, 0xFF000000)
+#define MilkDropTextOut(str, element, corner, bDarkBox) MilkDropTextOut_Box(str, element, 0xFFFFFFFF, corner, bDarkBox, 0xFF000000)
 
 #define MilkDropTextOut_Shadow(str, element, color, corner) { \
     D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
@@ -3380,21 +3385,23 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     element.SetText(str); \
     element.SetTextStyle(pFont); \
     element.SetTextShadow(true); \
-    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, color, false, 0xFF000000); \
+    if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, color, false, 0xFF000000) != 0) { \
     int w = static_cast<int>(r.right - r.left); \
     if constexpr      (corner == MTO_UPPER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*upper_left_corner_y + h)); \
     else if constexpr (corner == MTO_UPPER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*upper_right_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*upper_right_corner_y + h)); \
     else if constexpr (corner == MTO_LOWER_LEFT)  r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*lower_left_corner_y - h), static_cast<FLOAT>(xL + w), static_cast<FLOAT>(*lower_left_corner_y)); \
     else if constexpr (corner == MTO_LOWER_RIGHT) r = D2D1::RectF(static_cast<FLOAT>(xR - w), static_cast<FLOAT>(*lower_right_corner_y - h), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_right_corner_y)); \
+    } \
     /* Draw the text. */ \
     element.SetContainer(r); \
-    m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS, color, false, 0xFF000000); \
+    if (m_text.DrawD2DText(pFont, &element, static_cast<wchar_t*>(str), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS, color, false, 0xFF000000) != 0) { \
     if (!element.IsVisible()) m_text.RegisterElement(&element); \
     element.SetVisible(true); \
     if constexpr      (corner == MTO_UPPER_LEFT)  *upper_left_corner_y  += h; \
     else if constexpr (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
     else if constexpr (corner == MTO_LOWER_LEFT)  *lower_left_corner_y  -= h; \
     else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
+    } \
 }
 // clang-format on
 
@@ -3678,7 +3685,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     shader_msg_id = IDS_COMPOSITE_SHADER_LOCKED;
 
                 WASABI_API_LNGSTRINGW_BUF(shader_msg_id, buf, 256);
-                MilkDropTextOut_Box(buf, m_waitText, MTO_UPPER_LEFT, 0xFFFFFFFF, true, 0xFF000000);
+                MilkDropTextOut_Box(buf, m_waitText, 0xFFFFFFFF, MTO_UPPER_LEFT, true, 0xFF000000);
                 *upper_left_corner_y += h * 2 / 3;
             }
             else
@@ -4566,7 +4573,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     DWORD cg = 0; //static_cast<DWORD>(136 - 135 * powf(age_rel, 1));
                     DWORD cb = 0;
                     DWORD z = 0xFF000000 | (cr << 16) | (cg << 8) | cb;
-                    MilkDropTextOut_Box(buf, it->text, MTO_UPPER_RIGHT, 0xFFFFFFFF, true, it->bBold ? z : 0xFF000000);
+                    MilkDropTextOut_Box(buf, it->text, 0xFFFFFFFF, MTO_UPPER_RIGHT, true, it->bBold ? z : 0xFF000000);
                     ++it;
                 }
                 else

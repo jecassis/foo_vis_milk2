@@ -268,6 +268,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     bool HasChanged() const;
     void OnChanged();
 
+    inline void AddItem(HWND ctrl, wchar_t* buffer, UINT id, DWORD itemdata);
     inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata);
     inline void SelectItemByPos(HWND ctrl, int pos);
     int SelectItemByValue(HWND ctrl, DWORD value);
@@ -327,78 +328,50 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
 
     // Pixel shaders.
     ctrl = GetDlgItem(IDC_SHADERS);
-    LoadString(core_api::get_my_instance(), IDS_PS_AUTO_RECOMMENDED, buf, 256);
-    AddItem(ctrl, buf, unsigned(-1));
-    LoadString(core_api::get_my_instance(), IDS_PS_DISABLED, buf, 256);
-    AddItem(ctrl, buf, MD2_PS_NONE);
-    LoadString(core_api::get_my_instance(), IDS_PS_SHADER_MODEL_2, buf, 256);
-    AddItem(ctrl, buf, MD2_PS_2_0);
-    LoadString(core_api::get_my_instance(), IDS_PS_SHADER_MODEL_3, buf, 256);
-    AddItem(ctrl, buf, MD2_PS_3_0);
+    AddItem(ctrl, buf, IDS_PS_AUTO_RECOMMENDED, unsigned(-1));
+    AddItem(ctrl, buf, IDS_PS_DISABLED, MD2_PS_NONE);
+    AddItem(ctrl, buf, IDS_PS_SHADER_MODEL_2, MD2_PS_2_0);
+    AddItem(ctrl, buf, IDS_PS_SHADER_MODEL_3, MD2_PS_3_0);
     SelectItemByPos(ctrl, 0); // as a safe default
     SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nMaxPSVersion));
 
     // Texture format.
     //ctrl = GetDlgItem(IDC_TEXFORMAT);
-    //LoadString(core_api::get_my_instance(), IDS_TX_8_BITS_PER_CHANNEL, buf, 256);
-    //AddItem(ctrl, buf, 8);
+    //AddItem(ctrl, buf, IDS_TX_8_BITS_PER_CHANNEL, 8);
     ////AddItem(ctrl, " 10 bits per channel", 10);
-    //LoadString(core_api::get_my_instance(), IDS_TX_16_BITS_PER_CHANNEL, buf, 256);
-    //AddItem(ctrl, buf, 16);
-    //LoadString(core_api::get_my_instance(), IDS_TX_32_BITS_PER_CHANNEL, buf, 256);
-    //AddItem(ctrl, buf, 32);
+    //AddItem(ctrl, buf, IDS_TX_16_BITS_PER_CHANNEL, 16);
+    //AddItem(ctrl, buf, IDS_TX_32_BITS_PER_CHANNEL, 32);
     //SelectItemByPos(ctrl, 0); // as a safe default
     //SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nTexBitsPerCh));
 
     // Mesh size.
     ctrl = GetDlgItem(IDC_MESHSIZECOMBO);
-    LoadString(core_api::get_my_instance(), IDS_8X6_FAST, buf, 256);
-    AddItem(ctrl, buf, 8);
-    LoadString(core_api::get_my_instance(), IDS_16X12_FAST, buf, 256);
-    AddItem(ctrl, buf, 16);
-    LoadString(core_api::get_my_instance(), IDS_24X18, buf, 256);
-    AddItem(ctrl, buf, 24);
-    LoadString(core_api::get_my_instance(), IDS_32X24, buf, 256);
-    AddItem(ctrl, buf, 32);
-    LoadString(core_api::get_my_instance(), IDS_40X30, buf, 256);
-    AddItem(ctrl, buf, 40);
-    LoadString(core_api::get_my_instance(), IDS_48X36_DEFAULT, buf, 256);
-    AddItem(ctrl, buf, 48);
-    LoadString(core_api::get_my_instance(), IDS_64X48_SLOW, buf, 256);
-    AddItem(ctrl, buf, 64);
-    LoadString(core_api::get_my_instance(), IDS_80X60_SLOW, buf, 256);
-    AddItem(ctrl, buf, 80);
-    LoadString(core_api::get_my_instance(), IDS_96X72_SLOW, buf, 256);
-    AddItem(ctrl, buf, 96);
-    LoadString(core_api::get_my_instance(), IDS_128X96_SLOW, buf, 256);
-    AddItem(ctrl, buf, 128);
-    LoadString(core_api::get_my_instance(), IDS_160X120_SLOW, buf, 256);
-    AddItem(ctrl, buf, 160);
-    LoadString(core_api::get_my_instance(), IDS_192X144_SLOW, buf, 256);
-    AddItem(ctrl, buf, 192);
+    AddItem(ctrl, buf, IDS_8X6_FAST, 8);
+    AddItem(ctrl, buf, IDS_16X12_FAST, 16);
+    AddItem(ctrl, buf, IDS_24X18, 24);
+    AddItem(ctrl, buf, IDS_32X24, 32);
+    AddItem(ctrl, buf, IDS_40X30, 40);
+    AddItem(ctrl, buf, IDS_48X36_DEFAULT, 48);
+    AddItem(ctrl, buf, IDS_64X48_SLOW, 64);
+    AddItem(ctrl, buf, IDS_80X60_SLOW, 80);
+    AddItem(ctrl, buf, IDS_96X72_SLOW, 96);
+    AddItem(ctrl, buf, IDS_128X96_SLOW, 128);
+    AddItem(ctrl, buf, IDS_160X120_SLOW, 160);
+    AddItem(ctrl, buf, IDS_192X144_SLOW, 192);
     SelectItemByPos(ctrl, 0); // as a safe default
     SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nGridX));
 
     // Canvas stretch.
     ctrl = GetDlgItem(IDC_STRETCH2);
-    LoadString(core_api::get_my_instance(), IDS_AUTO, buf, 256);
-    AddItem(ctrl, buf, 0);
-    LoadString(core_api::get_my_instance(), IDS_NONE_BEST_IMAGE_QUALITY, buf, 256);
-    AddItem(ctrl, buf, 100);
-    LoadString(core_api::get_my_instance(), IDS_1_25_X, buf, 256);
-    AddItem(ctrl, buf, 125);
-    LoadString(core_api::get_my_instance(), IDS_1_33_X, buf, 256);
-    AddItem(ctrl, buf, 133);
-    LoadString(core_api::get_my_instance(), IDS_1_5_X, buf, 256);
-    AddItem(ctrl, buf, 150);
-    LoadString(core_api::get_my_instance(), IDS_1_67_X, buf, 256);
-    AddItem(ctrl, buf, 167);
-    LoadString(core_api::get_my_instance(), IDS_2_X, buf, 256);
-    AddItem(ctrl, buf, 200);
-    LoadString(core_api::get_my_instance(), IDS_3_X, buf, 256);
-    AddItem(ctrl, buf, 300);
-    LoadString(core_api::get_my_instance(), IDS_4_X, buf, 256);
-    AddItem(ctrl, buf, 400);
+    AddItem(ctrl, buf, IDS_AUTO, 0);
+    AddItem(ctrl, buf, IDS_NONE_BEST_IMAGE_QUALITY, 100);
+    AddItem(ctrl, buf, IDS_1_25_X, 125);
+    AddItem(ctrl, buf, IDS_1_33_X, 133);
+    AddItem(ctrl, buf, IDS_1_5_X, 150);
+    AddItem(ctrl, buf, IDS_1_67_X, 167);
+    AddItem(ctrl, buf, IDS_2_X, 200);
+    AddItem(ctrl, buf, IDS_3_X, 300);
+    AddItem(ctrl, buf, IDS_4_X, 400);
     SelectItemByPos(ctrl, 0); // as a safe default
     SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nCanvasStretch));
 
@@ -515,6 +488,7 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     SelectItemByPos(ctrl, 0); // as a safe default
     SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nMaxImages));
 
+    // Song title and custom animations.
     swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fSongTitleAnimDuration));
     SetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf);
     swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomSongTitles));
@@ -864,6 +838,12 @@ class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_pa
 };
 
 #pragma region Helper Methods
+inline void milk2_preferences_page::AddItem(HWND ctrl, wchar_t* buffer, UINT id, DWORD itemdata)
+{
+    LoadString(core_api::get_my_instance(), id, buffer, 256);
+    AddItem(ctrl, buffer, itemdata);
+}
+
 inline void milk2_preferences_page::AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata)
 {
     LRESULT nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)text);
@@ -999,7 +979,7 @@ void milk2_config::init()
 void milk2_config::reset()
 {
     //--- CPluginShell::ReadConfig()
-    settings.m_multisample_fullscreen = {1u, 0u};
+    settings.m_multisample_fs = {1u, 0u};
 
     //settings.m_start_fullscreen;
     settings.m_max_fps_fs = static_cast<uint32_t>(cfg_max_fps_fs);
@@ -1138,8 +1118,8 @@ void milk2_config::parse(ui_element_config_parser& parser)
         switch (version)
         {
             case 1:
-                //parser >> m_multisample_fullscreen;
-                //parser >> m_multisample_windowed;
+                //parser >> m_multisample_fs;
+                //parser >> m_multisample_w;
 
                 //parser >> m_start_fullscreen;
                 //parser >> m_max_fps_fs;
@@ -1242,8 +1222,8 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << m_sentinel;
     builder << g_get_version();
 
-    //builder << m_multisample_fullscreen;
-    //builder << m_multisample_windowed;
+    //builder << m_multisample_fs;
+    //builder << m_multisample_w;
 
     //builder << settings.m_start_fullscreen;
     cfg_max_fps_fs = settings.m_max_fps_fs;
