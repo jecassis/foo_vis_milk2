@@ -1813,6 +1813,48 @@ void milk2_ui_element::SetPresetRating(float inc_dec)
     g_plugin.SetCurrentPresetRating(g_plugin.m_pState->m_fRating + inc_dec);
 }
 
+void milk2_ui_element::Seek(UINT nRepCnt, bool bShiftHeldDown, double seekDelta)
+{
+    int reps = (bShiftHeldDown) ? 6 * nRepCnt : 1 * nRepCnt;
+    if (seekDelta > 0.0)
+    {
+        if (!m_playback_control->playback_can_seek())
+        {
+            m_playback_control->next();
+            return;
+        }
+    }
+    else
+    {
+        if (!m_playback_control->playback_can_seek())
+        {
+            m_playback_control->previous();
+            return;
+        }
+        double p = m_playback_control->playback_get_position();
+        if (p < 0.0)
+            return;
+        if (p < (seekDelta * -1.0))
+        {
+            if (p < (seekDelta * -1.0) / 3.0)
+            {
+                if (m_playback_control->is_playing() && p > (seekDelta * -1.0))
+                    m_playback_control->playback_seek(0.0);
+                else
+                    m_playback_control->previous();
+                return;
+            }
+            else
+            {
+                m_playback_control->playback_seek(0.0);
+                return;
+            }
+        }
+    }
+    for (int i = 0; i < reps; ++i)
+        m_playback_control->playback_seek_delta(seekDelta);
+}
+
 // clang-format off
 void milk2_ui_element::UpdateChannelMode()
 {
