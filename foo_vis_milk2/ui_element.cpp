@@ -157,7 +157,8 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         IDM_SHUFFLE_PRESET,
         IDM_ENABLE_DOWNMIX,
         IDM_SHOW_HELP,
-        IDM_SHOW_PLAYLIST
+        IDM_SHOW_PLAYLIST,
+        IDM_QUIT
     };
 
     // Initialization and management
