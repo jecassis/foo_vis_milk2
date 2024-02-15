@@ -77,6 +77,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_CHAR(OnChar)
         MSG_WM_KEYDOWN(OnKeyDown)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
+        MSG_WM_SYSCHAR(OnSysChar)
         MSG_WM_GETDLGCODE(OnGetDlgCode)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
@@ -120,6 +121,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags);
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+    void OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags);
     UINT OnGetDlgCode(LPMSG lpMsg);
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point);
@@ -170,14 +172,15 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void BuildWaves();
 
     // Preset information and navigation
-    void PrevPreset();
-    void NextPreset();
+    void PrevPreset(float fBlendTime = s_config.settings.m_fBlendTimeUser);
+    void NextPreset(float fBlendTime = s_config.settings.m_fBlendTimeUser);
     bool LoadPreset(int select);
-    void RandomPreset();
+    void RandomPreset(float fBlendTime = s_config.settings.m_fBlendTimeUser);
     void LockPreset(bool lockUnlock);
     bool IsPresetLock();
     std::wstring GetCurrentPreset();
     void SetPresetRating(float inc_dec);
+    void Seek(UINT nRepCnt, bool bShiftHeldDown, double seekDelta);
 
     // Window Messages
     void OnActivated();
@@ -227,46 +230,33 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { UpdateTrack(); }
     void on_playback_new_track(metadb_handle_ptr p_track) { UpdateTrack(); }
     void on_playback_stop(play_control::t_stop_reason p_reason) { UpdateTrack(); }
-    //void on_playback_seek(double p_time) {}
-    //void on_playback_pause(bool p_state) {}
-    //void on_playback_edited(metadb_handle_ptr p_track) {}
-    //void on_playback_dynamic_info(const file_info& p_info) {}
-    //void on_playback_dynamic_info_track(const file_info& p_info) {}
-    //void on_playback_time(double p_time) {}
-    //void on_volume_change(float p_new_val) {}
 
     void UpdateTrack();
 
     // Playlist callback methods.
     void on_items_added(size_t p_playlist, size_t p_start, metadb_handle_list_cref p_data, const bit_array& p_selection) { UpdatePlaylist(); }
     void on_items_reordered(size_t p_playlist, const size_t* p_order, size_t p_count) { UpdatePlaylist(); }
-    //void on_items_removing(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) {}
     void on_items_removed(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) { UpdatePlaylist(); }
     void on_items_selection_change(size_t p_playlist, const bit_array& p_affected, const bit_array& p_state) { UpdatePlaylist(); }
-    //void on_item_focus_change(size_t p_playlist, size_t p_from, size_t p_to) {}
-    //void on_items_modified(size_t p_playlist, const bit_array& p_mask) {}
-    //void on_items_modified_fromplayback(size_t p_playlist, const bit_array& p_mask, play_control::t_display_level p_level)  {}
-    //void on_items_replaced(size_t p_playlist, const bit_array& p_mask, const pfc::list_base_const_t<t_on_items_replaced_entry>& p_data)  {}
-    //void on_item_ensure_visible(size_t p_playlist, size_t p_idx) {}
+    void on_item_focus_change(size_t p_playlist, size_t p_from, size_t p_to) { UpdatePlaylist(); }
+    void on_items_modified(size_t p_playlist, const bit_array& p_mask) { UpdatePlaylist(); }
     void on_playlist_activate(t_size p_old, t_size p_new) { UpdatePlaylist(); }
-    //void on_playlist_created(t_size p_index, const char* p_name, t_size p_name_len) {}
     void on_playlists_reorder(const t_size* p_order, t_size p_count) { UpdatePlaylist(); }
-    //void on_playlists_removing(const bit_array& p_mask, t_size p_old_count, t_size p_new_count) {}
     void on_playlists_removed(const bit_array& p_mask, t_size p_old_count, t_size p_new_count) { UpdatePlaylist(); }
-    //void on_playlist_renamed(t_size p_index, const char* p_new_name, t_size p_new_name_len) {}
-    //void on_default_format_changed() {}
     void on_playback_order_changed(t_size p_new_index) { UpdatePlaylist(); }
-    //void on_playlist_locked(t_size p_playlist, bool p_locked) {}
 
     void UpdatePlaylist();
+    void SetSelectionSingle(size_t idx);
     void SetSelectionSingle(size_t idx, bool toggle, bool focus, bool single_only);
 };
 
 milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
     m_callback(p_callback), 
     m_bMsgHandled(TRUE),
-    play_callback_impl_base(play_callback::flag_on_playback_all),
-    playlist_callback_impl_base(playlist_callback::flag_all)
+    play_callback_impl_base(flag_on_playback_starting | flag_on_playback_new_track | flag_on_playback_stop),
+    playlist_callback_impl_base(flag_on_items_added | flag_on_items_reordered | flag_on_items_removed | flag_on_items_selection_change |
+                                flag_on_item_focus_change | flag_on_items_modified | flag_on_playlist_activate | flag_on_playlists_reorder |
+                                flag_on_playlists_removed | flag_on_playback_order_changed)
 {
     m_milk2 = false;
     m_refresh_interval = 33;
@@ -650,7 +640,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     int nSongs = static_cast<int>(api->activeplaylist_get_item_count());
                     bool found = false;
                     LRESULT orig_pos = g_plugin.m_playlist_pos;
-                    int inc = (chChar >= L'A' && chChar <= L'Z') ? -1 : 1;
+                    int inc = (chChar >= 'A' && chChar <= 'Z') ? -1 : 1;
                     while (true)
                     {
                         if (inc == 1 && g_plugin.m_playlist_pos >= nSongs - 1)
@@ -677,9 +667,9 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 
                         // Remove song number and period from beginning.
                         PTCHAR p = buf;
-                        while (*p >= L'0' && *p <= L'9')
+                        while (*p >= '0' && *p <= '9')
                             ++p;
-                        if (*p == L'.' && *(p + 1) == L' ')
+                        if (*p == '.' && *(p + 1) == ' ')
                         {
                             p += 2;
                             int pos = 0;
@@ -691,7 +681,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                             buf[pos++] = L'\0';
                         }
 
-                        TCHAR chChar2 = (chChar >= L'A' && chChar <= L'Z') ? (chChar + L'a' - L'A') : (chChar + L'A' - L'a');
+                        TCHAR chChar2 = (chChar >= 'A' && chChar <= 'Z') ? (chChar + 'a' - 'A') : (chChar + 'A' - 'a');
                         if (unsigned(buf[0]) == chChar || unsigned(buf[0]) == chChar2)
                         {
                             found = true;
@@ -707,62 +697,376 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     }
     else
     {
+        wchar_t buf[256] = {0};
         switch (chChar)
         {
-            case L'z':
-            case L'Z':
+            case 'z':
+            case 'Z':
                 m_playback_control->previous();
                 return;
-            case L'x':
-            case L'X':
+            case 'x':
+            case 'X':
                 m_playback_control->start();
                 return;
-            case L'c':
-            case L'C':
+            case 'c':
+            case 'C':
                 m_playback_control->toggle_pause();
                 return;
-            case L'v':
-            case L'V':
+            case 'v':
+            case 'V':
                 m_playback_control->stop();
                 return;
-            case L'b':
-            case L'B':
+            case 'b':
+            case 'B':
                 m_playback_control->next();
                 return;
-            case L's':
-            case L'S':
-            case L'u':
-            case L'U':
+            case 'u': //g_plugin.m_pState->m_fWarpScale /= 1.1f; return;
+            case 'U': //g_plugin.m_pState->m_fWarpScale *= 1.1f; return;
                 {
-                    const char* szMode = ToggleShuffle(chChar == L'u' || chChar == L'U');
-                    wchar_t buf[128];
+                    const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
                     swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
                     g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
                 }
                 return;
-            case L'r':
-            case L'R':
-                RandomPreset();
+            case 'r':
+            case 'R':
+                g_plugin.m_bSequentialPresetOrder = !g_plugin.m_bSequentialPresetOrder;
+                {
+                    LoadString(core_api::get_my_instance(), IDS_PRESET_ORDER_IS_NOW_X, &buf[64], 64);
+                    LoadString(core_api::get_my_instance(), g_plugin.m_bSequentialPresetOrder ? IDS_SEQUENTIAL : IDS_RANDOM, &buf[128], 64);
+                    swprintf_s(buf, 64, &buf[64], &buf[128]);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                // Erase all history, too.
+                g_plugin.m_presetHistory[0] = g_plugin.m_szCurrentPresetFile;
+                g_plugin.m_presetHistoryPos = 0;
+                g_plugin.m_presetHistoryFwdFence = 1;
+                g_plugin.m_presetHistoryBackFence = 0;
                 return;
-            case L'p':
-            case L'P':
+            case 'p':
+            case 'P':
                 TogglePlaylist();
                 return;
-            case L'l':
-            case L'L':
-                LoadPreset(0);
+            case 'h':
+            case 'H':
+                if (g_plugin.m_UI_mode == UI_MASHUP)
+                {
+                    if (chChar == 'h')
+                    {
+                        g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                    }
+                    else
+                    {
+                        for (int mash = 0; mash < MASH_SLOTS; mash++)
+                        {
+                            g_plugin.m_nMashPreset[mash] = g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
+                            g_plugin.m_nLastMashChangeFrame[mash] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                        }
+                    }
+                }
+                else
+                {
+                    // Instant hard cut.
+                    NextPreset(0.0f);
+                    g_plugin.m_fHardCutThresh *= 2.0f; // make it a little less likely that a random hard cut follows soon
+                }
                 return;
-            case L'j':
-                return;
-            case L'h':
-            case L'H':
-                NextPreset();
-                return;
-            case L'-':
+            case '-':
                 SetPresetRating(-1.0f);
                 return;
-            case L'+':
+            case '+':
                 SetPresetRating(1.0f);
+                return;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                {
+                    int digit = chChar - '0';
+                    g_plugin.m_nNumericInputNum = (g_plugin.m_nNumericInputNum * 10) + digit;
+                    g_plugin.m_nNumericInputDigits++;
+
+                    if (g_plugin.m_nNumericInputDigits >= 2)
+                    {
+                        if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
+                            ; //g_plugin.LaunchCustomMessage(g_plugin.m_nNumericInputNum);
+                        else if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_SPRITE)
+                            ; //g_plugin.LaunchSprite(g_plugin.m_nNumericInputNum, -1);
+                        else if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_SPRITE_KILL)
+                        {
+                            for (int x = 0; x < NUM_TEX; x++)
+                                if (g_plugin.m_texmgr.m_tex[x].nUserData == g_plugin.m_nNumericInputNum)
+                                    g_plugin.m_texmgr.KillTex(x);
+                        }
+
+                        g_plugin.m_nNumericInputDigits = 0;
+                        g_plugin.m_nNumericInputNum = 0;
+                    }
+                }
+                return;
+            case 'q':
+                g_plugin.m_pState->m_fVideoEchoZoom /= 1.05f;
+                return;
+            case 'Q':
+                g_plugin.m_pState->m_fVideoEchoZoom *= 1.05f;
+                return;
+            case 'w':
+                g_plugin.m_pState->m_nWaveMode++;
+                if (g_plugin.m_pState->m_nWaveMode >= NUM_WAVES)
+                    g_plugin.m_pState->m_nWaveMode = 0;
+                return;
+            case 'W':
+                g_plugin.m_pState->m_nWaveMode--;
+                if (g_plugin.m_pState->m_nWaveMode < 0)
+                    g_plugin.m_pState->m_nWaveMode = NUM_WAVES - 1;
+                return;
+            case 'e':
+                g_plugin.m_pState->m_fWaveAlpha -= 0.1f;
+                if (g_plugin.m_pState->m_fWaveAlpha.eval(-1) < 0.0f)
+                    g_plugin.m_pState->m_fWaveAlpha = 0.0f;
+                return;
+            case 'E':
+                g_plugin.m_pState->m_fWaveAlpha += 0.1f;
+                //if (g_plugin.m_pState->m_fWaveAlpha.eval(-1) > 1.0f)
+                //    g_plugin.m_pState->m_fWaveAlpha = 1.0f;
+                return;
+            case 'i':
+                g_plugin.m_pState->m_fZoom += 0.01f; //g_plugin.m_pState->m_fWarpAnimSpeed /= 1.1f;
+                return;
+            case 'I':
+                g_plugin.m_pState->m_fZoom -= 0.01f; //g_plugin.m_pState->m_fWarpAnimSpeed *= 1.1f;
+                return;
+            case 'n':
+            case 'N':
+                g_plugin.m_bShowDebugInfo = !g_plugin.m_bShowDebugInfo;
+                return;
+            case 't':
+            case 'T':
+                //g_plugin.LaunchSongTitleAnim();
+                return;
+            case 'o':
+                g_plugin.m_pState->m_fWarpAmount /= 1.1f;
+                return;
+            case 'O':
+                g_plugin.m_pState->m_fWarpAmount *= 1.1f;
+                return;
+            case '!':
+                // Randomize warp shader.
+                {
+                    bool bWarpLock = g_plugin.m_bWarpShaderLock;
+                    wchar_t szOldPreset[MAX_PATH];
+                    wcscpy_s(szOldPreset, g_plugin.m_szCurrentPresetFile);
+                    g_plugin.m_bWarpShaderLock = false;
+                    g_plugin.LoadRandomPreset(0.0f);
+                    g_plugin.m_bWarpShaderLock = true;
+                    g_plugin.LoadPreset(szOldPreset, 0.0f);
+                    g_plugin.m_bWarpShaderLock = bWarpLock;
+                }
+                break;
+            case '@':
+                // Randomize comp shader.
+                {
+                    bool bCompLock = g_plugin.m_bCompShaderLock;
+                    wchar_t szOldPreset[MAX_PATH];
+                    wcscpy_s(szOldPreset, g_plugin.m_szCurrentPresetFile);
+                    g_plugin.m_bCompShaderLock = false;
+                    g_plugin.LoadRandomPreset(0.0f);
+                    g_plugin.m_bCompShaderLock = true;
+                    g_plugin.LoadPreset(szOldPreset, 0.0f);
+                    g_plugin.m_bCompShaderLock = bCompLock;
+                }
+                return;
+            case 'a':
+            case 'A':
+                // Load a random preset, a random warp shader and a random comp shader.
+                // Not quite as extreme as a mash-up.
+                {
+                    bool bCompLock = g_plugin.m_bCompShaderLock;
+                    bool bWarpLock = g_plugin.m_bWarpShaderLock;
+                    g_plugin.m_bCompShaderLock = false;
+                    g_plugin.m_bWarpShaderLock = false;
+                    g_plugin.LoadRandomPreset(0.0f);
+                    g_plugin.m_bCompShaderLock = true;
+                    g_plugin.m_bWarpShaderLock = false;
+                    g_plugin.LoadRandomPreset(0.0f);
+                    g_plugin.m_bCompShaderLock = false;
+                    g_plugin.m_bWarpShaderLock = true;
+                    g_plugin.LoadRandomPreset(0.0f);
+                    g_plugin.m_bCompShaderLock = bCompLock;
+                    g_plugin.m_bWarpShaderLock = bWarpLock;
+                }
+                return;
+            case 'd':
+            case 'D':
+                if (!g_plugin.m_bCompShaderLock && !g_plugin.m_bWarpShaderLock)
+                {
+                    g_plugin.m_bCompShaderLock = true;
+                    g_plugin.m_bWarpShaderLock = false;
+                    LoadString(core_api::get_my_instance(), IDS_COMPSHADER_LOCKED, buf, 256);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                else if (g_plugin.m_bCompShaderLock && !g_plugin.m_bWarpShaderLock)
+                {
+                    g_plugin.m_bCompShaderLock = false;
+                    g_plugin.m_bWarpShaderLock = true;
+                    LoadString(core_api::get_my_instance(), IDS_WARPSHADER_LOCKED, buf, 256);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                else if (!g_plugin.m_bCompShaderLock && g_plugin.m_bWarpShaderLock)
+                {
+                    g_plugin.m_bCompShaderLock = true;
+                    g_plugin.m_bWarpShaderLock = true;
+                    LoadString(core_api::get_my_instance(), IDS_ALLSHADERS_LOCKED, buf, 256);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                else
+                {
+                    g_plugin.m_bCompShaderLock = false;
+                    g_plugin.m_bWarpShaderLock = false;
+                    LoadString(core_api::get_my_instance(), IDS_ALLSHADERS_UNLOCKED, buf, 256);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                return;
+            /*
+            case 'a':
+                g_plugin.m_pState->m_fVideoEchoAlpha -= 0.1f;
+                if (g_plugin.m_pState->m_fVideoEchoAlpha.eval(-1) < 0)
+                    m_pState->m_fVideoEchoAlpha = 0.0f;
+                return;
+            case 'A':
+                g_plugin.m_pState->m_fVideoEchoAlpha += 0.1f;
+                if (g_plugin.m_pState->m_fVideoEchoAlpha.eval(-1) > 1.0f)
+                    g_plugin.m_pState->m_fVideoEchoAlpha = 1.0f;
+                return;
+            case 'd':
+                g_plugin.m_pState->m_fDecay += 0.01f;
+                if (g_plugin.m_pState->m_fDecay.eval(-1) > 1.0f)
+                    g_plugin.m_pState->m_fDecay = 1.0f;
+                return;
+            case 'D':
+                g_plugin.m_pState->m_fDecay -= 0.01f;
+                if (g_plugin.m_pState->m_fDecay.eval(-1) < 0.9f)
+                    g_plugin.m_pState->m_fDecay = 0.9f;
+                return;
+            */
+            case 'f':
+            case 'F':
+                g_plugin.m_pState->m_nVideoEchoOrientation = (g_plugin.m_pState->m_nVideoEchoOrientation + 1) % 4;
+                return;
+            case 'g':
+                g_plugin.m_pState->m_fGammaAdj -= 0.1f;
+                if (g_plugin.m_pState->m_fGammaAdj.eval(-1) < 0.0f)
+                    g_plugin.m_pState->m_fGammaAdj = 0.0f;
+                return;
+            case 'G':
+                g_plugin.m_pState->m_fGammaAdj += 0.1f;
+                //if (g_plugin.m_pState->m_fGammaAdj > 1.0f)
+                //    m_pState->m_fGammaAdj = 1.0f;
+                return;
+            case 'j':
+                g_plugin.m_pState->m_fWaveScale *= 0.9f;
+                return;
+            case 'J':
+                g_plugin.m_pState->m_fWaveScale /= 0.9f;
+                return;
+            case 'k':
+            case 'K':
+                {
+                    USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // Get the highest-order bit
+                    bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0;
+
+                    if (bShiftHeldDown)
+                        g_plugin.m_nNumericInputMode = NUMERIC_INPUT_MODE_SPRITE_KILL;
+                    else
+                        g_plugin.m_nNumericInputMode = NUMERIC_INPUT_MODE_SPRITE;
+                    g_plugin.m_nNumericInputNum = 0;
+                    g_plugin.m_nNumericInputDigits = 0;
+                }
+                return;
+            case '[':
+                g_plugin.m_pState->m_fXPush -= 0.005f;
+                return;
+            case ']':
+                g_plugin.m_pState->m_fXPush += 0.005f;
+                return;
+            case '{':
+                g_plugin.m_pState->m_fYPush -= 0.005f;
+                return;
+            case '}':
+                g_plugin.m_pState->m_fYPush += 0.005f;
+                return;
+            case '<':
+                g_plugin.m_pState->m_fRot += 0.02f;
+                return;
+            case '>':
+                g_plugin.m_pState->m_fRot -= 0.02f;
+                return;
+            case 's':
+            case 'S':
+                // Save preset.
+                if (g_plugin.m_UI_mode == UI_REGULAR)
+                {
+                    //g_plugin.m_bPresetLockedByCode = true;
+                    g_plugin.m_UI_mode = UI_SAVEAS;
+
+                    // Enter WaitString mode.
+                    g_plugin.m_waitstring.bActive = true;
+                    g_plugin.m_waitstring.bFilterBadChars = true;
+                    g_plugin.m_waitstring.bDisplayAsCode = false;
+                    g_plugin.m_waitstring.nSelAnchorPos = -1;
+                    g_plugin.m_waitstring.nMaxLen = std::min(sizeof(g_plugin.m_waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - lstrlenW(g_plugin.GetPresetDir()) - 6)); // 6 for the extension + null char. Set this because Win32 LoadFile, MoveFile, etc. barf if the path+filename+ext are > MAX_PATH chars.
+                    wcscpy_s(g_plugin.m_waitstring.szText, g_plugin.m_pState->m_szDesc); // initial string is the filename, minus the extension
+                    LoadString(core_api::get_my_instance(), IDS_SAVE_AS, g_plugin.m_waitstring.szPrompt, 512);
+                    g_plugin.m_waitstring.szToolTip[0] = L'\0';
+                    g_plugin.m_waitstring.nCursorPos = wcsnlen_s(g_plugin.m_waitstring.szText, 48000); // set the starting edit position
+                }
+                else
+                {
+                    const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
+                    swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                return;
+            case 'l':
+            case 'L':
+                // Load preset.
+                if (g_plugin.m_UI_mode == UI_LOAD)
+                {
+                    g_plugin.m_UI_mode = UI_REGULAR;
+                    return;
+                }
+                else if (g_plugin.m_UI_mode == UI_REGULAR || g_plugin.m_UI_mode == UI_MENU)
+                {
+                    g_plugin.UpdatePresetList(); // make sure list is completely ready
+                    g_plugin.m_UI_mode = UI_LOAD;
+                    g_plugin.m_bUserPagedUp = false;
+                    g_plugin.m_bUserPagedDown = false;
+                    return;
+                }
+                break;
+            case 'm':
+            case 'M':
+                if (g_plugin.m_UI_mode == UI_MENU)
+                    g_plugin.m_UI_mode = UI_REGULAR;
+                else if (g_plugin.m_UI_mode == UI_REGULAR || g_plugin.m_UI_mode == UI_LOAD)
+                    g_plugin.m_UI_mode = UI_MENU;
+                return;
+            case '*':
+                g_plugin.m_nNumericInputDigits = 0;
+                g_plugin.m_nNumericInputNum = 0;
+                return;
+            case 'y':
+            case 'Y':
+                g_plugin.m_nNumericInputMode = NUMERIC_INPUT_MODE_CUST_MSG;
+                g_plugin.m_nNumericInputNum = 0;
+                g_plugin.m_nNumericInputDigits = 0;
                 return;
         }
     }
@@ -790,24 +1094,24 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     g_plugin.m_playlist_pos -= 10 * nRepCnt;
                 else
                     g_plugin.m_playlist_pos -= nRepCnt;
-                SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos), false, true, true);
+                SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
                 return;
             case VK_DOWN:
                 if (GetKeyState(VK_SHIFT) & mask)
                     g_plugin.m_playlist_pos += 10 * nRepCnt;
                 else
                     g_plugin.m_playlist_pos += nRepCnt;
-                SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos), false, true, true);
+                SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
                 return;
             case VK_HOME:
                 g_plugin.m_playlist_pos = 0;
-                SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos), false, true, true);
+                SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
                 return;
             case VK_END:
                 {
                     const size_t count = api->activeplaylist_get_item_count();
                     g_plugin.m_playlist_pos = count - 1;
-                    SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos), false, true, true);
+                    SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
                 }
                 return;
             case VK_PRIOR:
@@ -827,9 +1131,9 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     size_t active = api->get_active_playlist();
                     if (active == pfc::infinite_size)
                         return;
-                    SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos), false, true, true);
+                    SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
                     api->set_playing_playlist(active);
-                    m_playback_control->start();
+                    m_playback_control->start(playback_control::track_command_settrack);
                 }
                 return;
         }
@@ -845,10 +1149,14 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     ToggleFullScreen();
                 return;
             case VK_SPACE:
-                NextPreset();
+                //if (g_plugin.m_UI_mode == UI_LOAD)
+                //    goto HitEnterFromLoadMenu;
+                if (!IsPresetLock())
+                    RandomPreset();
                 return;
             case VK_BACK:
-                PrevPreset();
+                PrevPreset(0.0f);
+                g_plugin.m_fHardCutThresh *= 2.0f; // make it a little less likely that a random hard cut follows soon.
                 return;
             case VK_UP:
                 m_playback_control->volume_up();
@@ -858,13 +1166,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 return;
             case VK_LEFT:
             case VK_RIGHT:
-                {
-                    if (!m_playback_control->playback_can_seek())
-                        return;
-                    int reps = (bShiftHeldDown) ? 6 * nRepCnt : 1 * nRepCnt;
-                    for (int i = 0; i < reps; ++i)
-                        m_playback_control->playback_seek_delta(nChar == VK_LEFT ? -5.0 : 5.0);
-                }
+                Seek(nRepCnt, bShiftHeldDown, nChar == VK_LEFT ? -5.0 : 5.0);
                 return;
             case VK_SUBTRACT:
                 SetPresetRating(-1.0f);
@@ -892,6 +1194,8 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 ToggleRating();
                 return;
             case VK_F7:
+                if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
+                    //g_plugin.ReadCustomMessages(); // re-read custom messages
                 return;
             case VK_F8:
                 return;
@@ -902,6 +1206,23 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 {
                     SHORT lock = GetKeyState(VK_SCROLL) & 0x0001;
                     LockPreset(static_cast<bool>(lock));
+                }
+                return;
+            case 'T':
+            case 'Y':
+                if (bCtrlHeldDown)
+                {
+                    // Stop display of custom message or song title.
+                    g_plugin.m_supertext.fStartTime = -1.0f;
+                }
+                return;
+            case 'K':
+                if (bCtrlHeldDown)
+                {
+                    // Kill all sprites.
+                    for (int x = 0; x < NUM_TEX; x++)
+                        if (g_plugin.m_texmgr.m_tex[x].pSurface)
+                            g_plugin.m_texmgr.KillTex(x);
                 }
                 return;
         }
@@ -916,9 +1237,24 @@ void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     //         the active window because no window has the keyboard focus.
     // Bit 30: The previous key state. The value is 1 if the key is down before
     //         the message is sent, or it is 0 if the key is up.
-    if (nChar == VK_RETURN && (nFlags & 0x6000) == 0x2000)
+    if ((nChar == VK_RETURN && (nFlags & 0x6000) == 0x2000) && g_plugin.GetFrame() > 0)
     {
         ToggleFullScreen();
+        return;
+    }
+}
+
+void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
+{
+    if (chChar == 'k' || chChar == 'K')
+    {
+        g_plugin.OnAltK();
+        return;
+    }
+    if ((chChar == 'd' || chChar == 'D') && g_plugin.GetFrame() > 0)
+    {
+        //g_plugin.ToggleDesktop();
+        return;
     }
 }
 
@@ -973,7 +1309,8 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     switch (cmd)
     {
         case IDM_TOGGLE_FULLSCREEN:
-            ToggleFullScreen();
+            if (g_plugin.GetFrame() > 0)
+                ToggleFullScreen();
             break;
         case IDM_NEXT_PRESET:
             NextPreset();
@@ -996,6 +1333,8 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             break;
         case IDM_SHOW_PLAYLIST:
             TogglePlaylist();
+            break;
+        case IDM_QUIT:
             break;
     }
 
@@ -1092,8 +1431,11 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         pfc::string_formatter state;
         metadb_handle_list list;
         api->activeplaylist_get_all_items(list);
-        if (!(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, m_script, NULL))
-            state = "";
+        if (wParam == -1 || !(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, m_script, NULL))
+            if (m_playback_control->is_playing())
+                state = "Opening...";
+            else
+                state = "Stopped.";
         m_szBuffer = pfc::wideFromUTF8(state);
         return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
@@ -1419,14 +1761,14 @@ const char* milk2_ui_element::ToggleShuffle(bool forward = true)
     return api->playback_order_get_name(nNewMode);
 }
 
-void milk2_ui_element::NextPreset()
+void milk2_ui_element::NextPreset(float fBlendTime)
 {
-    g_plugin.NextPreset(1.0f);
+    g_plugin.NextPreset(fBlendTime);
 }
 
-void milk2_ui_element::PrevPreset()
+void milk2_ui_element::PrevPreset(float fBlendTime)
 {
-    g_plugin.PrevPreset(1.0f);
+    g_plugin.PrevPreset(fBlendTime);
 }
 
 bool milk2_ui_element::LoadPreset(int select)
@@ -1460,9 +1802,9 @@ bool milk2_ui_element::IsPresetLock()
     return g_plugin.m_bPresetLockedByUser || g_plugin.m_bPresetLockedByCode;
 }
 
-void milk2_ui_element::RandomPreset()
+void milk2_ui_element::RandomPreset(float fBlendTime)
 {
-    g_plugin.LoadRandomPreset(1.0f);
+    g_plugin.LoadRandomPreset(fBlendTime);
 }
 
 void milk2_ui_element::SetPresetRating(float inc_dec)
@@ -1517,6 +1859,11 @@ void milk2_ui_element::UpdatePlaylist()
     g_plugin.m_playlist_top_idx = -1;
 }
 
+void milk2_ui_element::SetSelectionSingle(size_t idx)
+{
+    SetSelectionSingle(idx, false, true, true);
+}
+
 void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, bool single_only)
 {
     auto api = playlist_manager::get();
@@ -1527,7 +1874,7 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
     mask.set(idx, toggle ? !api->activeplaylist_is_item_selected(idx) : true);
 
     if (single_only || toggle || !api->activeplaylist_is_item_selected(idx))
-        api->activeplaylist_set_selection(single_only ? (bit_array&)bit_array_true() : (bit_array&)bit_array_one(idx), mask);
+        api->activeplaylist_set_selection(single_only ? (pfc::bit_array&)pfc::bit_array_true() : (pfc::bit_array&)pfc::bit_array_one(idx), mask);
     if (focus && idx_focus != idx)
         api->activeplaylist_set_focus_item(idx);
 }

@@ -1114,7 +1114,7 @@ void CPluginShell::DoTime()
 //   since >10 khz doesn't usually contribute much.
 void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 {
-    float temp_wave[2][576];
+    float temp_wave[2][576]{};
 
     int old_i = 0;
     for (int i = 0; i < 576; i++)
@@ -1431,6 +1431,10 @@ void CPluginShell::RenderPlaylist()
             if (m_playlist_pos >= nSongs)
                 m_playlist_pos = nSongs - 1;
 
+#ifdef _FOOBAR
+            SendMessage(m_hWndWinamp, WM_USER, m_playlist_pos, IPC_SETPLAYLISTPOS);
+#endif
+
             int cur_page = static_cast<int>(m_playlist_pos / disp_lines);
             //int cur_line = (m_playlist_pos + disp_lines - 1) % disp_lines;
             int new_top_idx = cur_page * disp_lines;
@@ -1469,9 +1473,10 @@ void CPluginShell::RenderPlaylist()
                     if (j < nSongs)
                     {
                         // Clip maximum length of song name to 240 characters, to prevent overflows.
-                        //buf[240] = '\0';
-                        //wcsncpy_s(buf, static_cast<wchar*>SendMessage(m_hWndWinamp, WM_USER, j, 213), 240);
-                        //swprintf_s(m_playlist[i], "%d. %s ", j + 1, buf); // leave an extra space @ end, so italicized fonts don't get clipped
+                        //char bufA[240] = L'\0';
+                        //LRESULT szTitle = SendMessage(m_hWndWinamp, WM_WA_IPC, j, IPC_GETPLAYLISTTITLE);
+                        //strcpy_s(bufA, reinterpret_cast<char*>(szTitle), 240);
+                        //sprintf_s(m_playlist[i], "%d. %s ", j + 1, bufA); // leave an extra space @ end, so italicized fonts don't get clipped
 
                         r = {0.0f, 0.0f, max_w, 1024.0f};
                         if (!m_playlist_song[i].IsVisible())

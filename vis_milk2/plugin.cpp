@@ -3405,6 +3405,62 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 }
 // clang-format on
 
+#ifdef DX9_MILKDROP
+// Draws a string in the lower-right corner of the screen.
+// Note: ID3DXFont handles `DT_RIGHT` and `DT_BOTTOM` *very poorly*.
+//       It is best to calculate the size of the text first,
+//       then place it in the right location.
+// Note: Use `DT_WORDBREAK` instead of `DT_WORD_ELLIPSES`, otherwise
+//       certain fonts' `DT_CALCRECT` (for the dark box) will be wrong.
+void CPlugin::DrawTooltip(wchar_t* str, int xR, int yB)
+{
+    DWORD baseColor = 0xFFFFFFFF;
+    D2D1_COLOR_F fgColor = D2D1::ColorF(baseColor);
+    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, /* m_screenmode == DESKTOP ? GetAlpha(0xE0000000) : */ GetAlpha(0xD0000000));
+
+    m_toolTip.Initialize();
+    m_toolTip.SetAlignment(AlignCenter, AlignCenter);
+    m_toolTip.SetTextColor(fgColor);
+    m_toolTip.SetTextOpacity(fgColor.a);
+    m_toolTip.SetVisible(true);
+    m_toolTip.SetText(str);
+    m_toolTip.SetTextStyle(GetFont(TOOLTIP_FONT));
+    m_toolTip.SetTextShadow(false);
+    D2D1_RECT_F r = D2D1::RectF(0.0f, 0.0f, static_cast<FLOAT>(xR - TEXT_MARGIN * 2), 2048.0f);
+    m_toolTip.SetContainer(r);
+    m_text.DrawD2DText(GetFont(TOOLTIP_FONT), &m_toolTip, str, &r, DT_CALCRECT, baseColor, false);
+    D2D1_RECT_F r2{};
+    r2.bottom = static_cast<FLOAT>(yB - TEXT_MARGIN);
+    r2.right = static_cast<FLOAT>(xR - TEXT_MARGIN);
+    r2.left = static_cast<FLOAT>(r2.right - (r.right - r.left));
+    r2.top = static_cast<FLOAT>(r2.bottom - (r.bottom - r.top));
+    D2D1_RECT_F r3 = r2;
+    r3.left -= 4.0f;
+    r3.top -= 2.0f;
+    r3.right += 2.0f;
+    r3.bottom += 2.0f;
+    DrawDarkTranslucentBox(&r3);
+    m_toolTip.SetTextBox(bgColor, r3);
+    m_toolTip.SetContainer(r2);
+    m_text.DrawD2DText(GetFont(TOOLTIP_FONT), &m_toolTip, str, &r2, 0, baseColor, false);
+    m_text.RegisterElement(&m_toolTip);
+}
+
+void CPlugin::ClearTooltip()
+{
+    if (m_toolTip.IsVisible())
+    {
+        m_toolTip.SetVisible(false);
+        m_text.UnregisterElement(&m_toolTip);
+    }
+}
+#endif
+
+void CPlugin::OnAltK()
+{
+    AddError(WASABI_API_LNGSTRINGW(IDS_PLEASE_EXIT_VIS_BEFORE_RUNNING_CONFIG_PANEL), 3.0f, ERR_NOTIFY, true);
+}
+
 void CPlugin::AddError(wchar_t* szMsg, float fDuration, ErrorCategory category, bool bBold)
 {
     if (category == ERR_NOTIFY)
@@ -3537,7 +3593,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         // NOTE: Custom timed message comes at the end!!
     }
 
-    /*
+#ifdef DX9_MILKDROP
     // 2. Render text in lower-right corner.
     {
         // "waitstring" tooltip.
@@ -3550,7 +3606,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             ClearTooltip();
         }
     }
-    */
+#endif
 
     // 3. Render text in lower-left corner.
     {
@@ -4610,6 +4666,18 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         }
     }
 }
+
+#if 0
+void CPlugin::WriteRealtimeConfig()
+{
+    WritePrivateProfileIntW(m_bShowFPS, L"bShowFPS", GetConfigIniFile(), L"settings");
+    WritePrivateProfileIntW(m_bShowRating, L"bShowRating", GetConfigIniFile(), L"settings");
+    WritePrivateProfileIntW(m_bShowPresetInfo, L"bShowPresetInfo", GetConfigIniFile(), L"settings");
+    WritePrivateProfileIntW(m_bShowSongTitle, L"bShowSongTitle", GetConfigIniFile(), L"settings");
+    WritePrivateProfileIntW(m_bShowSongTime, L"bShowSongTime", GetConfigIniFile(), L"settings");
+    WritePrivateProfileIntW(m_bShowSongLen, L"bShowSongLen", GetConfigIniFile(), L"settings");
+}
+#endif
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -5695,6 +5763,386 @@ void CPlugin::SetCurrentPresetRating(float fNewRating)
         m_fShowRatingUntilThisTime = GetTime() + 2.0f;
     }
 }
+
+#ifdef DX9_MILKDROP
+void CPlugin::ReadCustomMessages()
+{
+    int n;
+
+    // First, clear all old data
+    for (n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
+    {
+        wcscpy(m_CustomMessageFont[n].szFace, L"arial");
+        m_CustomMessageFont[n].bBold = false;
+        m_CustomMessageFont[n].bItal = false;
+        m_CustomMessageFont[n].nColorR = 255;
+        m_CustomMessageFont[n].nColorG = 255;
+        m_CustomMessageFont[n].nColorB = 255;
+    }
+
+    for (n = 0; n < MAX_CUSTOM_MESSAGES; n++)
+    {
+        m_CustomMessage[n].szText[0] = 0;
+        m_CustomMessage[n].nFont = 0;
+        m_CustomMessage[n].fSize = 50.0f; // [0..100]  note that size is not absolute, but relative to the size of the window
+        m_CustomMessage[n].x = 0.5f;
+        m_CustomMessage[n].y = 0.5f;
+        m_CustomMessage[n].randx = 0;
+        m_CustomMessage[n].randy = 0;
+        m_CustomMessage[n].growth = 1.0f;
+        m_CustomMessage[n].fTime = 1.5f;
+        m_CustomMessage[n].fFade = 0.2f;
+
+        m_CustomMessage[n].bOverrideBold = false;
+        m_CustomMessage[n].bOverrideItal = false;
+        m_CustomMessage[n].bOverrideFace = false;
+        m_CustomMessage[n].bOverrideColorR = false;
+        m_CustomMessage[n].bOverrideColorG = false;
+        m_CustomMessage[n].bOverrideColorB = false;
+        m_CustomMessage[n].bBold = false;
+        m_CustomMessage[n].bItal = false;
+        wcscpy(m_CustomMessage[n].szFace, L"arial");
+        m_CustomMessage[n].nColorR = 255;
+        m_CustomMessage[n].nColorG = 255;
+        m_CustomMessage[n].nColorB = 255;
+        m_CustomMessage[n].nRandR = 0;
+        m_CustomMessage[n].nRandG = 0;
+        m_CustomMessage[n].nRandB = 0;
+    }
+
+    // Then read in the new file.
+    for (n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
+    {
+        wchar_t szSectionName[32];
+        swprintf(szSectionName, L"font%02d", n);
+
+        // Get face, bold, italic, x, y for this custom message FONT.
+        GetPrivateProfileString(
+            szSectionName, L"face", L"arial", m_CustomMessageFont[n].szFace, ARRAYSIZE(m_CustomMessageFont[n].szFace), m_szMsgIniFile);
+        m_CustomMessageFont[n].bBold = GetPrivateProfileBoolW(szSectionName, L"bold", m_CustomMessageFont[n].bBold, m_szMsgIniFile);
+        m_CustomMessageFont[n].bItal = GetPrivateProfileBoolW(szSectionName, L"ital", m_CustomMessageFont[n].bItal, m_szMsgIniFile);
+        m_CustomMessageFont[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", m_CustomMessageFont[n].nColorR, m_szMsgIniFile);
+        m_CustomMessageFont[n].nColorG = GetPrivateProfileIntW(szSectionName, L"g", m_CustomMessageFont[n].nColorG, m_szMsgIniFile);
+        m_CustomMessageFont[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", m_CustomMessageFont[n].nColorB, m_szMsgIniFile);
+    }
+
+    for (n = 0; n < MAX_CUSTOM_MESSAGES; n++)
+    {
+        wchar_t szSectionName[64];
+        swprintf(szSectionName, L"message%02d", n);
+
+        // Get fontID, size, text, etc. for this custom message.
+        GetPrivateProfileString(
+            szSectionName, L"text", L"", m_CustomMessage[n].szText, ARRAYSIZE(m_CustomMessage[n].szText), m_szMsgIniFile);
+        if (m_CustomMessage[n].szText[0])
+        {
+            m_CustomMessage[n].nFont = GetPrivateProfileIntW(szSectionName, L"font", m_CustomMessage[n].nFont, m_szMsgIniFile);
+            m_CustomMessage[n].fSize = GetPrivateProfileFloatW(szSectionName, L"size", m_CustomMessage[n].fSize, m_szMsgIniFile);
+            m_CustomMessage[n].x = GetPrivateProfileFloatW(szSectionName, L"x", m_CustomMessage[n].x, m_szMsgIniFile);
+            m_CustomMessage[n].y = GetPrivateProfileFloatW(szSectionName, L"y", m_CustomMessage[n].y, m_szMsgIniFile);
+            m_CustomMessage[n].randx = GetPrivateProfileFloatW(szSectionName, L"randx", m_CustomMessage[n].randx, m_szMsgIniFile);
+            m_CustomMessage[n].randy = GetPrivateProfileFloatW(szSectionName, L"randy", m_CustomMessage[n].randy, m_szMsgIniFile);
+
+            m_CustomMessage[n].growth = GetPrivateProfileFloatW(szSectionName, L"growth", m_CustomMessage[n].growth, m_szMsgIniFile);
+            m_CustomMessage[n].fTime = GetPrivateProfileFloatW(szSectionName, L"time", m_CustomMessage[n].fTime, m_szMsgIniFile);
+            m_CustomMessage[n].fFade = GetPrivateProfileFloatW(szSectionName, L"fade", m_CustomMessage[n].fFade, m_szMsgIniFile);
+            m_CustomMessage[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", m_CustomMessage[n].nColorR, m_szMsgIniFile);
+            m_CustomMessage[n].nColorG = GetPrivateProfileIntW(szSectionName, L"g", m_CustomMessage[n].nColorG, m_szMsgIniFile);
+            m_CustomMessage[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", m_CustomMessage[n].nColorB, m_szMsgIniFile);
+            m_CustomMessage[n].nRandR = GetPrivateProfileIntW(szSectionName, L"randr", m_CustomMessage[n].nRandR, m_szMsgIniFile);
+            m_CustomMessage[n].nRandG = GetPrivateProfileIntW(szSectionName, L"randg", m_CustomMessage[n].nRandG, m_szMsgIniFile);
+            m_CustomMessage[n].nRandB = GetPrivateProfileIntW(szSectionName, L"randb", m_CustomMessage[n].nRandB, m_szMsgIniFile);
+
+            // Overrides: r,g,b,face,bold,ital
+            GetPrivateProfileString(
+                szSectionName, L"face", L"", m_CustomMessage[n].szFace, ARRAYSIZE(m_CustomMessage[n].szFace), m_szMsgIniFile);
+            m_CustomMessage[n].bBold = GetPrivateProfileIntW(szSectionName, L"bold", -1, m_szMsgIniFile);
+            m_CustomMessage[n].bItal = GetPrivateProfileIntW(szSectionName, L"ital", -1, m_szMsgIniFile);
+            m_CustomMessage[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", -1, m_szMsgIniFile);
+            m_CustomMessage[n].nColorG = GetPrivateProfileIntW(szSectionName, L"g", -1, m_szMsgIniFile);
+            m_CustomMessage[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", -1, m_szMsgIniFile);
+
+            m_CustomMessage[n].bOverrideFace = (m_CustomMessage[n].szFace[0] != 0);
+            m_CustomMessage[n].bOverrideBold = (m_CustomMessage[n].bBold != -1);
+            m_CustomMessage[n].bOverrideItal = (m_CustomMessage[n].bItal != -1);
+            m_CustomMessage[n].bOverrideColorR = (m_CustomMessage[n].nColorR != -1);
+            m_CustomMessage[n].bOverrideColorG = (m_CustomMessage[n].nColorG != -1);
+            m_CustomMessage[n].bOverrideColorB = (m_CustomMessage[n].nColorB != -1);
+        }
+    }
+}
+
+void CPlugin::LaunchCustomMessage(int nMsgNum)
+{
+    if (nMsgNum > 99)
+        nMsgNum = 99;
+
+    if (nMsgNum < 0)
+    {
+        int count = 0;
+        // choose randomly
+        for (nMsgNum = 0; nMsgNum < 100; nMsgNum++)
+            if (m_CustomMessage[nMsgNum].szText[0])
+                count++;
+
+        int sel = (warand() % count) + 1;
+        count = 0;
+        for (nMsgNum = 0; nMsgNum < 100; nMsgNum++)
+        {
+            if (m_CustomMessage[nMsgNum].szText[0])
+                count++;
+            if (count == sel)
+                break;
+        }
+    }
+
+    if (nMsgNum < 0 || nMsgNum >= MAX_CUSTOM_MESSAGES || m_CustomMessage[nMsgNum].szText[0] == 0)
+    {
+        return;
+    }
+
+    int fontID = m_CustomMessage[nMsgNum].nFont;
+
+    m_supertext.bRedrawSuperText = true;
+    m_supertext.bIsSongTitle = false;
+    lstrcpy(m_supertext.szTextW, m_CustomMessage[nMsgNum].szText);
+
+    // regular properties:
+    m_supertext.fFontSize = m_CustomMessage[nMsgNum].fSize;
+    m_supertext.fX = m_CustomMessage[nMsgNum].x + m_CustomMessage[nMsgNum].randx * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
+    m_supertext.fY = m_CustomMessage[nMsgNum].y + m_CustomMessage[nMsgNum].randy * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
+    m_supertext.fGrowth = m_CustomMessage[nMsgNum].growth;
+    m_supertext.fDuration = m_CustomMessage[nMsgNum].fTime;
+    m_supertext.fFadeTime = m_CustomMessage[nMsgNum].fFade;
+
+    // overrideables:
+    if (m_CustomMessage[nMsgNum].bOverrideFace)
+        lstrcpy(m_supertext.nFontFace, m_CustomMessage[nMsgNum].szFace);
+    else
+        lstrcpy(m_supertext.nFontFace, m_CustomMessageFont[fontID].szFace);
+    m_supertext.bItal =
+        (m_CustomMessage[nMsgNum].bOverrideItal) ? (m_CustomMessage[nMsgNum].bItal != 0) : (m_CustomMessageFont[fontID].bItal != 0);
+    m_supertext.bBold =
+        (m_CustomMessage[nMsgNum].bOverrideBold) ? (m_CustomMessage[nMsgNum].bBold != 0) : (m_CustomMessageFont[fontID].bBold != 0);
+    m_supertext.nColorR =
+        (m_CustomMessage[nMsgNum].bOverrideColorR) ? m_CustomMessage[nMsgNum].nColorR : m_CustomMessageFont[fontID].nColorR;
+    m_supertext.nColorG =
+        (m_CustomMessage[nMsgNum].bOverrideColorG) ? m_CustomMessage[nMsgNum].nColorG : m_CustomMessageFont[fontID].nColorG;
+    m_supertext.nColorB =
+        (m_CustomMessage[nMsgNum].bOverrideColorB) ? m_CustomMessage[nMsgNum].nColorB : m_CustomMessageFont[fontID].nColorB;
+
+    // randomize color
+    m_supertext.nColorR += (int)(m_CustomMessage[nMsgNum].nRandR * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
+    m_supertext.nColorG += (int)(m_CustomMessage[nMsgNum].nRandG * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
+    m_supertext.nColorB += (int)(m_CustomMessage[nMsgNum].nRandB * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
+    if (m_supertext.nColorR < 0)
+        m_supertext.nColorR = 0;
+    if (m_supertext.nColorG < 0)
+        m_supertext.nColorG = 0;
+    if (m_supertext.nColorB < 0)
+        m_supertext.nColorB = 0;
+    if (m_supertext.nColorR > 255)
+        m_supertext.nColorR = 255;
+    if (m_supertext.nColorG > 255)
+        m_supertext.nColorG = 255;
+    if (m_supertext.nColorB > 255)
+        m_supertext.nColorB = 255;
+
+    // fix &'s for display:
+    /*
+    {	
+        int pos = 0;
+        int len = lstrlen(m_supertext.szText);
+        while (m_supertext.szText[pos] && pos<255)
+        {
+            if (m_supertext.szText[pos] == '&')
+            {
+                for (int x=len; x>=pos; x--)
+                    m_supertext.szText[x+1] = m_supertext.szText[x];
+                len++;
+                pos++;
+            }
+            pos++;
+        }
+    }*/
+
+    m_supertext.fStartTime = GetTime();
+}
+
+void CPlugin::LaunchSongTitleAnim()
+{
+    m_supertext.bRedrawSuperText = true;
+    m_supertext.bIsSongTitle = true;
+    lstrcpy(m_supertext.szTextW, m_szSongTitle);
+    //lstrcpy(m_supertext.szText, " ");
+    lstrcpy(m_supertext.nFontFace, m_fontinfo[SONGTITLE_FONT].szFace);
+    m_supertext.fFontSize = (float)m_fontinfo[SONGTITLE_FONT].nSize;
+    m_supertext.bBold = m_fontinfo[SONGTITLE_FONT].bBold;
+    m_supertext.bItal = m_fontinfo[SONGTITLE_FONT].bItalic;
+    m_supertext.fX = 0.5f;
+    m_supertext.fY = 0.5f;
+    m_supertext.fGrowth = 1.0f;
+    m_supertext.fDuration = m_fSongTitleAnimDuration;
+    m_supertext.nColorR = 255;
+    m_supertext.nColorG = 255;
+    m_supertext.nColorB = 255;
+
+    m_supertext.fStartTime = GetTime();
+}
+
+bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
+{
+    char initcode[8192], code[8192], sectionA[64];
+    char szTemp[8192];
+    wchar_t img[512], section[64];
+
+    initcode[0] = 0;
+    code[0] = 0;
+    img[0] = 0;
+    swprintf(section, L"img%02d", nSpriteNum);
+    sprintf(sectionA, "img%02d", nSpriteNum);
+
+    // 1. Read in image filename.
+    GetPrivateProfileString(section, L"img", L"", img, ARRAYSIZE(img) - 1, m_szImgIniFile);
+    if (img[0] == 0)
+    {
+        wchar_t buf[1024];
+        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_COULD_NOT_FIND_IMG_OR_NOT_DEFINED), nSpriteNum);
+        AddError(buf, 7.0f, ERR_MISC, false);
+        return false;
+    }
+
+    if (img[1] != L':') // || img[2] != '\\')
+    {
+        // It's not in the form "x:\blah\billy.jpg" so prepend plugin dir path.
+        wchar_t temp[512];
+        wcscpy(temp, img);
+        swprintf(img, L"%s%s", m_szMilkdrop2Path, temp);
+    }
+
+    // 2. Get color key.
+    //unsigned int ck_lo = (unsigned int)GetPrivateProfileInt(section, "colorkey_lo", 0x00000000, m_szImgIniFile);
+    //unsigned int ck_hi = (unsigned int)GetPrivateProfileInt(section, "colorkey_hi", 0x00202020, m_szImgIniFile);
+    // FIRST try 'colorkey_lo' (for backwards compatibility) and then try 'colorkey'
+    unsigned int ck = (unsigned int)GetPrivateProfileInt(section, L"colorkey_lo", 0x00000000, m_szImgIniFile);
+    ck = (unsigned int)GetPrivateProfileInt(section, L"colorkey", ck, m_szImgIniFile);
+
+    // 3. Read in init code and per-frame code.
+    for (int n = 0; n < 2; n++)
+    {
+        char* pStr = (n == 0) ? initcode : code;
+        char szLineName[32];
+        int len;
+
+        int line = 1;
+        int char_pos = 0;
+        bool bDone = false;
+
+        while (!bDone)
+        {
+            if (n == 0)
+                sprintf(szLineName, "init_%d", line);
+            else
+                sprintf(szLineName, "code_%d", line);
+
+            GetPrivateProfileStringA(sectionA, szLineName, "~!@#$", szTemp, 8192, AutoCharFn(m_szImgIniFile));
+            len = lstrlenA(szTemp);
+
+            if ((strcmp(szTemp, "~!@#$") == 0) || // if the key was missing,
+                (len >= 8191 - char_pos - 1)) // or if we're out of space
+            {
+                bDone = true;
+            }
+            else
+            {
+                sprintf(&pStr[char_pos], "%s%c", szTemp, LINEFEED_CONTROL_CHAR);
+            }
+
+            char_pos += len + 1;
+            line++;
+        }
+        pStr[char_pos++] = 0; // null-terminate
+    }
+
+    if (nSlot == -1)
+    {
+        // find first empty slot; if none, chuck the oldest sprite & take its slot.
+        int oldest_index = 0;
+        int oldest_frame = m_texmgr.m_tex[0].nStartFrame;
+        for (int x = 0; x < NUM_TEX; x++)
+        {
+            if (!m_texmgr.m_tex[x].pSurface)
+            {
+                nSlot = x;
+                break;
+            }
+            else if (m_texmgr.m_tex[x].nStartFrame < oldest_frame)
+            {
+                oldest_index = x;
+                oldest_frame = m_texmgr.m_tex[x].nStartFrame;
+            }
+        }
+
+        if (nSlot == -1)
+        {
+            nSlot = oldest_index;
+            m_texmgr.KillTex(nSlot);
+        }
+    }
+
+    int ret = m_texmgr.LoadTex(img, nSlot, initcode, code, GetTime(), GetFrame(), ck);
+    m_texmgr.m_tex[nSlot].nUserData = nSpriteNum;
+
+    wchar_t buf[1024];
+    switch (ret & TEXMGR_ERROR_MASK)
+    {
+        case TEXMGR_ERR_SUCCESS:
+            switch (ret & TEXMGR_WARNING_MASK)
+            {
+                case TEXMGR_WARN_ERROR_IN_INIT_CODE:
+                    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_WARNING_ERROR_IN_INIT_CODE), nSpriteNum);
+                    AddError(buf, 6.0f, ERR_MISC, true);
+                    break;
+                case TEXMGR_WARN_ERROR_IN_REG_CODE:
+                    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_WARNING_ERROR_IN_PER_FRAME_CODE), nSpriteNum);
+                    AddError(buf, 6.0f, ERR_MISC, true);
+                    break;
+                default:
+                    // success; no errors OR warnings.
+                    break;
+            }
+            break;
+        case TEXMGR_ERR_BAD_INDEX:
+            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_BAD_SLOT_INDEX), nSpriteNum);
+            AddError(buf, 6.0f, ERR_MISC, true);
+            break;
+        /*
+    case TEXMGR_ERR_OPENING:                sprintf(m_szUserMessage, "sprite #%d error: unable to open imagefile", nSpriteNum); break;
+    case TEXMGR_ERR_FORMAT:                 sprintf(m_szUserMessage, "sprite #%d error: file is corrupt or non-jpeg image", nSpriteNum); break;
+    case TEXMGR_ERR_IMAGE_NOT_24_BIT:       sprintf(m_szUserMessage, "sprite #%d error: image does not have 3 color channels", nSpriteNum); break;
+    case TEXMGR_ERR_IMAGE_TOO_LARGE:        sprintf(m_szUserMessage, "sprite #%d error: image is too large", nSpriteNum); break;
+    case TEXMGR_ERR_CREATESURFACE_FAILED:   sprintf(m_szUserMessage, "sprite #%d error: createsurface() failed", nSpriteNum); break;
+    case TEXMGR_ERR_LOCKSURFACE_FAILED:     sprintf(m_szUserMessage, "sprite #%d error: lock() failed", nSpriteNum); break;
+    case TEXMGR_ERR_CORRUPT_JPEG:           sprintf(m_szUserMessage, "sprite #%d error: jpeg is corrupt", nSpriteNum); break;
+    */
+        case TEXMGR_ERR_BADFILE:
+            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_IMAGE_FILE_MISSING_OR_CORRUPT), nSpriteNum);
+            AddError(buf, 6.0f, ERR_MISC, true);
+            break;
+        case TEXMGR_ERR_OUTOFMEM:
+            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_OUT_OF_MEM), nSpriteNum);
+            AddError(buf, 6.0f, ERR_MISC, true);
+            break;
+    }
+
+    return (ret & TEXMGR_ERROR_MASK) ? false : true;
+}
+
+void CPlugin::KillSprite(int iSlot)
+{
+    m_texmgr.KillTex(iSlot);
+}
+#endif
 
 void CPlugin::DoCustomSoundAnalysis()
 {

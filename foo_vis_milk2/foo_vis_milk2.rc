@@ -771,19 +771,19 @@ BEGIN
                             "(error exporting - bad filename, or file can not be overwritten)"
     IDS_INVALID_PATH        "(invalid path)"
     IDS_ENTER_THE_NEW_NAME_FOR_X "Enter the new name for ""%s"":"
-    IDS_PRESET_ORDER_IS_NOW_X "preset order is now %s"
+    IDS_PRESET_ORDER_IS_NOW_X "Preset order is %ls."
     IDS_SEQUENTIAL          "SEQUENTIAL"
     IDS_RANDOM              "RANDOM"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_SHUFFLE_IS_NOW_OFF  "shuffle is now OFF"
-    IDS_SHUFFLE_IS_NOW_ON   "shuffle is now ON"
-    IDS_COMPSHADER_LOCKED   "COMP SHADER LOCKED."
-    IDS_WARPSHADER_LOCKED   "WARP SHADER LOCKED."
-    IDS_ALLSHADERS_LOCKED   "ALL SHADERS LOCKED."
-    IDS_ALLSHADERS_UNLOCKED "ALL SHADERS UNLOCKED."
+    IDS_SHUFFLE_IS_NOW_OFF  "Shuffle is OFF"
+    IDS_SHUFFLE_IS_NOW_ON   "Shuffle is ON"
+    IDS_COMPSHADER_LOCKED   "Comp shader LOCKED."
+    IDS_WARPSHADER_LOCKED   "Warp shader LOCKED."
+    IDS_ALLSHADERS_LOCKED   "All shaders LOCKED."
+    IDS_ALLSHADERS_UNLOCKED "All shaders UNLOCKED."
     IDS_PS_AUTO_RECOMMENDED " Auto (recommended)"
     IDS_PS_DISABLED         " Disabled"
     IDS_PS_SHADER_MODEL_2   " Shader Model 2.0"

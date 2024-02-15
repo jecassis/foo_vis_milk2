@@ -244,8 +244,6 @@ void D3D11Shim::SetBlendState(bool bEnable, D3D11_BLEND srcBlend, D3D11_BLEND de
     }
 
     D3D11_BLEND_DESC desc{};
-    //desc.RenderTarget[0].BlendEnable = (srcBlend != D3D11_BLEND_ONE) || (destBlend != D3D11_BLEND_ZERO);
-
     desc.RenderTarget[0].BlendEnable = bEnable; //(srcBlend != D3D11_BLEND_ONE) || (destBlend != D3D11_BLEND_ZERO);
     desc.RenderTarget[0].SrcBlend = srcBlend;
     desc.RenderTarget[0].DestBlend = destBlend;

@@ -520,14 +520,35 @@ class CPlugin : public CPluginShell
     CState m_state_DO_NOT_USE[3]; // do not use; use pState and pOldState instead.
     ui_mode m_UI_mode;            // can be UI_REGULAR, UI_LOAD, UI_SAVEHOW, or UI_SAVEAS
 
+#define MASH_SLOTS 5
+#define MASH_APPLY_DELAY_FRAMES 1
+    WPARAM m_nMashSlot; // 0..MASH_SLOTS-1
+    //char m_szMashDir[MASH_SLOTS][MAX_PATH];
+    int m_nMashPreset[MASH_SLOTS];
+    int m_nLastMashChangeFrame[MASH_SLOTS];
+
     //td_playlist_entry *m_szPlaylist; // array of 128-char strings
     //int m_nPlaylistCurPos;
     //int m_nPlaylistLength;
     //int m_nTrackPlaying;
     //int m_nSongPosMS;
     //int m_nSongLenMS;
+    bool m_bUserPagedUp;
+    bool m_bUserPagedDown;
     float m_fMotionVectorsTempDx;
     float m_fMotionVectorsTempDy;
+
+    td_waitstr m_waitstring;
+    //void WaitString_NukeSelection();
+    //void WaitString_Cut();
+    //void WaitString_Copy();
+    //void WaitString_Paste();
+    //void WaitString_SeekLeftWord();
+    //void WaitString_SeekRightWord();
+    //size_t WaitString_GetCursorColumn();
+    //int WaitString_GetLineLength();
+    //void WaitString_SeekUpOneLine();
+    //void WaitString_SeekDownOneLine();
 
     int m_nPresets;          // number of entries in the file listing. Includes directories and then files, sorted alphabetically.
     int m_nDirs;             // number of presets that are actually directories. Always between 0 and m_nPresets.
@@ -665,13 +686,18 @@ class CPlugin : public CPluginShell
     void RefreshTab2(HWND hwnd);
     void RenderFrame(int bRedraw);
     void AlignWave(int nSamples);
-
+#ifdef DX9_MILKDROP
     void DrawTooltip(wchar_t* str, int xR, int yB);
+    void ClearTooltip();
+#endif
     void RandomizeBlendPattern();
     void GenPlasma(int x0, int x1, int y0, int y1, float dt);
     void LoadPerFrameEvallibVars(CState* pState);
     void LoadCustomWavePerFrameEvallibVars(CState* pState, int i);
     void LoadCustomShapePerFrameEvallibVars(CState* pState, int i, int instance);
+#if 0
+    void WriteRealtimeConfig(); // called on Finish()
+#endif
     bool PanelSettings(plugin_config* settings);
     void LoadRandomPreset(float fBlendTime);
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);
@@ -686,18 +712,14 @@ class CPlugin : public CPluginShell
     void SetCurrentPresetRating(float fNewRating);
     void SeekToPreset(wchar_t cStartChar);
     bool ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2);
-    int HandleRegularKey(WPARAM wParam);
-    bool OnResizeGraphicsWindow();
-    //bool InitFont();
-    //void DrawUI();
-    //void ClearGraphicsWindow(); // for windowed mode only
-    //bool Update_Overlay();
-    //void UpdatePlaylist();
+#ifdef DX9_MILKDROP
+    void ClearGraphicsWindow(); // for windowed mode only
     void LaunchCustomMessage(int nMsgNum);
-    //void ReadCustomMessages();
-    //void LaunchSongTitleAnim();
+    void ReadCustomMessages();
+    void LaunchSongTitleAnim();
 
-    //bool RenderStringToTitleTexture();
+    bool RenderStringToTitleTexture();
+#endif
     void ShowSongTitleAnim(/*IDirect3DTexture9* lpRenderTarget,*/ int w, int h, float fProgress);
     void DrawWave(float* fL, float* fR);
     void DrawCustomWaves();
@@ -714,6 +736,10 @@ class CPlugin : public CPluginShell
     void RunPerFrameEquations(int code);
     void DrawUserSprites();
     void MergeSortPresets(int left, int right);
+#ifdef DX9_MILKDROP
+    bool LaunchSprite(int nSpriteNum, int nSlot);
+    void KillSprite(int iSlot);
+#endif
     void DoCustomSoundAnalysis();
     void DrawMotionVectors();
 
@@ -737,7 +763,7 @@ class CPlugin : public CPluginShell
     virtual void MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR);
     //virtual LRESULT MilkDropWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
     //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    //virtual void OnAltK();
+    virtual void OnAltK();
     virtual void DumpDebugMessage(const wchar_t* s);
     virtual void PopupMessage(int message_id, int title_id, bool dump = false);
     virtual void ConsoleMessage(int message_id, int title_id);

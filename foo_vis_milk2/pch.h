@@ -52,7 +52,6 @@
 #include <dxgi1_6.h>
 #include <d2d1_1.h>
 #include <dwrite_1.h>
-//#endif
 
 #include <vis_milk2/defines.h>
 #include <vis_milk2/md_defines.h>
