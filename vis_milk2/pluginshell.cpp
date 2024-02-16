@@ -83,7 +83,6 @@ void CPluginShell::SetWinampWindow(HWND window) { m_hWndWinamp = window; }
 HINSTANCE CPluginShell::GetInstance() const { return m_hInstance; }
 wchar_t* CPluginShell::GetPluginsDirPath() { return m_szPluginsDirPath; }
 wchar_t* CPluginShell::GetConfigIniFile() { return m_szConfigIniFile; }
-char* CPluginShell::GetConfigIniFileA() { return m_szConfigIniFileA; }
 TextStyle* CPluginShell::GetFont(eFontIndex idx) { if (idx >= eFontIndex::SIMPLE_FONT && idx < eFontIndex::EXTRA_5 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) { return m_dwrite_font[idx].get(); } else { return NULL; } }
 int CPluginShell::GetFontHeight(eFontIndex idx) const { if (idx >= eFontIndex::SIMPLE_FONT  && idx < eFontIndex::EXTRA_5 && idx < NUM_BASIC_FONTS + NUM_EXTRA_FONTS) return m_fontinfo[idx].nSize; else return 0; }
 int CPluginShell::GetBitDepth() const { return m_lpDX->GetBitDepth(); };
@@ -556,7 +555,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_font_desktop = NULL;
     */
 
-    // PRIVATE - MORE TIMEKEEPING
+    // PRIVATE TIMEKEEPING
     m_last_raw_time = 0;
     memset(m_time_hist, 0, sizeof(m_time_hist));
     m_time_hist_pos = 0;

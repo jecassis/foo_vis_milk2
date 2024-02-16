@@ -5230,7 +5230,6 @@ retry:
     // Make sure the path exists; if not, go to Winamp plugins directory.
     if (GetFileAttributes(g_plugin.m_szPresetDir) == INVALID_FILE_ATTRIBUTES)
     {
-        //FIXME...
         g_plugin.FindValidPresetDir();
     }
 
@@ -5254,7 +5253,7 @@ retry:
 
         // Find first .MILK file
         //if ((hFile = _findfirst(szMask, &c_file )) != -1L ) // note: returns filename -without- path
-        if ((h = FindFirstFileW(g_plugin.m_szUpdatePresetMask, &fd)) == INVALID_HANDLE_VALUE) // note: returns filename -without- path
+        if ((h = FindFirstFile(g_plugin.m_szUpdatePresetMask, &fd)) == INVALID_HANDLE_VALUE) // note: returns filename -without- path
         {
             // Revert back to plugins directory.
             /* wchar_t buf[1024];
@@ -5440,7 +5439,7 @@ retry:
         {
             EnterCriticalSection(&g_cs);
 
-            //g_plugin.m_presets  = temp_presets;
+            //g_plugin.m_presets = temp_presets;
             for (int i = g_plugin.m_nPresets; i < temp_nPresets; i++)
                 g_plugin.m_presets.push_back(temp_presets[i]);
             g_plugin.m_nPresets = temp_nPresets;

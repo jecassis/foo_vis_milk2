@@ -102,7 +102,6 @@ class CPluginShell
     HINSTANCE GetInstance() const; // returns handle to the plugin DLL module; used for things like loading resources (dialogs, bitmaps, icons...) that are built into the plugin.
     wchar_t* GetPluginsDirPath(); // usually returns 'c:\\program files\\winamp\\plugins\\'
     wchar_t* GetConfigIniFile(); // usually returns 'c:\\program files\\winamp\\plugins\\something.ini' - filename is determined from identifiers in "defines.h"
-    char* GetConfigIniFileA();
 
     // FONTS & TEXT
     // ------------------------------------------------------------

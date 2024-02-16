@@ -72,6 +72,7 @@ LPWSTR GetStringW(HINSTANCE hinst, HINSTANCE owner, UINT uID, LPWSTR str = NULL,
 void* GetTextResource(UINT id, int no_fallback);
 
 #ifdef _DEBUG
+void ErrorOutput(LPCTSTR lpszFunction);
 void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam);
 #endif
 
