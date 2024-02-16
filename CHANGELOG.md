@@ -2,18 +2,12 @@
 
 ## Current foobar2000 Component Status
 
-Unstable functionality:
-
-- Configurability is incomplete. Some changes may have no effect.
-- Several presets have NS-EEL compiler errors. Turn off "Suppress all errors and warnings" in Preferences to see messages in the Console.
-- C++ code organization is messy which introduces bugs and inconsistent behavior.
-
 In order to complete the port from Winamp large amounts of functionality has been removed, lost, or untested:
 
 - Some text, image and texture rendering.
 - Customization through INI file.
 - Older presets break.
-- Interactive preset selection and shader editing (Note: only the UI does not show but the functionality is still there so watch out).
+- Interactive preset selection and shader editing.
 - Desktop mode.
 - Fake fullscreen mode and dual header functionality.
 - VJ mode.

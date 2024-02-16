@@ -654,6 +654,7 @@ void CPlugin::MilkDropWriteConfig()
 #endif
 }
 
+#ifdef _FOOBAR
 bool CPlugin::PanelSettings(plugin_config* settings)
 {
     // CPluginShell::ReadConfig()
@@ -736,6 +737,7 @@ bool CPlugin::PanelSettings(plugin_config* settings)
 
     return true;
 }
+#endif
 
 //----------------------------------------------------------------------
 

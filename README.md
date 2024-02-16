@@ -19,12 +19,16 @@ See [CHANGELOG](CHANGELOG.md) for additional details.
 
 ## Features
 
-- Uses DirectX 11.1 for rendering.
+- Uses DirectX 11.1 (Direct3D 11.1, DXGI 1.6, Direct2D 1.1, DirectWrite 1.1) for rendering.
 - Supports the Default User Interface (Default UI) only.
-- Built for foobar2000 2.0 and later.
+- Configurable through foobar2000 preferences instead of `.ini` files.
 - Can build 32-bit and 64-bit x86 component configurations as well as ARM64 and ARM64EC.
-- Configurable through foobar2000 preferences instead of `*.ini` files.
-- Tested on foobar2000 v2.1.2 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22621). In theory, Intel architecture versions work with Windows 8 or later and ARM architecture versions with Windows 10 or later.
+- Built for foobar2000 2.0 and later with latest Windows 11 SDK (10.0.22621.0) and MSVC (v143).
+- Updated all library dependencies to their latest available releases.
+- Deprecated or insecure functions have been rewritten and most unused functionality removed.
+- `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11. 
+- Tested on foobar2000 v2.1.2 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22621).
+- In theory, Intel architecture versions work with Windows 8 or later and ARM architecture versions with Windows 10 or later; mainly dictated by the DXGI version required to support hybrid graphics, high DPI displays and HDR.
 
 ## Run Requirements and Installation
 
