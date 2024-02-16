@@ -1067,16 +1067,15 @@ void milk2_config::reset()
 
 void milk2_config::initialize_paths()
 {
-    std::string component_path = core_api::get_my_full_path();
-    std::string::size_type t = component_path.rfind('\\');
-    if (t != std::string::npos)
-        component_path.erase(t + 1);
+    //std::string component_path = core_api::get_my_full_path();
+    //std::string::size_type t = component_path.rfind('\\');
+    //if (t != std::string::npos)
+    //    component_path.erase(t + 1);
     std::string profile_path = core_api::get_profile_path();
     assert(strncmp(profile_path.substr(0, 7).c_str(), "file://", 7) == 0);
     profile_path = profile_path.substr(7);
     profile_path.append("\\");
 
-    //swprintf_s(default_szComponentDirPath, L"%hs", const_cast<char*>(component_path.c_str()));
     swprintf_s(default_szPluginsDirPath, L"%hs", const_cast<char*>(profile_path.c_str()));
     swprintf_s(default_szMilkdrop2Path, L"%ls%ls", default_szPluginsDirPath, SUBDIR);
     swprintf_s(default_szConfigIniFile, L"%ls%ls", default_szMilkdrop2Path, INIFILE);
@@ -1104,7 +1103,6 @@ void milk2_config::update_paths()
     //    size_t convertedChars;
     //    mbstowcs_s(&convertedChars, settings.m_szPresetDir, cfg_szPresetDir.get().c_str(), MAX_PATH);
     //}
-    //wcscpy_s(settings.m_szComponentDirPath, default_szComponentDirPath);
     wcscpy_s(settings.m_szPluginsDirPath, default_szPluginsDirPath);
     wcscpy_s(settings.m_szConfigIniFile, default_szConfigIniFile);
     wcscpy_s(settings.m_szMilkdrop2Path, default_szMilkdrop2Path);

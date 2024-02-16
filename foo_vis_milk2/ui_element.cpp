@@ -1468,6 +1468,8 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
     else if (lParam == IPC_GETINIDIRECTORYW)
     {
         m_szBuffer = s_config.settings.m_szConfigIniFile;
+        size_t p = m_szBuffer.find_last_of(L"\\");
+        m_szBuffer = m_szBuffer.substr(0, p + 1);
         return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
 
@@ -1505,6 +1507,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
     {
         swprintf_s(g_plugin.m_szPluginsDirPath, L"%ls", s_config.settings.m_szPluginsDirPath);
         swprintf_s(g_plugin.m_szConfigIniFile, L"%ls", s_config.settings.m_szConfigIniFile);
+        swprintf_s(g_plugin.m_szComponentDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
 
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;

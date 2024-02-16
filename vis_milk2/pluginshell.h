@@ -189,6 +189,7 @@ class CPluginShell
     std::unique_ptr<DXContext> m_lpDX; // pointer to DXContext object
     wchar_t m_szPluginsDirPath[MAX_PATH]; // usually 'c:\\program files\\winamp\\plugins\\'
     wchar_t m_szConfigIniFile[MAX_PATH]; // Unicode version: usually 'c:\\program files\\winamp\\plugins\\filename.ini' - filename is determined from identifiers in 'defines.h'
+    wchar_t m_szComponentDirPath[MAX_PATH];
 
     // RUNTIME SETTINGS
     bool m_show_help;
