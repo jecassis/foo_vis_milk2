@@ -24,7 +24,7 @@ class milk2_config
 
   private:
     uint32_t m_sentinel = ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K');
-    uint32_t m_version = 1u;
+    uint32_t m_version = 2u;
 
     static void initialize_paths();
     void update_paths();

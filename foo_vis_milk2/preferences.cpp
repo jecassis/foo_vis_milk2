@@ -1120,79 +1120,21 @@ void milk2_config::parse(ui_element_config_parser& parser)
         parser >> version;
         switch (version)
         {
-            case 1:
-                //parser >> m_multisample_fs;
-                //parser >> m_multisample_w;
-
-                //parser >> m_start_fullscreen;
-                //parser >> m_max_fps_fs;
-                //parser >> m_show_press_f1_msg;
-                //parser >> m_allow_page_tearing_fs;
-                //parser >> m_minimize_winamp;
-                //parser >> m_dualhead_horz;
-                //parser >> m_dualhead_vert;
-                //parser >> m_save_cpu;
-                //parser >> m_skin;
-                //parser >> m_fix_slow_text;
-
-                //parser >> m_disp_mode_fs;
-
-                //parser >> settings.m_bEnableRating;
-                //parser >> settings.m_bHardCutsDisabled;
-                //parser >> settings.g_bDebugOutput;
-                //parser >> settings.m_bShowSongInfo;
-                //parser >> settings.m_bShowPressF1ForHelp;
-                //parser >> settings.m_bShowMenuToolTips;
-                //parser >> settings.m_bSongTitleAnims;
-
+            case 2:
                 parser >> settings.m_bShowFPS;
                 parser >> settings.m_bShowRating;
                 parser >> settings.m_bShowPresetInfo;
-                //parser >> settings.m_bShowDebugInfo;
                 parser >> settings.m_bShowSongTitle;
                 parser >> settings.m_bShowSongTime;
                 parser >> settings.m_bShowSongLen;
                 parser >> settings.m_bShowShaderHelp;
 
-                //parser >> settings.m_bFixPinkBug;
-                //parser >> settings.m_n16BitGamma;
-                //parser >> settings.m_bAutoGamma;
-                //parser >> settings.m_bAlways3D;
-                //parser >> settings.m_fStereoSep;
-                //parser >> settings.m_bFixSlowText;
-                //parser >> settings.m_bAlwaysOnTop;
-                //parser >> settings.m_bWarningsDisabled;
-                //parser >> settings.m_bWarningsDisabled2;
-                //parser >> settings.m_bAnisotropicFiltering;
-                //parser >> settings.m_bPresetLockOnAtStartup;
-                //parser >> settings.m_bPreventScollLockHandling;
-
-                //parser >> settings.m_nCanvasStretch;
-                //parser >> settings.m_nTexSizeX;
                 parser >> settings.m_nTexSizeY;
                 parser >> settings.m_bTexSizeWasAutoPow2;
                 parser >> settings.m_bTexSizeWasAutoExact;
-                //parser >> settings.m_nTexBitsPerCh;
-                //parser >> settings.m_nGridX;
                 parser >> settings.m_nGridY;
-                //parser >> settings.m_nMaxPSVersion;
-                //parser >> settings.m_nMaxImages;
-                //parser >> settings.m_nMaxBytes;
-
-                //parser >> settings.m_fBlendTimeUser;
-                //parser >> settings.m_fBlendTimeAuto;
-                //parser >> settings.m_fTimeBetweenPresets;
-                //parser >> settings.m_fTimeBetweenPresetsRand;
-                //parser >> settings.m_fHardCutLoudnessThresh;
-                //parser >> settings.m_fHardCutHalflife;
-                //parser >> settings.m_fSongTitleAnimDuration;
-                //parser >> settings.m_fTimeBetweenRandomSongTitles;
-                //parser >> settings.m_fTimeBetweenRandomCustomMsgs;
 
                 parser >> settings.m_bPresetLockedByCode;
-                //parser >> settings.m_bPresetLockedByUser;
-                //parser >> settings.m_bMilkdropScrollLockState;
-                //parser >> settings.m_nFpsLimit;
 
                 parser >> settings.m_bEnableDownmix;
                 parser >> settings.m_bEnableHDR;
@@ -1200,14 +1142,6 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 parser >> settings.m_nDepthBufferFormat;
                 parser >> settings.m_nBackBufferCount;
                 parser >> settings.m_nMinFeatureLevel;
-
-                parser >> settings.m_szPluginsDirPath;
-                parser >> settings.m_szConfigIniFile;
-                parser >> settings.m_szMilkdrop2Path;
-                parser >> settings.m_szPresetDir;
-                parser >> settings.m_szPresetDirA;
-                parser >> settings.m_szMsgIniFile;
-                parser >> settings.m_szImgIniFile;
                 break;
             default:
                 FB2K_console_formatter() << core_api::get_my_file_name() << ": Unknown configuration format version: " << version;
@@ -1304,12 +1238,4 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << settings.m_nDepthBufferFormat;
     builder << settings.m_nBackBufferCount;
     builder << settings.m_nMinFeatureLevel;
-
-    builder << settings.m_szPluginsDirPath;
-    builder << settings.m_szConfigIniFile;
-    builder << settings.m_szMilkdrop2Path;
-    builder << settings.m_szPresetDir;
-    builder << settings.m_szPresetDirA;
-    builder << settings.m_szMsgIniFile;
-    builder << settings.m_szImgIniFile;
 }
