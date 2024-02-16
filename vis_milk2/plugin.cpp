@@ -2410,11 +2410,11 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                     for (int z = 0; z < sizeof(texture_exts) / sizeof(texture_exts[0]); z++)
                     {
                         swprintf_s(szFilename, L"%stextures\\%s.%s", g_plugin.m_szMilkdrop2Path, szRootName, texture_exts[z].c_str());
-                        if (GetFileAttributesW(szFilename) == 0xFFFFFFFF)
+                        if (GetFileAttributes(szFilename) == INVALID_FILE_ATTRIBUTES)
                         {
                             // Try again, but in presets directory.
                             swprintf_s(szFilename, L"%s%s.%s", g_plugin.m_szPresetDir, szRootName, texture_exts[z].c_str());
-                            if (GetFileAttributesW(szFilename) == 0xFFFFFFFF)
+                            if (GetFileAttributes(szFilename) == INVALID_FILE_ATTRIBUTES)
                                 continue;
                         }
 
@@ -5006,7 +5006,7 @@ void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
 
     // Make sure preset still exists. (might not if they are using the "back"/fwd buttons
     //  in RANDOM preset order and a file was renamed or deleted!)
-    if (GetFileAttributes(szPresetFilename) == 0xFFFFFFFF)
+    if (GetFileAttributes(szPresetFilename) == INVALID_FILE_ATTRIBUTES)
     {
         /*
         const wchar_t *p = wcsrchr(szPresetFilename, L'\\');
@@ -5172,19 +5172,19 @@ void CPlugin::SeekToPreset(wchar_t cStartChar)
 void CPlugin::FindValidPresetDir()
 {
     swprintf_s(m_szPresetDir, L"%spresets\\", m_szMilkdrop2Path);
-    if (GetFileAttributesW(m_szPresetDir) != -1)
+    if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
     wcscpy_s(m_szPresetDir, m_szMilkdrop2Path);
-    if (GetFileAttributesW(m_szPresetDir) != -1)
+    if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
     wcscpy_s(m_szPresetDir, GetPluginsDirPath());
-    if (GetFileAttributesW(m_szPresetDir) != -1)
+    if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
     wcscpy_s(m_szPresetDir, L"c:\\program files\\winamp\\"); // getting desperate here
-    if (GetFileAttributesW(m_szPresetDir) != -1)
+    if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
     wcscpy_s(m_szPresetDir, L"c:\\program files\\"); // more desperate here
-    if (GetFileAttributesW(m_szPresetDir) != -1)
+    if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
     wcscpy_s(m_szPresetDir, L"c:\\");
 }
@@ -5228,7 +5228,7 @@ static unsigned int WINAPI __UpdatePresetList(void* lpVoid)
 retry:
 
     // Make sure the path exists; if not, go to Winamp plugins directory.
-    if (GetFileAttributes(g_plugin.m_szPresetDir) == -1)
+    if (GetFileAttributes(g_plugin.m_szPresetDir) == INVALID_FILE_ATTRIBUTES)
     {
         //FIXME...
         g_plugin.FindValidPresetDir();
