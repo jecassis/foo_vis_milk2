@@ -1503,8 +1503,8 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 {
     if (!s_milk2)
     {
-        swprintf_s(g_plugin.m_szPluginsDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
-        swprintf_s(g_plugin.m_szConfigIniFile, L"%hs%ls", const_cast<char*>(m_pwd.c_str()), INIFILE);
+        swprintf_s(g_plugin.m_szPluginsDirPath, L"%ls", s_config.settings.m_szPluginsDirPath);
+        swprintf_s(g_plugin.m_szConfigIniFile, L"%ls", s_config.settings.m_szConfigIniFile);
 
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;
