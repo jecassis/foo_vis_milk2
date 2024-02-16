@@ -1372,13 +1372,13 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         LoadString(core_api::get_my_instance(), LOWORD(lParam), buf, 2048);
         LoadString(core_api::get_my_instance(), HIWORD(lParam), title, 64);
         MILK2_CONSOLE_LOG("milk2 -> title: ", title, ", message: ", buf)
-        return 1;
+        return HIWORD(lParam) == IDS_MILKDROP_ERROR || HIWORD(lParam) == IDS_MILKDROP_WARNING ? 0 : 1;
     }
     else if (lParam == IPC_GETVERSION)
     {
         MILK2_CONSOLE_LOG("IPC_GETVERSION")
         //const t_core_version_data v = core_version_info_v2::get_version();
-        return 0;
+        return 1;
     }
     else if (lParam == IPC_GETVERSIONSTRING)
     {
@@ -1399,7 +1399,7 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
     else if (lParam == IPC_SETPLAYLISTPOS)
     {
         //MILK2_CONSOLE_LOG("IPC_SETPLAYLISTPOS")
-        api->activeplaylist_set_focus_item(static_cast<size_t>(wParam));
+        SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
         return static_cast<LRESULT>(wParam);
     }
     else if (lParam == IPC_GETLISTLENGTH)
@@ -1505,14 +1505,14 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 {
     if (!s_milk2)
     {
-        swprintf_s(g_plugin.m_szPluginsDirPath, L"%ls", s_config.settings.m_szPluginsDirPath);
-        swprintf_s(g_plugin.m_szConfigIniFile, L"%ls", s_config.settings.m_szConfigIniFile);
-        swprintf_s(g_plugin.m_szComponentDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
-
         if (FALSE == g_plugin.PluginPreInitialize(window, core_api::get_my_instance()))
             return false;
         if (!g_plugin.PanelSettings(&s_config.settings))
             return false;
+
+        //swprintf_s(g_plugin.m_szPluginsDirPath, L"%ls", s_config.settings.m_szPluginsDirPath);
+        //swprintf_s(g_plugin.m_szConfigIniFile, L"%ls", s_config.settings.m_szConfigIniFile);
+        swprintf_s(g_plugin.m_szComponentDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
 
         if (!s_fullscreen)
             g_hWindow = get_wnd();

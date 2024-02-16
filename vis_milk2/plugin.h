@@ -388,11 +388,7 @@ typedef struct
     //--- Paths
     wchar_t m_szPluginsDirPath[MAX_PATH];
     wchar_t m_szConfigIniFile[MAX_PATH];
-    wchar_t m_szMilkdrop2Path[MAX_PATH];
     wchar_t m_szPresetDir[MAX_PATH];
-    char m_szPresetDirA[MAX_PATH];
-    wchar_t m_szMsgIniFile[MAX_PATH];
-    wchar_t m_szImgIniFile[MAX_PATH];
 } plugin_config;
 
 class CPlugin : public CPluginShell
@@ -622,6 +618,7 @@ class CPlugin : public CPluginShell
     wchar_t m_szMsgIniFile[MAX_PATH];
     wchar_t m_szImgIniFile[MAX_PATH];
     wchar_t m_szPresetDir[MAX_PATH];
+
     float m_fRandStart[4];
 
     // DirectX.
@@ -703,8 +700,6 @@ class CPlugin : public CPluginShell
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);
     void LoadPresetTick();
     void FindValidPresetDir();
-    //char* GetConfigIniFile() { return m_szConfigIniFile; };
-    wchar_t* GetMsgIniFile() { return m_szMsgIniFile; };
     wchar_t* GetPresetDir() { return m_szPresetDir; };
     void SavePresetAs(wchar_t* szNewFile); // overwrites the file if it was already there.
     void DeletePresetFile(wchar_t* szDelFile);
@@ -766,7 +761,7 @@ class CPlugin : public CPluginShell
     virtual void OnAltK();
     virtual void DumpDebugMessage(const wchar_t* s);
     virtual void PopupMessage(int message_id, int title_id, bool dump = false);
-    virtual void ConsoleMessage(int message_id, int title_id);
+    virtual void ConsoleMessage(const wchar_t* function_name, int message_id, int title_id);
 
     /*
     //====[ 4. Methods from base class ]===========================================================================

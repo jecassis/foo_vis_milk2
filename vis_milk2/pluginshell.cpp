@@ -461,63 +461,44 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     //m_szConfigIniFile[0] = 0;  // will be set further down
     //m_szPluginsDirPath:
 
-    /*
-    wchar_t *p;
-    if (hWinampWnd
-        && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETPLUGINDIRECTORYW))
-        && p != (wchar_t *)1)
+    wchar_t* p;
+    if (hWinampWnd && (p = reinterpret_cast<wchar_t*>(SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETPLUGINDIRECTORYW))) != NULL && p != (wchar_t*)1)
     {
-        swprintf(m_szPluginsDirPath, L"%s\\", p);
+#ifndef _FOOBAR
+        swprintf_s(m_szPluginsDirPath, L"%ls\\", p);
+#else
+        swprintf_s(m_szPluginsDirPath, L"%ls", p);
+#endif
     }
     else
     {
-        // Get path to INI file & read in prefs/settings right away, so DumpMsg works!
-        GetModuleFileNameW(m_hInstance, m_szPluginsDirPath, MAX_PATH);
-        wchar_t *p = m_szPluginsDirPath + wcslen(m_szPluginsDirPath);
-        while (p >= m_szPluginsDirPath && *p != L'\\') p--;
-        if (++p >= m_szPluginsDirPath) *p = 0;
+        GetModuleFileName(m_hInstance, m_szPluginsDirPath, MAX_PATH);
+        p = m_szPluginsDirPath + wcsnlen_s(m_szPluginsDirPath, MAX_PATH);
+        while (p >= m_szPluginsDirPath && *p != L'\\')
+            p--;
+        if (++p >= m_szPluginsDirPath)
+            *p = 0;
     }
-    */
-    //	swprintf(m_szPluginsDirPath, L"");
 
-    /*
-    if (hWinampWnd
-        && (p = (wchar_t *)SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))
-        && p != (wchar_t *)1)
+    // Get path to INI file and read in preferences/settings right away.
+    if (hWinampWnd && (p = reinterpret_cast<wchar_t*>(SendMessage(hWinampWnd, WM_WA_IPC, 0, IPC_GETINIDIRECTORYW))) != NULL && p != (wchar_t*)1)
     {
-        // load settings as well as coping with moving old settings to a contained folder
-        wchar_t m_szOldConfigIniFile[MAX_PATH] = {0}, temp[MAX_PATH] = {0}, temp2[MAX_PATH] = {0};
-        swprintf(m_szOldConfigIniFile, L"%s\\Plugins\\%s", p, INIFILE);
-        swprintf(m_szConfigIniFile, L"%s\\Plugins\\%s%s", p, SUBDIR, INIFILE);
-        swprintf(temp, L"%s\\Plugins\\%s", p, SUBDIR);
-        swprintf(temp2, L"%s\\Plugins\\", p);
-        CreateDirectoryW(temp, NULL);
+        wchar_t szConfigDir[MAX_PATH] = {0};
+#ifndef _FOOBAR
+        swprintf_s(szConfigDir, L"%ls\\Plugins\\%ls", p, SUBDIR);
+#else
+        swprintf_s(szConfigDir, L"%ls", p);
+#endif
+        if (GetFileAttributes(szConfigDir) == INVALID_FILE_ATTRIBUTES)
+            if (CreateDirectory(szConfigDir, NULL) == 0)
+                ConsoleMessage(TEXT("CreateDirectory"), IDS_MILK2_DIR_WARN, IDS_MILKDROP_WARNING);
 
-        if (PathFileExistsW(m_szOldConfigIniFile) && !PathFileExistsW(m_szConfigIniFile))
-        {
-            MoveFileW(m_szOldConfigIniFile, m_szConfigIniFile);
-
-            wchar_t m_szMsgIniFile[MAX_PATH] = {0}, m_szNewMsgIniFile[MAX_PATH] = {0},
-                    m_szImgIniFile[MAX_PATH] = {0}, m_szNewImgIniFile[MAX_PATH] = {0},
-                    m_szAdaptersFile[MAX_PATH] = {0}, m_szNewAdaptersFile[MAX_PATH] = {0};
-            swprintf(m_szMsgIniFile, L"%s%s", temp2, MSG_INIFILE);
-            swprintf(m_szNewMsgIniFile, L"%s%s", temp, MSG_INIFILE);
-            swprintf(m_szImgIniFile, L"%s%s", temp2, IMG_INIFILE);
-            swprintf(m_szNewImgIniFile, L"%s%s", temp, IMG_INIFILE);
-            swprintf(m_szAdaptersFile, L"%s%s", temp2, ADAPTERSFILE);
-            swprintf(m_szNewAdaptersFile, L"%s%s", temp, ADAPTERSFILE);
-
-            MoveFileW(m_szImgIniFile, m_szNewImgIniFile);
-            MoveFileW(m_szMsgIniFile, m_szNewMsgIniFile);
-            MoveFileW(m_szAdaptersFile, m_szNewAdaptersFile);
-        }
+        swprintf_s(m_szConfigIniFile, L"%ls%ls", szConfigDir, INIFILE);
     }
     else
     {
-        swprintf(m_szConfigIniFile, L"%s%s", m_szPluginsDirPath, INIFILE);
+        swprintf_s(m_szConfigIniFile, L"%ls%ls", m_szPluginsDirPath, INIFILE);
     }
-    lstrcpyn(m_szConfigIniFileA,AutoCharFn(m_szConfigIniFile),MAX_PATH);
-    */
 
     // PRIVATE CONFIG PANEL SETTINGS
     m_multisample_fs = {1u, 0u}; //D3DMULTISAMPLE_NONE;

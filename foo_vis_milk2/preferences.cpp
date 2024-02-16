@@ -960,7 +960,7 @@ milk2_config::milk2_config()
 {
 }
 
-uint32_t milk2_config::g_get_version() const
+uint32_t milk2_config::get_version() const
 {
     return m_version;
 }
@@ -1091,23 +1091,20 @@ void milk2_config::initialize_paths()
 
 void milk2_config::update_paths()
 {
-    //if (cfg_szPresetDir.get().empty())
-    //{
-    CHAR szPresetDirA[MAX_PATH];
-    wcscpy_s(settings.m_szPresetDir, default_szPresetDir);
-    wcstombs_s(nullptr, szPresetDirA, default_szPresetDir, MAX_PATH);
-    cfg_szPresetDir.set(szPresetDirA);
-    //}
-    //else
-    //{
-    //    size_t convertedChars;
-    //    mbstowcs_s(&convertedChars, settings.m_szPresetDir, cfg_szPresetDir.get().c_str(), MAX_PATH);
-    //}
+    if (m_version > 2 && cfg_szPresetDir.get().empty())
+    {
+        CHAR szPresetDirA[MAX_PATH];
+        wcscpy_s(settings.m_szPresetDir, default_szPresetDir);
+        wcstombs_s(nullptr, szPresetDirA, default_szPresetDir, MAX_PATH);
+        cfg_szPresetDir.set(szPresetDirA);
+    }
+    else
+    {
+        size_t convertedChars;
+        mbstowcs_s(&convertedChars, settings.m_szPresetDir, cfg_szPresetDir.get().c_str(), MAX_PATH);
+    }
     wcscpy_s(settings.m_szPluginsDirPath, default_szPluginsDirPath);
     wcscpy_s(settings.m_szConfigIniFile, default_szConfigIniFile);
-    wcscpy_s(settings.m_szMilkdrop2Path, default_szMilkdrop2Path);
-    wcscpy_s(settings.m_szMsgIniFile, default_szMsgIniFile);
-    wcscpy_s(settings.m_szImgIniFile, default_szImgIniFile);
 }
 
 // Reads the configuration.
@@ -1124,6 +1121,7 @@ void milk2_config::parse(ui_element_config_parser& parser)
                 parser >> settings.m_bShowFPS;
                 parser >> settings.m_bShowRating;
                 parser >> settings.m_bShowPresetInfo;
+                //parser >> settings.m_bShowDebugInfo;
                 parser >> settings.m_bShowSongTitle;
                 parser >> settings.m_bShowSongTime;
                 parser >> settings.m_bShowSongLen;
@@ -1157,7 +1155,7 @@ void milk2_config::parse(ui_element_config_parser& parser)
 void milk2_config::build(ui_element_config_builder& builder)
 {
     builder << m_sentinel;
-    builder << g_get_version();
+    builder << m_version;
 
     //builder << m_multisample_fs;
     //builder << m_multisample_w;

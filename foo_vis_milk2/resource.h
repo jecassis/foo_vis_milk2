@@ -618,6 +618,7 @@
 #define IDS_UNABLE_TO_RESOLVE_TEXSIZE_FOR_A_TEXTURE_NOT_IN_USE 641
 #define IDS_KEY_MAPPINGS                642
 #define IDS_X_FPS                       643
+#define IDS_MILK2_DIR_WARN              644
 #define IDD_PREFS                       700
 #define IDC_CB_FOG                      1000
 #define IDC_CB_SUPERTEX                 1001

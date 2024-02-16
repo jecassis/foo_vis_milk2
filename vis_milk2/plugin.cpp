@@ -202,7 +202,11 @@ void ConvertLFCToCRsW(const wchar_t* src, wchar_t* dst)
 bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxBytes, bool bConvertLFsToSpecialChar)
 {
     wchar_t szFile[MAX_PATH];
+#ifndef _FOOBAR
     swprintf_s(szFile, L"%ls%ls", g_plugin.m_szMilkdrop2Path, szBaseFilename);
+#else
+    swprintf_s(szFile, L"%ls%ls", g_plugin.m_szComponentDirPath, szBaseFilename);
+#endif
 
     FILE* f;
     errno_t err = _wfopen_s(&f, szFile, L"rb");
@@ -413,7 +417,6 @@ void CPlugin::MilkDropPreInitialize()
     m_nCurrentPreset = -1;
     m_szCurrentPresetFile[0] = 0;
     m_szLoadingPreset[0] = 0;
-    //m_szPresetDir[0] = 0; // will be set @ end of this function
     m_bPresetListReady = false;
     m_szUpdatePresetMask[0] = 0;
     //m_nRatingReadProgress = -1;
@@ -2718,6 +2721,7 @@ bool CPlugin::LoadShaders(PShaderSet* sh, CState* pState, bool bTick)
 bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szFn, const char* szProfile, CConstantTable** ppConstTable,
                                    void** ppShader, int shaderType, bool /*bHardErrors*/)
 {
+    // clang-format off
     const char szWarpDefines[] = "#define rad _rad_ang.x\n"
                                  "#define ang _rad_ang.y\n"
                                  "#define uv _uv.xy\n"
@@ -2731,6 +2735,7 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
     const char szCompParams[]  = "float4 _vDiffuse : COLOR, float2 _uv : TEXCOORD0, float2 _rad_ang : TEXCOORD1, out float4 _return_value : COLOR0";
     const char szFirstLine[]   = "    float3 ret = 0;";
     const char szLastLine[]    = "    _return_value = float4(ret.xyz, _vDiffuse.w);";
+    // clang-format on
 
     char szWhichShader[64];
     switch (shaderType)
@@ -4673,31 +4678,66 @@ void CPlugin::PopupMessage(int message_id, int title_id, bool dump)
 #endif
 }
 
-void CPlugin::ConsoleMessage(int message_id, int title_id)
+void CPlugin::ConsoleMessage(const wchar_t* function_name, int message_id, int title_id)
 {
 #ifdef _FOOBAR
-    if (!PostMessage(GetWinampWindow(), WM_USER, MAKEWORD(0x21, 0x09), MAKELONG(message_id, title_id)))
+    if (!SendMessage(GetWinampWindow(), WM_USER, MAKEWORD(0x21, 0x09), MAKELONG(message_id, title_id)))
     {
+        // Retrieve the system error message for the last error code.
         LPVOID lpMsgBuf;
         LPVOID lpDisplayBuf;
         DWORD dw = GetLastError();
 
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw,
-                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                      NULL,
+                      dw,
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      (LPTSTR)&lpMsgBuf,
+                      0,
+                      NULL);
 
-        // Display the error message and exit the process.
-        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)TEXT("PostMessage")) + 40) * sizeof(TCHAR));
-        swprintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), TEXT("PostMessage"),
-                 dw, (LPCTSTR)lpMsgBuf);
-        MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+        // Display the error message.
+        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function_name) + 40) * sizeof(TCHAR));
+        swprintf_s((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("foo_vis_milk2.dll: %s failed with error %d - %s"), function_name, dw, (LPCTSTR)lpMsgBuf);
+        OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
 
         LocalFree(lpMsgBuf);
         LocalFree(lpDisplayBuf);
+
+        // Exit the process
+        //ExitProcess(dw);
     }
 #else
     UNREFERENCED_PARAMETER(message_id);
     UNREFERENCED_PARAMETER(title_id);
 #endif
+}
+
+void ErrorOutput(LPCTSTR lpszFunction)
+{
+    // Retrieve the system error message for the last-error code.
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+    DWORD dw = GetLastError();
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL,
+                  dw,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR)&lpMsgBuf,
+                  0,
+                  NULL);
+
+    // Display the error message.
+    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+    swprintf_s((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), lpszFunction, dw, (LPCTSTR)lpMsgBuf);
+    OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+
+    // Exit the process
+    //ExitProcess(dw);
 }
 
 void CPlugin::PrevPreset(float fBlendTime)

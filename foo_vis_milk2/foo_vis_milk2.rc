@@ -1538,6 +1538,7 @@ BEGIN
                             "Unable to resolve texsize for a texture that is not in use!  (%hs)"
     IDS_KEY_MAPPINGS        "yYYyYzZ"
     IDS_X_FPS               " %3d fps"
+    IDS_MILK2_DIR_WARN      "Unable to create ""milkdrop2"" directory in profile."
 END
 
 #endif    // English (United States) resources

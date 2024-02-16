@@ -146,7 +146,7 @@ class CPluginShell
     virtual void OnAltK() = 0; // does not *have* to be implemented
     virtual void DumpDebugMessage(const wchar_t* s) = 0;
     virtual void PopupMessage(int message_id, int title_id, bool dump = false) = 0;
-    virtual void ConsoleMessage(int message_id, int title_id) = 0;
+    virtual void ConsoleMessage(const wchar_t* function_name, int message_id, int title_id) = 0;
 
     // MISCELLANEOUS
     // ------------------------------------------------------------
