@@ -30,20 +30,6 @@
 #ifndef __MILKDROP_DEFINES_H__
 #define __MILKDROP_DEFINES_H__
 
-// IDENTIFIERS
-//#define CURRENT_VERSION 225
-//#define CURRENT_SUBVERSION 3 // 0=first release, 1=a, 2=b, 3=c...
-//#define MODULEDESC "MilkDrop 2.2" // used for module descriptions (from Winamp/Prefs) + window title for fullscreen mode
-//#define DLLDESC "MilkDrop 2.25c"
-//#define NAME "MilkDrop"
-//#define TITLE "MilkDrop"
-//#define CLASSNAME "MilkDrop" // window class name
-
-#define DEBUGFILE L"milkdrop_debug.txt"
-#define CONFIG_INIFILE "milkdrop_config.ini"
-#define PRESET_INIFILE "milkdrop_presets.ini"
-#define DEBUGFILEHEADER "[milkdrop debug file]\n"
-
 // Define this to disable expression evaluation:
 // (...for some reason, evallib kills the debugger)
 //#ifdef _DEBUG
@@ -66,13 +52,6 @@
 //#define ASPECT_X ((m_nTexSizeY > m_nTexSizeX) ? m_nTexSizeX/(float)m_nTexSizeY : 1.0f) // 0.75f
 //#define ASPECT_Y ((m_nTexSizeX > m_nTexSizeY) ? m_nTexSizeY/(float)m_nTexSizeX : 1.0f) // 0.75f
 //  --> now stored in m_fAspectX, m_fInvAspectY, etc. <--
-
-#define WM_MILKDROP_SYSTRAY_MSG WM_USER + 407
-#define IDC_MILKDROP_SYSTRAY_ICON 555
-#define ID_MILKDROP_SYSTRAY_CLOSE 556
-//#define ID_MILKDROP_SYSTRAY_RESUME 559
-//#define ID_MILKDROP_SYSTRAY_SUSPEND 560
-//#define ID_MILKDROP_SYSTRAY_HOTKEYS 561
 
 #define NUMERIC_INPUT_MODE_CUST_MSG 0
 #define NUMERIC_INPUT_MODE_SPRITE 1

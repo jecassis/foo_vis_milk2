@@ -35,8 +35,8 @@
 // Note: To change the name of the file (DLL) that the plugin is compiled
 //       to, go to the Project -> Properties -> Linker -> Output File.
 //       Do not forget to change both Debug and Release build configurations!
-#define SHORTNAME L"MilkDrop 2 (DirectX 11)" // used as window caption for both MilkDrop and the config panel
-#define LONGNAME "MilkDrop v2.25k"           // appears at bottom of config panel
+#define SHORTNAME L"MilkDrop 2"     // used as window caption for both MilkDrop and the config panel
+#define LONGNAME "MilkDrop v2.25k"  // appears at bottom of config panel
 #define LONGNAMEW TEXT(LONGNAME)
 
 // INT_VERSION is the major version #, multipled by 100 (ie. version 1.02

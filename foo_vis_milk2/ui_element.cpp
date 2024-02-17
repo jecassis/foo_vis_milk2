@@ -4,9 +4,8 @@
 
 #include "pch.h"
 #include "config.h"
-#include "steptimer.h"
-#include "resource.h"
 #include "version.h"
+#include "steptimer.h"
 
 //#ifdef __clang__
 //#pragma clang diagnostic ignored "-Wcovered-switch-default"
@@ -23,7 +22,7 @@ HWND g_hWindow;
 //}
 
 // Anonymous namespace is standard practice in foobar2000 components
-// to prevent name collisions between them.
+// to prevent name collisions.
 namespace
 {
 static const GUID guid_milk2 = {
@@ -41,6 +40,7 @@ static ULONGLONG s_count = 0ull;
 static constexpr ULONGLONG s_debug_limit = 1ull;
 static milk2_config s_config;
 
+#pragma region UI Element
 class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base
 {
   public:
@@ -54,7 +54,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         swprintf_s(szWnd, TEXT("0x%p"), get_wnd());
         MILK2_CONSOLE_LOG("Init ", szParent, ", ", szWnd)
 #endif
-        WIN32_OP(Create(parent, nullptr, nullptr, 0, WS_EX_STATICEDGE) != NULL);
+        WIN32_OP(Create(parent, nullptr, SHORTNAME, 0, WS_EX_STATICEDGE) != NULL);
     }
 
     // clang-format off
@@ -1932,7 +1932,9 @@ class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element> 
 
 // Service factory publishes the class.
 static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
+#pragma endregion
 
+#pragma region Initialize/Quit
 class milk2_initquit : public initquit
 {
   public:
@@ -1945,4 +1947,5 @@ class milk2_initquit : public initquit
 };
 
 FB2K_SERVICE_FACTORY(milk2_initquit);
+#pragma endregion
 } // namespace
