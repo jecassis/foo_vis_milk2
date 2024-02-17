@@ -710,89 +710,229 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 return;
         }
     }
-    else
+    else if (waitstring.bActive) // in the middle of editing a string
     {
-        wchar_t buf[256] = {0};
-        switch (chChar)
+        if ((chChar >= ' ' && chChar <= 'z') || chChar == '{' || chChar == '}')
         {
-            case 'z':
-            case 'Z':
-                m_playback_control->previous();
-                return;
-            case 'x':
-            case 'X':
-                m_playback_control->start();
-                return;
-            case 'c':
-            case 'C':
-                m_playback_control->toggle_pause();
-                return;
-            case 'v':
-            case 'V':
-                m_playback_control->stop();
-                return;
-            case 'b':
-            case 'B':
-                m_playback_control->next();
-                return;
-            case 'u': //g_plugin.m_pState->m_fWarpScale /= 1.1f; return;
-            case 'U': //g_plugin.m_pState->m_fWarpScale *= 1.1f; return;
+            size_t len = 0;
+            if (waitstring.bDisplayAsCode)
+                len = strnlen_s(reinterpret_cast<char*>(waitstring.szText), ARRAYSIZE(waitstring.szText) * sizeof(wchar_t) / sizeof(char));
+            else
+                len = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
+
+            // NOTE: '&' is legal in filenames, but we try to avoid it since during GDI display it acts as a control code (it will not show up, but instead, underline the character following it).
+            if (waitstring.bFilterBadChars && (chChar == '\"' || chChar == '\\' || chChar == '/' || chChar == ':' || chChar == '*' ||
+                                               chChar == '?' || chChar == '|' || chChar == '<' || chChar == '>' || chChar == '&'))
+            {
+                // Illegal character.
+                g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_ILLEGAL_CHARACTER), 2.5f, ERR_MISC, true);
+            }
+            else if (size_t{len} + size_t{nRepCnt} >= waitstring.nMaxLen)
+            {
+                // `waitstring.szText` has reached its limit.
+                g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_STRING_TOO_LONG), 2.5f, ERR_MISC, true);
+            }
+            else
+            {
+                //m_fShowUserMessageUntilThisTime = GetTime(); // if there was an error message already, clear it
+                if (waitstring.bDisplayAsCode)
                 {
-                    const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
-                    swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
-                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
-                }
-                return;
-            case 'r':
-            case 'R':
-                g_plugin.m_bSequentialPresetOrder = !g_plugin.m_bSequentialPresetOrder;
-                {
-                    LoadString(core_api::get_my_instance(), IDS_PRESET_ORDER_IS_NOW_X, &buf[64], 64);
-                    LoadString(core_api::get_my_instance(), g_plugin.m_bSequentialPresetOrder ? IDS_SEQUENTIAL : IDS_RANDOM, &buf[128], 64);
-                    swprintf_s(buf, 64, &buf[64], &buf[128]);
-                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
-                }
-                // Erase all history, too.
-                g_plugin.m_presetHistory[0] = g_plugin.m_szCurrentPresetFile;
-                g_plugin.m_presetHistoryPos = 0;
-                g_plugin.m_presetHistoryFwdFence = 1;
-                g_plugin.m_presetHistoryBackFence = 0;
-                return;
-            case 'p':
-            case 'P':
-                TogglePlaylist();
-                return;
-            case 'h':
-            case 'H':
-                if (g_plugin.m_UI_mode == UI_MASHUP)
-                {
-                    if (chChar == 'h')
+                    char buf[16] = {0};
+                    sprintf_s(buf, "%c", static_cast<char>(chChar));
+
+                    if (waitstring.nSelAnchorPos != -1)
+                        g_plugin.WaitString_NukeSelection();
+
+                    if (waitstring.bOvertypeMode)
                     {
-                        g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
-                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                        // Overtype mode.
+                        for (UINT rep = 0; rep < nRepCnt; rep++)
+                        {
+                            if (waitstring.nCursorPos == len)
+                            {
+                                strcat_s(reinterpret_cast<char*>(waitstring.szText), sizeof(waitstring.szText), buf);
+                                len++;
+                            }
+                            else
+                            {
+                                char* ptr = reinterpret_cast<char*>(waitstring.szText);
+                                *(ptr + waitstring.nCursorPos) = buf[0];
+                            }
+                            waitstring.nCursorPos++;
+                        }
                     }
                     else
                     {
-                        for (int mash = 0; mash < MASH_SLOTS; mash++)
+                        // Insert mode.
+                        char* ptr = reinterpret_cast<char*>(waitstring.szText);
+                        for (UINT rep = 0; rep < nRepCnt; rep++)
                         {
-                            g_plugin.m_nMashPreset[mash] = g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
-                            g_plugin.m_nLastMashChangeFrame[mash] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                            for (size_t i = len; i >= waitstring.nCursorPos; i--)
+                                *(ptr + i + 1) = *(ptr + i);
+                            *(ptr + waitstring.nCursorPos) = buf[0];
+                            waitstring.nCursorPos++;
+                            len++;
                         }
                     }
                 }
                 else
                 {
-                    // Instant hard cut.
-                    NextPreset(0.0f);
-                    g_plugin.m_fHardCutThresh *= 2.0f; // make it a little less likely that a random hard cut follows soon
+                    wchar_t buf[16] = {0};
+                    swprintf_s(buf, L"%c", static_cast<wchar_t>(chChar));
+
+                    if (waitstring.nSelAnchorPos != -1)
+                        g_plugin.WaitString_NukeSelection();
+
+                    if (waitstring.bOvertypeMode)
+                    {
+                        // Overtype mode.
+                        for (UINT rep = 0; rep < nRepCnt; rep++)
+                        {
+                            if (waitstring.nCursorPos == len)
+                            {
+                                wcscat_s(waitstring.szText, buf);
+                                len++;
+                            }
+                            else
+                                waitstring.szText[waitstring.nCursorPos] = buf[0];
+                            waitstring.nCursorPos++;
+                        }
+                    }
+                    else
+                    {
+                        // Insert mode.
+                        for (UINT rep = 0; rep < nRepCnt; rep++)
+                        {
+                            for (size_t i = len; i >= waitstring.nCursorPos; i--)
+                                waitstring.szText[i + 1] = waitstring.szText[i];
+                            waitstring.szText[waitstring.nCursorPos] = buf[0];
+                            waitstring.nCursorPos++;
+                            len++;
+                        }
+                    }
                 }
-                return;
-            case '-':
-                SetPresetRating(-1.0f);
-                return;
-            case '+':
-                SetPresetRating(1.0f);
-                return;
+            }
+        }
+        return;
+    }
+    else if (UI_mode == UI_LOAD_DEL) // waiting to confirm file delete
+    {
+        if (chChar >= 'y' && chChar <= 'Y')
+        {
+            // First add pathname to filename.
+            wchar_t szDelFile[512] = {0};
+            swprintf_s(szDelFile, L"%s%s", g_plugin.GetPresetDir(), g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str());
+
+            g_plugin.DeletePresetFile(szDelFile);
+            //m_nCurrentPreset = -1;
+        }
+
+        UI_mode = UI_LOAD;
+
+        return;
+    }
+    else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
+    {
+        if (chChar >= 'y' && chChar <= 'Y')
+        {
+            if (g_plugin.m_pState->m_nMinPSVersion == g_plugin.m_pState->m_nMaxPSVersion)
+            {
+                switch (g_plugin.m_pState->m_nMinPSVersion)
+                {
+                    case MD2_PS_NONE:
+                        g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_2_0;
+                        g_plugin.m_pState->m_nCompPSVersion = MD2_PS_2_0;
+                        g_plugin.m_pState->GenDefaultWarpShader();
+                        g_plugin.m_pState->GenDefaultCompShader();
+                        break;
+                    case MD2_PS_2_0:
+                        g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_2_X;
+                        g_plugin.m_pState->m_nCompPSVersion = MD2_PS_2_X;
+                        break;
+                    case MD2_PS_2_X:
+                        g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_3_0;
+                        g_plugin.m_pState->m_nCompPSVersion = MD2_PS_3_0;
+                        break;
+                    default:
+                        assert(0);
+                        break;
+                }
+            }
+            else
+            {
+                switch (g_plugin.m_pState->m_nMinPSVersion)
+                {
+                    case MD2_PS_NONE:
+                        if (g_plugin.m_pState->m_nWarpPSVersion < MD2_PS_2_0)
+                        {
+                            g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_2_0;
+                            g_plugin.m_pState->GenDefaultWarpShader();
+                        }
+                        if (g_plugin.m_pState->m_nCompPSVersion < MD2_PS_2_0)
+                        {
+                            g_plugin.m_pState->m_nCompPSVersion = MD2_PS_2_0;
+                            g_plugin.m_pState->GenDefaultCompShader();
+                        }
+                        break;
+                    case MD2_PS_2_0:
+                        g_plugin.m_pState->m_nWarpPSVersion = std::max(g_plugin.m_pState->m_nWarpPSVersion, (int)MD2_PS_2_X);
+                        g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_2_X);
+                        break;
+                    case MD2_PS_2_X:
+                        g_plugin.m_pState->m_nWarpPSVersion = std::max(g_plugin.m_pState->m_nWarpPSVersion, (int)MD2_PS_3_0);
+                        g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_3_0);
+                        break;
+                    default:
+                        assert(0);
+                        break;
+                }
+            }
+            g_plugin.m_pState->m_nMinPSVersion = std::min(g_plugin.m_pState->m_nWarpPSVersion, g_plugin.m_pState->m_nCompPSVersion);
+            g_plugin.m_pState->m_nMaxPSVersion = std::max(g_plugin.m_pState->m_nWarpPSVersion, g_plugin.m_pState->m_nCompPSVersion);
+
+            g_plugin.LoadShaders(&g_plugin.m_shaders, g_plugin.m_pState, false);
+            g_plugin.SetMenusForPresetVersion(g_plugin.m_pState->m_nWarpPSVersion, g_plugin.m_pState->m_nCompPSVersion);
+        }
+        if (chChar != '\r')
+            UI_mode = UI_MENU;
+        return;
+    }
+    else if (UI_mode == UI_SAVE_OVERWRITE) // waiting to confirm overwrite file on save
+    {
+        if (chChar >= 'y' && chChar <= 'Y')
+        {
+            // First add pathname + extension to filename.
+            wchar_t szNewFile[512] = {0};
+            swprintf_s(szNewFile, L"%s%s.milk", g_plugin.GetPresetDir(), waitstring.szText);
+
+            g_plugin.SavePresetAs(szNewFile);
+
+            // Exit "waitstring" mode.
+            UI_mode = UI_REGULAR;
+            waitstring.bActive = false;
+            //m_bPresetLockedByCode = false;
+        }
+        else if ((chChar >= ' ' && chChar <= 'z') || chChar == '\x1B') // '\x1B' is the ESCAPE key
+        {
+            // Go back to SAVE AS mode.
+            UI_mode = UI_SAVEAS;
+            waitstring.bActive = true;
+        }
+        return;
+    }
+    else if (UI_mode == UI_LOAD && ((chChar >= 'A' && chChar <= 'Z') || (chChar >= 'a' && chChar <= 'z')))
+    {
+        g_plugin.SeekToPreset(chChar);
+        return;
+    }
+    else if (UI_mode == UI_MASHUP && chChar >= '1' && chChar <= ('0' + MASH_SLOTS))
+    {
+        g_plugin.m_nMashSlot = chChar - '1';
+    }
+    else // normal handling of a simple key (all non-virtual-key hotkeys end up here)
+    {
+        switch (chChar)
+        {
             case '0':
             case '1':
             case '2':
@@ -861,6 +1001,29 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             case 'n':
             case 'N':
                 g_plugin.m_bShowDebugInfo = !g_plugin.m_bShowDebugInfo;
+                return;
+            case 'r':
+            case 'R':
+                g_plugin.m_bSequentialPresetOrder = !g_plugin.m_bSequentialPresetOrder;
+                {
+                    LoadString(core_api::get_my_instance(), IDS_PRESET_ORDER_IS_NOW_X, &buf[64], 64);
+                    LoadString(core_api::get_my_instance(), g_plugin.m_bSequentialPresetOrder ? IDS_SEQUENTIAL : IDS_RANDOM, &buf[128], 64);
+                    swprintf_s(buf, 64, &buf[64], &buf[128]);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
+                // Erase all history, too.
+                g_plugin.m_presetHistory[0] = g_plugin.m_szCurrentPresetFile;
+                g_plugin.m_presetHistoryPos = 0;
+                g_plugin.m_presetHistoryFwdFence = 1;
+                g_plugin.m_presetHistoryBackFence = 0;
+                return;
+            case 'u': //g_plugin.m_pState->m_fWarpScale /= 1.1f; return;
+            case 'U': //g_plugin.m_pState->m_fWarpScale *= 1.1f; return;
+                {
+                    const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
+                    swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
+                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
+                }
                 return;
             case 't':
             case 'T':
@@ -1084,6 +1247,73 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 g_plugin.m_nNumericInputNum = 0;
                 g_plugin.m_nNumericInputDigits = 0;
                 return;
+            case 'z':
+            case 'Z':
+                m_playback_control->previous(); // Previous track button 40044
+                return;
+            case 'x':
+            case 'X':
+                m_playback_control->start();
+                return;
+            case 'c':
+            case 'C':
+                m_playback_control->toggle_pause();
+                return;
+            case 'v':
+            case 'V':
+                m_playback_control->stop();
+                return;
+            case 'b':
+            case 'B':
+                m_playback_control->next();
+                return;
+            case 'p':
+            case 'P':
+                TogglePlaylist();
+                return;
+            /*
+            case 'l':
+                // Note that this is actually correct; when you hit 'l' from the
+                // MAIN winamp window, you get an "open files" dialog; when you hit
+                // 'l' from the playlist editor, you get an "add files to playlist" dialog.
+                // (that sends IDC_PLAYLIST_ADDMP3==1032 to the playlist, which we can't
+                //  do from here.)
+                PostMessage(m_hWndWinamp, WM_COMMAND, 40029, 0); // Open file dialog 40029
+                return;
+            case 'L':
+                PostMessage(m_hWndWinamp, WM_COMMAND, 40187, 0); // ?
+                return;
+            case 'j':
+                PostMessage(m_hWndWinamp, WM_COMMAND, 40194, 0); // Open jump to file dialog 40194
+                return;
+            */
+            case 'h':
+            case 'H':
+                if (UI_mode == UI_MASHUP)
+                {
+                    if (chChar == 'h')
+                    {
+                        g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] =
+                            g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] =
+                            g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                    }
+                    else
+                    {
+                        for (int mash = 0; mash < MASH_SLOTS; mash++)
+                        {
+                            g_plugin.m_nMashPreset[mash] = g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
+                            g_plugin.m_nLastMashChangeFrame[mash] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                        }
+                    }
+                }
+                else
+                {
+                    // Instant hard cut.
+                    NextPreset(0.0f);
+                    g_plugin.m_fHardCutThresh *= 2.0f; // make it a little less likely that a random hard cut follows soon
+                }
+                return;
         }
     }
 }
@@ -1158,42 +1388,6 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     {
         switch (nChar)
         {
-            case VK_ESCAPE:
-                if (g_plugin.m_show_help)
-                    ToggleHelp();
-                else if (s_fullscreen)
-                    ToggleFullScreen();
-                return;
-            case VK_SPACE:
-                //if (g_plugin.m_UI_mode == UI_LOAD)
-                //    goto HitEnterFromLoadMenu;
-                if (!IsPresetLock())
-                    RandomPreset();
-                return;
-            case VK_BACK:
-                PrevPreset(0.0f);
-                g_plugin.m_fHardCutThresh *= 2.0f; // make it a little less likely that a random hard cut follows soon.
-                return;
-            case VK_UP:
-                m_playback_control->volume_up();
-                return;
-            case VK_DOWN:
-                m_playback_control->volume_down();
-                return;
-            case VK_LEFT:
-            case VK_RIGHT:
-                Seek(nRepCnt, bShiftHeldDown, nChar == VK_LEFT ? -5.0 : 5.0);
-                return;
-            case VK_SUBTRACT:
-                SetPresetRating(-1.0f);
-                return;
-            case VK_ADD:
-                SetPresetRating(1.0f);
-                return;
-            case VK_F1:
-                //g_plugin.m_show_press_f1_msg = 0u;
-                ToggleHelp();
-                return;
             case VK_F2:
                 ToggleSongTitle();
                 return;
@@ -1244,6 +1438,685 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     LockPreset(static_cast<bool>(lock));
                 }
                 return;
+        }
+    }
+    // Next handle the "waitstring" case (for string-editing).
+    // Then the menu navigation case.
+    // Then handle normal case (handle the message normally or pass on to Winamp).
+
+    // Case 1: "waitstring" mode.
+    if (waitstring.bActive)
+    {
+        // Handle arrow keys, home, end, etc.
+        if (nChar == VK_LEFT || nChar == VK_RIGHT || nChar == VK_HOME || nChar == VK_END || nChar == VK_UP || nChar == VK_DOWN)
+        {
+            if (bShiftHeldDown)
+            {
+                if (waitstring.nSelAnchorPos == -1)
+                    waitstring.nSelAnchorPos = static_cast<int>(waitstring.nCursorPos);
+            }
+            else
+            {
+                waitstring.nSelAnchorPos = -1;
+            }
+        }
+
+        if (bCtrlHeldDown) // copy/cut/paste
+        {
+            switch (nChar)
+            {
+                case 'c':
+                case 'C':
+                case VK_INSERT:
+                    g_plugin.WaitString_Copy();
+                    return;
+                case 'x':
+                case 'X':
+                    g_plugin.WaitString_Cut();
+                    return;
+                case 'v':
+                case 'V':
+                    g_plugin.WaitString_Paste();
+                    return;
+                case VK_LEFT:
+                    g_plugin.WaitString_SeekLeftWord();
+                    return;
+                case VK_RIGHT:
+                    g_plugin.WaitString_SeekRightWord();
+                    return;
+                case VK_HOME:
+                    waitstring.nCursorPos = 0;
+                    return;
+                case VK_END:
+                    if (waitstring.bDisplayAsCode)
+                    {
+                        waitstring.nCursorPos = strnlen_s(reinterpret_cast<char*>(waitstring.szText), ARRAYSIZE(waitstring.szText) * sizeof(wchar_t) / sizeof(char));
+                    }
+                    else
+                    {
+                        waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
+                    }
+                    return;
+                case VK_RETURN:
+                    if (waitstring.bDisplayAsCode)
+                    {
+                        // CTRL+ENTER accepts the string -> finished editing
+                        //assert(m_pCurMenu);
+                        g_plugin.m_pCurMenu->OnWaitStringAccept(waitstring.szText);
+                        // OnWaitStringAccept calls the callback function.  See the
+                        // calls to CMenu::AddItem from milkdrop.cpp to find the
+                        // callback functions for different "waitstrings".
+                        waitstring.bActive = false;
+                        UI_mode = UI_MENU;
+                    }
+                    return;
+            }
+        }
+        else // "waitstring" mode key pressed and ctrl NOT held down
+        {
+            switch (nChar)
+            {
+                case VK_INSERT:
+                    waitstring.bOvertypeMode = ~waitstring.bOvertypeMode;
+                    return;
+                case VK_LEFT:
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        if (waitstring.nCursorPos > 0)
+                            waitstring.nCursorPos--;
+                    return;
+                case VK_RIGHT:
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                    {
+                        if (waitstring.bDisplayAsCode)
+                        {
+                            if (waitstring.nCursorPos < strnlen_s(reinterpret_cast<char*>(waitstring.szText), ARRAYSIZE(waitstring.szText) * sizeof(wchar_t) / sizeof(char)))
+                                waitstring.nCursorPos++;
+                        }
+                        else
+                        {
+                            if (waitstring.nCursorPos < wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)))
+                                waitstring.nCursorPos++;
+                        }
+                    }
+                    return;
+                case VK_HOME:
+                    waitstring.nCursorPos -= g_plugin.WaitString_GetCursorColumn();
+                    return;
+                case VK_END:
+                    waitstring.nCursorPos += g_plugin.WaitString_GetLineLength() - g_plugin.WaitString_GetCursorColumn();
+                    return;
+                case VK_UP:
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        g_plugin.WaitString_SeekUpOneLine();
+                    return;
+                case VK_DOWN:
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        g_plugin.WaitString_SeekDownOneLine();
+                    return;
+                case VK_BACK:
+                    if (waitstring.nSelAnchorPos != -1)
+                    {
+                        g_plugin.WaitString_NukeSelection();
+                    }
+                    else if (waitstring.nCursorPos > 0)
+                    {
+                        size_t len;
+                        if (waitstring.bDisplayAsCode)
+                        {
+                            len = strnlen_s(reinterpret_cast<char*>(waitstring.szText), ARRAYSIZE(waitstring.szText) * sizeof(wchar_t) / sizeof(char));
+                        }
+                        else
+                        {
+                            len = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
+                        }
+                        size_t src_pos = waitstring.nCursorPos;
+                        int dst_pos = static_cast<int>(waitstring.nCursorPos - nRepCnt);
+                        int gap = nRepCnt;
+                        size_t copy_chars = len - waitstring.nCursorPos + 1; // includes NULL at end
+                        if (dst_pos < 0)
+                        {
+                            gap += dst_pos;
+                            //copy_chars += dst_pos;
+                            dst_pos = 0;
+                        }
+
+                        if (waitstring.bDisplayAsCode)
+                        {
+                            char* ptr = reinterpret_cast<char*>(waitstring.szText);
+                            for (unsigned int i = 0; i < copy_chars; i++)
+                                *(ptr + dst_pos + i) = *(ptr + src_pos + i);
+                        }
+                        else
+                        {
+                            for (unsigned int i = 0; i < copy_chars; i++)
+                                waitstring.szText[dst_pos + i] = waitstring.szText[src_pos + i];
+                        }
+                        waitstring.nCursorPos -= gap;
+                    }
+                    return;
+                case VK_DELETE:
+                    if (waitstring.nSelAnchorPos != -1)
+                    {
+                        g_plugin.WaitString_NukeSelection();
+                    }
+                    else
+                    {
+                        if (waitstring.bDisplayAsCode)
+                        {
+                            int len = static_cast<int>(strnlen_s(reinterpret_cast<char*>(waitstring.szText), ARRAYSIZE(waitstring.szText) * sizeof(wchar_t) / sizeof(char)));
+                            char* ptr = reinterpret_cast<char*>(waitstring.szText);
+                            for (int i = static_cast<int>(waitstring.nCursorPos); i <= std::abs(static_cast<int>(len - nRepCnt)); i++)
+                                *(ptr + i) = *(ptr + i + nRepCnt);
+                        }
+                        else
+                        {
+                            int len = static_cast<int>(wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)));
+                            for (int i = static_cast<int>(waitstring.nCursorPos); i <= std::abs(static_cast<int>(len - nRepCnt)); i++)
+                                waitstring.szText[i] = waitstring.szText[i + nRepCnt];
+                        }
+                    }
+                    return;
+                case VK_RETURN:
+                    if (UI_mode == UI_LOAD_RENAME) // rename (move) the file
+                    {
+                        // First add pathnames to filenames.
+                        wchar_t szOldFile[512];
+                        wchar_t szNewFile[512];
+                        wcscpy_s(szOldFile, g_plugin.GetPresetDir());
+                        wcscpy_s(szNewFile, g_plugin.GetPresetDir());
+                        wcscat_s(szOldFile, g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str());
+                        wcscat_s(szNewFile, waitstring.szText);
+                        wcscat_s(szNewFile, L".milk");
+
+                        g_plugin.RenamePresetFile(szOldFile, szNewFile);
+                    }
+                    else if (UI_mode == UI_IMPORT_WAVE || UI_mode == UI_EXPORT_WAVE ||
+                             UI_mode == UI_IMPORT_SHAPE || UI_mode == UI_EXPORT_SHAPE)
+                    {
+                        //int bWave = (UI_mode == UI_IMPORT_WAVE || UI_mode == UI_EXPORT_WAVE);
+                        int bImport = (UI_mode == UI_IMPORT_WAVE || UI_mode == UI_IMPORT_SHAPE);
+
+                        LPARAM i = g_plugin.m_pCurMenu->GetCurItem()->m_lParam;
+                        int ret = 0;
+                        switch (UI_mode)
+                        {
+                            case UI_IMPORT_WAVE:
+                                ret = g_plugin.m_pState->m_wave[i].Import(NULL, waitstring.szText, 0);
+                                break;
+                            case UI_EXPORT_WAVE:
+                                ret = g_plugin.m_pState->m_wave[i].Export(NULL, waitstring.szText, 0);
+                                break;
+                            case UI_IMPORT_SHAPE:
+                                ret = g_plugin.m_pState->m_shape[i].Import(NULL, waitstring.szText, 0);
+                                break;
+                            case UI_EXPORT_SHAPE:
+                                ret = g_plugin.m_pState->m_shape[i].Export(NULL, waitstring.szText, 0);
+                                break;
+                        }
+
+                        if (bImport)
+                            g_plugin.m_pState->RecompileExpressions(1);
+
+                        //m_fShowUserMessageUntilThisTime = GetTime() - 1.0f; // if there was an error message already, clear it
+                        if (!ret)
+                        {
+                            wchar_t buf[1024];
+                            if (UI_mode == UI_IMPORT_WAVE || UI_mode == UI_IMPORT_SHAPE)
+                                WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_IMPORTING_BAD_FILENAME, buf, 1024);
+                            else
+                                WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_IMPORTING_BAD_FILENAME_OR_NOT_OVERWRITEABLE, buf, 1024);
+                            /*g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_STRING_TOO_LONG), 2.5f, ERR_MISC, true);*/
+                        }
+
+                        waitstring.bActive = false;
+                        UI_mode = UI_MENU;
+                        //m_bPresetLockedByCode = false;
+                    }
+                    else if (UI_mode == UI_SAVEAS)
+                    {
+                        // First add pathname + extension to filename.
+                        wchar_t szNewFile[512];
+                        swprintf_s(szNewFile, L"%s%s.milk", g_plugin.GetPresetDir(), waitstring.szText);
+
+                        if (GetFileAttributesW(szNewFile) != -1) // check if file already exists
+                        {
+                            // File already exists -> overwrite it?
+                            waitstring.bActive = false;
+                            UI_mode = UI_SAVE_OVERWRITE;
+                        }
+                        else
+                        {
+                            g_plugin.SavePresetAs(szNewFile);
+
+                            // Exit "waitstring" mode.
+                            UI_mode = UI_REGULAR;
+                            waitstring.bActive = false;
+                            //m_bPresetLockedByCode = false;
+                        }
+                    }
+                    else if (UI_mode == UI_EDIT_MENU_STRING)
+                    {
+                        if (waitstring.bDisplayAsCode)
+                        {
+                            if (waitstring.nSelAnchorPos != -1)
+                                g_plugin.WaitString_NukeSelection();
+
+                            size_t len = strnlen_s(reinterpret_cast<char*>(waitstring.szText), ARRAYSIZE(waitstring.szText) * sizeof(wchar_t) / sizeof(char));
+                            char* ptr = reinterpret_cast<char*>(waitstring.szText);
+                            if (len + 1 < waitstring.nMaxLen)
+                            {
+                                // Insert a line feed. Use CTRL+RETURN to accept changes in this case.
+                                for (size_t pos = len + 1; pos > waitstring.nCursorPos; pos--)
+                                    *(ptr + pos) = *(ptr + pos - 1);
+                                *(ptr + waitstring.nCursorPos++) = LINEFEED_CONTROL_CHAR;
+
+                                //m_fShowUserMessageUntilThisTime = GetTime() - 1.0f; // if there was an error message already, clear it
+                            }
+                            else
+                            {
+                                // `m_waitstring.szText` has reached its limit.
+                                /*g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_STRING_TOO_LONG), 2.5f, ERR_MISC, true);*/
+                            }
+                        }
+                        else
+                        {
+                            // Finished editing.
+                            //assert(m_pCurMenu);
+                            g_plugin.m_pCurMenu->OnWaitStringAccept(waitstring.szText);
+                            // OnWaitStringAccept calls the callback function.  See the
+                            // calls to `CMenu::AddItem()` from "milkdrop.cpp" to find the
+                            // callback functions for different "waitstrings".
+                            waitstring.bActive = false;
+                            UI_mode = UI_MENU;
+                        }
+                    }
+                    else if (UI_mode == UI_CHANGEDIR)
+                    {
+                        //m_fShowUserMessageUntilThisTime = GetTime(); // if there was an error message already, clear it
+
+                        // Change directory.
+                        wchar_t szOldDir[512] = {0};
+                        wchar_t szNewDir[512] = {0};
+                        wcscpy_s(szOldDir, g_plugin.m_szPresetDir);
+                        wcscpy_s(szNewDir, waitstring.szText);
+
+                        size_t len = wcsnlen_s(szNewDir, 512);
+                        if (len > 0 && szNewDir[len - 1] != L'\\')
+                            wcscat_s(szNewDir, L"\\");
+
+                        wcscpy_s(g_plugin.m_szPresetDir, szNewDir);
+
+                        bool bSuccess = true;
+                        if (GetFileAttributesW(g_plugin.m_szPresetDir) == -1)
+                            bSuccess = false;
+                        if (bSuccess)
+                        {
+                            g_plugin.UpdatePresetList(false, true, false);
+                            bSuccess = (g_plugin.m_nPresets > 0);
+                        }
+
+                        if (!bSuccess)
+                        {
+                            // New directory was invalid. Allow another try.
+                            wcscpy_s(g_plugin.m_szPresetDir, szOldDir);
+
+                            // Present a warning.
+                            /*AddError(WASABI_API_LNGSTRINGW(IDS_INVALID_PATH), 3.5f, ERR_MISC, true);*/
+                        }
+                        else
+                        {
+                            // Success.
+                            wcscpy_s(g_plugin.m_szPresetDir, szNewDir);
+
+                            // Save new path to registry.
+                            /*WritePrivateProfileString(L"settings", L"szPresetDir", g_plugin.m_szPresetDir, g_plugin.GetConfigIniFile());*/
+
+                            // Set current preset index to -1 because current preset is no longer in the list.
+                            g_plugin.m_nCurrentPreset = -1;
+
+                            // Go to file load menu.
+                            waitstring.bActive = false;
+                            UI_mode = UI_LOAD;
+
+                            g_plugin.ClearErrors(ERR_MISC);
+                        }
+                    }
+                    return;
+                case VK_ESCAPE:
+                    if (UI_mode == UI_LOAD_RENAME)
+                    {
+                        waitstring.bActive = false;
+                        UI_mode = UI_LOAD;
+                    }
+                    else if (UI_mode == UI_SAVEAS || UI_mode == UI_SAVE_OVERWRITE ||
+                             UI_mode == UI_EXPORT_SHAPE || UI_mode == UI_IMPORT_SHAPE ||
+                             UI_mode == UI_EXPORT_WAVE || UI_mode == UI_IMPORT_WAVE)
+                    {
+                        //g_plugin.m_bPresetLockedByCode = false;
+                        waitstring.bActive = false;
+                        UI_mode = UI_REGULAR;
+                    }
+                    else if (UI_mode == UI_EDIT_MENU_STRING)
+                    {
+                        waitstring.bActive = false;
+                        if (waitstring.bDisplayAsCode) // if were editing code...
+                            UI_mode = UI_MENU; // return to menu
+                        else
+                            UI_mode = UI_REGULAR; // otherwise don't (we might have been editing a filename, for example)
+                    }
+                    else //if (UI_mode == UI_EDIT_MENU_STRING || UI_mode == UI_CHANGEDIR || 1)
+                    {
+                        waitstring.bActive = false;
+                        UI_mode = UI_REGULAR;
+                    }
+                    return;
+            }
+        }
+
+        // Do not let keys go anywhere else.
+        return;
+    }
+
+    // Case 2: menu is up and gets the keyboard input.
+    else if (UI_mode == UI_MENU)
+    {
+        //assert(g_plugin.m_pCurMenu);
+        if (g_plugin.m_pCurMenu->HandleKeydown(get_wnd(), WM_KEYDOWN, nChar, nRepCnt) == 0)
+            return;
+        return;
+    }
+
+    // Case 3: Handle non-character keys (virtual keys) and return 0.
+    //         If unhandled, return 1 and the shell will
+    //         (passing some to the shell's key bindings, some to Winamp,
+    //          and some to DefWindowProc)
+    //         Note: Regular hotkeys should be handled in `HandleRegularKey()`.
+    else
+    {
+        switch (nChar)
+        {
+            case VK_LEFT:
+            case VK_RIGHT:
+                if (UI_mode == UI_LOAD)
+                {
+                    // It is annoying when the music skips if left arrow is pressed
+                    // from the Load menu, so instead, exit the menu.
+                    if (nChar == VK_LEFT)
+                        UI_mode = UI_REGULAR;
+                }
+                else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
+                {
+                    UI_mode = UI_MENU;
+                }
+                else if (UI_mode == UI_MASHUP)
+                {
+                    if (nChar == VK_LEFT)
+                        g_plugin.m_nMashSlot = std::max(static_cast<WPARAM>(0), g_plugin.m_nMashSlot - 1);
+                    else
+                        g_plugin.m_nMashSlot = std::min(static_cast<WPARAM>(MASH_SLOTS - 1), g_plugin.m_nMashSlot + 1);
+                }
+                else
+                {
+                    Seek(nRepCnt, bShiftHeldDown, nChar == VK_LEFT ? -5.0 : 5.0);
+                }
+                return;
+            case VK_ESCAPE:
+                if (UI_mode == UI_LOAD || UI_mode == UI_MENU || UI_mode == UI_MASHUP)
+                {
+                    UI_mode = UI_REGULAR;
+                }
+                else if (UI_mode == UI_LOAD_DEL)
+                {
+                    UI_mode = UI_LOAD;
+                }
+                else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
+                {
+                    UI_mode = UI_MENU;
+                }
+                else if (UI_mode == UI_SAVE_OVERWRITE)
+                {
+                    UI_mode = UI_SAVEAS;
+                    // Return to "waitstring" mode, leaving all the parameters as they were before.
+                    waitstring.bActive = true;
+                }
+                /*
+                else if (hwnd == g_plugin.GetPluginWindow()) // (don't close on ESC for text window)
+                {
+                    dumpmsg("User pressed ESCAPE");
+                    //m_bExiting = true;
+                    PostMessage(hwnd, WM_CLOSE, 0, 0);
+                }
+                */
+                else if (g_plugin.m_show_help)
+                {
+                    ToggleHelp();
+                }
+                else if (s_fullscreen)
+                {
+                    ToggleFullScreen();
+                }
+                return;
+            case VK_UP:
+                if (UI_mode == UI_MASHUP)
+                {
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = std::max(g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] - 1, g_plugin.m_nDirs);
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                }
+                else if (UI_mode == UI_LOAD)
+                {
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        if (g_plugin.m_nPresetListCurPos > 0)
+                            g_plugin.m_nPresetListCurPos--;
+
+                    // Remember this preset's name so the next time they hit 'L' it jumps straight to it.
+                    //wcscpy_s(g_plugin.m_szLastPresetSelected, g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str());
+                }
+                else
+                {
+                    m_playback_control->volume_up();
+                }
+                return;
+            case VK_DOWN:
+                if (UI_mode == UI_MASHUP)
+                {
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = std::min(g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] + 1, g_plugin.m_nPresets - 1);
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                }
+                else if (UI_mode == UI_LOAD)
+                {
+                    for (UINT rep = 0; rep < nRepCnt; rep++)
+                        if (g_plugin.m_nPresetListCurPos < g_plugin.m_nPresets - 1)
+                            g_plugin.m_nPresetListCurPos++;
+
+                    // Remember this preset's name so the next time they hit 'L' it jumps straight to it.
+                    //wcscpy_s(g_plugin.m_szLastPresetSelected, g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str());
+                }
+                else
+                {
+                    m_playback_control->volume_down();
+                }
+                return;
+            case VK_SPACE:
+                if (UI_mode == UI_LOAD)
+                    goto HitEnterFromLoadMenu;
+                if (!IsPresetLock())
+                    RandomPreset(s_config.settings.m_fBlendTimeUser);
+                return;
+            case VK_PRIOR:
+                if (UI_mode == UI_LOAD || UI_mode == UI_MASHUP)
+                {
+                    g_plugin.m_bUserPagedUp = true;
+                    if (UI_mode == UI_MASHUP)
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                }
+                return;
+            case VK_NEXT:
+                if (UI_mode == UI_LOAD || UI_mode == UI_MASHUP)
+                {
+                    g_plugin.m_bUserPagedDown = true;
+                    if (UI_mode == UI_MASHUP)
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                }
+                return;
+            case VK_HOME:
+                if (UI_mode == UI_LOAD)
+                {
+                    g_plugin.m_nPresetListCurPos = 0;
+                }
+                else if (UI_mode == UI_MASHUP)
+                {
+                    g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = g_plugin.m_nDirs;
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                }
+                return;
+            case VK_END:
+                if (UI_mode == UI_LOAD)
+                {
+                    g_plugin.m_nPresetListCurPos = g_plugin.m_nPresets - 1;
+                }
+                else if (UI_mode == UI_MASHUP)
+                {
+                    g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = g_plugin.m_nPresets - 1;
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                }
+                return;
+            case VK_DELETE:
+                if (UI_mode == UI_LOAD)
+                {
+                    if (g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[0] != '*') // can't delete directories
+                        UI_mode = UI_LOAD_DEL;
+                }
+                else //if (m_nNumericInputDigits == 0)
+                {
+                    if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
+                    {
+                        g_plugin.m_nNumericInputDigits = 0;
+                        g_plugin.m_nNumericInputNum = 0;
+
+                        // Stop display of text message.
+                        g_plugin.m_supertext.fStartTime = -1.0f;
+                    }
+                    else if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_SPRITE)
+                    {
+                        // Kill newest sprite (regular DELETE key)
+                        // oldest sprite (SHIFT + DELETE),
+                        // or all sprites (CTRL + SHIFT + DELETE).
+                        g_plugin.m_nNumericInputDigits = 0;
+                        g_plugin.m_nNumericInputNum = 0;
+
+                        if (bShiftHeldDown && bCtrlHeldDown)
+                        {
+                            for (int x = 0; x < NUM_TEX; x++)
+                                g_plugin.m_texmgr.KillTex(x);
+                        }
+                        else
+                        {
+                            int newest = -1;
+                            int frame = 0;
+                            for (int x = 0; x < NUM_TEX; x++)
+                            {
+                                if (g_plugin.m_texmgr.m_tex[x].pSurface)
+                                {
+                                    if ((newest == -1) || (!bShiftHeldDown && g_plugin.m_texmgr.m_tex[x].nStartFrame > frame) ||
+                                        (bShiftHeldDown && g_plugin.m_texmgr.m_tex[x].nStartFrame < frame))
+                                    {
+                                        newest = x;
+                                        frame = g_plugin.m_texmgr.m_tex[x].nStartFrame;
+                                    }
+                                }
+                            }
+
+                            if (newest != -1)
+                                g_plugin.m_texmgr.KillTex(newest);
+                        }
+                    }
+                }
+                return;
+            case VK_INSERT: // Rename.
+                if (UI_mode == UI_LOAD)
+                {
+                    if (g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[0] != '*') // can't rename directories
+                    {
+                        // Go into rename mode.
+                        UI_mode = UI_LOAD_RENAME;
+                        waitstring.bActive = true;
+                        waitstring.bFilterBadChars = true;
+                        waitstring.bDisplayAsCode = false;
+                        waitstring.nSelAnchorPos = -1;
+                        waitstring.nMaxLen = std::min(sizeof(waitstring.szText) - 1, MAX_PATH - wcsnlen_s(g_plugin.GetPresetDir(), MAX_PATH) - 6); // 6 for the extension + null char.  We set this because Win32 LoadFile, MoveFile, etc. barf if the path+filename+ext are > MAX_PATH chars.
+
+                        // Initial string is the filename, minus the extension.
+                        wcscpy_s(waitstring.szText, g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str());
+                        RemoveExtension(waitstring.szText);
+
+                        // Set the prompt and tooltip.
+                        swprintf_s(waitstring.szPrompt, WASABI_API_LNGSTRINGW(IDS_ENTER_THE_NEW_NAME_FOR_X), waitstring.szText);
+                        waitstring.szToolTip[0] = L'\0';
+
+                        // Set the starting edit position.
+                        waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
+                    }
+                }
+                return;
+            case VK_RETURN:
+                if (UI_mode == UI_MASHUP)
+                {
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                }
+                else if (UI_mode == UI_LOAD)
+                {
+                HitEnterFromLoadMenu:
+                    if (g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[0] == '*') // Change directory.
+                    {
+                        wchar_t* p = g_plugin.GetPresetDir();
+
+                        if (wcscmp(g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str(), L"*..") == 0)
+                        {
+                            // Back up one directory.
+                            wchar_t* p2 = wcsrchr(p, L'\\');
+                            if (p2)
+                            {
+                                *p2 = 0;
+                                p2 = wcsrchr(p, L'\\');
+                                if (p2)
+                                    *(p2++) = 0;
+                            }
+                        }
+                        else
+                        {
+                            // Open subdirectory.
+                            wcscat_s(p, MAX_PATH, &g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[1]);
+                            wcscat_s(p, MAX_PATH, L"\\");
+                        }
+
+                        wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); //WritePrivateProfileString(L"settings", L"szPresetDir", g_plugin.GetPresetDir(), g_plugin.GetConfigIniFile());
+
+                        g_plugin.UpdatePresetList(false, true, false);
+
+                        // Set current preset index to -1 because current preset is no longer in the list.
+                        g_plugin.m_nCurrentPreset = -1;
+                    }
+                    else // Load new preset.
+                    {
+                        g_plugin.m_nCurrentPreset = g_plugin.m_nPresetListCurPos;
+
+                        // First take the filename and prepend the path (already has extension).
+                        wchar_t s[MAX_PATH];
+                        wcscpy_s(s, g_plugin.GetPresetDir()); // note: m_szPresetDir always ends with '\'
+                        wcscat_s(s, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str());
+
+                        // Now load (and blend to) the new preset.
+                        g_plugin.m_presetHistoryPos = (g_plugin.m_presetHistoryPos + 1) % PRESET_HIST_LEN;
+                        g_plugin.LoadPreset(s, (nChar == VK_SPACE) ? g_plugin.m_fBlendTimeUser : 0);
+                    }
+                }
+                return;
+            case VK_BACK:
+                PrevPreset(0.0f);
+                g_plugin.m_fHardCutThresh *= 2.0f; // make it a little less likely that a random hard cut follows soon.
+                return;
             case 'T':
             case 'Y':
                 if (bCtrlHeldDown)
@@ -1271,6 +2144,19 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             case VK_ADD:
                 SetPresetRating(1.0f);
                 return;
+            default:
+                // Pass CTRL+A thru CTRL+Z, and also CTRL+TAB, to Winamp, *if we're in windowed mode* and using an embedded window.
+                // be careful though; uppercase chars come both here AND to WM_CHAR handler,
+                // so we have to eat some of them here, to avoid them from acting twice.
+                if (g_plugin.GetScreenMode() == WINDOWED && g_plugin.m_lpDX && g_plugin.m_lpDX->m_current_mode.m_skin)
+                {
+                    if (bCtrlHeldDown && ((nChar >= 'A' && nChar <= 'Z') || nChar == VK_TAB))
+                    {
+                        //OnKeyDown((UINT)wParam, (UINT)lParam & 0xFFFF, (UINT)((lParam & 0xFFFF0000) >> 16));
+                        //PostMessage(WM_KEYDOWN, nChar, lParam);
+                        return;
+                    }
+                }
         }
     }
 }
