@@ -97,11 +97,13 @@ void NSEEL_HOSTSTUB_LeaveMutex()
 {
 }
 
+#ifdef NS_EEL2
 void NSEEL_VM_resetvars(NSEEL_VMCTX ctx)
 {
     NSEEL_VM_freeRAM(ctx);
     NSEEL_VM_remove_all_nonreg_vars(ctx);
 }
+#endif
 
 _locale_t g_use_C_locale = 0;
 

@@ -2,9 +2,12 @@ name: Win32 MSVC DLL Build and Package
 on:
   push:
     branches:
+      - master
       - debug
       - dev
       - direct2d
+      - alloc
+      - eval
   pull_request:
     branches:
       - master
@@ -27,8 +30,6 @@ jobs:
         uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: ${{ matrix.platform }}
-      # - name: Set up NuGet and add to PATH
-      #   uses: nuget/setup-nuget@v2
       - name: Cache foobar2000 SDK
         uses: actions/cache@v4
         id: sdk
@@ -60,6 +61,16 @@ jobs:
           git commit -m 'Initial commit'
           git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
           Remove-Item -Path "$(Get-Location)\.git" -Recurse -Force
+      - name: Clone projectm-eval repository
+        uses: actions/checkout@v4
+        with:
+          repository: projectM-visualizer/projectm-eval
+          path: external/projectm-eval
+          ref: master
+      - name: Patch projectm-eval repository
+        run: |
+          Set-Location -Path "$(Get-Location)\external"
+          git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
       - name: Cache NuGet packages (DirectXTK and WTL)
         uses: actions/cache@v4
         id: nuget

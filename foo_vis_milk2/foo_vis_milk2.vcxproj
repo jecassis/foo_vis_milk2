@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -450,9 +450,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\external\eel2\eel2.vcxproj">
-      <Project>{893b9c0e-73ca-4843-a3bc-8a3ff9055fa8}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\external\foobar2000\sdk\foobar2000_sdk.vcxproj">
       <Project>{e8091321-d79d-4575-86ef-064ea1a4a20d}</Project>
     </ProjectReference>
@@ -467,6 +464,9 @@
     </ProjectReference>
     <ProjectReference Include="..\external\pfc\pfc.vcxproj">
       <Project>{ebfffb4e-261d-44d3-b89c-957b31a0bf9c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\external\projectm-eval\projectM_eval.vcxproj">
+      <Project>{f253510d-65fc-3877-81e2-034a20be722d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\vis_milk2\vis_milk2.vcxproj">
       <Project>{7ee6f699-4ea5-4409-b212-dcfd192c811b}</Project>

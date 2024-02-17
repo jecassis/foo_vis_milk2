@@ -1,0 +1,590 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..d1a2c20
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,4 @@
++/.vs/
++*.user
++/out/
++/CMakeSettings.json
+diff --git a/ns-eel2-shim/ns-eel.c b/ns-eel2-shim/ns-eel.c
+index 193b1b5..6545f82 100644
+--- a/ns-eel2-shim/ns-eel.c
++++ b/ns-eel2-shim/ns-eel.c
+@@ -59,6 +59,7 @@ void NSEEL_VM_FreeGRAM(void **ufd)
+ NSEEL_CODEHANDLE NSEEL_code_compile(NSEEL_VMCTX ctx, char *code, int lineoffs)
+ {
+     // ToDo: Forward passed pointer to skip "lineoffs" \n chars for compatibility
++    (lineoffs);
+     return (NSEEL_CODEHANDLE) projectm_eval_code_compile((struct projectm_eval_context*) ctx, code);
+ }
+ 
+diff --git a/ns-eel2-shim/ns-eel.h b/ns-eel2-shim/ns-eel.h
+index 8a556a5..5814c9a 100644
+--- a/ns-eel2-shim/ns-eel.h
++++ b/ns-eel2-shim/ns-eel.h
+@@ -12,8 +12,9 @@
+ #include <stdio.h>
+ 
+ #ifdef _MSC_VER
+-#define strcasecmp stricmp
++#define strcasecmp _stricmp
+ #define strncasecmp _strnicmp
++#define strdup _strdup
+ #endif
+ 
+ /* Must be defined to the same value as PRJM_F_SIZE */
+diff --git a/projectm-eval/CompileContext.c b/projectm-eval/CompileContext.c
+index 54fbd56..a4c36c2 100644
+--- a/projectm-eval/CompileContext.c
++++ b/projectm-eval/CompileContext.c
+@@ -28,7 +28,7 @@ prjm_eval_compiler_context_t* prjm_eval_create_compile_context(projectm_eval_mem
+         prjm_eval_function_list_item_t* func = malloc(sizeof(prjm_eval_function_list_item_t));
+         func->function = malloc(sizeof(prjm_eval_function_def_t));
+         memcpy(func->function, &intrinsics[index], sizeof(prjm_eval_function_def_t));
+-        func->function->name = strdup(intrinsics[index].name);
++        func->function->name = _strdup(intrinsics[index].name);
+         func->next = last_func;
+         last_func = func;
+     }
+diff --git a/projectm-eval/CompilerFunctions.c b/projectm-eval/CompilerFunctions.c
+index 41be59e..75ca69b 100644
+--- a/projectm-eval/CompilerFunctions.c
++++ b/projectm-eval/CompilerFunctions.c
+@@ -8,8 +8,9 @@
+ #include <stdlib.h>
+ 
+ #ifdef _MSC_VER
+-#define strcasecmp stricmp
++#define strcasecmp _stricmp
+ #define strncasecmp _strnicmp
++#define strdup _strdup
+ #endif
+ 
+ /* Called by yyparse on error. */
+@@ -19,6 +20,8 @@ void prjm_eval_error(PRJM_EVAL_LTYPE* loc, prjm_eval_compiler_context_t* cctx, y
+     cctx->error.line = loc->first_line;
+     cctx->error.column_start = loc->first_column;
+     cctx->error.column_end = loc->last_column;
++
++    (yyscanner);
+ }
+ 
+ void prjm_eval_compiler_destroy_arglist(prjm_eval_compiler_arg_list_t* arglist)
+diff --git a/projectm-eval/MemoryBuffer.c b/projectm-eval/MemoryBuffer.c
+index 7e21609..e6c5bd9 100644
+--- a/projectm-eval/MemoryBuffer.c
++++ b/projectm-eval/MemoryBuffer.c
+@@ -63,6 +63,8 @@ void prjm_eval_memory_free(projectm_eval_mem_buffer buffer)
+ 
+ void prjm_eval_memory_free_block(projectm_eval_mem_buffer buffer, int block)
+ {
++    (buffer);
++
+     if (block < 0)
+     {
+         block = 0;
+@@ -89,7 +91,7 @@ PRJM_EVAL_F* prjm_eval_memory_allocate(projectm_eval_mem_buffer buffer, int inde
+         {
+             projectm_eval_memory_host_lock_mutex();
+ 
+-            if (!(cur_block = buffer[block]))
++            if ((cur_block = buffer[block]) == 0)
+             {
+                 cur_block = buffer[block] = calloc(sizeof(PRJM_EVAL_F), PRJM_EVAL_MEM_ITEMSPERBLOCK);
+             }
+diff --git a/projectm-eval/Scanner.c b/projectm-eval/Scanner.c
+index d54c3e8..29ebbf3 100644
+--- a/projectm-eval/Scanner.c
++++ b/projectm-eval/Scanner.c
+@@ -9,7 +9,7 @@
+ #define YY_USER_ACTION                           \
+     {                                            \
+         int old_column = yycolumn;               \
+-        yycolumn += strlen(yytext);              \
++        yycolumn += (int)strlen(yytext);         \
+         yylloc_param->first_line = yylineno;     \
+         yylloc_param->first_column = old_column; \
+         yylloc_param->last_line = yylineno;      \
+@@ -1448,10 +1448,10 @@ YY_RULE_SETUP
+ {
+                         if (prjm_eval_compiler_name_is_function(cctx, yytext))
+                         {
+-                            yylval->FUNC = strdup(yytext);
++                            yylval->FUNC = _strdup(yytext);
+                             return FUNC;
+                         }
+-                        yylval->VAR = strdup(yytext);
++                        yylval->VAR = _strdup(yytext);
+                         return VAR;
+                     }
+ 	YY_BREAK
+diff --git a/projectm-eval/Scanner.l b/projectm-eval/Scanner.l
+index 883c55b..8efb2bd 100644
+--- a/projectm-eval/Scanner.l
++++ b/projectm-eval/Scanner.l
+@@ -20,7 +20,7 @@
+ #define YY_USER_ACTION                           \
+     {                                            \
+         int old_column = yycolumn;               \
+-        yycolumn += strlen(yytext);              \
++        yycolumn += (int)strlen(yytext);         \
+         yylloc_param->first_line = yylineno;     \
+         yylloc_param->first_column = old_column; \
+         yylloc_param->last_line = yylineno;      \
+@@ -74,10 +74,10 @@ NAME            [_a-zA-Z][_a-zA-Z0-9]*
+ {NAME}              {
+                         if (prjm_eval_compiler_name_is_function(cctx, yytext))
+                         {
+-                            yylval->FUNC = strdup(yytext);
++                            yylval->FUNC = _strdup(yytext);
+                             return FUNC;
+                         }
+-                        yylval->VAR = strdup(yytext);
++                        yylval->VAR = _strdup(yytext);
+                         return VAR;
+                     }
+ 
+diff --git a/projectm-eval/TreeVariables.c b/projectm-eval/TreeVariables.c
+index ce1e511..80aeeac 100644
+--- a/projectm-eval/TreeVariables.c
++++ b/projectm-eval/TreeVariables.c
+@@ -5,8 +5,9 @@
+ #include <string.h>
+ 
+ #ifdef _MSC_VER
+-#define strcasecmp stricmp
++#define strcasecmp _stricmp
+ #define strncasecmp _strnicmp
++#define strdup _strdup
+ #endif
+ 
+ static PRJM_EVAL_F static_global_variables[100];
+diff --git a/projectm_eval.vcxproj b/projectm_eval.vcxproj
+new file mode 100644
+index 0000000..52ddf0d
+--- /dev/null
++++ b/projectm_eval.vcxproj
+@@ -0,0 +1,310 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|x64">
++      <Configuration>Debug</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|x64">
++      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|ARM64">
++      <Configuration>Debug</Configuration>
++      <Platform>ARM64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|ARM64">
++      <Configuration>Release</Configuration>
++      <Platform>ARM64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|ARM64EC">
++      <Configuration>Debug</Configuration>
++      <Platform>ARM64EC</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|ARM64EC">
++      <Configuration>Release</Configuration>
++      <Platform>ARM64EC</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <ItemGroup>
++    <None Include="projectm-eval\Compiler.y" />
++    <None Include="projectm-eval\Scanner.l" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="projectm-eval\Compiler.c" />
++    <ClCompile Include="projectm-eval\Scanner.c" />
++    <ClCompile Include="projectm-eval\CompileContext.c" />
++    <ClCompile Include="projectm-eval\CompilerFunctions.c" />
++    <ClCompile Include="projectm-eval\ExpressionTree.c" />
++    <ClCompile Include="projectm-eval\MemoryBuffer.c" />
++    <ClCompile Include="projectm-eval\TreeFunctions.c" />
++    <ClCompile Include="projectm-eval\TreeVariables.c" />
++    <ClCompile Include="projectm-eval\api\projectm-eval.c" />
++    <ClCompile Include="ns-eel2-shim\ns-eel.c" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="projectm-eval\Compiler.h" />
++    <ClInclude Include="projectm-eval\Scanner.h" />
++    <ClInclude Include="projectm-eval\CompileContext.h" />
++    <ClInclude Include="projectm-eval\CompilerFunctions.h" />
++    <ClInclude Include="projectm-eval\CompilerTypes.h" />
++    <ClInclude Include="projectm-eval\ExpressionTree.h" />
++    <ClInclude Include="projectm-eval\MemoryBuffer.h" />
++    <ClInclude Include="projectm-eval\TreeFunctions.h" />
++    <ClInclude Include="projectm-eval\TreeVariables.h" />
++    <ClInclude Include="projectm-eval\api\projectm-eval.h" />
++    <ClInclude Include="ns-eel2-shim\ns-eel.h" />
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{F253510D-65FC-3877-81E2-034A20BE722D}</ProjectGuid>
++    <RootNamespace>projectM-eval</RootNamespace>
++    <ProjectName>projectM_EEL</ProjectName>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v143</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
++      <PreprocessorDefinitions>NDEBUG;EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <FloatingPointModel>Fast</FloatingPointModel>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
++      <PreprocessorDefinitions>NDEBUG;EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <FloatingPointModel>Fast</FloatingPointModel>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
++      <PreprocessorDefinitions>NDEBUG;EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <FloatingPointModel>Fast</FloatingPointModel>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>MaxSpeed</Optimization>
++      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
++      <PreprocessorDefinitions>NDEBUG;EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <FloatingPointModel>Fast</FloatingPointModel>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets" />
++</Project>
+\ No newline at end of file
+diff --git a/projectm_eval.vcxproj.filters b/projectm_eval.vcxproj.filters
+new file mode 100644
+index 0000000..84c6edc
+--- /dev/null
++++ b/projectm_eval.vcxproj.filters
+@@ -0,0 +1,88 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="Source Files">
++      <UniqueIdentifier>{6F33E354-B0D2-3CE9-9D95-EB459A861468}</UniqueIdentifier>
++      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
++    </Filter>
++    <Filter Include="Header Files">
++      <UniqueIdentifier>{238144EC-907F-3F5A-9784-4FF0A5D92741}</UniqueIdentifier>
++      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="projectm-eval\Compiler.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\Scanner.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\CompileContext.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\CompilerFunctions.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\ExpressionTree.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\MemoryBuffer.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\TreeFunctions.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\TreeVariables.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="projectm-eval\api\projectm-eval.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="ns-eel2-shim\ns-eel.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="projectm-eval\Compiler.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\Scanner.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\CompileContext.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\CompilerFunctions.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\CompilerTypes.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\ExpressionTree.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\MemoryBuffer.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\TreeFunctions.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\TreeVariables.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="projectm-eval\api\projectm-eval.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="ns-eel2-shim\ns-eel.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++  </ItemGroup>
++  <ItemGroup>
++    <None Include="projectm-eval\Compiler.y">
++      <Filter>Source Files</Filter>
++    </None>
++    <None Include="projectm-eval\Scanner.l">
++      <Filter>Source Files</Filter>
++    </None>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+diff --git a/tests/TreeFunctionsTest.cpp b/tests/TreeFunctionsTest.cpp
+index 56fa450..72d7606 100644
+--- a/tests/TreeFunctionsTest.cpp
++++ b/tests/TreeFunctionsTest.cpp
+@@ -1,8 +1,9 @@
+ #include "TreeFunctionsTest.hpp"
+ 
+ #ifdef _MSC_VER
+-#define strcasecmp stricmp
++#define strcasecmp _stricmp
+ #define strncasecmp _strnicmp
++#define strdup _strdup
+ #endif
+ 
+ prjm_eval_variable_def_t* TreeFunctions::FindVariable(const char* name)

@@ -30,9 +30,13 @@
 #ifndef GEISS_TEXTURE_MANAGER
 #define GEISS_TEXTURE_MANAGER
 
-#include <eel2/ns-eel.h>
 #include "md_defines.h"
 #include "d3d11shim.h"
+#ifdef NS_EEL2
+#include <eel2/ns-eel.h>
+#else
+#include <projectm-eval/ns-eel2-shim/ns-eel.h>
+#endif
 
 #define NUM_TEX 16
 #define TEXMGR_ERROR_MASK 0x0F

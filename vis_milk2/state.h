@@ -30,9 +30,13 @@
 #ifndef _MILKDROP_STATE_H_
 #define _MILKDROP_STATE_H_
 
-#include <eel2/ns-eel.h>
 #include "md_defines.h"
 //#include "texmgr.h"
+#ifdef NS_EEL2
+#include <eel2/ns-eel.h>
+#else
+#include <projectm-eval/ns-eel2-shim/ns-eel.h>
+#endif
 
 // Flags for `CState::RecompileExpressions()`.
 #define RECOMPILE_PRESET_CODE 1

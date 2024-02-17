@@ -59,9 +59,7 @@ $null = New-Item -Path `
     "${PackagePath}\x64", `
     "${PackagePath}\arm64", `
     "${PackagePath}\arm64ec", `
-    "${PackagePath}\milkdrop2", `
-    "${PackagePath}\milkdrop2\data", `
-    "${PackagePath}\milkdrop2\presets" -Type Directory -Force
+    "${PackagePath}\data" -Type Directory -Force
 
 # Copy x86 build output.
 if (Test-Path -Path "${OutputPath}\Win32\Release\${TargetFileName}")
@@ -158,24 +156,13 @@ else
 # Copy data and presets.
 if (Test-Path -Path "${DataPath}\data\*")
 {
-    Write-Host "INFO: Copying shaders to `"${PackagePath}\milkdrop2\data`"..."
-    Copy-Item "${DataPath}\data\*" -Destination "${PackagePath}\milkdrop2\data" -Force
+    Write-Host "INFO: Copying shaders to `"${PackagePath}\data`"..."
+    Copy-Item "${DataPath}\data\*" -Destination "${PackagePath}\data" -Force
 }
 else
 {
     Write-Host "FATAL: Missing or empty shader data."
     exit 1
-}
-
-if (Test-Path -Path "${DataPath}\presets\*")
-{
-    Write-Host "INFO: Copying presets to `"${PackagePath}\milkdrop2\presets`"..."
-    Copy-Item "${DataPath}\presets\*" -Destination "${PackagePath}\milkdrop2\presets" -Force
-}
-else
-{
-    Write-Host "WARNING: Missing or empty preset data."
-    $null = New-Item -Path "${PackagePath}\milkdrop2\presets\dummy.milk" -Type File
 }
 
 # Check versions.

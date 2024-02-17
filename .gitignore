@@ -143,6 +143,7 @@ CMakeLists.txt
 /external/directxtk*/
 /external/wtl*/
 /external/eel2/*
+/external/projectm-eval/
 /external/winamp/*
 /external/unused/
 !/external/winamp/data/

@@ -57,7 +57,9 @@ void GuidToTextA(GUID* pGUID, char* str, int nStrLen);
 void GuidToTextW(GUID* pGUID, wchar_t* str, int nStrLen);
 void LuidToTextA(LUID* pLUID, char* str, int nStrLen);
 
+#ifdef NS_EEL2
 void NSEEL_VM_resetvars(void* ctx);
+#endif
 
 #define WASABI_API_LNG_HINST NULL
 #define WASABI_API_ORIG_HINST GetInstance()
