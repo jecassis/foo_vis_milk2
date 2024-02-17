@@ -78,7 +78,10 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_KEYDOWN(OnKeyDown)
         MSG_WM_SYSKEYDOWN(OnSysKeyDown)
         MSG_WM_SYSCHAR(OnSysChar)
+        MSG_WM_COMMAND(OnCommand)
         MSG_WM_GETDLGCODE(OnGetDlgCode)
+        MSG_WM_SETFOCUS(OnSetFocus)
+        MSG_WM_KILLFOCUS(OnKillFocus)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
         MSG_WM_POWERBROADCAST(OnPowerBroadcast)
@@ -122,7 +125,10 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags);
+    void OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
     UINT OnGetDlgCode(LPMSG lpMsg);
+    void OnSetFocus(CWindow wndOld);
+    void OnKillFocus(CWindow wndFocus);
     void OnContextMenu(CWindow wnd, CPoint point);
     void OnLButtonDblClk(UINT nFlags, CPoint point);
     LRESULT OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -252,7 +258,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 };
 
 milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_instance_callback_ptr p_callback) :
-    m_callback(p_callback), 
+    m_callback(p_callback),
     m_bMsgHandled(TRUE),
     play_callback_impl_base(flag_on_playback_starting | flag_on_playback_new_track | flag_on_playback_stop),
     playlist_callback_impl_base(flag_on_items_added | flag_on_items_reordered | flag_on_items_removed | flag_on_items_selection_change |
@@ -620,9 +626,16 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
     ToggleFullScreen();
 }
 
+#pragma region Keyboard Controls
+#define waitstring g_plugin.m_waitstring
+#define UI_mode g_plugin.m_UI_mode
 void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnChar ", GetWnd())
+    wchar_t buf[256] = {0};
+    USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // get the highest-order bit
+    bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0;
+
     if (g_plugin.m_show_playlist)
     {
         auto api = playlist_manager::get();
@@ -645,7 +658,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     int inc = (chChar >= 'A' && chChar <= 'Z') ? -1 : 1;
                     while (true)
                     {
-                        if (inc == 1 && g_plugin.m_playlist_pos >= nSongs - 1)
+                        if (inc == 1 && g_plugin.m_playlist_pos >= LRESULT{nSongs} - 1)
                             break;
                         if (inc == -1 && g_plugin.m_playlist_pos <= 0)
                             break;
@@ -871,7 +884,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     g_plugin.LoadPreset(szOldPreset, 0.0f);
                     g_plugin.m_bWarpShaderLock = bWarpLock;
                 }
-                break;
+                return;
             case '@':
                 // Randomize comp shader.
                 {
@@ -981,9 +994,6 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             case 'k':
             case 'K':
                 {
-                    USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // Get the highest-order bit
-                    bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0;
-
                     if (bShiftHeldDown)
                         g_plugin.m_nNumericInputMode = NUMERIC_INPUT_MODE_SPRITE_KILL;
                     else
@@ -1013,21 +1023,21 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             case 's':
             case 'S':
                 // Save preset.
-                if (g_plugin.m_UI_mode == UI_REGULAR)
+                if (UI_mode == UI_REGULAR)
                 {
                     //g_plugin.m_bPresetLockedByCode = true;
-                    g_plugin.m_UI_mode = UI_SAVEAS;
+                    UI_mode = UI_SAVEAS;
 
                     // Enter WaitString mode.
-                    g_plugin.m_waitstring.bActive = true;
-                    g_plugin.m_waitstring.bFilterBadChars = true;
-                    g_plugin.m_waitstring.bDisplayAsCode = false;
-                    g_plugin.m_waitstring.nSelAnchorPos = -1;
-                    g_plugin.m_waitstring.nMaxLen = std::min(sizeof(g_plugin.m_waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - lstrlenW(g_plugin.GetPresetDir()) - 6)); // 6 for the extension + null char. Set this because Win32 LoadFile, MoveFile, etc. barf if the path+filename+ext are > MAX_PATH chars.
-                    wcscpy_s(g_plugin.m_waitstring.szText, g_plugin.m_pState->m_szDesc); // initial string is the filename, minus the extension
-                    LoadString(core_api::get_my_instance(), IDS_SAVE_AS, g_plugin.m_waitstring.szPrompt, 512);
-                    g_plugin.m_waitstring.szToolTip[0] = L'\0';
-                    g_plugin.m_waitstring.nCursorPos = wcsnlen_s(g_plugin.m_waitstring.szText, 48000); // set the starting edit position
+                    waitstring.bActive = true;
+                    waitstring.bFilterBadChars = true;
+                    waitstring.bDisplayAsCode = false;
+                    waitstring.nSelAnchorPos = -1;
+                    waitstring.nMaxLen = std::min(sizeof(waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - wcsnlen_s(g_plugin.GetPresetDir(), MAX_PATH) - 6)); // 6 for the extension + null char. Set this because Win32 LoadFile, MoveFile, etc. barf if the path+filename+ext are > MAX_PATH chars.
+                    wcscpy_s(waitstring.szText, g_plugin.m_pState->m_szDesc); // initial string is the filename, minus the extension
+                    LoadString(core_api::get_my_instance(), IDS_SAVE_AS, waitstring.szPrompt, 512);
+                    waitstring.szToolTip[0] = L'\0';
+                    waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)); // set the starting edit position
                 }
                 else
                 {
@@ -1039,26 +1049,30 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             case 'l':
             case 'L':
                 // Load preset.
-                if (g_plugin.m_UI_mode == UI_LOAD)
+                if (UI_mode == UI_LOAD)
                 {
-                    g_plugin.m_UI_mode = UI_REGULAR;
-                    return;
+                    UI_mode = UI_REGULAR;
                 }
-                else if (g_plugin.m_UI_mode == UI_REGULAR || g_plugin.m_UI_mode == UI_MENU)
+                else if (UI_mode == UI_REGULAR || UI_mode == UI_MENU)
                 {
                     g_plugin.UpdatePresetList(); // make sure list is completely ready
-                    g_plugin.m_UI_mode = UI_LOAD;
+                    UI_mode = UI_LOAD;
                     g_plugin.m_bUserPagedUp = false;
                     g_plugin.m_bUserPagedDown = false;
-                    return;
                 }
-                break;
+                return;
             case 'm':
             case 'M':
-                if (g_plugin.m_UI_mode == UI_MENU)
-                    g_plugin.m_UI_mode = UI_REGULAR;
-                else if (g_plugin.m_UI_mode == UI_REGULAR || g_plugin.m_UI_mode == UI_LOAD)
-                    g_plugin.m_UI_mode = UI_MENU;
+                if (UI_mode == UI_MENU)
+                    UI_mode = UI_REGULAR;
+                else if (UI_mode == UI_REGULAR || UI_mode == UI_LOAD)
+                    UI_mode = UI_MENU;
+                return;
+            case '-':
+                SetPresetRating(-1.0f);
+                return;
+            case '+':
+                SetPresetRating(1.0f);
                 return;
             case '*':
                 g_plugin.m_nNumericInputDigits = 0;
@@ -1077,7 +1091,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     MILK2_CONSOLE_LOG("OnKeyDown ", GetWnd())
-    USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // Get the highest-order bit
+    USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // get the highest-order bit
     bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0; // or "< 0" without masking
     bool bCtrlHeldDown = (GetKeyState(VK_CONTROL) & mask) != 0; // or "< 0" without masking
     //bool bAltHeldDown: most keys come in under WM_SYSKEYDOWN when ALT is depressed.
@@ -1093,14 +1107,14 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 return;
             case VK_UP:
                 if (GetKeyState(VK_SHIFT) & mask)
-                    g_plugin.m_playlist_pos -= 10 * nRepCnt;
+                    g_plugin.m_playlist_pos -= 10 * LRESULT{nRepCnt};
                 else
                     g_plugin.m_playlist_pos -= nRepCnt;
                 SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
                 return;
             case VK_DOWN:
                 if (GetKeyState(VK_SHIFT) & mask)
-                    g_plugin.m_playlist_pos += 10 * nRepCnt;
+                    g_plugin.m_playlist_pos += 10 * LRESULT{nRepCnt};
                 else
                     g_plugin.m_playlist_pos += nRepCnt;
                 SetSelectionSingle(static_cast<size_t>(g_plugin.m_playlist_pos));
@@ -1197,9 +1211,29 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 return;
             case VK_F7:
                 if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
-                    //g_plugin.ReadCustomMessages(); // re-read custom messages
+                    g_plugin.ReadCustomMessages(); // re-read custom messages
                 return;
             case VK_F8:
+                {
+                    UI_mode = UI_CHANGEDIR;
+
+                    // Enter WaitString mode.
+                    waitstring.bActive = true;
+                    waitstring.bFilterBadChars = false;
+                    waitstring.bDisplayAsCode = false;
+                    waitstring.nSelAnchorPos = -1;
+                    waitstring.nMaxLen = std::min(sizeof(waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - 1));
+                    wcscpy_s(waitstring.szText, g_plugin.GetPresetDir());
+                    {
+                        // For subtle beauty - remove the trailing '\' from the directory name (if it's not just "x:\").
+                        size_t len = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
+                        if (len > 3 && waitstring.szText[len - 1] == '\\')
+                            waitstring.szText[len - 1] = 0;
+                    }
+                    WASABI_API_LNGSTRINGW_BUF(IDS_DIRECTORY_TO_JUMP_TO, waitstring.szPrompt, 512);
+                    waitstring.szToolTip[0] = 0;
+                    waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)); // set the starting edit position
+                }
                 return;
             case VK_F9:
                 ToggleShaderHelp();
@@ -1226,6 +1260,16 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         if (g_plugin.m_texmgr.m_tex[x].pSurface)
                             g_plugin.m_texmgr.KillTex(x);
                 }
+                return;
+            case VK_F1:
+                //g_plugin.m_show_press_f1_msg = 0u;
+                ToggleHelp();
+                return;
+            case VK_SUBTRACT:
+                SetPresetRating(-1.0f);
+                return;
+            case VK_ADD:
+                SetPresetRating(1.0f);
                 return;
         }
     }
@@ -1260,11 +1304,97 @@ void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     }
 }
 
+void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    if (g_plugin.GetScreenMode() == WINDOWED)
+    {
+        switch (nID)
+        {
+            case ID_QUIT:
+                g_plugin.m_exiting = 1;
+                PostMessage(WM_CLOSE, (WPARAM)0, (LPARAM)0);
+                return;
+            case ID_GO_FS:
+                if (g_plugin.GetFrame() > 0)
+                    ToggleFullScreen();
+                return;
+            case ID_DESKTOP_MODE:
+                //if (g_plugin.GetFrame() > 0)
+                //    ToggleDesktop();
+                return;
+            case ID_SHOWHELP:
+                ToggleHelp();
+                return;
+            case ID_SHOWPLAYLIST:
+                TogglePlaylist();
+                return;
+            case ID_VIS_NEXT:
+                NextPreset(g_plugin.m_fBlendTimeUser);
+                return;
+            case ID_VIS_PREV:
+                PrevPreset(g_plugin.m_fBlendTimeUser);
+                return;
+            case ID_VIS_RANDOM:
+                { /*
+                    // Note: when the vis is launched, if we're using a fancy modern skin
+                    //       (with a Random button), it will send us one of these...
+                    //       if it's NOT a fancy skin, we'll never get this message (confirmed).
+                    USHORT v = uNotifyCode; // here, v is 0 (locked) or 1 (random) or 0xFFFF (don't know / startup!)
+                    if (v == 0xFFFF)
+                    {
+                        // Plugin just launched or changed modes -
+                        // Winamp wants to know what our saved Random state is...
+                        SendMessage(g_plugin.GetWinampWindow(), WM_WA_IPC, (g_plugin.m_bPresetLockOnAtStartup ? 0 : 1) << 16, IPC_CB_VISRANDOM);
+
+                        return;
+                    }
+
+                    // otherwise it's 0 or 1 - user clicked the button, respond.
+                    v = v ? 1 : 0; // same here
+
+                    //see also - IPC_CB_VISRANDOM
+                    g_plugin.m_bPresetLockedByUser = (v == 0);
+                    SetScrollLock(g_plugin.m_bPresetLockedByUser, g_plugin.m_bPreventScollLockHandling);
+                    */
+                    return;
+                }
+            case ID_VIS_FS:
+                //PostMessage(WM_USER + 1667, 0, 0);
+                return;
+            case ID_VIS_CFG:
+                ToggleHelp();
+                return;
+            case ID_VIS_MENU:
+                POINT pt;
+                GetCursorPos(&pt);
+                SendMessage(WM_CONTEXTMENU, (WPARAM)get_wnd(), (pt.y << 16) | pt.x);
+                return;
+        }
+    }
+}
+
 UINT milk2_ui_element::OnGetDlgCode(LPMSG lpMsg)
 {
     MILK2_CONSOLE_LOG("OnGetDlgCode ", GetWnd())
     return WM_GETDLGCODE;
 }
+
+void milk2_ui_element::OnSetFocus(CWindow wndOld)
+{
+    MILK2_CONSOLE_LOG("OnSetFocus ", GetWnd())
+    //g_plugin.m_bOrigScrollLockState = GetKeyState(VK_SCROLL) & 1;
+    //SetScrollLock(g_plugin.m_bMilkdropScrollLockState);
+}
+
+void milk2_ui_element::OnKillFocus(CWindow wndFocus)
+{
+    MILK2_CONSOLE_LOG("OnKillFocus ", GetWnd())
+    //g_plugin.m_bMilkdropScrollLockState = GetKeyState(VK_SCROLL) & 1;
+    //SetScrollLock(g_plugin.m_bOrigScrollLockState);
+}
+#undef waitstring
+#undef UI_mode
+#pragma endregion
 
 void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
 {

@@ -61,14 +61,6 @@ void LuidToTextA(LUID* pLUID, char* str, int nStrLen);
 void NSEEL_VM_resetvars(void* ctx);
 #endif
 
-#define WASABI_API_LNG_HINST NULL
-#define WASABI_API_ORIG_HINST GetInstance()
-#define WASABI_API_LNGSTRW GetStringW
-#define WASABI_API_LNGSTRINGW(uID) WASABI_API_LNGSTRW(WASABI_API_LNG_HINST, WASABI_API_ORIG_HINST, uID)
-#define WASABI_API_LNGSTRINGW_HINST(hinst, uID) WASABI_API_LNGSTRW(WASABI_API_LNG_HINST, hinst, uID)
-#define WASABI_API_LNGSTRINGW_BUF(uID, buf, len) WASABI_API_LNGSTRW(WASABI_API_LNG_HINST, WASABI_API_ORIG_HINST, uID, buf, len)
-#define WASABI_API_LNGSTRINGW_BUF_HINST(hinst, uID, buf, len) WASABI_API_LNGSTRW(WASABI_API_LNG_HINST, hinst, uID, buf, len)
-
 LPWSTR GetStringW(HINSTANCE hinst, HINSTANCE owner, UINT uID, LPWSTR str = NULL, int maxlen = 0);
 
 void* GetTextResource(UINT id, int no_fallback);

@@ -198,6 +198,7 @@ class CPluginShell
     int m_playlist_pageups; // can be + or -
     int m_playlist_top_idx; // used to track when the playlist cache (`m_playlist`) needs updating
     int m_playlist_btm_idx; // used to track when the playlist cache (`m_playlist`) needs updating
+    int m_exiting;
 
   private:
     // FONTS
@@ -228,7 +229,7 @@ class CPluginShell
     //int m_playlist_btm_idx;
     float m_playlist_width_pixels; // considered invalid whenever 'm_playlist_top_idx' is -1
     wchar_t m_playlist[MAX_SONGS_PER_PAGE][256]; // considered invalid whenever 'm_playlist_top_idx' is -1
-    int m_exiting;
+    //int m_exiting;
     int m_upper_left_corner_y;
     int m_lower_left_corner_y;
     int m_upper_right_corner_y;

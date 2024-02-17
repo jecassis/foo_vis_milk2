@@ -56,6 +56,8 @@
 #include <vis_milk2/defines.h>
 #include <vis_milk2/md_defines.h>
 #include <vis_milk2/shell_defines.h>
+#define WASABI_API_ORIG_HINST core_api::get_my_instance()
+#include <vis_milk2/api.h>
 #include <vis_milk2/pluginshell.h>
 #include <vis_milk2/plugin.h>
 #include <vis_milk2/dxcontext.h>

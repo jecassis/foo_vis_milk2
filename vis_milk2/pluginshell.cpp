@@ -33,9 +33,10 @@
 #include "defines.h"
 #include "shell_defines.h"
 #include "utility.h"
+#define WASABI_API_ORIG_HINST GetInstance()
+#include "api.h"
 #include <nu/AutoWide.h>
 #include <winamp/wa_ipc.h>
-#include "DirectXHelpers.h"
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib") // for timeGetTime
 

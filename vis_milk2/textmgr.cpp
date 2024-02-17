@@ -250,8 +250,7 @@ void TextElement::Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteF
     if (m_hasShadow)
     {
         m_shadowColorBrush->SetOpacity(m_textColorBrush->GetOpacity() * 0.5f);
-        d2dContext->DrawTextLayout(
-            Point2F(origin.x + 1.0f, origin.y + 1.0f), m_textLayout.Get(), m_shadowColorBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
+        d2dContext->DrawTextLayout(Point2F(origin.x + 1.0f, origin.y + 1.0f), m_textLayout.Get(), m_shadowColorBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
     }
 
     d2dContext->DrawTextLayout(origin, m_textLayout.Get(), m_textColorBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
@@ -346,13 +345,11 @@ void TextElement::CreateTextLayout(IDWriteFactory* dwriteFactory)
 #pragma endregion
 
 #pragma region CTextManager
-//CTextManager CTextManager::m_instance;
-
 void CTextManager::ReleaseDeviceDependentResources()
 {
-    //m_instance.Finish();
+    //Finish();
 
-    auto elements = m_elements; //m_instance.m_elements;
+    auto elements = m_elements;
     for (auto iterator = elements.begin(); iterator != elements.end(); iterator++)
     {
         (*iterator)->ReleaseDeviceDependentResources();
@@ -441,8 +438,7 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
 
     size_t len = wcslen(szText);
 
-    if ((m_nMsg[m_b] < MAX_MSGS) &&
-        (reinterpret_cast<ULONG_PTR>(m_next_msg_start_ptr) - reinterpret_cast<ULONG_PTR>(g_szMsgPool[m_b]) + len + 1 < MAX_MSG_CHARS))
+    if ((m_nMsg[m_b] < MAX_MSGS) && (reinterpret_cast<ULONG_PTR>(m_next_msg_start_ptr) - reinterpret_cast<ULONG_PTR>(g_szMsgPool[m_b]) + len + 1 < MAX_MSG_CHARS))
     {
         wcscpy_s(m_next_msg_start_ptr, len + 1, szText);
 
@@ -482,8 +478,10 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
 }
 
 #define MATCH(i, j) \
-    (m_msg[m_b][i].font == m_msg[1 - m_b][j].font && m_msg[m_b][i].flags == m_msg[1 - m_b][j].flags && \
-     m_msg[m_b][i].color == m_msg[1 - m_b][j].color && m_msg[m_b][i].bgColor == m_msg[1 - m_b][j].bgColor && \
+    (m_msg[m_b][i].font == m_msg[1 - m_b][j].font && \
+     m_msg[m_b][i].flags == m_msg[1 - m_b][j].flags && \
+     m_msg[m_b][i].color == m_msg[1 - m_b][j].color && \
+     m_msg[m_b][i].bgColor == m_msg[1 - m_b][j].bgColor && \
      memcmp(&m_msg[m_b][i].rect, &m_msg[1 - m_b][j].rect, sizeof(D2D1_RECT_F)) == 0 && \
      wcscmp(m_msg[m_b][i].msg, m_msg[1 - m_b][j].msg) == 0)
 
@@ -884,13 +882,7 @@ void CTextManager::DrawNow()
                 if (bRedrawText == 2 || m_msg[m_b][i].added == 1)
                     if (m_msg[m_b][i].font) // dark boxes have "font == NULL"
 #ifdef DX9_MILKDROP
-                        m_msg[m_b][i].font->DrawTextW(
-                            NULL,
-                            m_msg[m_b][i].msg,
-                            -1,
-                            &m_msg[m_b][i].rect,
-                            m_msg[m_b][i].flags,
-                            m_msg[m_b][i].color); // warning: in DX9, the DT_WORD_ELLIPSIS and DT_NOPREFIX flags cause no text to render!!
+                        m_msg[m_b][i].font->DrawTextW(NULL, m_msg[m_b][i].msg, -1, &m_msg[m_b][i].rect, m_msg[m_b][i].flags, m_msg[m_b][i].color); // warning: in DX9, the DT_WORD_ELLIPSIS and DT_NOPREFIX flags cause no text to render!!
 #else
                         ;
 #endif
@@ -949,14 +941,8 @@ void CTextManager::DrawNow()
                 v3[i].x = (i % 2 == 0) ? -1 : -1 + 2 * fx;
                 v3[i].y = (i / 2 == 0) ? -1 : -1 + 2 * fy;
                 v3[i].z = 0;
-                v3[i].tu =
-                    ((i % 2 == 0) ? 0.0f : 1.0f) +
-                    0.5f / desc_text_surface
-                               .Width; // FIXES BLURRY TEXT even when bilinear interp. is on (which can't be turned off on all cards!)
-                v3[i].tv =
-                    ((i / 2 == 0) ? 0.0f : 1.0f) +
-                    0.5f / desc_text_surface
-                               .Height; // FIXES BLURRY TEXT even when bilinear interp. is on (which can't be turned off on all cards!)
+                v3[i].tu = ((i % 2 == 0) ? 0.0f : 1.0f) + 0.5f / desc_text_surface.Width; // FIXES BLURRY TEXT even when bilinear interp. is on (which can't be turned off on all cards!)
+                v3[i].tv = ((i / 2 == 0) ? 0.0f : 1.0f) + 0.5f / desc_text_surface.Height; // FIXES BLURRY TEXT even when bilinear interp. is on (which can't be turned off on all cards!)
                 v3[i].Diffuse = 0xFFFFFFFF;
             }
 

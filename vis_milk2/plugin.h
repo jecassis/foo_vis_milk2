@@ -37,6 +37,7 @@
 #include "support.h"
 #include "texmgr.h"
 #include "state.h"
+#include "menu.h"
 #include "constanttable.h"
 #ifdef _FOOBAR
 #include <foo_vis_milk2/settings.h>
@@ -233,7 +234,7 @@ class CShaderParams
     //int texbind_voronoi;
     //...
     SamplerInfo m_texture_bindings[16]; // an entry for each sampler slot.  These are ALIASES - DO NOT DELETE.
-    tex_code m_texcode[16]; // if ==TEX_VS, forget the pointer - texture bound @ that stage is the double-buffered VS.
+    tex_code m_texcode[16];             // if ==TEX_VS, forget the pointer - texture bound @ that stage is the double-buffered VS.
 
     void Clear();
     void CacheParams(CConstantTable* pCT, bool bHardErrors);
@@ -335,6 +336,7 @@ class CPlugin : public CPluginShell
     int m_nGridY;
 
     bool m_bShowPressF1ForHelp;
+    bool m_bShowMenuToolTips;
     int m_n16BitGamma;
     bool m_bAutoGamma;
     //int m_nFpsLimit;
@@ -394,8 +396,8 @@ class CPlugin : public CPluginShell
 #define SHADER_COMP 1
 #define SHADER_BLUR 2
 #define SHADER_OTHER 3
-    bool LoadShaderFromMemory(const char* szShaderText, const char* szFn, const char* szProfile, CConstantTable** ppConstTable,
-                              void** ppShader, int shaderType, bool bHardErrors);
+    bool LoadShaderFromMemory(const char* szOrigShaderText, const char* szFn, const char* szProfile, CConstantTable** ppConstTable,
+                              void** ppShader, const int shaderType, const bool bHardErrors);
     bool RecompileVShader(const char* szShadersText, VShaderInfo* si, int shaderType, bool bHardErrors);
     bool RecompilePShader(const char* szShadersText, PShaderInfo* si, int shaderType, bool bHardErrors, int PSVersion);
     bool EvictSomeTexture();
@@ -450,16 +452,16 @@ class CPlugin : public CPluginShell
     float m_fMotionVectorsTempDy;
 
     td_waitstr m_waitstring;
-    //void WaitString_NukeSelection();
-    //void WaitString_Cut();
-    //void WaitString_Copy();
-    //void WaitString_Paste();
-    //void WaitString_SeekLeftWord();
-    //void WaitString_SeekRightWord();
-    //size_t WaitString_GetCursorColumn();
-    //int WaitString_GetLineLength();
-    //void WaitString_SeekUpOneLine();
-    //void WaitString_SeekDownOneLine();
+    void WaitString_NukeSelection();
+    void WaitString_Cut();
+    void WaitString_Copy();
+    void WaitString_Paste();
+    void WaitString_SeekLeftWord();
+    void WaitString_SeekRightWord();
+    size_t WaitString_GetCursorColumn();
+    int WaitString_GetLineLength();
+    void WaitString_SeekUpOneLine();
+    void WaitString_SeekDownOneLine();
 
     int m_nPresets;          // number of entries in the file listing. Includes directories and then files, sorted alphabetically.
     int m_nDirs;             // number of presets that are actually directories. Always between 0 and m_nPresets.
@@ -517,16 +519,16 @@ class CPlugin : public CPluginShell
     //HFONT m_htitlefont[NUM_TITLE_FONTS]; // ~25 different sizes
 
     // Stuff for the menu system.
-    //CMilkMenu *m_pCurMenu; // should always be valid!
-    //CMilkMenu m_menuPreset;
-    //CMilkMenu _menuWave;
-    //CMilkMenu _menuAugment;
-    //CMilkMenu _menuCustomWave;
-    //CMilkMenu _menuCustomShape;
-    //CMilkMenu _menuMotion;
-    //CMilkMenu _menuPost;
-    //CMilkMenu m_menuWavecode[MAX_CUSTOM_WAVES];
-    //CMilkMenu m_menuShapecode[MAX_CUSTOM_SHAPES];
+    CMilkMenu* m_pCurMenu; // should always be valid!
+    CMilkMenu m_menuPreset;
+    CMilkMenu m_menuWave;
+    CMilkMenu m_menuAugment;
+    CMilkMenu m_menuCustomWave;
+    CMilkMenu m_menuCustomShape;
+    CMilkMenu m_menuMotion;
+    CMilkMenu m_menuPost;
+    CMilkMenu m_menuWavecode[MAX_CUSTOM_WAVES];
+    CMilkMenu m_menuShapecode[MAX_CUSTOM_SHAPES];
     bool m_bShowShaderHelp;
 
     wchar_t m_szMilkdrop2Path[MAX_PATH]; // ends in a backslash
@@ -598,10 +600,8 @@ class CPlugin : public CPluginShell
     void RefreshTab2(HWND hwnd);
     void RenderFrame(int bRedraw);
     void AlignWave(int nSamples);
-#ifdef DX9_MILKDROP
     void DrawTooltip(wchar_t* str, int xR, int yB);
     void ClearTooltip();
-#endif
     void RandomizeBlendPattern();
     void GenPlasma(int x0, int x1, int y0, int y1, float dt);
     void LoadPerFrameEvallibVars(CState* pState);
@@ -627,7 +627,9 @@ class CPlugin : public CPluginShell
 #ifdef DX9_MILKDROP
     void ClearGraphicsWindow(); // for windowed mode only
     void LaunchCustomMessage(int nMsgNum);
+#endif
     void ReadCustomMessages();
+#ifdef DX9_MILKDROP
     void LaunchSongTitleAnim();
 
     bool RenderStringToTitleTexture();
@@ -648,6 +650,8 @@ class CPlugin : public CPluginShell
     void RunPerFrameEquations(int code);
     void DrawUserSprites();
     void MergeSortPresets(int left, int right);
+    void BuildMenus();
+    void SetMenusForPresetVersion(int WarpPSVersion, int CompPSVersion);
 #ifdef DX9_MILKDROP
     bool LaunchSprite(int nSpriteNum, int nSlot);
     void KillSprite(int iSlot);

@@ -122,10 +122,10 @@ int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, in
     float fNumToSpawnIrreg;
     float fNumToSpawn;
 
-    // Compute # spawned based on regular generation
+    // Compute number spawned based on regular generation.
     fNumToSpawnReg = ((fTime + fDeltaT) * fRate) - iNumSpawnedSoFar;
 
-    // Compute # spawned based on irregular (random) generation
+    // Compute number spawned based on irregular (random) generation.
     if (fDeltaT <= 1.0f / fRate)
     {
         // case 1: avg. less than 1 spawn per frame
@@ -136,7 +136,7 @@ int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, in
     }
     else
     {
-        // Case 2: avg. more than 1 spawn per frame
+        // Case 2: average more than 1 spawn per frame.
         fNumToSpawnIrreg = fDeltaT * fRate;
         fNumToSpawnIrreg *= 2.0f * (warand() % 16384) / 16384.0f;
     }
@@ -144,7 +144,7 @@ int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, in
     // Get linear combination of regular and irregular.
     fNumToSpawn = fNumToSpawnReg * fRegularity + fNumToSpawnIrreg * (1.0f - fRegularity);
 
-    // Round to nearest integer for result
+    // Round to nearest integer for result.
     return (int)(fNumToSpawn + 0.49f);
 }
 
@@ -518,22 +518,27 @@ void CPlugin::RenderFrame(int bRedraw)
         else
             m_fFPSLimitSleep = m_fFPSLimitSleep * 0.8f + 0.2f * new_sleep;
 
-        if (m_fFPSLimitSleep < 0) m_fFPSLimitSleep = 0;
-        if (m_fFPSLimitSleep > 100) m_fFPSLimitSleep = 100;
+        if (m_fFPSLimitSleep < 0)
+            m_fFPSLimitSleep = 0;
+        if (m_fFPSLimitSleep > 100)
+            m_fFPSLimitSleep = 100;
 
         //sprintf_s(m_szUserMessage, "sleep=%f", m_fFPSLimitSleep);
         //m_fShowUserMessageUntilThisTime = GetTime() + 3.0f;
     }
 
     static float deficit;
-    if (GetFrame()==0) deficit = 0;
+    if (GetFrame() == 0)
+        deficit = 0;
     float ideal_sleep = (m_fFPSLimitSleep + deficit);
     int actual_sleep = (int)ideal_sleep;
     if (actual_sleep > 0)
         Sleep(actual_sleep);
     deficit = ideal_sleep - actual_sleep;
-    if (deficit < 0) deficit = 0; // just in case
-    if (deficit > 1) deficit = 1; // just in case
+    if (deficit < 0)
+        deficit = 0; // just in case
+    if (deficit > 1)
+        deficit = 1; // just in case
     */
 
     if (!bRedraw)
@@ -909,8 +914,6 @@ void CPlugin::DrawMotionVectors()
         //lpDevice->SetFVF(WFVERTEX_FORMAT);
         //-------------------------------------------------------
 
-        int x, y;
-
         int nX = (int)(*m_pState->var_pf_mv_x); // + 0.999f);
         int nY = (int)(*m_pState->var_pf_mv_y); // + 0.999f);
         float dx = (float)*m_pState->var_pf_mv_x - nX;
@@ -921,8 +924,8 @@ void CPlugin::DrawMotionVectors()
         if (nX > 0 && nY > 0)
         {
             /*
-            float dx2 = m_fMotionVectorsTempDx;//(*m_pState->var_pf_mv_dx) * 0.05f*GetTime(); // 0..1 range
-            float dy2 = m_fMotionVectorsTempDy;//(*m_pState->var_pf_mv_dy) * 0.05f*GetTime(); // 0..1 range
+            float dx2 = m_fMotionVectorsTempDx; //(*m_pState->var_pf_mv_dx) * 0.05f*GetTime(); // 0..1 range
+            float dy2 = m_fMotionVectorsTempDy; //(*m_pState->var_pf_mv_dy) * 0.05f*GetTime(); // 0..1 range
             if (GetFps() > 2.0f && GetFps() < 300.0f)
             {
                 dx2 += (float)(*m_pState->var_pf_mv_dx) * 0.05f / GetFps();
@@ -932,7 +935,7 @@ void CPlugin::DrawMotionVectors()
             if (dy2 > 1.0f) dy2 -= (int)dy2;
             if (dx2 < 0.0f) dx2 = 1.0f - (-dx2 - (int)(-dx2));
             if (dy2 < 0.0f) dy2 = 1.0f - (-dy2 - (int)(-dy2));
-            // hack: when there is only 1 motion vector on the screen, to keep it in
+            // Hack: when there is only 1 motion vector on the screen, to keep it in.
             //       the center, we gradually migrate it toward 0.5.
             dx2 = dx2*0.995f + 0.5f*0.005f;
             dy2 = dy2*0.995f + 0.5f*0.005f;
@@ -952,8 +955,8 @@ void CPlugin::DrawMotionVectors()
             if (dy < 0) dy = 0;
             if (dx > 1) dx = 1;
             if (dy > 1) dy = 1;
-            //dx = dx * 1.0f/(float)nX;
-            //dy = dy * 1.0f/(float)nY;
+            //dx = dx * 1.0f / (float)nX;
+            //dy = dy * 1.0f / (float)nY;
             float inv_texsize = 1.0f / (float)m_nTexSizeX;
             float min_len = 1.0f * inv_texsize;
 
@@ -964,11 +967,11 @@ void CPlugin::DrawMotionVectors()
             v[0].b = COLOR_NORM((float)*m_pState->var_pf_mv_b);
             v[0].a = COLOR_NORM((float)*m_pState->var_pf_mv_a);
 
-            for (x = 1; x < (nX + 1) * 2; x++)
+            for (int x = 1; x < (nX + 1) * 2; x++)
                 COPY_COLOR(v[x], v[0]);
             lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
 
-            for (y = 0; y < nY; y++)
+            for (int y = 0; y < nY; y++)
             {
                 float fy = (y + 0.25f) / (float)(nY + dy + 0.25f - 1.0f);
 
@@ -978,7 +981,7 @@ void CPlugin::DrawMotionVectors()
                 if (fy > 0.0001f && fy < 0.9999f)
                 {
                     int n = 0;
-                    for (x = 0; x < nX; x++)
+                    for (int x = 0; x < nX; x++)
                     {
                         //float fx = (x + 0.25f)/(float)(nX + dx + 0.25f - 1.0f);
                         float fx = (x + 0.25f) / (float)(nX + dx + 0.25f - 1.0f);
@@ -1049,11 +1052,11 @@ void CPlugin::DrawMotionVectors()
 
 bool CPlugin::ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2)
 {
-    //float fy = y/(float)nMotionVectorsY;
+    //float fy = y / (float)nMotionVectorsY;
     int y0 = (int)(fy * m_nGridY);
     float dy = fy * m_nGridY - y0;
 
-    //float fx = x/(float)nMotionVectorsX;
+    //float fx = x / (float)nMotionVectorsX;
     int x0 = (int)(fx * m_nGridX);
     float dx = fx * m_nGridX - x0;
 
@@ -1183,7 +1186,7 @@ void CPlugin::BlurPasses()
     v[3].tu = 1;
     v[3].tv = 1;
 
-    const float w[8] = {4.0f, 3.8f, 3.5f, 2.9f, 1.9f, 1.2f, 0.7f, 0.3f}; //<- user can specify these
+    const float w[8] = {4.0f, 3.8f, 3.5f, 2.9f, 1.9f, 1.2f, 0.7f, 0.3f}; // <- user can specify these
     float edge_darken = (float)*m_pState->var_pf_blur1_edge_darken;
     float blur_min[3], blur_max[3];
     GetSafeBlurMinMax(m_pState, blur_min, blur_max);
@@ -1271,8 +1274,8 @@ void CPlugin::BlurPasses()
             if (h[5]) { XMFLOAT4 v4(w1, w2, d1, d2); pCT->SetVector(h[5], &v4); }
             if (h[6])
             {
-                // note: only do this first time; if you do it many times,
-                // then the super-blurred levels will have big black lines along the top & left sides.
+                // Note: only do this first time; if you do it many times,
+                //       then the super-blurred levels will have big black lines along the top & left sides.
                 if (i == 1) {
                     XMFLOAT4 v4(w_div, (1 - edge_darken), edge_darken, 5.0f);
                     pCT->SetVector(h[6], &v4); // darken edges
@@ -1308,7 +1311,7 @@ void CPlugin::BlurPasses()
 
 void CPlugin::ComputeGridAlphaValues()
 {
-    float fBlend = m_pState->m_fBlendProgress; //max(0, min(1, (m_pState->m_fBlendProgress * 1.6f - 0.3f)));
+    float fBlend = m_pState->m_fBlendProgress; //std::max(0, min(1, (m_pState->m_fBlendProgress * 1.6f - 0.3f)));
     /*
     switch (code) //if (nPassOverride==0)
     {
@@ -3353,7 +3356,7 @@ void CPlugin::DrawUserSprites()
                     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
                     // Also, smoothly blend this in-between texels.
-                    lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_SRC_ALPHA);
+                    lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
                     for (int k = 0; k < 4; k++)
                     {
                         v3[k].a = COLOR_NORM(a);
@@ -3406,7 +3409,7 @@ void CPlugin::DrawUserSprites()
     lpDevice->SetBlendState(false);
     //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-    // reset these to the standard safe mode:
+    // Reset these to the standard safe mode.
     lpDevice->SetShader(0);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
@@ -3417,15 +3420,15 @@ void CPlugin::DrawUserSprites()
     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 }
 
+// (screen space = -1..1 on both axes; corresponds to UV space)
+// uv space = [0..1] on both axes
+// "math" space = what the preset authors are used to:
+//      upper left = [0,0]
+//      bottom right = [1,1]
+//      rad == 1 at corners of screen
+//      ang == 0 at three o'clock, and increases counter-clockwise (to 6.28).
 void CPlugin::UvToMathSpace(float u, float v, float* rad, float* ang)
 {
-    // (screen space = -1..1 on both axes; corresponds to UV space)
-    // uv space = [0..1] on both axes
-    // "math" space = what the preset authors are used to:
-    //      upper left = [0,0]
-    //      bottom right = [1,1]
-    //      rad == 1 at corners of screen
-    //      ang == 0 at three o'clock, and increases counter-clockwise (to 6.28).
     float px = (u * 2 - 1) * m_fAspectX; // probably 1.0
     float py = (v * 2 - 1) * m_fAspectY; // probably <1
 
@@ -3849,9 +3852,7 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
             v3[i].r = v3[i].g = v3[i].b = v3[i].a = 1.0;
         }
 
-        if (*m_pState->var_pf_brighten /*&&
-            (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR ) &&
-            (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
+        if (*m_pState->var_pf_brighten /*&& (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR ) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
         {
             // Square root filter.
             //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);       //?
@@ -3859,7 +3860,6 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
-            //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
             // First, a perfect invert.
             lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);
@@ -3874,8 +3874,7 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
         }
 
-        if (*m_pState->var_pf_darken /*&&
-            (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
+        if (*m_pState->var_pf_darken /*&& (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
         {
             // Squaring filter.
             //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);          //?
@@ -3883,40 +3882,37 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
+
             lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_DEST_COLOR);
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
-            //lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_DESTCOLOR);
-            //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-            //lpDevice->DrawPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            //lpDevice->SetBlendState(true, D3D11_BLEND_DEST_COLOR, D3D11_BLEND_ONE);
+            //lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
         }
 
-        if (*m_pState->var_pf_solarize /*&&
-            (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_DESTCOLOR ) &&
-            (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
+        if (*m_pState->var_pf_solarize /*&& (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_DESTCOLOR ) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
         {
             //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);        //?
             //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);  //?
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
+
             lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_INV_DEST_COLOR);
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
 
-            lpDevice->SetBlendState(true, D3D11_BLEND_DEST_COLOR, D3D11_BLEND_ZERO);
-            //lpDevice->SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_DESTCOLOR);
-            //lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+            lpDevice->SetBlendState(true, D3D11_BLEND_DEST_COLOR, D3D11_BLEND_ONE);
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
         }
 
-        if (*m_pState->var_pf_invert /*&&
-            (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR )*/)
+        if (*m_pState->var_pf_invert /*&& (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR )*/)
         {
             //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);        //?
             //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);  //?
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
+
             lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
         }

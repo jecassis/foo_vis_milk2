@@ -30,7 +30,7 @@ inline wchar_t* AutoWideDup(const char* convert, UINT codePage = CP_ACP)
     if (convert)
     {
         const int size = MultiByteToWideChar(codePage, 0, convert, -1, NULL, 0);
-        if (size > 0 && (wide = static_cast<wchar_t*>(malloc(size << 1))) != NULL)
+        if (size > 0 && (wide = static_cast<wchar_t*>(malloc(static_cast<size_t>(size) << 1))) != NULL)
         {
             if (!MultiByteToWideChar(codePage, 0, convert, -1, wide, size))
             {

@@ -196,9 +196,6 @@ class CTextManager
     void DrawNow();
     void ClearAll(); // automatically called at end of `DrawNow()`
 
-    //static CTextManager& GetInstance() { return m_instance; }
-    //static IDWriteFactory* GetDWriteFactory() { return m_instance.m_dwriteFactory.Get(); }
-    //static ID2D1DeviceContext* GetD2DContext() { return m_instance.m_d2dContext.Get(); }
     void ReleaseDeviceDependentResources();
 
     void Update(/* float timeTotal, float timeDelta */);
@@ -208,9 +205,6 @@ class CTextManager
     void UnregisterElement(ElementBase* element);
 
   protected:
-    //static CTextManager m_instance;
-
-    //ID3D11Texture2D* m_lpTextSurface;
     Microsoft::WRL::ComPtr<ID2D1Factory1> m_d2dFactory;
     ID2D1Device* m_d2dDevice;
     ID2D1DeviceContext* m_d2dContext;

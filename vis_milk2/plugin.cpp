@@ -77,25 +77,20 @@
 #include "defines.h"
 #include "shell_defines.h"
 #include "utility.h"
-#include <nu/AutoWide.h>
 #include "support.h"
+#define WASABI_API_ORIG_HINST GetInstance()
+#include "api.h"
 //#include "resource.h"
+#include <nu/AutoWide.h>
 
 //#pragma comment(lib, "d3dcompiler.lib")
 //#pragma comment(lib, "dxguid.lib")
 
-int warand()
-{
-    return rand();
-}
+int warand() { return rand(); }
 
-void NSEEL_HOSTSTUB_EnterMutex()
-{
-}
+void NSEEL_HOSTSTUB_EnterMutex() {}
 
-void NSEEL_HOSTSTUB_LeaveMutex()
-{
-}
+void NSEEL_HOSTSTUB_LeaveMutex() {}
 
 #ifdef NS_EEL2
 void NSEEL_VM_resetvars(NSEEL_VMCTX ctx)
@@ -120,8 +115,8 @@ volatile bool g_bThreadAlive;     // set true by MAIN thread, and set false upon
 volatile int g_bThreadShouldQuit; // set by MAIN thread to flag 2nd thread that it wants it to exit.
 static CRITICAL_SECTION g_cs;
 
-//#define IsAlphabetChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
-//#define IsAlphanumericChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0' && x <= '9') || x == '.')
+#define IsAlphabetChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
+#define IsAlphanumericChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0' && x <= '9') || x == '.')
 #define IsNumericChar(x) (x >= '0' && x <= '9')
 
 void ConvertCRsToLFCA(const char* src, char* dst)
@@ -275,7 +270,7 @@ void CPlugin::OverrideDefaults()
     //m_minimize_winamp       = 1;   // 0 or 1
     //m_desktop_textlabel_boxes = 1; // 0 or 1
     m_save_cpu              = 0;   // 0 or 1
-    m_skin                  = 0;
+    //m_skin                  = 1;   // 0 or 1
     m_fix_slow_text         = 1;
 
     //wcscpy_s(m_fontinfo[0].szFace, "Trebuchet MS"); // system font
@@ -335,6 +330,7 @@ void CPlugin::MilkDropPreInitialize()
     m_nGridY = 36; //24;
 
     m_bShowPressF1ForHelp = true;
+    m_bShowMenuToolTips = true; // NOTE: THIS IS CURRENTLY HARDWIRED TO TRUE - NO OPTION TO CHANGE
     m_n16BitGamma = 2;
     m_bAutoGamma = true;
     //m_nFpsLimit = -1;
@@ -362,11 +358,6 @@ void CPlugin::MilkDropPreInitialize()
     m_nMaxImages = 32;
     m_nMaxBytes = 16000000;
 
-    //#ifdef _DEBUG
-    //m_dwShaderFlags = D3DXSHADER_DEBUG | (1 << 16);
-    //#else
-    //m_dwShaderFlags = (1<<16); //D3DXSHADER_SKIPOPTIMIZATION | D3DXSHADER_NO_PRESHADER;
-    //#endif
     //m_pFragmentLinker = NULL;
     //m_pCompiledFragments = NULL;
     m_pShaderCompileErrors = NULL;
@@ -489,7 +480,8 @@ void CPlugin::MilkDropPreInitialize()
     wchar_t szConfigDir[MAX_PATH] = {0};
     wcscpy_s(szConfigDir, GetConfigIniFile());
     wchar_t* p = wcsrchr(szConfigDir, L'\\');
-    if (p) *(p+1) = 0;
+    if (p)
+        *(p + 1) = L'\0';
     swprintf_s(m_szMsgIniFile, L"%ls%ls", szConfigDir, MSG_INIFILE);
     swprintf_s(m_szImgIniFile, L"%ls%ls", szConfigDir, IMG_INIFILE);
 }
@@ -568,6 +560,9 @@ void CPlugin::MilkDropReadConfig()
 
     GetPrivateProfileStringW(L"settings", L"szPresetDir", m_szPresetDir, m_szPresetDir, sizeof(m_szPresetDir), pIni);
 #endif
+
+    ReadCustomMessages();
+
     m_nTexSizeY = m_nTexSizeX;
     m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
     m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
@@ -836,6 +831,8 @@ int CPlugin::AllocateMilkDropNonDX11()
     if (!bSuccess) return false;
     // clang-format on
 
+    BuildMenus();
+
     m_pState->Default();
     m_pOldState->Default();
     m_pNewState->Default();
@@ -880,6 +877,18 @@ void CPlugin::CleanUpMilkDropNonDX11()
     DeleteCriticalSection(&g_cs);
 
     CancelThread(0);
+
+    m_menuPreset.Finish();
+    m_menuWave.Finish();
+    m_menuAugment.Finish();
+    m_menuCustomWave.Finish();
+    m_menuCustomShape.Finish();
+    m_menuMotion.Finish();
+    m_menuPost.Finish();
+    for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
+        m_menuWavecode[i].Finish();
+    for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
+        m_menuShapecode[i].Finish();
 
     SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
 
@@ -999,13 +1008,13 @@ int CPlugin::AllocateMilkDropDX11()
             case MD2_PS_3_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_3, szSM, 64); break;
             case MD2_PS_4_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_4, szSM, 64); break;
             default:
-                swprintf(szSM, WASABI_API_LNGSTRINGW(IDS_UKNOWN_CASE_X), m_nMaxPSVersion_DX9);
+                swprintf_s(szSM, WASABI_API_LNGSTRINGW(IDS_UKNOWN_CASE_X), m_nMaxPSVersion_DX9);
                 break;
             }
             if (m_nMaxPSVersion_ConfigPanel >= MD2_PS_NONE && m_nMaxPSVersion_DX9 < m_nMaxPSVersion_ConfigPanel)
-                swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_USING_X), szSM, PSVersion);
+                swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_USING_X), szSM, PSVersion);
             else
-                swprintf(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT), szSM, PSVersion);
+                swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT), szSM, PSVersion);
             DumpDebugMessage(buf);
             MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             */
@@ -1103,12 +1112,6 @@ int CPlugin::AllocateMilkDropDX11()
             m_nTexSizeY = log2texsize;
         }
 
-        // clip texsize by max. from caps
-        /*if ((DWORD)m_nTexSizeX > GetCaps()->MaxTextureWidth && GetCaps()->MaxTextureWidth>0)
-            m_nTexSizeX = GetCaps()->MaxTextureWidth;
-        if ((DWORD)m_nTexSizeY > GetCaps()->MaxTextureHeight && GetCaps()->MaxTextureHeight>0)
-            m_nTexSizeY = GetCaps()->MaxTextureHeight;*/
-
         // Apply canvas stretch.
         m_nTexSizeX = (m_nTexSizeX * 100) / nNewCanvasStretch;
         m_nTexSizeY = (m_nTexSizeY * 100) / nNewCanvasStretch;
@@ -1128,11 +1131,7 @@ int CPlugin::AllocateMilkDropDX11()
         DXGI_FORMAT fmt;
         switch (m_nTexBitsPerCh)
         {
-            //case 5:  fmt = D3DFMT_R5G6B5   ; break;
             case 8: fmt = DXGI_FORMAT_B8G8R8A8_UNORM; break;
-            //case 10: fmt = D3DFMT_A2R10G10B10; break;  // D3DFMT_A2W10V10U10 or D3DFMT_A2R10G10B10 or D3DFMT_A2B10G10R10
-            //case 16: fmt = D3DFMT_A16B16G16R16F; break;
-            //case 32: fmt = D3DFMT_A32B32G32R32F; break; //FIXME
             default: fmt = DXGI_FORMAT_B8G8R8A8_UNORM; break;
         }
 
@@ -1209,7 +1208,7 @@ int CPlugin::AllocateMilkDropDX11()
         }
         else
         {
-            //swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SUCCESSFULLY_CREATED_VS0_VS1), m_nTexSizeX, m_nTexSizeY, GetWidth(), GetHeight());
+            //swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SUCCESSFULLY_CREATED_VS0_VS1), m_nTexSizeX, m_nTexSizeY, GetWidth(), GetHeight());
             //DumpDebugMessage(buf);
         }
 
@@ -1367,8 +1366,7 @@ int CPlugin::AllocateMilkDropDX11()
     // Build index list for final composite blit.
     // Order should be friendly for interpolation of 'ang' value!
     int* cur_index = &m_comp_indices[0];
-    int y;
-    for (y = 0; y < FCGSY - 1; y++)
+    for (int y = 0; y < FCGSY - 1; y++)
     {
         if (y == FCGSY / 2 - 1)
             continue;
@@ -1383,7 +1381,7 @@ int CPlugin::AllocateMilkDropDX11()
             if (((int)left_half + (int)top_half + (int)center_4) % 2)
             {
                 *(cur_index + 0) = (y) * FCGSX + (x);
-                *(cur_index + 1) = (y)  *FCGSX + (x + 1);
+                *(cur_index + 1) = (y) * FCGSX + (x + 1);
                 *(cur_index + 2) = (y + 1) * FCGSX + (x + 1);
                 *(cur_index + 3) = (y + 1) * FCGSX + (x + 1);
                 *(cur_index + 4) = (y + 1) * FCGSX + (x);
@@ -1402,8 +1400,6 @@ int CPlugin::AllocateMilkDropDX11()
         }
     }
 
-    // -----------------
-
     /*
     if (m_bFixSlowText && !m_bSeparateTextWindow)
     {
@@ -1420,30 +1416,15 @@ int CPlugin::AllocateMilkDropDX11()
     }
     */
 
-    // -----------------
-
-    // reallocate the texture for font titles + custom msgs (m_lpDDSTitle)
+    // Reallocate the texture for font titles and custom messages (`m_lpDDSTitle`).
     {
         m_nTitleTexSizeX = std::max(m_nTexSizeX, m_nTexSizeY);
         m_nTitleTexSizeY = m_nTitleTexSizeX / 4;
 
-        //DumpDebugMessage("Init: [re]allocating title surface");
-
-        // [DEPRECATED as of transition to dx9:]
-        // We could just create one title surface, but this is a problem because many
-        // systems can only call DrawText on DDSCAPS_OFFSCREENPLAIN surfaces, and can NOT
-        // draw text on a DDSCAPS_TEXTURE surface (it comes out garbled).
-        // So, we create one of each; we draw the text to the DDSCAPS_OFFSCREENPLAIN surface
-        // (m_lpDDSTitle[1]), then we blit that (once) to the DDSCAPS_TEXTURE surface
-        // (m_lpDDSTitle[0]), which can then be drawn onto the screen on polys.
-
-        //HRESULT hr;
         bool bSuccess;
         do
         {
             bSuccess = GetDevice()->CreateTexture(m_nTitleTexSizeX, m_nTitleTexSizeY, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_B8G8R8A8_UNORM, &m_lpDDSTitle);
-            //hr = D3DXCreateTexture(GetDevice(), m_nTitleTexSizeX, m_nTitleTexSizeY, 1, D3DUSAGE_RENDERTARGET, GetBackBufFormat(), D3DPOOL_DEFAULT, &m_lpDDSTitle);
-            //if (hr != D3D_OK)
             if (!bSuccess)
             {
                 if (m_nTitleTexSizeY < m_nTitleTexSizeX)
@@ -1456,9 +1437,7 @@ int CPlugin::AllocateMilkDropDX11()
                     m_nTitleTexSizeY /= 2;
                 }
             }
-        }
-        //while (hr != D3D_OK && m_nTitleTexSizeX > 16);
-        while (!bSuccess && m_nTitleTexSizeX > 16);
+        } while (!bSuccess && m_nTitleTexSizeX > 16);
 
         if (!bSuccess)
         {
@@ -1486,7 +1465,7 @@ int CPlugin::AllocateMilkDropDX11()
     if (!m_verts || !m_vertinfo)
     {
         /*
-        swprintf(buf, L"couldn't allocate mesh - out of memory");
+        swprintf_s(buf, L"Could not allocate mesh - out of memory.");
         DumpDebugMessage(buf);
         MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         */
@@ -1496,17 +1475,18 @@ int CPlugin::AllocateMilkDropDX11()
     int nVert = 0;
     float texel_offset_x = 0.5f / (float)m_nTexSizeX;
     float texel_offset_y = 0.5f / (float)m_nTexSizeY;
-    for (y = 0; y <= m_nGridY; y++)
+    for (int y = 0; y <= m_nGridY; y++)
     {
         for (int x = 0; x <= m_nGridX; x++)
         {
-            // precompute x,y,z
+            // Precompute x, y, z.
             m_verts[nVert].x = x / (float)m_nGridX * 2.0f - 1.0f;
             m_verts[nVert].y = y / (float)m_nGridY * 2.0f - 1.0f;
             m_verts[nVert].z = 0.0f;
 
-            // precompute rad, ang, being conscious of aspect ratio
-            m_vertinfo[nVert].rad = sqrtf(m_verts[nVert].x * m_verts[nVert].x * m_fAspectX * m_fAspectX + m_verts[nVert].y * m_verts[nVert].y * m_fAspectY * m_fAspectY);
+            // Precompute rad, ang, being conscious of aspect ratio.
+            m_vertinfo[nVert].rad = sqrtf(m_verts[nVert].x * m_verts[nVert].x * m_fAspectX * m_fAspectX +
+                                          m_verts[nVert].y * m_verts[nVert].y * m_fAspectY * m_fAspectY);
             if (y == m_nGridY / 2 && x == m_nGridX / 2)
                 m_vertinfo[nVert].ang = 0.0f;
             else
@@ -1523,9 +1503,9 @@ int CPlugin::AllocateMilkDropDX11()
         }
     }
 
-    // generate triangle strips for the 4 quadrants.
-    // each quadrant has m_nGridY/2 strips.
-    // each strip has m_nGridX+2 *points* in it, or m_nGridX/2 polygons.
+    // Generate triangle strips for the 4 quadrants.
+    // Each quadrant has m_nGridY/2 strips.
+    // Each strip has m_nGridX+2 *points* in it, or m_nGridX/2 polygons.
     int xref, yref;
     int nVert_strip = 0;
     for (int quadrant = 0; quadrant < 4; quadrant++)
@@ -1551,7 +1531,7 @@ int CPlugin::AllocateMilkDropDX11()
         }
     }
 
-    // also generate triangle lists for drawing the main warp mesh.
+    // Also generate triangle lists for drawing the main warp mesh.
     int nVert_list = 0;
     for (int quadrant = 0; quadrant < 4; quadrant++)
     {
@@ -1640,6 +1620,7 @@ DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
         ret |= ((DWORD)(f * 255)) << shift;
         shift += 8;
     }
+
     return ret;
 }
 
@@ -2178,11 +2159,6 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
     if (!pCT)
         return;
 
-    //D3DXCONSTANTTABLE_DESC d;
-    //pCT->GetDesc(&d);
-
-    //D3DXCONSTANT_DESC cd;
-
 #define MAX_RAND_TEX 16
     std::wstring RandTexName[MAX_RAND_TEX];
 
@@ -2333,7 +2309,9 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                 m_texcode[cd.BindPoint] = TEX_DISK;
 
                 // Check for request for random texture.
-                if (!wcsncmp(L"rand", szRootName, 4) && IsNumericChar(szRootName[4]) && IsNumericChar(szRootName[5]) &&
+                if (!wcsncmp(L"rand", szRootName, 4) &&
+                    IsNumericChar(szRootName[4]) &&
+                    IsNumericChar(szRootName[5]) &&
                     (szRootName[6] == 0 || szRootName[6] == '_'))
                 {
                     int rand_slot = -1;
@@ -2429,22 +2407,6 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                         while (1)
                         {
                             HRESULT hr = g_plugin.GetDevice()->CreateTextureFromFile(szFilename, &x.texptr);
-                            /*
-                            HRESULT hr = D3DXCreateTextureFromFileExW(g_plugin.GetDevice(),
-                                szFilename,
-                                D3DX_DEFAULT_NONPOW2, // w
-                                D3DX_DEFAULT_NONPOW2, // h
-                                D3DX_DEFAULT,         // # mip levels to gen - all
-                                0,                    // usage flags
-                                D3DFMT_UNKNOWN,
-                                D3DPOOL_DEFAULT,
-                                D3DX_DEFAULT,         // filter
-                                D3DX_DEFAULT,         // mipfilter
-                                0,                    // color key
-                                &desc,
-                                NULL,                 // palette
-                                (IDirect3DTexture9**)&x.texptr);
-                            */
                             if (hr == E_OUTOFMEMORY)
                             {
                                 // Out of memory - try evicting something old and/or big.
@@ -2488,13 +2450,13 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                     if (!x.texptr)
                     {
                         /*
-                        wchar_t buf[2048], title[64];
-                        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_COULD_NOT_LOAD_TEXTURE_X), szRootName, szExtsWithSlashes);
-                        g_plugin.DumpDebugMessage(buf);
+                        wchar_t buf[2048] = {0}, title[64] = {0};
+                        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_COULD_NOT_LOAD_TEXTURE_X), szRootName, szExtsWithSlashes);
+                        DumpDebugMessage(buf);
                         if (bHardErrors)
                             MessageBox(g_plugin.GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
                         else
-                            g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
+                            AddError(buf, 6.0f, ERR_PRESET, true);
                         */
                         return;
                     }
@@ -2557,7 +2519,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                 else if (!strncmp(cd.Name, "texsize_", 8))
                 {
                     // Remove "texsize_" prefix to find root file name.
-                    wchar_t szRootName[MAX_PATH]{};
+                    wchar_t szRootName[MAX_PATH] = {0};
                     if (!strncmp(cd.Name, "texsize_", 8))
                         wcscpy_s(szRootName, AutoWide(&cd.Name[8]));
                     else
@@ -2565,7 +2527,9 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
 
                     // Check for request for random texture.
                     // It should be a previously-seen random index - just fetch/reuse the name.
-                    if (!wcsncmp(L"rand", szRootName, 4) && IsNumericChar(szRootName[4]) && IsNumericChar(szRootName[5]) &&
+                    if (!wcsncmp(L"rand", szRootName, 4) &&
+                        IsNumericChar(szRootName[4]) &&
+                        IsNumericChar(szRootName[5]) &&
                         (szRootName[6] == L'\0' || szRootName[6] == L'_'))
                     {
                         int rand_slot = -1;
@@ -2604,8 +2568,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                     if (!bTexFound)
                     {
                         /*
-                        wchar_t buf[1024];
-                        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_RESOLVE_TEXSIZE_FOR_A_TEXTURE_NOT_IN_USE), cd.Name);
+                        wchar_t buf[1024] = {0};
+                        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_UNABLE_TO_RESOLVE_TEXSIZE_FOR_A_TEXTURE_NOT_IN_USE), cd.Name);
                         g_plugin.AddError(buf, 6.0f, ERR_PRESET, true);
                         */
                     }
@@ -2654,7 +2618,7 @@ bool CPlugin::RecompilePShader(const char* szShadersText, PShaderInfo* si, int s
     // LOAD SHADER
     // note: ps_1_4 required for dependent texture lookups.
     //       ps_2_0 required for tex2Dbias.
-    char ver[32];
+    char ver[32] = {0};
     strcpy_s(ver, "ps_0_0");
     switch (PSVersion)
     {
@@ -2722,8 +2686,7 @@ bool CPlugin::LoadShaders(PShaderSet* sh, CState* pState, bool bTick)
 
 //----------------------------------------------------------------------
 
-bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szFn, const char* szProfile, CConstantTable** ppConstTable,
-                                   void** ppShader, int shaderType, bool /*bHardErrors*/)
+bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szFn, const char* szProfile, CConstantTable** ppConstTable, void** ppShader, const int shaderType, const bool /*bHardErrors*/)
 {
     // clang-format off
     const char szWarpDefines[] = "#define rad _rad_ang.x\n"
@@ -2741,7 +2704,7 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
     const char szLastLine[]    = "    _return_value = float4(ret.xyz, _vDiffuse.w);";
     // clang-format on
 
-    char szWhichShader[64];
+    char szWhichShader[64] = {0};
     switch (shaderType)
     {
         case SHADER_WARP: strcpy_s(szWhichShader, "warp"); break;
@@ -2752,7 +2715,7 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
     }
 
     ID3DBlob* pShaderByteCode;
-    //wchar_t title[64];
+    //wchar_t title[64] = {0};
 
     *ppShader = NULL;
     *ppConstTable = NULL;
@@ -2891,8 +2854,8 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
         if (!p)
         {
             /*
-            wchar_t temp[512];
-            swprintf(temp, WASABI_API_LNGSTRINGW(IDS_ERROR_PARSING_X_X_SHADER), szProfile, szWhichShader);
+            wchar_t temp[512] = {0};
+            swprintf_s(err, WASABI_API_LNGSTRINGW(IDS_ERROR_PARSING_X_X_SHADER), szProfile, szWhichShader);
             DumpDebugMessage(temp);
             AddError(temp, 8.0f, ERR_PRESET, true);
             */
@@ -2903,12 +2866,7 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
     // Now really try to compile the shader.
     bool failed = false;
     size_t len = strlen(szShaderText);
-    //ID3DBlob *pCode, *pErrors;
-#if _DEBUG
     int flags = D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY;
-#else
-    int flags = D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY;
-#endif
     if (S_OK != D3DCompile(szShaderText, len, NULL, NULL, NULL, szFn, szProfile, flags, 0, &pShaderByteCode, &m_pShaderCompileErrors))
     {
         failed = true;
@@ -2922,39 +2880,12 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
             failed = false;
         }
     }
-    /*
-    if (D3D_OK != D3DXCompileShader(
-        szShaderText,
-        len,
-        NULL, // CONST D3DXMACRO* pDefines,
-        NULL, // LPD3DXINCLUDE pInclude,
-        szFn,
-        szProfile,
-        m_dwShaderFlags,
-        &pShaderByteCode,
-        &m_pShaderCompileErrors,
-        ppConstTable
-        ))
-    {
-        failed = true;
-    }
-    // before we totally fail, let's try using ps_2_b instead of ps_2_a
-    if (failed && !strcmp(szProfile, "ps_2_a"))
-    {
-        SafeRelease(m_pShaderCompileErrors);
-        if (D3D_OK == D3DXCompileShader(szShaderText, len, NULL, NULL, szFn,
-            "ps_2_b", m_dwShaderFlags, &pShaderByteCode, &m_pShaderCompileErrors, ppConstTable))
-        {
-            failed = false;
-        }
-    }
-    */
 
     if (failed)
     {
         /*
-        wchar_t temp[1024];
-        swprintf(temp, WASABI_API_LNGSTRINGW(IDS_ERROR_COMPILING_X_X_SHADER), szProfile, szWhichShader);
+        wchar_t temp[1024] = {0};
+        swprintf_s(err, WASABI_API_LNGSTRINGW(IDS_ERROR_COMPILING_X_X_SHADER), strcmp(szProfile, "ps_4_0_level_9_1") ? szProfile : "ps_4_0_level_9_3", szWhichShader);
         if (m_pShaderCompileErrors && m_pShaderCompileErrors->GetBufferSize() < sizeof(temp) - 256)
         {
             //strcat_s(tempw, L"\n\n");
@@ -2983,19 +2914,17 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
     HRESULT hr = 1;
     if (szProfile[0] == 'v')
     {
-        hr = GetDevice()->CreateVertexShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(),
-                                             reinterpret_cast<ID3D11VertexShader**>(ppShader), (*ppConstTable));
+        hr = GetDevice()->CreateVertexShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), reinterpret_cast<ID3D11VertexShader**>(ppShader), (*ppConstTable));
     }
     else if (szProfile[0] == 'p')
     {
-        hr = GetDevice()->CreatePixelShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(),
-                                            reinterpret_cast<ID3D11PixelShader**>(ppShader), (*ppConstTable));
+        hr = GetDevice()->CreatePixelShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), reinterpret_cast<ID3D11PixelShader**>(ppShader), (*ppConstTable));
     }
 
     if (hr != S_OK)
     {
         /*
-        wchar_t temp[512];
+        wchar_t temp[512] = {0};
         WASABI_API_LNGSTRINGW_BUF(IDS_ERROR_CREATING_SHADER, temp, sizeof(temp));
         DumpDebugMessage(temp);
         if (bHardErrors)
@@ -3370,7 +3299,6 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 }
 // clang-format on
 
-#ifdef DX9_MILKDROP
 // Draws a string in the lower-right corner of the screen.
 // Note: ID3DXFont handles `DT_RIGHT` and `DT_BOTTOM` *very poorly*.
 //       It is best to calculate the size of the text first,
@@ -3381,9 +3309,9 @@ void CPlugin::DrawTooltip(wchar_t* str, int xR, int yB)
 {
     DWORD baseColor = 0xFFFFFFFF;
     D2D1_COLOR_F fgColor = D2D1::ColorF(baseColor);
-    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, /* m_screenmode == DESKTOP ? GetAlpha(0xE0000000) : */ GetAlpha(0xD0000000));
+    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, GetAlpha(0xD0000000));
 
-    m_toolTip.Initialize();
+    m_toolTip.Initialize(m_lpDX->GetD2DDeviceContext());
     m_toolTip.SetAlignment(AlignCenter, AlignCenter);
     m_toolTip.SetTextColor(fgColor);
     m_toolTip.SetTextOpacity(fgColor.a);
@@ -3419,7 +3347,6 @@ void CPlugin::ClearTooltip()
         m_text.UnregisterElement(&m_toolTip);
     }
 }
-#endif
 
 void CPlugin::OnAltK()
 {
@@ -3480,7 +3407,7 @@ void CPlugin::ClearErrors(int category) // 0 = all categories
 void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR)
 {
     D2D1_RECT_F r{};
-    wchar_t buf[512]{};
+    wchar_t buf[512] = {0};
     TextStyle* pFont = GetFont(DECORATIVE_FONT);
     int h = GetFontHeight(DECORATIVE_FONT);
 
@@ -3558,7 +3485,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         // NOTE: Custom timed message comes at the end!!
     }
 
-#ifdef DX9_MILKDROP
     // 2. Render text in lower-right corner.
     {
         // "waitstring" tooltip.
@@ -3571,7 +3497,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             ClearTooltip();
         }
     }
-#endif
 
     // 3. Render text in lower-left corner.
     {
@@ -3641,10 +3566,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             MilkDropTextOut(m_waitstring.szPrompt, m_waitText, MTO_UPPER_LEFT, true);
 
             // Extra instructions.
-            bool bIsWarp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) &&
-                           !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit warp shader ]");
-            bool bIsComp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) &&
-                           !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit composite shader ]");
+            bool bIsWarp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) && !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit warp shader ]");
+            bool bIsComp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) && !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit composite shader ]");
             if (bIsWarp || bIsComp)
             {
                 if (m_bShowShaderHelp)
@@ -3661,12 +3584,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 {
                     // Draw dark box based on longest line and number of lines...
                     r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
-                    m_text.DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r,
-                                       DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT,
-                                       0xFFFFFFFF, false, 0xFF000000);
-                    D2D1_RECT_F darkbox = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y - 2),
-                                                      static_cast<FLOAT>(xL + r.right - r.left),
-                                                      static_cast<FLOAT>(*upper_left_corner_y + (r.bottom - r.top) * 13 + 2));
+                    m_text.DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false, 0xFF000000);
+                    D2D1_RECT_F darkbox = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y - 2), static_cast<FLOAT>(xL + r.right - r.left), static_cast<FLOAT>(*upper_left_corner_y + (r.bottom - r.top) * 13 + 2));
                     DrawDarkTranslucentBox(&darkbox);
                     D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, 0xD0 / 255.0f);
                     m_waitText.SetTextBox(bgColor, darkbox);
@@ -3850,8 +3769,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 }
             }
 
-            D2D1_RECT_F rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR),
-                                           static_cast<FLOAT>(*lower_left_corner_y));
+            D2D1_RECT_F rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
             rect.top += PLAYLIST_INNER_MARGIN;
             rect.left += PLAYLIST_INNER_MARGIN;
             rect.right -= PLAYLIST_INNER_MARGIN;
@@ -3884,14 +3802,11 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
                         char ch = buf0A[pos];
                         buf0A[pos] = '\0';
-                        sprintf_s(
-                            buf2, "   %sX",
-                            &buf0A[start]); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
+                        sprintf_s(buf2, "   %sX", &buf0A[start]); // put a final 'X' instead of ' ' because CALCRECT returns w==0 if string is entirely whitespace!
                         D2D1_RECT_F r2 = rect;
                         r2.bottom = 4096.0f;
                         r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
-                        m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2,
-                                           DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
+                        m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2, DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
                         float fH = r2.bottom - r2.top;
                         ypixels += fH;
                         buf0A[pos] = ch;
@@ -3949,8 +3864,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         DWORD color = MENU_COLOR;
                         if (m_waitstring.nCursorPos >= start && m_waitstring.nCursorPos <= pos)
                             color = MENU_HILITE_COLOR;
-                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &rect,
-                                                                            0 /*| DT_WORDBREAK*/, color, false);
+                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &rect, 0 /*| DT_WORDBREAK*/, color, false);
                         buf0A[pos] = ch;
 
                         if (rect.top > rect.bottom)
@@ -3970,8 +3884,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 // Display on one line.
                 D2D1_RECT_F box = rect;
                 box.bottom = 4096.0f;
-                swprintf_s(buf2, L"    %sX",
-                           buf0); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
+                swprintf_s(buf2, L"    %sX", buf0); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
                 m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &box, DT_CALCRECT, MENU_COLOR, false);
 
                 // Use r2 to draw a dark box.
@@ -3986,9 +3899,13 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &rect, 0, MENU_COLOR, false);
             }
         }
-        else if (m_UI_mode == UI_MENU)
+        else
+#endif
+        // clang-format off
+        if (m_UI_mode == UI_MENU)
         {
             assert(m_pCurMenu);
+            r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
 
             D2D1_RECT_F darkbox{};
             m_pCurMenu->DrawMenu(r, xR, *lower_right_corner_y, 1, &darkbox);
@@ -4014,10 +3931,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 assert(m_pState->m_nMaxPSVersion == m_nMaxPSVersion);
                 wchar_t buf[1024] = {0};
                 swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_USES_HIGHEST_PIXEL_SHADER_VERSION), m_nMaxPSVersion);
-                rect.top +=
-                    m_text.DrawTextW(GetFont(SIMPLE_FONT), buf, -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), -1, &rect,
-                                             DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                rect.top += m_text.DrawText(GetFont(SIMPLE_FONT), buf, -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                rect.top += m_text.DrawText(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
             }
             else
             {
@@ -4026,25 +3941,16 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     switch (m_pState->m_nMinPSVersion)
                     {
                         case MD2_PS_NONE:
-                            rect.top +=
-                                m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), -1,
-                                                 &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), -1,
-                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_0:
-                            rect.top +=
-                                m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), -1,
-                                                 &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), -1,
-                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_X:
-                            rect.top +=
-                                m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), -1,
-                                                 &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), -1,
-                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_3_0:
                             assert(false);
@@ -4059,40 +3965,24 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     switch (m_pState->m_nMinPSVersion)
                     {
                         case MD2_PS_NONE:
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS),
-                                                         -1, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
-                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_0:
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), -1,
-                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
-                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_X:
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), -1,
-                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
-                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_3_0:
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), -1,
-                                                         &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawTextW(GetFont(SIMPLE_FONT),
-                                                         WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), -1, &rect,
-                                                         DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         default:
                             assert(0);
@@ -4161,24 +4051,14 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         DWORD ApplyFlags = 0;
                         switch (mash)
                         {
-                            case 0:
-                                ApplyFlags = STATE_GENERAL;
-                                break;
-                            case 1:
-                                ApplyFlags = STATE_MOTION;
-                                break;
-                            case 2:
-                                ApplyFlags = STATE_WAVE;
-                                break;
-                            case 3:
-                                ApplyFlags = STATE_WARP;
-                                break;
-                            case 4:
-                                ApplyFlags = STATE_COMP;
-                                break;
+                            case 0: ApplyFlags = STATE_GENERAL; break;
+                            case 1: ApplyFlags = STATE_MOTION; break;
+                            case 2: ApplyFlags = STATE_WAVE; break;
+                            case 3: ApplyFlags = STATE_WARP; break;
+                            case 4: ApplyFlags = STATE_COMP; break;
                         }
 
-                        wchar_t szFile[MAX_PATH];
+                        wchar_t szFile[MAX_PATH] = {0};
                         swprintf_s(szFile, L"%s%s", m_szPresetDir, m_presets[m_nMashPreset[mash]].szFilename.c_str());
 
                         m_pState->Import(szFile, GetTime(), m_pState, ApplyFlags);
@@ -4199,14 +4079,14 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT4), MTO_UPPER_LEFT, true);
                 *upper_left_corner_y += PLAYLIST_INNER_MARGIN;
 
-                RECT rect;
-                SetRect(&rect, xL, *upper_left_corner_y, xR, *lower_left_corner_y);
+                D2D1_RECT_F rect{};
+                rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
                 rect.top += PLAYLIST_INNER_MARGIN;
                 rect.left += PLAYLIST_INNER_MARGIN;
                 rect.right -= PLAYLIST_INNER_MARGIN;
                 rect.bottom -= PLAYLIST_INNER_MARGIN;
 
-                int lines_available = (rect.bottom - rect.top - PLAYLIST_INNER_MARGIN * 2) / GetFontHeight(SIMPLE_FONT);
+                int lines_available = static_cast<int>((rect.bottom - rect.top - PLAYLIST_INNER_MARGIN * 2) / GetFontHeight(SIMPLE_FONT));
                 lines_available -= MASH_SLOTS;
 
                 if (lines_available < 10)
@@ -4233,10 +4113,9 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     m_bUserPagedUp = false;
                 }
 
-                int i;
                 int first_line = m_nMashPreset[m_nMashSlot] - (m_nMashPreset[m_nMashSlot] % lines_available);
                 int last_line = first_line + lines_available;
-                wchar_t str[512], str2[512];
+                wchar_t str[512] = {0}, str2[512] = {0};
 
                 if (last_line > m_nPresets)
                     last_line = m_nPresets;
@@ -4244,9 +4123,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 // Tooltip.
                 if (m_bShowMenuToolTips)
                 {
-                    wchar_t buf[256];
-                    swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PAGE_X_OF_X), m_nMashPreset[m_nMashSlot] / lines_available + 1,
-                               (m_nPresets + lines_available - 1) / lines_available);
+                    swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PAGE_X_OF_X), m_nMashPreset[m_nMashSlot] / lines_available + 1, (m_nPresets + lines_available - 1) / lines_available);
                     DrawTooltip(buf, xR, *lower_right_corner_y);
                 }
 
@@ -4259,15 +4136,18 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 box.bottom = rect.top;
 
                 int mashNames[MASH_SLOTS] = {
-                    IDS_MASHUP_GENERAL_POSTPROC, IDS_MASHUP_MOTION_EQUATIONS, IDS_MASHUP_WAVEFORMS_SHAPES,
-                    IDS_MASHUP_WARP_SHADER,      IDS_MASHUP_COMP_SHADER,
+                    IDS_MASHUP_GENERAL_POSTPROC,
+                    IDS_MASHUP_MOTION_EQUATIONS,
+                    IDS_MASHUP_WAVEFORMS_SHAPES,
+                    IDS_MASHUP_WARP_SHADER,
+                    IDS_MASHUP_COMP_SHADER,
                 };
 
                 for (int pass = 0; pass < 2; pass++)
                 {
                     box = orig_rect;
-                    int w = 0;
-                    int h = 0;
+                    int width = 0;
+                    int height = 0;
 
                     int start_y = orig_rect.top;
                     for (int mash = 0; mash < MASH_SLOTS; mash++)
@@ -4285,12 +4165,12 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     }
                     if (pass == 0)
                     {
-                        box.right = box.left + w;
-                        box.bottom = box.top + h;
+                        box.right = box.left + width;
+                        box.bottom = box.top + height;
                         DrawDarkTranslucentBox(&box);
                     }
                     else
-                        orig_rect.top += h;
+                        orig_rect.top += static_cast<FLOAT>(h);
                 }
 
                 orig_rect.top += GetFontHeight(SIMPLE_FONT) + PLAYLIST_INNER_MARGIN;
@@ -4306,7 +4186,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     //    GetFont(SIMPLE_FONT)->Begin();
 
                     rect = orig_rect;
-                    for (i = first_line; i < last_line; i++)
+                    for (int i = first_line; i < last_line; i++)
                     {
                         // Remove the extension before displaying the filename. Also pad with spaces.
                         //wcscpy_s(str, m_pPresetAddr[i]);
@@ -4318,8 +4198,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         {
                             // Directory.
                             if (wcscmp(m_presets[i].szFilename.c_str() + 1, L"..") == 0)
-                                swprintf_s(str2, L" [ %s ] (%s) ", m_presets[i].szFilename.c_str() + 1,
-                                           WASABI_API_LNGSTRINGW(IDS_PARENT_DIRECTORY));
+                                swprintf_s(str2, L" [ %s ] (%s) ", m_presets[i].szFilename.c_str() + 1, WASABI_API_LNGSTRINGW(IDS_PARENT_DIRECTORY));
                             else
                                 swprintf_s(str2, L" [ %s ] ", m_presets[i].szFilename.c_str() + 1);
                         }
@@ -4343,11 +4222,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         else if (bIsSelected)
                             color = PLAYLIST_COLOR_HILITE_TRACK;
 
-                        RECT r2 = rect;
-                        rect.top +=
-                            m_text.DrawTextW(GetFont(SIMPLE_FONT), str2, -1, &r2,
-                                             DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), color, false);
-
+                        D2D1_RECT_F r2 = rect;
+                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), color, false);
                         if (pass == 0) // calculating dark box
                         {
                             box.right = std::max(box.right, box.left + r2.right - r2.left);
@@ -4365,7 +4241,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         box.right += PLAYLIST_INNER_MARGIN;
                         box.bottom += PLAYLIST_INNER_MARGIN;
                         DrawDarkTranslucentBox(&box);
-                        *upper_left_corner_y = box.bottom + PLAYLIST_INNER_MARGIN;
+                        *upper_left_corner_y = static_cast<int>(box.bottom + PLAYLIST_INNER_MARGIN);
                     }
                     else
                         orig_rect.top += box.bottom - box.top;
@@ -4379,7 +4255,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             if (m_nPresets == 0)
             {
                 // Note: This error message is repeated in "milkdropfs.cpp" in `LoadRandomPreset()`.
-                wchar_t buf2[1024];
+                wchar_t buf2[1024] = {0};
                 swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILE_FOUND_IN_X_MILK), m_szPresetDir);
                 AddError(buf2, 6.0f, ERR_MISC, true);
                 m_UI_mode = UI_REGULAR;
@@ -4388,7 +4264,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             {
                 MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_LOAD_WHICH_PRESET_PLUS_COMMANDS), m_loadPresetInstruction, MTO_UPPER_LEFT, true);
 
-                wchar_t buf2[MAX_PATH + 64];
+                wchar_t buf2[MAX_PATH + 64] = {0};
                 swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_DIRECTORY_OF_X), m_szPresetDir);
                 MilkDropTextOut(buf2, m_loadPresetDir, MTO_UPPER_LEFT, true);
 
@@ -4449,8 +4325,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 // Tooltip.
                 if (m_bShowMenuToolTips)
                 {
-                    swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_PAGE_X_OF_X), m_nPresetListCurPos / lines_available + 1,
-                               (m_nPresets + lines_available - 1) / lines_available);
+                    swprintf_s(buf2, WASABI_API_LNGSTRINGW(IDS_PAGE_X_OF_X), m_nPresetListCurPos / lines_available + 1, (m_nPresets + lines_available - 1) / lines_available);
                     DrawTooltip(buf2, xR, *lower_right_corner_y);
                 }
                 else
@@ -4466,7 +4341,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 box.right = static_cast<FLOAT>(rect.left);
                 box.bottom = static_cast<FLOAT>(rect.top);
 
-                wchar_t str[512], str2[512];
+                wchar_t str[512] = {0}, str2[512] = {0};
                 int nFontHeight = GetFontHeight(SIMPLE_FONT);
                 for (int pass = 0; pass < 2; pass++)
                 {
@@ -4487,8 +4362,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             {
                                 // Directory.
                                 if (wcscmp(m_presets[i].szFilename.c_str() + 1, L"..") == 0)
-                                    swprintf_s(str2, L" [ %s ] (%s) ", m_presets[i].szFilename.c_str() + 1,
-                                               WASABI_API_LNGSTRINGW(IDS_PARENT_DIRECTORY));
+                                    swprintf_s(str2, L" [ %s ] (%s) ", m_presets[i].szFilename.c_str() + 1, WASABI_API_LNGSTRINGW(IDS_PARENT_DIRECTORY));
                                 else
                                     swprintf_s(str2, L" [ %s ] ", m_presets[i].szFilename.c_str() + 1);
                             }
@@ -4499,7 +4373,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                                 RemoveExtension(str);
                                 swprintf_s(str2, L" %s ", str);
 
-                                //if (lstrcmp(m_pState->m_szDesc, str)==0)
+                                //if (wcscmp(m_pState->m_szDesc, str) == 0)
                                 //    bIsRunning = true;
                             }
 
@@ -4522,20 +4396,12 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             m_loadPresetItem[i].SetText(str2);
                             m_loadPresetItem[i].SetTextStyle(GetFont(SIMPLE_FONT));
                             m_loadPresetItem[i].SetTextShadow(false);
-                            m_text.DrawD2DText(GetFont(SIMPLE_FONT),
-                                               &m_loadPresetItem[i],
-                                               str2,
-                                               &r2,
-                                               DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT,
-                                               color,
-                                               false);
+                            m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color, false);
                         }
                         else
                         {
                             m_loadPresetItem[i].SetContainer(r2);
-                            int nHeight =
-                                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2,
-                                                                        DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
+                            int nHeight = m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
                             FLOAT fHeight = static_cast<FLOAT>(std::max(nFontHeight, nHeight));
                             rect.top += fHeight;
                             m_text.RegisterElement(&m_loadPresetItem[i]);
@@ -4579,7 +4445,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     m_text.UnregisterElement(&m_loadPresetItem[i]);
                 }
         }
-#endif
     }
 
     // 5. Render *remaining* text to upper-right corner.
@@ -4667,7 +4532,7 @@ void CPlugin::DumpDebugMessage(const wchar_t* s)
 void CPlugin::PopupMessage(int message_id, int title_id, bool dump)
 {
 #ifdef _DEBUG
-    wchar_t buf[2048], title[64];
+    wchar_t buf[2048] = {0}, title[64] = {0};
     LoadString(GetInstance(), message_id, buf, 2048);
     LoadString(GetInstance(), title_id, title, 64);
     if (dump)
@@ -4688,20 +4553,25 @@ void CPlugin::ConsoleMessage(const wchar_t* function_name, int message_id, int t
     if (!SendMessage(GetWinampWindow(), WM_USER, MAKEWORD(0x21, 0x09), MAKELONG(message_id, title_id)))
     {
         // Retrieve the system error message for the last error code.
-        LPVOID lpMsgBuf;
-        LPVOID lpDisplayBuf;
+        LPVOID lpMsgBuf = NULL;
+        LPVOID lpDisplayBuf = NULL;
         DWORD dw = GetLastError();
 
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                       NULL,
                       dw,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                       (LPTSTR)&lpMsgBuf,
                       0,
-                      NULL);
+                      NULL))
+        {
+            wprintf_s(L"Format message failed with 0x%x\n", GetLastError());
+            return;
+        }
 
         // Display the error message.
-        lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function_name) + 40) * sizeof(TCHAR));
+        if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function_name) + 40) * sizeof(TCHAR))) == NULL)
+            return;
         swprintf_s((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("foo_vis_milk2.dll: %s failed with error %d - %s"), function_name, dw, (LPCTSTR)lpMsgBuf);
         OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
 
@@ -4720,8 +4590,8 @@ void CPlugin::ConsoleMessage(const wchar_t* function_name, int message_id, int t
 void ErrorOutput(LPCTSTR lpszFunction)
 {
     // Retrieve the system error message for the last-error code.
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
+    LPVOID lpMsgBuf = NULL;
+    LPVOID lpDisplayBuf = NULL;
     DWORD dw = GetLastError();
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -4754,7 +4624,7 @@ void CPlugin::PrevPreset(float fBlendTime)
         if (m_nCurrentPreset >= m_nPresets) // just in case
             m_nCurrentPreset = m_nDirs;
 
-        wchar_t szFile[MAX_PATH];
+        wchar_t szFile[MAX_PATH] = {0};
         wcscpy_s(szFile, m_szPresetDir); // note: m_szPresetDir always ends with '\'
         wcscat_s(szFile, m_presets[m_nCurrentPreset].szFilename.c_str());
 
@@ -4782,6 +4652,18 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
     // Ensure file list is OK.
     if (m_nPresets - m_nDirs == 0)
     {
+        // Note: this error message is repeated in `milkdropfs.cpp` in `DrawText()`.
+        wchar_t buf[1024] = {0};
+        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILE_FOUND_IN_X_MILK), m_szPresetDir);
+        AddError(buf, 6.0f, ERR_MISC, true);
+
+        // Also bring up the directory navigation menu...
+        if (m_UI_mode == UI_REGULAR || m_UI_mode == UI_MENU)
+        {
+            m_UI_mode = UI_LOAD;
+            m_bUserPagedUp = false;
+            m_bUserPagedDown = false;
+        }
         return;
     }
 
@@ -4805,7 +4687,7 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
     /*
     for (int i = 0; i < m_nPresets; i++)
     {
-        wchar_t szPresetFile[512];
+        wchar_t szPresetFile[512] = {0};
         wcscpy_s(szPresetFile, m_szPresetDir); // note: m_szPresetDir always ends with '\'
         wcscat_s(szPresetFile, m_pPresetAddr[i]);
         //CState newstate;
@@ -4827,20 +4709,20 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
     else
     {
         // Pick a random file.
-        if (!m_bEnableRating || (m_presets[m_nPresets - 1].fRatingCum < 0.1f)) // || (m_nRatingReadProgress < m_nPresets))
+        if (!m_bEnableRating || (m_presets[static_cast<size_t>(m_nPresets) - 1].fRatingCum < 0.1f)) // || (m_nRatingReadProgress < m_nPresets))
         {
             m_nCurrentPreset = m_nDirs + (warand() % (m_nPresets - m_nDirs));
         }
         else
         {
-            float cdf_pos = (warand() % 14345) / 14345.0f * m_presets[m_nPresets - 1].fRatingCum;
+            float cdf_pos = (warand() % 14345) / 14345.0f * m_presets[static_cast<size_t>(m_nPresets) - 1].fRatingCum;
 
             /*
-            char buf[512];
-            sprintf_s(buf, "max = %f, rand = %f, \tvalues: ", m_presets[m_nPresets - 1].fRatingCum, cdf_pos);
+            char buf[512] = {0};
+            sprintf_s(buf, "max = %f, rand = %f, \tvalues: ", m_presets[static_cast<size_t>(m_nPresets) - 1].fRatingCum, cdf_pos);
             for (int i=m_nDirs; i<m_nPresets; i++)
             {
-                char buf2[32];
+                char buf2[32] = {0};
                 sprintf_s(buf2, "%3.1f ", m_presets[i].fRatingCum);
                 wcscat_s(buf, buf2);
             }
@@ -4885,8 +4767,8 @@ void CPlugin::RandomizeBlendPattern()
     if (!m_vertinfo)
         return;
 
-    // Note: we now avoid constant uniform blend b/c it's half-speed for shader blending.
-    //       (both old & new shaders would have to run on every pixel...)
+    // Note: now avoid constant uniform blend because it is half-speed for shader blending.
+    //       (both old and new shaders would have to run on every pixel...)
     int mixtype = 1 + (warand() % 3); //warand()%4;
 
     if (mixtype == 0)
@@ -5043,7 +4925,7 @@ void CPlugin::GenPlasma(int x0, int x1, int y0, int y1, float dt)
 void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
 {
     OutputDebugString(szPresetFilename);
-    //OutputDebugString("\n");
+    //OutputDebugString(L"\n");
     // Clear old error message.
     //if (m_nFramesSinceResize > 4)
     //    ClearErrors(ERR_PRESET);
@@ -5053,10 +4935,10 @@ void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
     if (GetFileAttributes(szPresetFilename) == INVALID_FILE_ATTRIBUTES)
     {
         /*
-        const wchar_t *p = wcsrchr(szPresetFilename, L'\\');
+        const wchar_t* p = wcsrchr(szPresetFilename, L'\\');
         p = (p) ? p + 1 : szPresetFilename;
-        wchar_t buf[1024];
-        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_PRESET_NOT_FOUND_X), p);
+        wchar_t buf[1024] = {0};
+        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_PRESET_NOT_FOUND_X), p);
         AddError(buf, 6.0f, ERR_PRESET, true);
         */
         return;
@@ -5145,8 +5027,11 @@ void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
 // Note: Only used this if the preset loaded *intact* (or mostly intact).
 void CPlugin::OnFinishedLoadingPreset()
 {
-    //SetMenusForPresetVersion( m_pState->m_nWarpPSVersion, m_pState->m_nCompPSVersion );
-    m_nPresetsLoadedTotal++; //only increment this on COMPLETION of the load.
+    SetMenusForPresetVersion(m_pState->m_nWarpPSVersion, m_pState->m_nCompPSVersion);
+    m_nPresetsLoadedTotal++; // only increment this on COMPLETION of the load
+
+    for (int mash = 0; mash < MASH_SLOTS; mash++)
+        m_nMashPreset[mash] = m_nCurrentPreset;
 }
 
 void CPlugin::LoadPresetTick()
@@ -5257,7 +5142,7 @@ char* NextLine(char* p)
 // NOTE - this is run in a separate thread!!!
 static unsigned int WINAPI __UpdatePresetList(void* lpVoid)
 {
-    UINT_PTR flags = reinterpret_cast<UINT_PTR>(lpVoid);
+    ULONG_PTR flags = reinterpret_cast<ULONG_PTR>(lpVoid);
     bool bForce = (flags & 1) ? true : false;
     bool bTryReselectCurrentPreset = (flags & 2) ? true : false;
 
@@ -5269,8 +5154,8 @@ static unsigned int WINAPI __UpdatePresetList(void* lpVoid)
     bool bRetrying = false;
 
     EnterCriticalSection(&g_cs);
-retry:
 
+retry:
     // Make sure the path exists; if not, go to Winamp plugins directory.
     if (GetFileAttributes(g_plugin.m_szPresetDir) == INVALID_FILE_ATTRIBUTES)
     {
@@ -5279,11 +5164,11 @@ retry:
 
     // If Mask (dir) changed, do a full re-scan.
     // If not, just finish the old scan.
-    wchar_t szMask[MAX_PATH];
+    wchar_t szMask[MAX_PATH] = {0};
     swprintf_s(szMask, L"%s*.*", g_plugin.m_szPresetDir); // because directory names could have extensions, etc.
     if (bForce || !g_plugin.m_szUpdatePresetMask[0] || wcscmp(szMask, g_plugin.m_szUpdatePresetMask))
     {
-        // If old dir was "" or the dir changed, reset our search.
+        // If old directory was "" or the directory changed, reset the search.
         if (h != INVALID_HANDLE_VALUE)
             FindClose(h);
         h = INVALID_HANDLE_VALUE;
@@ -5296,13 +5181,14 @@ retry:
         g_plugin.m_presets.clear();
 
         // Find first .MILK file
-        //if ((hFile = _findfirst(szMask, &c_file )) != -1L ) // note: returns filename -without- path
         if ((h = FindFirstFile(g_plugin.m_szUpdatePresetMask, &fd)) == INVALID_HANDLE_VALUE) // note: returns filename -without- path
         {
             // Revert back to plugins directory.
-            /* wchar_t buf[1024];
-            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILES_OR_DIRS_FOUND_IN_X), g_plugin.m_szPresetDir);
-            g_plugin.AddError(buf, 4.0f, ERR_MISC, true); */
+            /*
+            wchar_t buf[1024];
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILES_OR_DIRS_FOUND_IN_X), g_plugin.m_szPresetDir);
+            g_plugin.AddError(buf, 4.0f, ERR_MISC, true);
+            */
 
             if (bRetrying)
             {
@@ -5318,7 +5204,7 @@ retry:
             goto retry;
         }
 
-        //g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_SCANNING_PRESETS), 8.0f, ERR_SCANNING_PRESETS, false);
+        g_plugin.AddError(GetStringW(WASABI_API_LNG_HINST, g_plugin.GetInstance(), IDS_SCANNING_PRESETS), 8.0f, ERR_SCANNING_PRESETS, false);
     }
 
     if (g_plugin.m_bPresetListReady)
@@ -5346,7 +5232,7 @@ retry:
         bool bIsDir = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
         float fRating = 0;
 
-        wchar_t szFilename[512]{};
+        wchar_t szFilename[512] = {0};
         wcscpy_s(szFilename, fd.cFileName);
 
         if (bIsDir)
@@ -5381,7 +5267,7 @@ retry:
                 else
                 {
                     constexpr size_t PRESET_HEADER_SCAN_BYTES = 160U;
-                    char szLine[PRESET_HEADER_SCAN_BYTES];
+                    char szLine[PRESET_HEADER_SCAN_BYTES] = {0};
                     char* p = szLine;
 
                     int bytes_to_read = sizeof(szLine) - 1;
@@ -5456,7 +5342,7 @@ retry:
         {
             float fPrevPresetRatingCum = 0;
             if (temp_nPresets > 0)
-                fPrevPresetRatingCum += temp_presets[temp_nPresets - 1].fRatingCum;
+                fPrevPresetRatingCum += temp_presets[static_cast<size_t>(temp_nPresets) - 1].fRatingCum;
 
             PresetInfo x;
             x.szFilename = szFilename;
@@ -5510,14 +5396,13 @@ retry:
     g_plugin.m_nDirs = temp_nDirs;
     //g_plugin.m_bPresetListReady = true;
 
-    //if (g_plugin.m_bPresetListReady && g_plugin.m_nPresets == 0)
-    if (g_plugin.m_nPresets == 0)
+    if (g_plugin.m_nPresets == 0) //if (g_plugin.m_bPresetListReady && g_plugin.m_nPresets == 0)
     {
         // no presets OR directories found - weird - but it happens.
         // --> revert back to plugins dir
         /*
         wchar_t buf[1024];
-        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILES_OR_DIRS_FOUND_IN_X), g_plugin.m_szPresetDir);
+        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILES_OR_DIRS_FOUND_IN_X), g_plugin.m_szPresetDir);
         g_plugin.AddError(buf, 4.0f, ERR_MISC, true);
         */
 
@@ -5542,7 +5427,7 @@ retry:
         // Update cumulative ratings, since order changed...
         g_plugin.m_presets[0].fRatingCum = g_plugin.m_presets[0].fRatingThis;
         for (int i = 1; i < g_plugin.m_nPresets; i++)
-            g_plugin.m_presets[i].fRatingCum = g_plugin.m_presets[i - 1].fRatingCum + g_plugin.m_presets[i].fRatingThis;
+            g_plugin.m_presets[i].fRatingCum = g_plugin.m_presets[static_cast<size_t>(i) - 1].fRatingCum + g_plugin.m_presets[i].fRatingThis;
 
         // Clear the "Scanning presets..." message.
         //g_plugin.ClearErrors(ERR_SCANNING_PRESETS);
@@ -5595,12 +5480,12 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
     assert(!g_bThreadAlive);
 
     // Spawn new thread.
-    UINT_PTR flags = (bForce ? 1 : 0) | (bTryReselectCurrentPreset ? 2 : 0);
+    ULONG_PTR flags = (bForce ? 1 : 0) | (bTryReselectCurrentPreset ? 2 : 0);
     g_bThreadShouldQuit = false;
     g_bThreadAlive = true;
     g_hThread = (HANDLE)_beginthreadex(NULL, 0, __UpdatePresetList, reinterpret_cast<void*>(flags), 0, 0);
 
-    if (!bBackground)
+    if (!bBackground && g_hThread)
     {
         // Crank up priority, wait for it to finish, and then return.
         SetThreadPriority(g_hThread, THREAD_PRIORITY_HIGHEST);
@@ -5613,7 +5498,7 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
         CloseHandle(g_hThread);
         g_hThread = INVALID_HANDLE_VALUE;
     }
-    else
+    else if (g_hThread)
     {
         // It will just run in the background til it finishes.
         // however, we want to wait until at least ~32 presets are found (or failure) before returning,
@@ -5740,8 +5625,7 @@ void CPlugin::SetCurrentPresetRating(float fNewRating)
 
     // Update the cumulative internal listing.
     m_presets[m_nCurrentPreset].fRatingThis += change;
-    if (m_nCurrentPreset !=
-        -1) //&& m_nRatingReadProgress >= m_nCurrentPreset) // (can be -1 if dir. changed but no new preset was loaded yet)
+    if (m_nCurrentPreset != -1) //&& m_nRatingReadProgress >= m_nCurrentPreset) // (can be -1 if dir. changed but no new preset was loaded yet)
         for (int i = m_nCurrentPreset; i < m_nPresets; i++)
             m_presets[i].fRatingCum += change;
 
@@ -5763,15 +5647,12 @@ void CPlugin::SetCurrentPresetRating(float fNewRating)
     }
 }
 
-#ifdef DX9_MILKDROP
 void CPlugin::ReadCustomMessages()
 {
-    int n;
-
     // First, clear all old data
-    for (n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
+    for (int n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
     {
-        wcscpy(m_CustomMessageFont[n].szFace, L"arial");
+        wcscpy_s(m_CustomMessageFont[n].szFace, L"arial");
         m_CustomMessageFont[n].bBold = false;
         m_CustomMessageFont[n].bItal = false;
         m_CustomMessageFont[n].nColorR = 255;
@@ -5779,7 +5660,7 @@ void CPlugin::ReadCustomMessages()
         m_CustomMessageFont[n].nColorB = 255;
     }
 
-    for (n = 0; n < MAX_CUSTOM_MESSAGES; n++)
+    for (int n = 0; n < MAX_CUSTOM_MESSAGES; n++)
     {
         m_CustomMessage[n].szText[0] = 0;
         m_CustomMessage[n].nFont = 0;
@@ -5800,7 +5681,7 @@ void CPlugin::ReadCustomMessages()
         m_CustomMessage[n].bOverrideColorB = false;
         m_CustomMessage[n].bBold = false;
         m_CustomMessage[n].bItal = false;
-        wcscpy(m_CustomMessage[n].szFace, L"arial");
+        wcscpy_s(m_CustomMessage[n].szFace, L"arial");
         m_CustomMessage[n].nColorR = 255;
         m_CustomMessage[n].nColorG = 255;
         m_CustomMessage[n].nColorB = 255;
@@ -5809,15 +5690,15 @@ void CPlugin::ReadCustomMessages()
         m_CustomMessage[n].nRandB = 0;
     }
 
+#ifndef _FOOBAR
     // Then read in the new file.
-    for (n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
+    for (int n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
     {
         wchar_t szSectionName[32];
-        swprintf(szSectionName, L"font%02d", n);
+        swprintf_s(szSectionName, L"font%02d", n);
 
         // Get face, bold, italic, x, y for this custom message FONT.
-        GetPrivateProfileString(
-            szSectionName, L"face", L"arial", m_CustomMessageFont[n].szFace, ARRAYSIZE(m_CustomMessageFont[n].szFace), m_szMsgIniFile);
+        GetPrivateProfileString(szSectionName, L"face", L"arial", m_CustomMessageFont[n].szFace, ARRAYSIZE(m_CustomMessageFont[n].szFace), m_szMsgIniFile);
         m_CustomMessageFont[n].bBold = GetPrivateProfileBoolW(szSectionName, L"bold", m_CustomMessageFont[n].bBold, m_szMsgIniFile);
         m_CustomMessageFont[n].bItal = GetPrivateProfileBoolW(szSectionName, L"ital", m_CustomMessageFont[n].bItal, m_szMsgIniFile);
         m_CustomMessageFont[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", m_CustomMessageFont[n].nColorR, m_szMsgIniFile);
@@ -5825,14 +5706,13 @@ void CPlugin::ReadCustomMessages()
         m_CustomMessageFont[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", m_CustomMessageFont[n].nColorB, m_szMsgIniFile);
     }
 
-    for (n = 0; n < MAX_CUSTOM_MESSAGES; n++)
+    for (int n = 0; n < MAX_CUSTOM_MESSAGES; n++)
     {
         wchar_t szSectionName[64];
-        swprintf(szSectionName, L"message%02d", n);
+        swprintf_s(szSectionName, L"message%02d", n);
 
         // Get fontID, size, text, etc. for this custom message.
-        GetPrivateProfileString(
-            szSectionName, L"text", L"", m_CustomMessage[n].szText, ARRAYSIZE(m_CustomMessage[n].szText), m_szMsgIniFile);
+        GetPrivateProfileString(szSectionName, L"text", L"", m_CustomMessage[n].szText, ARRAYSIZE(m_CustomMessage[n].szText), m_szMsgIniFile);
         if (m_CustomMessage[n].szText[0])
         {
             m_CustomMessage[n].nFont = GetPrivateProfileIntW(szSectionName, L"font", m_CustomMessage[n].nFont, m_szMsgIniFile);
@@ -5853,8 +5733,7 @@ void CPlugin::ReadCustomMessages()
             m_CustomMessage[n].nRandB = GetPrivateProfileIntW(szSectionName, L"randb", m_CustomMessage[n].nRandB, m_szMsgIniFile);
 
             // Overrides: r,g,b,face,bold,ital
-            GetPrivateProfileString(
-                szSectionName, L"face", L"", m_CustomMessage[n].szFace, ARRAYSIZE(m_CustomMessage[n].szFace), m_szMsgIniFile);
+            GetPrivateProfileString(szSectionName, L"face", L"", m_CustomMessage[n].szFace, ARRAYSIZE(m_CustomMessage[n].szFace), m_szMsgIniFile);
             m_CustomMessage[n].bBold = GetPrivateProfileIntW(szSectionName, L"bold", -1, m_szMsgIniFile);
             m_CustomMessage[n].bItal = GetPrivateProfileIntW(szSectionName, L"ital", -1, m_szMsgIniFile);
             m_CustomMessage[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", -1, m_szMsgIniFile);
@@ -5869,8 +5748,10 @@ void CPlugin::ReadCustomMessages()
             m_CustomMessage[n].bOverrideColorB = (m_CustomMessage[n].nColorB != -1);
         }
     }
+#endif
 }
 
+#ifdef DX9_MILKDROP
 void CPlugin::LaunchCustomMessage(int nMsgNum)
 {
     if (nMsgNum > 99)
@@ -5879,7 +5760,7 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
     if (nMsgNum < 0)
     {
         int count = 0;
-        // choose randomly
+        // Choose randomly.
         for (nMsgNum = 0; nMsgNum < 100; nMsgNum++)
             if (m_CustomMessage[nMsgNum].szText[0])
                 count++;
@@ -5904,9 +5785,9 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
 
     m_supertext.bRedrawSuperText = true;
     m_supertext.bIsSongTitle = false;
-    lstrcpy(m_supertext.szTextW, m_CustomMessage[nMsgNum].szText);
+    wcscpy_s(m_supertext.szText, m_CustomMessage[nMsgNum].szText);
 
-    // regular properties:
+    // Regular properties.
     m_supertext.fFontSize = m_CustomMessage[nMsgNum].fSize;
     m_supertext.fX = m_CustomMessage[nMsgNum].x + m_CustomMessage[nMsgNum].randx * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
     m_supertext.fY = m_CustomMessage[nMsgNum].y + m_CustomMessage[nMsgNum].randy * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
@@ -5914,50 +5795,39 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
     m_supertext.fDuration = m_CustomMessage[nMsgNum].fTime;
     m_supertext.fFadeTime = m_CustomMessage[nMsgNum].fFade;
 
-    // overrideables:
+    // Overrideables.
     if (m_CustomMessage[nMsgNum].bOverrideFace)
-        lstrcpy(m_supertext.nFontFace, m_CustomMessage[nMsgNum].szFace);
+        wcscpy_s(m_supertext.nFontFace, m_CustomMessage[nMsgNum].szFace);
     else
-        lstrcpy(m_supertext.nFontFace, m_CustomMessageFont[fontID].szFace);
-    m_supertext.bItal =
-        (m_CustomMessage[nMsgNum].bOverrideItal) ? (m_CustomMessage[nMsgNum].bItal != 0) : (m_CustomMessageFont[fontID].bItal != 0);
-    m_supertext.bBold =
-        (m_CustomMessage[nMsgNum].bOverrideBold) ? (m_CustomMessage[nMsgNum].bBold != 0) : (m_CustomMessageFont[fontID].bBold != 0);
-    m_supertext.nColorR =
-        (m_CustomMessage[nMsgNum].bOverrideColorR) ? m_CustomMessage[nMsgNum].nColorR : m_CustomMessageFont[fontID].nColorR;
-    m_supertext.nColorG =
-        (m_CustomMessage[nMsgNum].bOverrideColorG) ? m_CustomMessage[nMsgNum].nColorG : m_CustomMessageFont[fontID].nColorG;
-    m_supertext.nColorB =
-        (m_CustomMessage[nMsgNum].bOverrideColorB) ? m_CustomMessage[nMsgNum].nColorB : m_CustomMessageFont[fontID].nColorB;
+        wcscpy_s(m_supertext.nFontFace, m_CustomMessageFont[fontID].szFace);
+    m_supertext.bItal = (m_CustomMessage[nMsgNum].bOverrideItal) ? (m_CustomMessage[nMsgNum].bItal != 0) : (m_CustomMessageFont[fontID].bItal != 0);
+    m_supertext.bBold = (m_CustomMessage[nMsgNum].bOverrideBold) ? (m_CustomMessage[nMsgNum].bBold != 0) : (m_CustomMessageFont[fontID].bBold != 0);
+    m_supertext.nColorR = (m_CustomMessage[nMsgNum].bOverrideColorR) ? m_CustomMessage[nMsgNum].nColorR : m_CustomMessageFont[fontID].nColorR;
+    m_supertext.nColorG = (m_CustomMessage[nMsgNum].bOverrideColorG) ? m_CustomMessage[nMsgNum].nColorG : m_CustomMessageFont[fontID].nColorG;
+    m_supertext.nColorB = (m_CustomMessage[nMsgNum].bOverrideColorB) ? m_CustomMessage[nMsgNum].nColorB : m_CustomMessageFont[fontID].nColorB;
 
-    // randomize color
+    // Randomize color.
     m_supertext.nColorR += (int)(m_CustomMessage[nMsgNum].nRandR * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
     m_supertext.nColorG += (int)(m_CustomMessage[nMsgNum].nRandG * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
     m_supertext.nColorB += (int)(m_CustomMessage[nMsgNum].nRandB * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
-    if (m_supertext.nColorR < 0)
-        m_supertext.nColorR = 0;
-    if (m_supertext.nColorG < 0)
-        m_supertext.nColorG = 0;
-    if (m_supertext.nColorB < 0)
-        m_supertext.nColorB = 0;
-    if (m_supertext.nColorR > 255)
-        m_supertext.nColorR = 255;
-    if (m_supertext.nColorG > 255)
-        m_supertext.nColorG = 255;
-    if (m_supertext.nColorB > 255)
-        m_supertext.nColorB = 255;
+    if (m_supertext.nColorR < 0) m_supertext.nColorR = 0;
+    if (m_supertext.nColorG < 0) m_supertext.nColorG = 0;
+    if (m_supertext.nColorB < 0) m_supertext.nColorB = 0;
+    if (m_supertext.nColorR > 255) m_supertext.nColorR = 255;
+    if (m_supertext.nColorG > 255) m_supertext.nColorG = 255;
+    if (m_supertext.nColorB > 255) m_supertext.nColorB = 255;
 
-    // fix &'s for display:
+    // Fix '&'s for display.
     /*
-    {	
+    {
         int pos = 0;
-        int len = lstrlen(m_supertext.szText);
-        while (m_supertext.szText[pos] && pos<255)
+        int len = wcslen_s(m_supertext.szText);
+        while (m_supertext.szText[pos] && pos < 255)
         {
             if (m_supertext.szText[pos] == '&')
             {
-                for (int x=len; x>=pos; x--)
-                    m_supertext.szText[x+1] = m_supertext.szText[x];
+                for (int x = len; x >= pos; x--)
+                    m_supertext.szText[x + 1] = m_supertext.szText[x];
                 len++;
                 pos++;
             }
@@ -5972,9 +5842,8 @@ void CPlugin::LaunchSongTitleAnim()
 {
     m_supertext.bRedrawSuperText = true;
     m_supertext.bIsSongTitle = true;
-    lstrcpy(m_supertext.szTextW, m_szSongTitle);
-    //lstrcpy(m_supertext.szText, " ");
-    lstrcpy(m_supertext.nFontFace, m_fontinfo[SONGTITLE_FONT].szFace);
+    wcscpy_s(m_supertext.szText, m_szSongTitle);
+    wcscpy_s(m_supertext.nFontFace, m_fontinfo[SONGTITLE_FONT].szFace);
     m_supertext.fFontSize = (float)m_fontinfo[SONGTITLE_FONT].nSize;
     m_supertext.bBold = m_fontinfo[SONGTITLE_FONT].bBold;
     m_supertext.bItal = m_fontinfo[SONGTITLE_FONT].bItalic;
@@ -5998,25 +5867,25 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
     initcode[0] = 0;
     code[0] = 0;
     img[0] = 0;
-    swprintf(section, L"img%02d", nSpriteNum);
-    sprintf(sectionA, "img%02d", nSpriteNum);
+    swprintf_s(section, L"img%02d", nSpriteNum);
+    sprintf_s(sectionA, "img%02d", nSpriteNum);
 
     // 1. Read in image filename.
     GetPrivateProfileString(section, L"img", L"", img, ARRAYSIZE(img) - 1, m_szImgIniFile);
     if (img[0] == 0)
     {
-        wchar_t buf[1024];
-        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_COULD_NOT_FIND_IMG_OR_NOT_DEFINED), nSpriteNum);
+        wchar_t buf[1024] = {0};
+        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_COULD_NOT_FIND_IMG_OR_NOT_DEFINED), nSpriteNum);
         AddError(buf, 7.0f, ERR_MISC, false);
         return false;
     }
 
-    if (img[1] != L':') // || img[2] != '\\')
+    if (img[1] != L':') //|| img[2] != '\\')
     {
-        // It's not in the form "x:\blah\billy.jpg" so prepend plugin dir path.
-        wchar_t temp[512];
-        wcscpy(temp, img);
-        swprintf(img, L"%s%s", m_szMilkdrop2Path, temp);
+        // It's not in the form "x:\blah\picture.jpg" so prepend plugin dir path.
+        wchar_t temp[512] = {0};
+        wcscpy_s(temp, img);
+        swprintf_s(img, L"%s%s", m_szMilkdrop2Path, temp);
     }
 
     // 2. Get color key.
@@ -6030,37 +5899,37 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
     for (int n = 0; n < 2; n++)
     {
         char* pStr = (n == 0) ? initcode : code;
-        char szLineName[32];
-        int len;
+        char szLineName[32] = {0};
+        size_t len;
 
         int line = 1;
-        int char_pos = 0;
+        size_t char_pos = 0;
         bool bDone = false;
 
         while (!bDone)
         {
             if (n == 0)
-                sprintf(szLineName, "init_%d", line);
+                sprintf_s(szLineName, "init_%d", line);
             else
-                sprintf(szLineName, "code_%d", line);
+                sprintf_s(szLineName, "code_%d", line);
 
             GetPrivateProfileStringA(sectionA, szLineName, "~!@#$", szTemp, 8192, AutoCharFn(m_szImgIniFile));
-            len = lstrlenA(szTemp);
+            len = strlen(szTemp);
 
             if ((strcmp(szTemp, "~!@#$") == 0) || // if the key was missing,
-                (len >= 8191 - char_pos - 1)) // or if we're out of space
+                (len >= 8191 - char_pos - 1))     // or if out of space
             {
                 bDone = true;
             }
             else
             {
-                sprintf(&pStr[char_pos], "%s%c", szTemp, LINEFEED_CONTROL_CHAR);
+                sprintf_s(&pStr[char_pos], 8192 - char_pos, "%s%c", szTemp, LINEFEED_CONTROL_CHAR);
             }
 
             char_pos += len + 1;
             line++;
         }
-        pStr[char_pos++] = 0; // null-terminate
+        pStr[char_pos++] = '\0'; // null-terminate
     }
 
     if (nSlot == -1)
@@ -6092,18 +5961,18 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
     int ret = m_texmgr.LoadTex(img, nSlot, initcode, code, GetTime(), GetFrame(), ck);
     m_texmgr.m_tex[nSlot].nUserData = nSpriteNum;
 
-    wchar_t buf[1024];
+    wchar_t buf[1024] = {0};
     switch (ret & TEXMGR_ERROR_MASK)
     {
         case TEXMGR_ERR_SUCCESS:
             switch (ret & TEXMGR_WARNING_MASK)
             {
                 case TEXMGR_WARN_ERROR_IN_INIT_CODE:
-                    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_WARNING_ERROR_IN_INIT_CODE), nSpriteNum);
+                    swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_WARNING_ERROR_IN_INIT_CODE), nSpriteNum);
                     AddError(buf, 6.0f, ERR_MISC, true);
                     break;
                 case TEXMGR_WARN_ERROR_IN_REG_CODE:
-                    swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_WARNING_ERROR_IN_PER_FRAME_CODE), nSpriteNum);
+                    swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_WARNING_ERROR_IN_PER_FRAME_CODE), nSpriteNum);
                     AddError(buf, 6.0f, ERR_MISC, true);
                     break;
                 default:
@@ -6112,24 +5981,24 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
             }
             break;
         case TEXMGR_ERR_BAD_INDEX:
-            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_BAD_SLOT_INDEX), nSpriteNum);
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_BAD_SLOT_INDEX), nSpriteNum);
             AddError(buf, 6.0f, ERR_MISC, true);
             break;
         /*
-    case TEXMGR_ERR_OPENING:                sprintf(m_szUserMessage, "sprite #%d error: unable to open imagefile", nSpriteNum); break;
-    case TEXMGR_ERR_FORMAT:                 sprintf(m_szUserMessage, "sprite #%d error: file is corrupt or non-jpeg image", nSpriteNum); break;
-    case TEXMGR_ERR_IMAGE_NOT_24_BIT:       sprintf(m_szUserMessage, "sprite #%d error: image does not have 3 color channels", nSpriteNum); break;
-    case TEXMGR_ERR_IMAGE_TOO_LARGE:        sprintf(m_szUserMessage, "sprite #%d error: image is too large", nSpriteNum); break;
-    case TEXMGR_ERR_CREATESURFACE_FAILED:   sprintf(m_szUserMessage, "sprite #%d error: createsurface() failed", nSpriteNum); break;
-    case TEXMGR_ERR_LOCKSURFACE_FAILED:     sprintf(m_szUserMessage, "sprite #%d error: lock() failed", nSpriteNum); break;
-    case TEXMGR_ERR_CORRUPT_JPEG:           sprintf(m_szUserMessage, "sprite #%d error: jpeg is corrupt", nSpriteNum); break;
-    */
+        case TEXMGR_ERR_OPENING:              sprintf_s(m_szUserMessage, "sprite #%d error: unable to open imagefile", nSpriteNum); break;
+        case TEXMGR_ERR_FORMAT:               sprintf_s(m_szUserMessage, "sprite #%d error: file is corrupt or non-jpeg image", nSpriteNum); break;
+        case TEXMGR_ERR_IMAGE_NOT_24_BIT:     sprintf_s(m_szUserMessage, "sprite #%d error: image does not have 3 color channels", nSpriteNum); break;
+        case TEXMGR_ERR_IMAGE_TOO_LARGE:      sprintf_s(m_szUserMessage, "sprite #%d error: image is too large", nSpriteNum); break;
+        case TEXMGR_ERR_CREATESURFACE_FAILED: sprintf_s(m_szUserMessage, "sprite #%d error: createsurface() failed", nSpriteNum); break;
+        case TEXMGR_ERR_LOCKSURFACE_FAILED:   sprintf_s(m_szUserMessage, "sprite #%d error: lock() failed", nSpriteNum); break;
+        case TEXMGR_ERR_CORRUPT_JPEG:         sprintf_s(m_szUserMessage, "sprite #%d error: jpeg is corrupt", nSpriteNum); break;
+        */
         case TEXMGR_ERR_BADFILE:
-            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_IMAGE_FILE_MISSING_OR_CORRUPT), nSpriteNum);
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_IMAGE_FILE_MISSING_OR_CORRUPT), nSpriteNum);
             AddError(buf, 6.0f, ERR_MISC, true);
             break;
         case TEXMGR_ERR_OUTOFMEM:
-            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_OUT_OF_MEM), nSpriteNum);
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_OUT_OF_MEM), nSpriteNum);
             AddError(buf, 6.0f, ERR_MISC, true);
             break;
     }
@@ -6149,14 +6018,14 @@ void CPlugin::DoCustomSoundAnalysis()
     memcpy(mdsound.fWave[1], m_sound.fWaveform[1], sizeof(float) * 576);
 
     // Do our own [UN-NORMALIZED] fft.
-    float fWaveLeft[576];
+    float fWaveLeft[576] = {0.0f};
     for (int i = 0; i < 576; i++)
         fWaveLeft[i] = m_sound.fWaveform[0][i];
 
     memset(mdsound.fSpecLeft, 0, sizeof(float) * MD_FFT_SAMPLES);
 
     mdfft.time_to_frequency_domain(fWaveLeft, mdsound.fSpecLeft);
-    //for (int i = 0; i < MD_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i]*fSpecLeft[i] + fSpecTemp[i]*fSpecTemp[i]);
+    //for (i = 0; i < MD_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i] * fSpecLeft[i] + fSpecTemp[i] * fSpecTemp[i]);
 
     // Sum spectrum up into 3 bands.
     for (int i = 0; i < 3; i++)
