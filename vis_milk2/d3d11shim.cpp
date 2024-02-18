@@ -3,6 +3,9 @@
  *                  References:
  *                  - https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-d3d9-to-d3d10-considerations
  *                  - https://learn.microsoft.com/en-us/windows/win32/direct3d11/d3d11-programming-guide-migrating
+ *
+ *  Copyright (c) 2021-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "pch.h"

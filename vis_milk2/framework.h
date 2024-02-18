@@ -1,5 +1,8 @@
 /*
  *  framework.h - Common headers for MilkDrop 2 library.
+ *
+ *  Copyright (c) 2023-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: MPL-2.0
  */
 
 #pragma once
@@ -37,7 +40,7 @@
 
 #include <d3d11_1.h>
 #include <d3d11shader.h>
-#include <dxgi1_6.h>
+#include <dxgi1_6.h> // "dxgi1_2.h" for Windows 7 (Windows 8 and Platform Update for Windows 7) but "dxgi1_6.h" (Windows 10, version 1803) for `IDXGIFactory5::CheckFeatureSupport()`
 #include <d2d1_1.h>
 #include <dwrite_1.h>
 #ifdef _DEBUG

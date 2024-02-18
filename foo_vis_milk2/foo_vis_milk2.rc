@@ -1,4 +1,7 @@
-// Microsoft Visual C++ generated resource script.
+// foo_vis_milk2.rc - Microsoft Visual C++ generated resource script.
+//
+// Copyright (c) 2023-2024 Jimmy Cassis
+// SPDX-License-Identifier: MPL-2.0
 //
 #include "resource.h"
 #include "version.h"

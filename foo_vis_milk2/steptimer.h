@@ -1,6 +1,9 @@
 /*
  *  steptimer.h - A high-resolution timer that provides elapsed time
  *                information.
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,6 +1,9 @@
 /*
  *  main.cpp - Sets the MilkDrop 2 visualization component's file name
  *             and version.
+ *
+ *  Copyright (c) 2023-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: MPL-2.0
  */
 
 #include "pch.h"

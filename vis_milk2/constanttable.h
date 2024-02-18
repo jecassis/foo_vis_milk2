@@ -1,5 +1,8 @@
 /*
  *  constanttable.h - Direct3D 11 constant table header.
+ *
+ *  Copyright (c) 2021-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: BSD-3-Clause
  */
 
 #pragma once

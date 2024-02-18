@@ -1,3 +1,8 @@
+# build.yml - GitHub Actions workflow specification.
+#
+# Copyright (c) 2023-2024 Jimmy Cassis
+# SPDX-License-Identifier: MPL-2.0
+
 name: Win32 MSVC DLL Build and Package
 on:
   push:

@@ -5,8 +5,9 @@ MilkDrop 2 takes you flying through visualizations of the soundwaves you're hear
 
 Prerequisites to build the `foo_vis_milk2.dll` component for foobar2000:
 
-- [foobar2000 SDK](https://www.foobar2000.org/SDK): download the latest version and uncompress the contents in the `external/` folder.
+- [foobar2000 SDK](https://www.foobar2000.org/SDK): download the latest version and uncompress the contents in the `external/` folder and apply the [patch](external/fb2ksdk.patch).
 - [NS-EEL2](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
+- [projectM EEL](https://github.com/projectM-visualizer/projectm-eval): clone the repository into the `external/` folder, checkout the `HEAD` of the `master` branch and apply the [patch](external/pmeel.patch). _This is the default expression evaluator library._
 - [DirectXTK](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are fetched via the NuGet package manager.
 - [Windows Template Library (WTL)](https://wtl.sourceforge.io/): the files required to build the DLL are fetched via the NuGet package manager.
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`foo_vis_milk2`](foo_vis_milk2.sln) solution, set `foo_vis_milk2` as the Startup Project, install WTL and DirectXTK as NuGet packages, select a configuration, and build the solution.
@@ -26,15 +27,26 @@ See [CHANGELOG](CHANGELOG.md) for additional details.
 - Built for foobar2000 2.0 and later with latest Windows 11 SDK (10.0.22621.0) and MSVC (v143).
 - Updated all library dependencies to their latest available releases.
 - Deprecated or insecure functions have been rewritten and most unused functionality removed.
-- `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11. 
+- `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11.
 - Tested on foobar2000 v2.1.2 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22621).
 - In theory, Intel architecture versions work with Windows 8 or later and ARM architecture versions with Windows 10 or later; mainly dictated by the DXGI version required to support hybrid graphics, high DPI displays and HDR.
 
 ## Run Requirements and Installation
 
 - Download [foobar2000](https://www.foobar2000.org/download) and install.
-- Import `foo_vis_milk2.fbk2-component` into foobar2000 using the "*File / Preferences / Components / Install...*" menu item.
-- Download and extract presets into this component's directory of foobar2000. This should be `<foobar2000 install folder>\profile\user-components{,-x64}\foo_vis_milk2\milkdrop2\presets`. Some presets suggested by Ryan Geiss (the MilkDrop 2 author) can be downloaded from his [website](https://www.geisswerks.com/milkdrop/).
+- Import `foo_vis_milk2.fbk2-component` into foobar2000 using the "_File / Preferences / Components / Install..._" menu item.
+- Download and extract presets into this component's directory of foobar2000. This should be `<foobar2000 install folder>\profile\milkdrop2\presets`.
+- Textures can also be added to `<foobar2000 install folder>\profile\milkdrop2\textures`.
+
+### Presets
+
+The preset files define the visualizations via pixel shaders, equations and parameters.
+
+The foobar2000 component is not packaged with any presets. Some presets enjoyed by Ryan Geiss (the MilkDrop 2 author) can be downloaded from his [website](https://www.geisswerks.com/milkdrop/). In addition, the projectM repository archives several preset and texture collections:
+
+- [Cream of the Crop Pack](https://github.com/projectM-visualizer/presets-cream-of-the-crop): A collection of about 10,000 presets compiled by Jason Fletcher.
+- [Base Milkdrop Texture Pack](https://github.com/projectM-visualizer/presets-milkdrop-texture-pack): Recommended for use with _any_ preset pack!
+- [Milkdrop 2 Presets](https://github.com/projectM-visualizer/presets-milkdrop-original): The original preset collection shipped with Milkdrop and Winamp.
 
 ## Repository Notes
 
@@ -74,6 +86,7 @@ MilkDrop 2 (`vis_milk2`) is a music visualizer - a "plug-in" to the Winamp music
 - Fixing of string resources to flow consistently with Segoe UI spacing and sizing.
 - Minor cleaning and updating of configuration panel to match functioning features and UI modifications.
 - Developer experience improvements, such as:
+
   - Updated dependencies to latest available versions.
   - Refactored EEL2 and DirectXTK into separate projects.
   - PCH and multiprocessor compile enabled for fast builds.

@@ -1,6 +1,9 @@
 /*
  *  deviceresources.cpp - Wrapper for the Direct3D 11 device and swap chain
  *                        (requires DirectX 11.1 Runtime).
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  SPDX-License-Identifier: MIT
  */
 
 #include "pch.h"
@@ -334,7 +337,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
         swapChainDesc.BufferCount = m_backBufferCount;
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
-        swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+        swapChainDesc.Scaling = DXGI_SCALING_STRETCH; // NONE?
         swapChainDesc.SwapEffect = (m_options & (c_FlipPresent | c_AllowTearing | c_EnableHDR)) ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
         swapChainDesc.Flags = (m_options & c_AllowTearing) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u;
@@ -406,6 +409,9 @@ void DeviceResources::SetWindow(HWND window, int width, int height) noexcept
     m_outputSize.left = m_outputSize.top = 0;
     m_outputSize.right = static_cast<long>(width);
     m_outputSize.bottom = static_cast<long>(height);
+
+    //m_d2dContext->SetDpi(m_dpiX, m_dpiY);
+    //CreateWindowSizeDependentResources();
 }
 
 void DeviceResources::SetDpi()
@@ -492,6 +498,9 @@ void DeviceResources::HandleDeviceLost()
 
     m_d3dDevice.Reset();
     m_dxgiFactory.Reset();
+
+    //m_d2dFactory.Reset();
+    //m_dwriteFactory.Reset();
 
     CreateDeviceResources();
     CreateWindowSizeDependentResources();

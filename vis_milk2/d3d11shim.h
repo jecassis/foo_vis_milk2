@@ -1,5 +1,8 @@
 /*
  *  d3d11shim.h - Direct3D 9 to Direct3D 11 conversion functions header.
+ *
+ *  Copyright (c) 2021-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: BSD-3-Clause
  */
 
 #pragma once

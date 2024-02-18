@@ -1,3 +1,8 @@
+# build-fb2k_component.ps1
+#
+# Copyright (c) 2023-2024 Jimmy Cassis
+# SPDX-License-Identifier: MPL-2.0
+
 <#
     .SYNOPSIS
         Builds the foobar2000 component package.

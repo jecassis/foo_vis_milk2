@@ -1,3 +1,10 @@
+/*
+ *  defaultvs.hlsl - Default vertex shader.
+ *
+ *  Copyright (c) 2021-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: BSD-3-Clause
+ */
+
 cbuffer cbTransforms : register(b0)
 {
     float4x4 g_world;

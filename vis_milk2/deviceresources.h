@@ -1,5 +1,8 @@
 /*
  *  deviceresources.h - Wrapper for the Direct3D 11 device and swap chain.
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -2,6 +2,9 @@
  *  version.h - Defines common version information for the DLL's version
  *              resource and the component version shown in foobar2000.
  *              Note: Newline at EOF required for resource compiler (RC1004).
+ *
+ *  Copyright (c) 2023-2024 Jimmy Cassis
+ *  SPDX-License-Identifier: MPL-2.0
  */
 
 #pragma once

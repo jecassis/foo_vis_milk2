@@ -1,6 +1,9 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by foo_vis_milk2.rc
+// resource.h - Microsoft Visual C++ generated include file.
+//              Used by foo_vis_milk2.rc
+//
+// Copyright (c) 2023-2024 Jimmy Cassis
+// SPDX-License-Identifier: MPL-2.0
 //
 #define IDS_ABOUT_STRING                1
 #define IDS_SZ_MENU_NAV_TOOLTIP         2
