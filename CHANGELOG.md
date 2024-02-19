@@ -6,8 +6,8 @@ In order to complete the port from Winamp large amounts of functionality has bee
 
 - Some text, image and texture rendering.
 - Customization through INI file.
-- Older presets break.
-- Interactive preset selection and shader editing.
+- Older presets may not fully work.
+- Interactive preset and shader editing.
 - Desktop mode.
 - Fake fullscreen mode and dual header functionality.
 - VJ mode.
