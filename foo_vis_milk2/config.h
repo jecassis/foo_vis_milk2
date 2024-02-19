@@ -240,6 +240,8 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata);
     inline void SelectItemByPos(HWND ctrl, int pos);
     int SelectItemByValue(HWND ctrl, DWORD value);
+    int64_t ReadCBValue(DWORD ctrl_id) const;
+    bool IsComboDiff(DWORD ctrl_id, int64_t previous) const;
     wchar_t* FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID);
     void UpdateMaxFps(int screenmode) const;
     void SaveMaxFps(int screenmode) const;

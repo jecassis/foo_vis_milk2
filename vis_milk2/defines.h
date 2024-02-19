@@ -121,20 +121,6 @@
 // (The equivelent of "" in these is a single space now)
 
 // Adjust the defaults for the 4 built-in fonts here.
-// (note: if you want the font to be available on 98 + ME + 2k + XP, use one of the following...)
-//     arial
-//     courier 10-12-15
-//     courier new
-//     comic san[s] ms
-//     lucida console
-//     ms sans serif
-//     ms serif
-//     small fonts
-//     symbol 8-10-12-14-18-24
-//     tahoma
-//     times new roman
-//     verdana
-//     webdings
 #define SIMPLE_FONT_DEFAULT_FACE L"Courier New"
 #define SIMPLE_FONT_DEFAULT_SIZE 14
 #define SIMPLE_FONT_DEFAULT_BOLD 0
@@ -150,7 +136,7 @@
 #define HELPSCREEN_FONT_DEFAULT_BOLD 1
 #define HELPSCREEN_FONT_DEFAULT_ITAL 0
 #define HELPSCREEN_FONT_DEFAULT_AA 0
-#define PLAYLIST_FONT_DEFAULT_FACE L"Arial"
+#define PLAYLIST_FONT_DEFAULT_FACE L"Segoe UI" //"Arial"
 #define PLAYLIST_FONT_DEFAULT_SIZE 16
 #define PLAYLIST_FONT_DEFAULT_BOLD 0
 #define PLAYLIST_FONT_DEFAULT_ITAL 0
@@ -162,17 +148,15 @@
 // `GetExtraFont(EXTRA_2)` for extra font #2, and so on.
 #define NUM_EXTRA_FONTS 2 // <- do not exceed 5 here!
 #define TOOLTIP_FONT EXTRA_1
-//#define EXTRA_FONT_1_NAME "Tooltips"
-// Defined in the stringtable resources now since 2.0e.
-#define EXTRA_FONT_1_DEFAULT_FACE L"Arial"
+//#define EXTRA_FONT_1_NAME "Tooltips" // Defined in the stringtable resources
+#define EXTRA_FONT_1_DEFAULT_FACE L"Calibri"
 #define EXTRA_FONT_1_DEFAULT_SIZE 14
 #define EXTRA_FONT_1_DEFAULT_BOLD 0
 #define EXTRA_FONT_1_DEFAULT_ITAL 0
 #define EXTRA_FONT_1_DEFAULT_AA 0
 #define SONGTITLE_FONT EXTRA_2
-//#define EXTRA_FONT_2_NAME "Animated Songtitles"
-// Defined in the stringtable resources now since 2.0e.
-#define EXTRA_FONT_2_DEFAULT_FACE L"Times New Roman"
+//#define EXTRA_FONT_2_NAME "Animated Song Titles" // Defined in the stringtable resources
+#define EXTRA_FONT_2_DEFAULT_FACE L"Georgia"
 #define EXTRA_FONT_2_DEFAULT_SIZE 18
 #define EXTRA_FONT_2_DEFAULT_BOLD 0
 #define EXTRA_FONT_2_DEFAULT_ITAL 1

@@ -296,8 +296,8 @@ LPVOID GetTextResource(UINT id, int no_fallback)
 
 LPWSTR GetStringW(HINSTANCE hinst, HINSTANCE owner, UINT uID, LPWSTR str, int maxlen)
 {
-    static WCHAR buffer[512];
     UNREFERENCED_PARAMETER(hinst);
+    static WCHAR buffer[512];
 
     if (!str)
     {

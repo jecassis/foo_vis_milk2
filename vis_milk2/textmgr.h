@@ -184,14 +184,7 @@ class CTextManager
     void Finish();
 
     // Note: `pFont` must persist until `DrawNow()` is called!
-    int DrawD2DText(TextStyle* pFont,
-                    TextElement* pElement,
-                    const wchar_t* szText,
-                    D2D1_RECT_F* pRect,
-                    DWORD flags,
-                    DWORD color,
-                    bool bBox,
-                    DWORD boxColor = 0xFF000000); // actually queues the text!
+    int DrawD2DText(TextStyle* pFont, TextElement* pElement, const wchar_t* szText, D2D1_RECT_F* pRect, DWORD flags, DWORD color, bool bBox, DWORD boxColor = 0xFF000000); // actually queues the text!
     void DrawBox(D2D1_RECT_F* pRect, DWORD boxColor);
     void DrawDarkBox(D2D1_RECT_F* pRect) { DrawBox(pRect, 0xFF000000); }
     void DrawNow();

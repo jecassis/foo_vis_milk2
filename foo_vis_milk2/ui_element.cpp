@@ -158,16 +158,16 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     enum milk2_ui_menu_id
     {
-        IDM_TOGGLE_FULLSCREEN = 1,
-        IDM_CURRENT_PRESET,
-        IDM_NEXT_PRESET,
-        IDM_PREVIOUS_PRESET,
-        IDM_LOCK_PRESET,
-        IDM_SHUFFLE_PRESET,
-        IDM_ENABLE_DOWNMIX,
-        IDM_SHOW_HELP,
-        IDM_SHOW_PLAYLIST,
-        IDM_QUIT
+        IDM_TOGGLE_FULLSCREEN = ID_GO_FS, // ID_VIS_FS
+        IDM_CURRENT_PRESET = 1,
+        IDM_NEXT_PRESET = ID_VIS_NEXT,
+        IDM_PREVIOUS_PRESET = ID_VIS_PREV,
+        IDM_LOCK_PRESET = 2,
+        IDM_SHUFFLE_PRESET = ID_VIS_RANDOM,
+        IDM_ENABLE_DOWNMIX = 3,
+        IDM_SHOW_HELP = ID_SHOWHELP, // ID_VIS_CFG
+        IDM_SHOW_PLAYLIST = ID_SHOWPLAYLIST,
+        IDM_QUIT = ID_QUIT
     };
 
     // Initialization and management
@@ -397,6 +397,7 @@ void milk2_ui_element::OnDestroy()
         s_in_toggle = false;
         s_milk2 = false;
         KillTimer(ID_REFRESH_TIMER);
+        wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); // save last "Load Preset" menu directory
         g_plugin.PluginQuit();
         //PostQuitMessage(0);
     }
@@ -639,7 +640,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // get the highest-order bit
     bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0;
 
-    if (g_plugin.m_show_playlist)
+    if (g_plugin.m_show_playlist) // in playlist mode
     {
         auto api = playlist_manager::get();
         switch (chChar)
@@ -770,7 +771,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         char* ptr = reinterpret_cast<char*>(waitstring.szText);
                         for (UINT rep = 0; rep < nRepCnt; rep++)
                         {
-                            for (size_t i = len; i >= waitstring.nCursorPos; i--)
+                            for (size_t i = len + 1; i-- > waitstring.nCursorPos;)
                                 *(ptr + i + 1) = *(ptr + i);
                             *(ptr + waitstring.nCursorPos) = buf[0];
                             waitstring.nCursorPos++;
@@ -806,7 +807,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         // Insert mode.
                         for (UINT rep = 0; rep < nRepCnt; rep++)
                         {
-                            for (size_t i = len; i >= waitstring.nCursorPos; i--)
+                            for (size_t i = len + 1; i-- > waitstring.nCursorPos;)
                                 waitstring.szText[i + 1] = waitstring.szText[i];
                             waitstring.szText[waitstring.nCursorPos] = buf[0];
                             waitstring.nCursorPos++;
@@ -886,7 +887,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_3_0);
                         break;
                     default:
-                        assert(0);
+                        assert(false);
                         break;
                 }
             }
@@ -910,7 +911,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 
             g_plugin.SavePresetAs(szNewFile);
 
-            // Exit "waitstring" mode.
+            // Exit "WaitString" mode.
             UI_mode = UI_REGULAR;
             waitstring.bActive = false;
             //m_bPresetLockedByCode = false;
@@ -932,7 +933,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     {
         g_plugin.m_nMashSlot = chChar - '1';
     }
-    else // normal handling of a simple key (all non-virtual-key hotkeys end up here)
+    else // UI_REGULAR (mostly): normal handling of a simple keys (non-virtual keys)
     {
         switch (chChar)
         {
@@ -1274,22 +1275,6 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             case 'P':
                 TogglePlaylist();
                 return;
-            /*
-            case 'l':
-                // Note that this is actually correct; when you hit 'l' from the
-                // MAIN winamp window, you get an "open files" dialog; when you hit
-                // 'l' from the playlist editor, you get an "add files to playlist" dialog.
-                // (that sends IDC_PLAYLIST_ADDMP3==1032 to the playlist, which we can't
-                //  do from here.)
-                PostMessage(m_hWndWinamp, WM_COMMAND, 40029, 0); // Open file dialog 40029
-                return;
-            case 'L':
-                PostMessage(m_hWndWinamp, WM_COMMAND, 40187, 0); // ?
-                return;
-            case 'j':
-                PostMessage(m_hWndWinamp, WM_COMMAND, 40194, 0); // Open jump to file dialog 40194
-                return;
-            */
             case 'h':
             case 'H':
                 if (UI_mode == UI_MASHUP)
@@ -1329,7 +1314,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     bool bCtrlHeldDown = (GetKeyState(VK_CONTROL) & mask) != 0; // or "< 0" without masking
     //bool bAltHeldDown: most keys come in under WM_SYSKEYDOWN when ALT is depressed.
 
-    if (g_plugin.m_show_playlist)
+    if (g_plugin.m_show_playlist) // in playlist mode
     {
         auto api = playlist_manager::get();
         switch (nChar)
@@ -1443,12 +1428,8 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 return;
         }
     }
-    // Next handle the "waitstring" case (for string-editing).
-    // Then the menu navigation case.
-    // Then handle normal case (handle the message normally or pass on to Winamp).
-
-    // Case 1: "waitstring" mode.
-    if (waitstring.bActive)
+    
+    if (waitstring.bActive) // Case 1: "WaitString" mode (for string-editing).
     {
         // Handle arrow keys, home, end, etc.
         if (nChar == VK_LEFT || nChar == VK_RIGHT || nChar == VK_HOME || nChar == VK_END || nChar == VK_UP || nChar == VK_DOWN)
@@ -1503,19 +1484,20 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 case VK_RETURN:
                     if (waitstring.bDisplayAsCode)
                     {
-                        // CTRL+ENTER accepts the string -> finished editing
-                        //assert(m_pCurMenu);
+                        //assert(g_plugin.m_pCurMenu);
+
+                        // CTRL+ENTER accepts the string -> finished editing.
+                        // `OnWaitStringAccept()` calls the callback function.
+                        // See the calls to `CMenu::AddItem` from "milkdrop.cpp"
+                        // to find the callback functions for different "WaitStrings".
                         g_plugin.m_pCurMenu->OnWaitStringAccept(waitstring.szText);
-                        // OnWaitStringAccept calls the callback function.  See the
-                        // calls to CMenu::AddItem from milkdrop.cpp to find the
-                        // callback functions for different "waitstrings".
                         waitstring.bActive = false;
                         UI_mode = UI_MENU;
                     }
                     return;
             }
         }
-        else // "waitstring" mode key pressed and ctrl NOT held down
+        else // "WaitString" mode key pressed and ctrl NOT held down
         {
             switch (nChar)
             {
@@ -1691,7 +1673,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         {
                             g_plugin.SavePresetAs(szNewFile);
 
-                            // Exit "waitstring" mode.
+                            // Exit "WaitString" mode.
                             UI_mode = UI_REGULAR;
                             waitstring.bActive = false;
                             //m_bPresetLockedByCode = false;
@@ -1728,7 +1710,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             g_plugin.m_pCurMenu->OnWaitStringAccept(waitstring.szText);
                             // OnWaitStringAccept calls the callback function.  See the
                             // calls to `CMenu::AddItem()` from "milkdrop.cpp" to find the
-                            // callback functions for different "waitstrings".
+                            // callback functions for different "WaitStrings".
                             waitstring.bActive = false;
                             UI_mode = UI_MENU;
                         }
@@ -1750,7 +1732,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         wcscpy_s(g_plugin.m_szPresetDir, szNewDir);
 
                         bool bSuccess = true;
-                        if (GetFileAttributesW(g_plugin.m_szPresetDir) == -1)
+                        if (GetFileAttributes(g_plugin.m_szPresetDir) == INVALID_FILE_ATTRIBUTES)
                             bSuccess = false;
                         if (bSuccess)
                         {
@@ -1815,26 +1797,15 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     return;
             }
         }
-
-        // Do not let keys go anywhere else.
-        return;
     }
-
-    // Case 2: menu is up and gets the keyboard input.
-    else if (UI_mode == UI_MENU)
+    else if (UI_mode == UI_MENU) // Case 2: menu is up and gets the keyboard input (menu navigation).
     {
         //assert(g_plugin.m_pCurMenu);
         if (g_plugin.m_pCurMenu->HandleKeydown(get_wnd(), WM_KEYDOWN, nChar, nRepCnt) == 0)
             return;
         return;
     }
-
-    // Case 3: Handle non-character keys (virtual keys) and return 0.
-    //         If unhandled, return 1 and the shell will
-    //         (passing some to the shell's key bindings, some to Winamp,
-    //          and some to DefWindowProc)
-    //         Note: Regular hotkeys should be handled in `HandleRegularKey()`.
-    else
+    else // Case 3: Handle non-character keys (virtual keys) (normal case).
     {
         switch (nChar)
         {
@@ -1879,7 +1850,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 else if (UI_mode == UI_SAVE_OVERWRITE)
                 {
                     UI_mode = UI_SAVEAS;
-                    // Return to "waitstring" mode, leaving all the parameters as they were before.
+                    // Return to "WaitString" mode, leaving all the parameters as they were before.
                     waitstring.bActive = true;
                 }
                 /*
@@ -1945,7 +1916,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 if (UI_mode == UI_LOAD)
                     goto HitEnterFromLoadMenu;
                 if (!IsPresetLock())
-                    RandomPreset(s_config.settings.m_fBlendTimeUser);
+                    RandomPreset(s_config.settings.m_fBlendTimeUser); // BUG!: F1 help says this should be soft `NextPreset()`.
                 return;
             case VK_PRIOR:
                 if (UI_mode == UI_LOAD || UI_mode == UI_MASHUP)
@@ -2074,6 +2045,10 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     if (g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[0] == '*') // Change directory.
                     {
                         wchar_t* p = g_plugin.GetPresetDir();
+                        // Prevent full filesystem navigation.
+                        if (wcscmp(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()) == 0) {
+                            return;
+                        }
 
                         if (wcscmp(g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str(), L"*..") == 0)
                         {
@@ -2081,10 +2056,10 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             wchar_t* p2 = wcsrchr(p, L'\\');
                             if (p2)
                             {
-                                *p2 = 0;
+                                *p2 = L'\0';
                                 p2 = wcsrchr(p, L'\\');
                                 if (p2)
-                                    *(p2++) = 0;
+                                    *(++p2) = L'\0';
                             }
                         }
                         else
@@ -2094,7 +2069,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             wcscat_s(p, MAX_PATH, L"\\");
                         }
 
-                        wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); //WritePrivateProfileString(L"settings", L"szPresetDir", g_plugin.GetPresetDir(), g_plugin.GetConfigIniFile());
+                        //WritePrivateProfileString(L"settings", L"szPresetDir", g_plugin.GetPresetDir(), g_plugin.GetConfigIniFile());
 
                         g_plugin.UpdatePresetList(false, true, false);
 
@@ -2112,7 +2087,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
                         // Now load (and blend to) the new preset.
                         g_plugin.m_presetHistoryPos = (g_plugin.m_presetHistoryPos + 1) % PRESET_HIST_LEN;
-                        g_plugin.LoadPreset(s, (nChar == VK_SPACE) ? g_plugin.m_fBlendTimeUser : 0);
+                        g_plugin.LoadPreset(s, (nChar == VK_SPACE) ? g_plugin.m_fBlendTimeUser : 0.0f);
                     }
                 }
                 return;
@@ -2299,7 +2274,7 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     // `GetContextMenuPoint()` fixes that, returning a proper point at which the menu should be shown.
     //point = m_list.GetContextMenuPoint(point);
     CMenu menu;
-    WIN32_OP_D(menu.CreatePopupMenu());
+    WIN32_OP_D(menu.CreatePopupMenu()); // ID_VIS_MENU
     //BOOL b = TRUE;
     //CMenu original;
     //b = menu.LoadMenu(IDR_WINDOWED_CONTEXT_MENU);
@@ -2314,7 +2289,7 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_STRING | (s_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
-    menu.AppendMenu(MF_STRING | MF_DISABLED | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
+    menu.AppendMenu(MF_STRING | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
 #ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
@@ -2323,7 +2298,6 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     //auto submenu = std::make_unique<CMenu>(menu.GetSubMenu(0));
     //b = menu.RemoveMenu(0, MF_BYPOSITION);
     //return submenu;
-
     //int cmd = menu.GetSubMenu(0).TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
     int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, *this);
 

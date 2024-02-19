@@ -1421,7 +1421,7 @@ void CPluginShell::RenderPlaylist()
             //int cur_line = (m_playlist_pos + disp_lines - 1) % disp_lines;
             int new_top_idx = cur_page * disp_lines;
             int new_btm_idx = new_top_idx + disp_lines;
-            wchar_t buf[1024]{};
+            wchar_t buf[1024] = {0};
 
             // Ask Winamp for the song names, but DO IT BEFORE getting the DC,
             // otherwise might crash (~DDRAW port).

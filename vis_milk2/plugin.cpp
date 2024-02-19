@@ -913,6 +913,8 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     m_back_buffer_count = settings->m_nBackBufferCount;
     m_min_feature_level = settings->m_nMinFeatureLevel;
 
+    wcscpy_s(m_szPresetDir, settings->m_szPresetDir);
+
     return true;
 }
 #endif
@@ -3733,14 +3735,14 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
     // 4. Render text in upper-left corner.
     {
-        //wchar_t buf0[64000] = {0}; // must fit the longest strings (code strings are 32768 chars)
-        //                           // and leave extra space for &->&&, and [,[,& insertion
-        //char buf0A[64000] = {0};
+#ifndef _FOOBAR
+        wchar_t buf0[64000] = {0}; // must fit the longest strings (code strings are 32768 chars)
+                                   // and leave extra space for &->&&, and [,[,& insertion
+        char buf0A[64000] = {0};
 
         SelectFont(SIMPLE_FONT);
 
         // Loading presets, menus, etc.
-#ifdef DX9_MILKDROP
         if (m_waitstring.bActive)
         {
             // 1. Draw the prompt string.
@@ -4080,10 +4082,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &rect, 0, MENU_COLOR, false);
             }
         }
-        else
-#endif
         // clang-format off
-        if (m_UI_mode == UI_MENU)
+        else if (m_UI_mode == UI_MENU)
         {
             assert(m_pCurMenu);
             r = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
@@ -4136,7 +4136,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             assert(false);
                             break;
                         default:
-                            assert(0);
+                            assert(false);
                             break;
                     }
                 }
@@ -4165,7 +4165,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         default:
-                            assert(0);
+                            assert(false);
                             break;
                     }
                 }
@@ -4419,7 +4419,9 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 orig_rect.top += PLAYLIST_INNER_MARGIN;
             }
         }
-        else if (m_UI_mode == UI_LOAD)
+        else
+#endif
+        if (m_UI_mode == UI_LOAD)
         {
             if (m_nPresets == 0)
             {
@@ -4431,6 +4433,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             }
             else
             {
+                SelectFont(TOOLTIP_FONT);
                 MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_LOAD_WHICH_PRESET_PLUS_COMMANDS), m_loadPresetInstruction, MTO_UPPER_LEFT, true);
 
                 wchar_t buf2[MAX_PATH + 64] = {0};
@@ -4580,8 +4583,19 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             box.bottom += fHeight; //r2.bottom - r2.top;
                         }
                     }
+                    for (int i = last_line; i < MAX_PRESETS_PER_PAGE; i++)
+                    {
+                        if (pass == 0)
+                        {
+                            if (m_loadPresetItem[i].IsVisible())
+                            {
+                                m_loadPresetItem[i].SetVisible(false);
+                                m_text.UnregisterElement(&m_loadPresetItem[i]);
+                            }
+                        }
+                    }
 
-                    if (pass == 1) // calculate dark box rectangle
+                    if (pass == 1) // calculate dark box rectangle (pass 0 in DirectX 9)
                     {
                         DWORD boxColor = 0xD0000000;
                         box.top -= PLAYLIST_INNER_MARGIN;
@@ -5771,7 +5785,7 @@ retry:
 
     EnterCriticalSection(&g_cs);
 
-    //g_plugin.m_presets  = temp_presets;
+    //g_plugin.m_presets = temp_presets;
     for (int i = g_plugin.m_nPresets; i < temp_nPresets; i++)
         g_plugin.m_presets.push_back(temp_presets[i]);
     g_plugin.m_nPresets = temp_nPresets;

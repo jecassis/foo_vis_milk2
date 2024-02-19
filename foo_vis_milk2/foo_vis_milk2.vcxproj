@@ -426,28 +426,28 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="steptimer.h" />
     <ClInclude Include="version.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="foo_vis_milk2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="..\.clang-format" />
     <None Include="..\.gitattributes" />
     <None Include="..\.github\workflows\build.yml" />
     <None Include="..\.gitignore" />
     <None Include="..\.vsconfig" />
-    <None Include="..\external\fb2ksdk.patch" />
     <None Include="..\nuget.config" />
+    <None Include="..\external\fb2ksdk.patch" />
+    <None Include="..\external\pmeel.patch" />
     <None Include="..\tools\build-fb2k_component.ps1" />
     <None Include="..\tools\clang-format-all.ps1" />
-    <None Include="..\tools\clang-format-all.sh" />
     <None Include="..\vis_milk2\help.bin" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\foobar2000\sdk\foobar2000_sdk.vcxproj">

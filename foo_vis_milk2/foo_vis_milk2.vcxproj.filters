@@ -35,16 +35,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="version.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="steptimer.h">
@@ -53,8 +50,14 @@
     <ClInclude Include="settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config">
+      <Filter>Configuration Files</Filter>
+    </None>
     <None Include="..\.clang-format">
       <Filter>Configuration Files</Filter>
     </None>
@@ -73,23 +76,20 @@
     <None Include="..\nuget.config">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\tools\clang-format-all.ps1">
+    <None Include="..\external\fb2ksdk.patch">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\tools\clang-format-all.sh">
-      <Filter>Configuration Files</Filter>
-    </None>
-    <None Include="..\vis_milk2\help.bin">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="packages.config">
+    <None Include="..\external\pmeel.patch">
       <Filter>Configuration Files</Filter>
     </None>
     <None Include="..\tools\build-fb2k_component.ps1">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\external\fb2ksdk.patch">
+    <None Include="..\tools\clang-format-all.ps1">
       <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="..\vis_milk2\help.bin">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

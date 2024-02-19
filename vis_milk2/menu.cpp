@@ -564,7 +564,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             pItem->m_original_value = (LPARAM)(fTemp * 10000L);
                             break;
                         case MENUITEMTYPE_STRING: // Enter "waitstring" mode.
-                            // ***This function will cease to receive keyboard input while the string is being edited***
+                            // *** This function will cease to receive keyboard input while the string is being edited. ***
                             g_plugin.m_UI_mode = UI_EDIT_MENU_STRING;
                             g_plugin.m_waitstring.bActive = true;
                             g_plugin.m_waitstring.bFilterBadChars = false;
@@ -732,19 +732,19 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             {
                                 // also to do: make 'drawtext' draw it properly
                                 case 0:
-                                    fixme - what are the bounds for each type? and are incs constant or log?
+                                    FIXME - what are the bounds for each type? and are incs constant or log?
                                         break;
                                 case 1:
-                                    fixme
+                                    FIXME
                                         break;
                                 case 2:
-                                    fixme
+                                    FIXME
                                         break;
                                 case 3:
-                                    fixme
+                                    FIXME
                                         break;
                                 case 4:
-                                    fixme
+                                    FIXME
                                         break;
                             }
                         }

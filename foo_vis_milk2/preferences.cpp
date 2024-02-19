@@ -407,30 +407,15 @@ void milk2_preferences_page::apply()
         cfg_fHardCutLoudnessThresh = static_cast<double>(1.25f + t / 10.0f);
     cfg_bHardCutsDisabled = static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS));
 
-    ctrl = GetDlgItem(IDC_SHADERS);
-    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t != CB_ERR)
-        cfg_nMaxPSVersion = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    cfg_nMaxPSVersion = ReadCBValue(IDC_SHADERS);
 
-    //ctrl = GetDlgItem(IDC_TEXFORMAT);
-    //t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    //if (t != CB_ERR)
-    //    cfg_nTexBitsPerCh = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    //cfg_nTexBitsPerCh = ReadCBValue(IDC_TEXFORMAT);
 
-    ctrl = GetDlgItem(IDC_MESHSIZECOMBO);
-    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t != CB_ERR)
-        cfg_nGridX = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    cfg_nGridX = ReadCBValue(IDC_MESHSIZECOMBO);
 
-    ctrl = GetDlgItem(IDC_STRETCH2);
-    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t != CB_ERR)
-        cfg_nCanvasStretch = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    cfg_nCanvasStretch = ReadCBValue(IDC_STRETCH2);
 
-    ctrl = GetDlgItem(IDC_TEXSIZECOMBO);
-    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t != CB_ERR)
-        cfg_nTexSizeX = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    cfg_nTexSizeX = ReadCBValue(IDC_TEXSIZECOMBO);
 
     SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
 
@@ -439,15 +424,9 @@ void milk2_preferences_page::apply()
         cfg_n16BitGamma = static_cast<int64_t>(t);
     cfg_bAutoGamma = static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2));
 
-    ctrl = GetDlgItem(IDC_MAX_BYTES2);
-    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t != CB_ERR)
-        cfg_nMaxBytes = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    cfg_nMaxBytes = ReadCBValue(IDC_MAX_BYTES2);
 
-    ctrl = GetDlgItem(IDC_MAX_IMAGES2);
-    t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (t != CB_ERR)
-        cfg_nMaxImages = static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    cfg_nMaxImages = ReadCBValue(IDC_MAX_IMAGES2);
 
     GetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf, 256);
     cfg_fSongTitleAnimDuration = wcstof(buf, &stop);
@@ -475,67 +454,24 @@ bool milk2_preferences_page::HasChanged() const
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2)) != cfg_bAutoGamma) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS)) != cfg_bSongTitleAnims);
 
-    HWND ctrl = nullptr;
-    LRESULT n = 0;
     bool combobox_changes = false;
-    n = SendMessage(GetDlgItem(IDC_FS_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    LRESULT n = SendMessage(GetDlgItem(IDC_FS_MAXFPS2), CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
     if (n != CB_ERR)
     {
         if (n > 0)
             n = MAX_MAX_FPS + 1 - n;
         combobox_changes = combobox_changes || (static_cast<UINT>(n) != cfg_max_fps_fs);
     }
-    ctrl = GetDlgItem(IDC_SHADERS);
-    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxPSVersion));
-    }
-    //ctrl = GetDlgItem(IDC_TEXFORMAT);
-    //n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    //if (n != CB_ERR)
-    //{
-    //    n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-    //    combobox_changes = combobox_changes || static_cast<UINT>(n) != static_cast<UINT>(cfg_nTexBitsPerCh);
-    //}
-    ctrl = GetDlgItem(IDC_MESHSIZECOMBO);
-    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nGridX));
-    }
-    ctrl = GetDlgItem(IDC_STRETCH2);
-    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nCanvasStretch));
-    }
-    ctrl = GetDlgItem(IDC_TEXSIZECOMBO);
-    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nTexSizeX));
-    }
-    ctrl = GetDlgItem(IDC_MAX_BYTES2);
-    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxBytes));
-    }
-    ctrl = GetDlgItem(IDC_MAX_IMAGES2);
-    n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
-    if (n != CB_ERR)
-    {
-        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
-        combobox_changes = combobox_changes || (static_cast<UINT>(n) != static_cast<UINT>(cfg_nMaxImages));
-    }
+    combobox_changes = combobox_changes ||
+                       IsComboDiff(IDC_SHADERS, cfg_nMaxPSVersion) ||
+                       //IsComboDiff(IDC_TEXFORMAT, cfg_nTexBitsPerCh) ||
+                       IsComboDiff(IDC_MESHSIZECOMBO, cfg_nGridX) ||
+                       IsComboDiff(IDC_STRETCH2, cfg_nCanvasStretch) ||
+                       IsComboDiff(IDC_TEXSIZECOMBO, cfg_nTexSizeX) ||
+                       IsComboDiff(IDC_MAX_BYTES2, cfg_nMaxBytes) ||
+                       IsComboDiff(IDC_MAX_IMAGES2, cfg_nMaxImages);
 
-    WCHAR buf[256], *stop;
+    WCHAR buf[256] = {0}, *stop;
     bool editcontrol_changes = false;
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
     editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenPresets);
@@ -632,6 +568,31 @@ int milk2_preferences_page::SelectItemByValue(HWND ctrl, DWORD value)
         }
     }
     return -1;
+}
+
+int64_t milk2_preferences_page::ReadCBValue(DWORD ctrl_id) const
+{
+    HWND ctrl = GetDlgItem(ctrl_id);
+    LRESULT t = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (t != CB_ERR)
+        return static_cast<int64_t>(SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)t, (LPARAM)0));
+    else
+        return -1;
+}
+
+bool milk2_preferences_page::IsComboDiff(DWORD ctrl_id, int64_t previous) const
+{
+    HWND ctrl = GetDlgItem(ctrl_id);
+    LRESULT n = SendMessage(ctrl, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+    if (n != CB_ERR)
+    {
+        n = SendMessage(ctrl, CB_GETITEMDATA, (WPARAM)n, (LPARAM)0);
+        return static_cast<UINT>(n) != static_cast<UINT>(previous);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 wchar_t* milk2_preferences_page::FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID)
@@ -856,7 +817,7 @@ void milk2_config::initialize_paths()
 
 void milk2_config::update_paths()
 {
-    if (m_version > 2 && cfg_szPresetDir.get().empty())
+    if (m_version >= 2 || cfg_szPresetDir.get().empty())
     {
         CHAR szPresetDirA[MAX_PATH];
         wcscpy_s(settings.m_szPresetDir, default_szPresetDir);
@@ -866,6 +827,7 @@ void milk2_config::update_paths()
     else
     {
         size_t convertedChars;
+        cfg_szPresetDir.get().end_with_slash();
         mbstowcs_s(&convertedChars, settings.m_szPresetDir, cfg_szPresetDir.get().c_str(), MAX_PATH);
     }
     wcscpy_s(settings.m_szPluginsDirPath, default_szPluginsDirPath);
@@ -1001,5 +963,9 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << settings.m_nDepthBufferFormat;
     builder << settings.m_nBackBufferCount;
     builder << settings.m_nMinFeatureLevel;
+
+    CHAR szPresetDirA[MAX_PATH];
+    wcstombs_s(nullptr, szPresetDirA, settings.m_szPresetDir, MAX_PATH);
+    cfg_szPresetDir.set(szPresetDirA);
 }
 #pragma endregion
