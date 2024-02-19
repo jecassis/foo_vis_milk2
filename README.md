@@ -7,7 +7,7 @@ Prerequisites to build the `foo_vis_milk2.dll` component for foobar2000:
 
 - [foobar2000 SDK](https://www.foobar2000.org/SDK): download the latest version and uncompress the contents in the `external/` folder and apply the [patch](external/fb2ksdk.patch).
 - [NS-EEL2](https://github.com/justinfrankel/WDL/tree/main/WDL/eel2) (included in [WDL](https://www.cockos.com/wdl/)): the files required to build the DLL are included in this repository.
-- [projectM EEL](https://github.com/projectM-visualizer/projectm-eval): clone the repository into the `external/` folder, checkout the `HEAD` of the `master` branch and apply the [patch](external/pmeel.patch). _This is the default expression evaluator library._
+- [projectM EEL](https://github.com/projectM-visualizer/projectm-eval): clone the repository into the `external/` folder, checkout the `HEAD` of the `master` branch and apply the [patch](external/pmeel.patch). _This is the default expression evaluation library._
 - [DirectXTK](https://github.com/Microsoft/DirectXTK): the files required to build the DLL are fetched via the NuGet package manager.
 - [Windows Template Library (WTL)](https://wtl.sourceforge.io/): the files required to build the DLL are fetched via the NuGet package manager.
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/): open the [`foo_vis_milk2`](foo_vis_milk2.sln) solution, set `foo_vis_milk2` as the Startup Project, install WTL and DirectXTK as NuGet packages, select a configuration, and build the solution.
@@ -59,7 +59,7 @@ The build assumes the following directory structure:
      directxtk_desktop_2019.*\ -> from NuGet, contains the DirectX Tool Kit (DirectXTK) for x86, x64 and ARM64EC.
      directxtk_desktop_win10.*\ -> from NuGet, the DirectX Tool Kit (DirectXTK) for ARM64.
      eel2\ -> contains the Nullsoft Expression Evaluator Library (NS-EEL).
-     foobar2000\ -> contains most of the foobar2000 SDK after downloading.
+     foobar2000\ -> contains most of the foobar2000 SDK download.
          component_client\ -> from the foobar2000 SDK, generates the DLL entrypoint function for the component.
          helpers\ -> from the foobar2000 SDK, constains a library of various helper code for the component.
          sdk\ -> from the foobar2000 SDK, contains declarations of services and various service-specific helper code.
@@ -67,6 +67,7 @@ The build assumes the following directory structure:
      libppui\ -> from the foobar2000 SDK, contains a library of helper code, mainly Windows UI code.
      nu\ -> contains the Nullsoft utilities.
      pfc\ -> from the foobar2000 SDK, a class library used by the foobar2000 SDK.
+     projectm-eval\ -> from GitHub, contains the projectM expression evaluation library.
      winamp\ -> contains header files, shader files and documentation from the Winamp release.
      wtl.*\ -> from NuGet, the Windows Template Library (WTL).
  foo_vis_milk2\ -> contains the foobar2000 component code.
