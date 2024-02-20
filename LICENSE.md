@@ -25,12 +25,18 @@ The following licenses are specific to code used by the foobar2000 MilkDrop 2 Vi
 
 This license applies to the following files or to files in the following directories:
 
-<!--- `foo_vis_milk2.sln` -->
+<!--- `foo_vis_milk2.sln` (foobar2000 Component Visual Studio Solution) -->
 - `foo_vis_milk2/` (MilkDrop 2 Visualization Component)
+<!--- `foo_vis_milk2/foo_vis_milk2.vcxproj` (foobar2000 Component DLL Project Definition) -->
+<!--- `foo_vis_milk2/foo_vis_milk2.vcxproj.filters` (foobar2000 Component DLL Project File Categorization) -->
+<!--- `vis_milk2/vis_milk2.vcxproj` (MilkDrop 2 Library Project Definition) -->
+<!--- `vis_milk2/vis_milk2.vcxproj.filters` (MilkDrop 2 Library Project File Categorization) -->
 - `.github/workflows/build.yml` (GitHub Actions CI Workflow)
 - `tools/build-fb2k_component.ps1` (foobar2000 Component Packaging Script)
 - `external/fb2ksdk.patch` (foobar2000 2.0 SDK Patch)
 - `external/pmeel.patch` (projectM-eval Patch)
+<!--- `external/eel2/eel2.vcxproj` (NS-EEL2 Project Definition) -->
+<!--- `external/eel2/eel2.vcxproj.filters` (NS-EEL2 Project File Categorization) -->
 
 ```text
 Copyright (c) 2023-2024 Jimmy Cassis
