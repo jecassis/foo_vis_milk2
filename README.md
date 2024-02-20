@@ -18,6 +18,8 @@ Refer to the [build pipeline](.github/workflows/build.yml) jobs for a step-by-st
 
 See [CHANGELOG](CHANGELOG.md) for additional details.
 
+See [LICENSE](LICENSE.md) to become thoroughly confused.
+
 ## Features
 
 - Uses DirectX 11.1 (Direct3D 11.1, DXGI 1.6, Direct2D 1.1, DirectWrite 1.1) for rendering.

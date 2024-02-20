@@ -66,7 +66,7 @@ class TextStyle
 
     IDWriteTextFormat* GetTextFormat(IDWriteFactory* dwriteFactory);
 
-    bool HasTextFormatChanged() { return (m_textFormat == nullptr); }
+    bool HasTextFormatChanged() const { return (m_textFormat == nullptr); }
 
   private:
     std::wstring m_fontName;
@@ -163,7 +163,7 @@ class TextElement : public ElementBase
 typedef struct
 {
     wchar_t* msg; // points to some character in `g_szMsgPool[2][]`
-    TextStyle* font; // note: if this string is really a dark box, pfont will be NULL!
+    TextStyle* font; // note: if this string is really a dark box, font will be NULL!
     D2D1_RECT_F rect;
     DWORD flags;
     DWORD color;

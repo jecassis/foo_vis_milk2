@@ -8,11 +8,7 @@ on:
   push:
     branches:
       - master
-      - debug
       - dev
-      - direct2d
-      - alloc
-      - eval
   pull_request:
     branches:
       - master
@@ -119,7 +115,7 @@ jobs:
       #    #msbuild.exe --% /t:Build /verbosity:quiet /nologo /m:4 /p:Configuration=${{ matrix.configuration }};Platform=Win32;OutDir=$(SolutionDir)${{ matrix.configuration }}\test ${{ github.workspace }}\src\vis_milk2\milkdrop.sln
       #    vstest.console.exe ${{ github.workspace }}\src\vis_milk2\${{ matrix.configuration }}\test.dll
       - name: Upload ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
-        if: ${{ (matrix.configuration == 'Release') && ((matrix.platform == 'x86') || (matrix.platform == 'x64')) }}
+        if: ${{ (matrix.configuration == 'Release') #&& ((matrix.platform == 'x86') || (matrix.platform == 'x64')) }}
         uses: actions/upload-artifact@v4
         with:
           name: milk2-${{ matrix.platform }}-${{ matrix.configuration }}
@@ -143,6 +139,16 @@ jobs:
         with:
           name: milk2-x64-Release
           path: ${{ github.workspace }}\Bin\x64\Release
+      - name: Download ARM64 DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: milk2-ARM64-Release
+          path: ${{ github.workspace }}\Bin\ARM64\Release
+      - name: Download ARM64EC DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: milk2-ARM64EC-Release
+          path: ${{ github.workspace }}\Bin\ARM64EC\Release
       - name: Package foobar2000 MilkDrop 2 component
         run: |
           &"${{ github.workspace }}\tools\build-fb2k_component.ps1" -Version ''

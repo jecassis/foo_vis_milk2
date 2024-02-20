@@ -28,8 +28,8 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _MILKDROP_MENU_H_
-#define _MILKDROP_MENU_H_
+#ifndef __MILKDROP_MENU_H__
+#define __MILKDROP_MENU_H__
 
 #include "textmgr.h"
 

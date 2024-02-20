@@ -350,7 +350,7 @@ void CTextManager::ReleaseDeviceDependentResources()
 {
     //Finish();
 
-    auto elements = m_elements;
+    ElementSet elements = m_elements;
     for (auto iterator = elements.begin(); iterator != elements.end(); iterator++)
     {
         (*iterator)->ReleaseDeviceDependentResources();
@@ -360,10 +360,10 @@ void CTextManager::ReleaseDeviceDependentResources()
 void CTextManager::Init(DXContext* lpDX /*, ID3D11Texture2D* lpTextSurface*/, int bAdditive)
 {
     m_lpDX = lpDX;
-    //m_lpTextSurface = lpTextSurface;
     m_dwriteFactory = m_lpDX->GetDWriteFactory();
     m_d2dDevice = m_lpDX->GetD2DDevice();
     m_d2dContext = m_lpDX->GetD2DDeviceContext();
+    //m_lpTextSurface = lpTextSurface;
     m_blit_additively = bAdditive;
 
     ComPtr<ID2D1Factory> factory;
@@ -423,8 +423,6 @@ void CTextManager::DrawBox(D2D1_RECT_F* pRect, DWORD boxColor)
 // Returns height of the text in logical units.
 int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wchar_t* szText, D2D1_RECT_F* pRect, DWORD flags, DWORD color, bool bBox, DWORD boxColor)
 {
-    //flags &= ~(DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | DT_NOPREFIX); // These flags are not supported by D3DX9
-
     if (!(pFont && pElement && pRect && szText))
         return 0;
 
@@ -488,21 +486,21 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
 
 void CTextManager::DrawNow()
 {
-    //if (!m_lpDX->m_lpDevice)
-    //    return;
+    if (!m_d2dDevice)
+        return;
 
-    if (m_nMsg[m_b] > 0 || m_nMsg[1 - m_b] > 0) // second condition required for clearing text in VJ mode
+    if (m_nMsg[m_b] > 0)
     {
 #ifdef DX9_MILKDROP
         XMMATRIX Ortho2D = XMMatrixOrthographicLH(2.0f, -2.0f, 0.0f, 1.0f);
         m_lpDX->m_lpDevice->SetTransform(D3DTS_PROJECTION, &Ortho2D);
 
         constexpr size_t NUM_DIRTY_RECTS = 3;
-        RECT dirty_rect[NUM_DIRTY_RECTS];
+        D2D1_RECT_F dirty_rect[NUM_DIRTY_RECTS];
         int dirty_rects_ready = 0;
 
         int bRTT = (m_lpTextSurface == NULL) ? 0 : 1;
-        ID3D11Texture2D* pBackBuffer = NULL; //, pZBuffer=NULL;
+        ID3D11Texture2D* pBackBuffer = NULL;
         D3D11_TEXTURE2D_DESC desc_backbuf, desc_text_surface;
 #else
         int bRTT = 0;
@@ -532,14 +530,14 @@ void CTextManager::DrawNow()
         }
         else
         {
-            // Try to synchronize the text strings from last frame + this frame,
-            // and label additions & deletions. Algorithm will catch:
-            //  - Insertion of any number of items in one spot
-            //  - Deletion of any number of items from one spot
-            //  - Changes to 1 item
-            //  - Changes to 2 consecutive items
-            // (provided that the 2 text strings immediately bounding the
-            //  additions/deletions/change(s) are left unchanged)
+            // Try to synchronize the text strings from last frame plus this frame,
+            // and label additions and deletions. Algorithm will catch:
+            //  - Insertion of any number of items in one spot.
+            //  - Deletion of any number of items from one spot.
+            //  - Changes to 1 item.
+            //  - Changes to 2 consecutive items.
+            //    (provided that the 2 text strings immediately bounding the
+            //     additions/deletions/change(s) are left unchanged)
             // In any other case, all the text is just re-rendered.
             int i = 0, j = 0;
             while (i < m_nMsg[m_b] && j < m_nMsg[1 - m_b])
@@ -648,9 +646,19 @@ void CTextManager::DrawNow()
         {
             //if (m_lpDX->m_lpDevice->GetDepthStencilSurface(&pZBuffer) != S_OK)
             //    pZBuffer = NULL; // OK if return value != S_OK - just means there is no Z-buffer.
-            m_lpTextSurface->GetDesc(&desc_text_surface);
-            m_lpDX->m_lpDevice->SetShader(0);
-            m_lpDX->m_lpDevice->SetDepth(true);
+            if (m_lpTextSurface->GetLevelDesc(0, &desc_text_surface) != D3D_OK)
+                bRTT = 0;
+
+            m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+            m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+            m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
+            m_lpDX->m_lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+
+            m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+            m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+            m_lpDX->m_lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+
+            m_lpDX->m_lpDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
         }
         else
         {
@@ -681,7 +689,7 @@ void CTextManager::DrawNow()
 
                 // 2. Clear to black.
 #ifdef DX9_MILKDROP
-                //m_lpDevice->SetTexture(0, NULL);
+                //m_lpDX->m_lpDevice->SetTexture(0, NULL);
                 m_lpDX->m_lpDevice->SetBlendState(false);
                 m_lpDX->m_lpDevice->SetVertexShader(NULL);
                 //m_lpDX->m_lpDevice->SetFVF(WFVERTEX_FORMAT);
@@ -704,6 +712,8 @@ void CTextManager::DrawNow()
                         v3[i].b = static_cast<int>(clearcolor & 0xFF) / 255.0f;
                     }
                     m_lpDX->m_lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
+#else
+                    ;
 #endif
                 }
                 else
@@ -732,7 +742,7 @@ void CTextManager::DrawNow()
                                 v3[k].g = static_cast<int>((bgcolor >> 8) & 0xFF) / 255.0f;
                                 v3[k].b = static_cast<int>(bgcolor & 0xFF) / 255.0f;
                             }
-                            m_lpDX->m_lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
+                            m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
 
                             //----------------------------------
 
@@ -827,7 +837,7 @@ void CTextManager::DrawNow()
 #ifdef DX9_MILKDROP
                         RECT t;
 #else
-                        constexpr int dirty_rects_ready = 0;
+                        int dirty_rects_ready = 0;
 #endif
                         // Note: None of these could be "deleted" status yet.
                         if (!m_msg[m_b][j].added)
@@ -857,7 +867,7 @@ void CTextManager::DrawNow()
                                         v3[i].g = static_cast<int>((bgcolor >> 8) & 0xFF) / 255.0f;
                                         v3[i].b = static_cast<int>(bgcolor & 0xFF) / 255.0f;
                                     }
-                                    m_lpDX->m_lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
+                                    m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
 #endif
                                     m_msg[m_b][j].deleted = 1;
                                     m_msg[m_b][j].added = 1;
@@ -874,7 +884,7 @@ void CTextManager::DrawNow()
 #ifdef DX9_MILKDROP
             m_lpDX->m_lpDevice->SetTexture(0, NULL);
             m_lpDX->m_lpDevice->SetTexture(1, NULL);
-            m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+            m_lpDX->m_lpDevice->SetBlendState(false);
             m_lpDX->m_lpDevice->SetVertexShader(NULL);
             m_lpDX->m_lpDevice->SetPixelShader(NULL);
             m_lpDX->m_lpDevice->SetFVF(WFVERTEX_FORMAT);
@@ -902,7 +912,7 @@ void CTextManager::DrawNow()
                             v3[k].z = 0;
                             v3[k].Diffuse = m_msg[m_b][i].bgColor; //0xFF303000;
                         }
-                        m_lpDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
+                        m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, v3, sizeof(WFVERTEX));
 #else
                         ;
 #endif
@@ -958,13 +968,13 @@ void CTextManager::DrawNow()
             m_lpDX->m_lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
             m_lpDX->m_lpDevice->SetSamplerState(2, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
 
-            m_lpDX->m_lpDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 2, v3, sizeof(SPRITEVERTEX));
+            m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, v3, sizeof(SPRITEVERTEX));
 
             m_lpDX->m_lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, oldblend[0]);
             m_lpDX->m_lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, oldblend[1]);
             m_lpDX->m_lpDevice->SetSamplerState(2, D3DSAMP_MIPFILTER, oldblend[2]);
 
-            m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+            m_lpDX->m_lpDevice->SetBlendState(false);
 #else
             ;
 #endif
@@ -976,7 +986,7 @@ void CTextManager::DrawNow()
 
         m_lpDX->m_lpDevice->SetTexture(0, NULL);
         m_lpDX->m_lpDevice->SetTexture(1, NULL);
-        m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        m_lpDX->m_lpDevice->SetBlendState(false);
         m_lpDX->m_lpDevice->SetVertexShader(NULL);
         m_lpDX->m_lpDevice->SetPixelShader(NULL);
         m_lpDX->m_lpDevice->SetFVF(SPRITEVERTEX_FORMAT);

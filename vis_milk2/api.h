@@ -28,8 +28,8 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef NULLSOFT_API_H
-#define NULLSOFT_API_H
+#ifndef __NULLSOFT_API_H__
+#define __NULLSOFT_API_H__
 
 //#include <Wasabi/api/service/api_service.h>
 //#include <Wasabi/api/service/waservicefactory.h>

@@ -28,8 +28,8 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _MILKDROP_STATE_H_
-#define _MILKDROP_STATE_H_
+#ifndef __MILKDROP_STATE_H__
+#define __MILKDROP_STATE_H__
 
 #include "md_defines.h"
 //#include "texmgr.h"
