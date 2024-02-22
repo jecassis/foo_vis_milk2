@@ -87,6 +87,8 @@ BEGIN
     RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,7,78,53,10
     COMBOBOX        IDC_FS_MAXFPS2,61,77,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,89,70,10
+    LTEXT           "Title display format:",IDC_TITLE_FORMAT_LABEL,190,7,135,10
+    EDITTEXT        IDC_TITLE_FORMAT,190,16,135,13,ES_AUTOHSCROLL
     GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,7,107,167,72
     RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,13,119,115,10
     EDITTEXT        IDC_BETWEEN_TIME,130,118,32,13,ES_CENTER | ES_AUTOHSCROLL
@@ -104,23 +106,23 @@ BEGIN
     CTEXT           "Min.",IDC_HARDCUT_LOUDNESS_MIN,90,221,14,9
     CTEXT           "Max.",IDC_HARDCUT_LOUDNESS_MAX,150,221,16,9
     CONTROL         "Disable hard cuts",IDC_CB_HARDCUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,221,72,13
-    GROUPBOX        "Brightness Control for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,177,28,148,60
-    CONTROL         "Brightness Slider",IDC_BRIGHT_SLIDER2,"msctls_trackbar32",WS_TABSTOP,218,40,89,13
-    CTEXT           "0\n(bright)",IDC_T3,214,54,25,16
-    CTEXT           "1",IDC_T7,240,54,8,10
-    CTEXT           "2\n(normal)",IDC_T5,248,54,28,17
-    CTEXT           "3",IDC_T4,277,54,8,10
-    CTEXT           "4\n(dark)",IDC_T6,285,54,30,17
-    CONTROL         "Guess based on the GPU",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,182,75,95,10
-    GROUPBOX        "Song Title Animations and Custom Messages",IDC_STATIC,177,90,148,74
-    RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,181,100,110,10
-    EDITTEXT        IDC_SONGTITLEANIM_DURATION,291,99,32,13,ES_CENTER | ES_AUTOHSCROLL
-    RTEXT           "Time between\nrandom song title anims.:",IDC_RAND_TITLE_LABEL2,194,112,96,16
-    EDITTEXT        IDC_RAND_TITLE,291,116,32,13,ES_CENTER | ES_AUTOHSCROLL
-    RTEXT           "Time between\nrandom custom messages:",IDC_RAND_MSG_LABEL2,192,129,96,16
-    EDITTEXT        IDC_RAND_MSG,291,133,32,13,ES_CENTER | ES_AUTOHSCROLL
-    CONTROL         "Show title anims. when song changes",IDC_CB_TITLE_ANIMS,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,185,149,132,10
+    GROUPBOX        "Brightness Control for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,177,31,148,60
+    CONTROL         "Brightness Slider",IDC_BRIGHT_SLIDER2,"msctls_trackbar32",WS_TABSTOP,218,43,89,13
+    CTEXT           "0\n(bright)",IDC_T3,214,57,25,16
+    CTEXT           "1",IDC_T7,240,57,8,10
+    CTEXT           "2\n(normal)",IDC_T5,248,57,28,17
+    CTEXT           "3",IDC_T4,277,57,8,10
+    CTEXT           "4\n(dark)",IDC_T6,285,57,30,17
+    CONTROL         "Guess based on the GPU",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,182,78,95,10
+    GROUPBOX        "Song Title Animations and Custom Messages",IDC_STATIC,177,91,148,74
+    RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,181,101,110,10,WS_DISABLED
+    EDITTEXT        IDC_SONGTITLEANIM_DURATION,291,100,32,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
+    RTEXT           "Time between\nrandom song title anims.:",IDC_RAND_TITLE_LABEL,195,113,96,16,WS_DISABLED
+    EDITTEXT        IDC_RAND_TITLE,291,117,32,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
+    RTEXT           "Time between\nrandom custom messages:",IDC_RAND_MSG_LABEL,195,131,96,16,WS_DISABLED
+    EDITTEXT        IDC_RAND_MSG,291,135,32,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Show title anims. when song changes",IDC_CB_TITLE_ANIMS, 
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,185,149,132,10
     GROUPBOX        "Image Cache",IDC_BRIGHT_SLIDER_BOX3,177,165,148,71
     RTEXT           "Max. number of images:",IDC_MAX_IMAGES_CAPTION2,182,174,79,10
     COMBOBOX        IDC_MAX_IMAGES2,262,173,61,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP

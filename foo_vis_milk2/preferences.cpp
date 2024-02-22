@@ -40,6 +40,7 @@ static cfg_float cfg_fHardCutLoudnessThresh(guid_cfg_fHardCutLoudnessThresh, sta
 static cfg_float cfg_fSongTitleAnimDuration(guid_cfg_fSongTitleAnimDuration, static_cast<double>(default_fSongTitleAnimDuration));
 static cfg_float cfg_fTimeBetweenRandomSongTitles(guid_cfg_fTimeBetweenRandomSongTitles, static_cast<double>(default_fTimeBetweenRandomSongTitles));
 static cfg_float cfg_fTimeBetweenRandomCustomMsgs(guid_cfg_fTimeBetweenRandomCustomMsgs, static_cast<double>(default_fTimeBetweenRandomCustomMsgs));
+static cfg_string cfg_szTitleFormat(guid_cfg_szTitleFormat, default_szTitleFormat);
 static advconfig_branch_factory g_advconfigBranch("MilkDrop", guid_advconfig_branch, advconfig_branch::guid_branch_vis, 0);
 static advconfig_checkbox_factory cfg_bDebugOutput("Debug output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput);
 static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "");
@@ -262,6 +263,10 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     SetDlgItemText(IDC_RAND_MSG, buf);
     CheckDlgButton(IDC_CB_TITLE_ANIMS, static_cast<UINT>(cfg_bSongTitleAnims));
 
+    // Title format.
+    swprintf_s(buf, L"%hs", cfg_szTitleFormat.get().c_str());
+    SetDlgItemText(IDC_TITLE_FORMAT, buf);
+
     return FALSE;
 }
 
@@ -369,6 +374,9 @@ void milk2_preferences_page::reset()
     SetDlgItemText(IDC_RAND_MSG, buf);
     CheckDlgButton(IDC_CB_TITLE_ANIMS, static_cast<UINT>(cfg_bSongTitleAnims));
 
+    swprintf_s(buf, L"%hs", cfg_szTitleFormat.get().c_str());
+    SetDlgItemText(IDC_TITLE_FORMAT, buf);
+
     OnChanged();
 }
 
@@ -436,6 +444,18 @@ void milk2_preferences_page::apply()
     cfg_fTimeBetweenRandomCustomMsgs = wcstof(buf, &stop);
     cfg_bSongTitleAnims = static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS));
 
+    GetDlgItemText(IDC_TITLE_FORMAT, buf, 256);
+    titleformat_object::ptr script;
+    pfc::string8 pattern = pfc::utf8FromWide(buf);
+    if (static_api_ptr_t<titleformat_compiler>()->compile(script, pattern))
+    {
+        cfg_szTitleFormat = pfc::utf8FromWide(buf);
+    }
+    else
+    {
+        SetDlgItemText(IDC_TITLE_FORMAT, L"<ERROR>");
+    }
+
     OnChanged(); // The dialog content has not changed but the flags have; the currently shown values now match the settings so the apply button can be disabled.
     ::SendMessage(g_hWindow, WM_CONFIG_CHANGE, (WPARAM)0, (LPARAM)0);
 }
@@ -491,6 +511,9 @@ bool milk2_preferences_page::HasChanged() const
     editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenRandomSongTitles);
     GetDlgItemText(IDC_RAND_MSG, buf, 256);
     editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenRandomCustomMsgs);
+    GetDlgItemText(IDC_TITLE_FORMAT, buf, 256);
+    pfc::string8 current = pfc::utf8FromWide(buf);
+    editcontrol_changes = editcontrol_changes || !current.equals(cfg_szTitleFormat);
 
     LRESULT t;
     bool slider_changes = false;
@@ -787,6 +810,8 @@ void milk2_config::reset()
 
     //settings.m_nFpsLimit = default_nFpsLimit;
 
+    swprintf_s(settings.m_szTitleFormat, L"%ls", pfc::wideFromUTF8(cfg_szTitleFormat.get()).c_str());
+
     //--- Paths
     update_paths();
 }
@@ -963,6 +988,8 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << settings.m_nDepthBufferFormat;
     builder << settings.m_nBackBufferCount;
     builder << settings.m_nMinFeatureLevel;
+
+    cfg_szTitleFormat = pfc::utf8FromWide(settings.m_szTitleFormat);
 
     CHAR szPresetDirA[MAX_PATH];
     wcstombs_s(nullptr, szPresetDirA, settings.m_szPresetDir, MAX_PATH);

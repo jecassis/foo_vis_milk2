@@ -138,6 +138,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     LRESULT OnQuit(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
     PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p"), get_wnd()); return m_szWnd; }
 
     //ui_element_config::ptr m_config;
@@ -234,6 +235,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     // Playback control
     static_api_ptr_t<playback_control> m_playback_control;
     titleformat_object::ptr m_script;
+    titleformat_object::ptr m_search;
     pfc::string_formatter m_state;
 
     // Playback callback methods.
@@ -668,15 +670,15 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                             break;
                         g_plugin.m_playlist_pos += inc;
 
-                        if (m_script.is_empty())
+                        if (m_search.is_empty())
                         {
                             pfc::string8 pattern = "%title%";
-                            static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
+                            static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_search, pattern);
                         }
                         pfc::string_formatter state;
                         metadb_handle_list list;
                         api->activeplaylist_get_all_items(list);
-                        if (!(list.get_item(static_cast<size_t>(g_plugin.m_playlist_pos)))->format_title(NULL, state, m_script, NULL))
+                        if (!(list.get_item(static_cast<size_t>(g_plugin.m_playlist_pos)))->format_title(NULL, state, m_search, NULL))
                             state = "";
                         m_szBuffer = pfc::wideFromUTF8(state);
 
@@ -2420,7 +2422,7 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         //MILK2_CONSOLE_LOG("IPC_GETPLAYLISTTITLEW")
         if (m_script.is_empty())
         {
-            pfc::string8 pattern = "%title%";
+            pfc::string8 pattern = pfc::utf8FromWide(s_config.settings.m_szTitleFormat);
             static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
         }
         pfc::string_formatter state;
@@ -2456,11 +2458,13 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     else if (lParam == IPC_GETPLUGINDIRECTORYW)
     {
+        //MILK2_CONSOLE_LOG("IPC_GETPLUGINDIRECTORYW")
         m_szBuffer = s_config.settings.m_szPluginsDirPath;
         return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
     else if (lParam == IPC_GETINIDIRECTORYW)
     {
+        //MILK2_CONSOLE_LOG("IPC_GETINIDIRECTORYW")
         m_szBuffer = s_config.settings.m_szConfigIniFile;
         size_t p = m_szBuffer.find_last_of(L"\\");
         m_szBuffer = m_szBuffer.substr(0, p + 1);
@@ -2480,6 +2484,7 @@ LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM
         case 0: // Preferences Dialog
             {
                 s_config.reset();
+                m_script.reset();
                 m_refresh_interval = static_cast<DWORD>(lround(1000.0f / s_config.settings.m_max_fps_fs));
                 g_plugin.PanelSettings(&s_config.settings);
                 break;
@@ -2865,7 +2870,7 @@ void milk2_ui_element::UpdateTrack()
 {
     if (m_script.is_empty())
     {
-        pfc::string8 pattern = "%title%"; //"%codec% | %bitrate% kbps | %__bitspersample% bit$ifequal(%__bitspersample%,1,,s) | %samplerate% Hz | $caps(%channels%) | %playback_time%[ / %length%]$if(%ispaused%, | paused,)";
+        pfc::string8 pattern = pfc::utf8FromWide(s_config.settings.m_szTitleFormat);
         static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
     }
 

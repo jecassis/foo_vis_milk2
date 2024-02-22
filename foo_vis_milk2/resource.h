@@ -774,18 +774,13 @@
 #define IDC_FONTSIZE8                   1035
 #define IDC_FFS_LABEL                   1036
 #define IDC_DMS_LABEL                   1036
-#define IDC_BLEND_USER_LABEL2           1036
-#define IDC_BETWEEN_TIME_LABEL2         1036
-#define IDC_RAND_TITLE_LABEL            1036
 #define IDC_HARDCUT_BETWEEN_TIME_LABEL  1036
 #define IDC_FS_LABEL                    1037
-#define IDC_BLEND_USER_LABEL3           1037
 #define IDC_RAND_MSG_LABEL              1037
-#define IDC_RAND_TITLE_LABEL2           1037
 #define IDC_W_LABEL                     1038
 #define IDC_FONTSIZE9                   1038
 #define IDC_3DSEP_LABEL                 1038
-#define IDC_RAND_MSG_LABEL2             1038
+#define IDC_TITLE_FORMAT_LABEL          1038
 #define ID_FONTS                        1039
 #define IDC_BRIGHT_SLIDER               1039
 #define IDC_MAX_BYTES2                  1039
@@ -797,6 +792,7 @@
 #define IDC_BRIGHT_SLIDER2              1041
 #define IDC_FONTOPTIONS_CAPTION         1042
 #define IDC_CB_AUTOGAMMA2               1042
+#define IDC_RAND_TITLE_LABEL            1043
 #define IDC_SYSTEM_FONT                 1043
 #define IDC_CB_SEPTEXT                  1043
 #define IDC_FONT_NAME_2                 1043
@@ -860,6 +856,7 @@
 #define IDC_W_MAXFPS_CAPTION1           1066
 #define IDC_FONTITAL2                   1067
 #define IDC_FS_MAXFPS_CAPTION1          1067
+#define IDC_TITLE_FORMAT                1067
 #define IDC_FONTAA2                     1068
 #define IDC_T7                          1068
 #define IDC_FONTBOLD3                   1069
@@ -898,7 +895,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40011
-#define _APS_NEXT_CONTROL_VALUE         1063
+#define _APS_NEXT_CONTROL_VALUE         1068
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

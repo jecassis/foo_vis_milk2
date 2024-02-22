@@ -101,6 +101,9 @@ static constexpr GUID guid_cfg_bDebugOutput = {
 static constexpr GUID guid_cfg_szPresetDir = {
     0xfa9e467b, 0xfe6d, 0x4d79, {0x83, 0x98, 0xcd, 0x3d, 0x8b, 0xf4, 0x7a, 0x63}
 }; // {FA9E467B-FE6D-4D79-8398-CD3D8BF47A63}
+static constexpr GUID guid_cfg_szTitleFormat = {
+    0xca37e590, 0xb292, 0x43b5, {0xa2, 0x34, 0x3d, 0xba, 0x21, 0xa7, 0xa0, 0xdb}
+}; // {CA37E590-B292-43B5-A234-3DBA21A7A0DB}
 
 // Defaults
 // `milk.ini` defaults
@@ -161,6 +164,7 @@ static constexpr int default_nBackBufferCount = 2;
 static constexpr int default_nMinFeatureLevel = D3D_FEATURE_LEVEL_9_1;
 static constexpr UINT default_max_fps_fs = 30;
 static constexpr bool default_allow_page_tearing_fs = false;
+static constexpr const char* default_szTitleFormat = "%title%";
 
 static WCHAR default_szPluginsDirPath[MAX_PATH];
 static WCHAR default_szConfigIniFile[MAX_PATH];
@@ -224,6 +228,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
         COMMAND_HANDLER_EX(IDC_RAND_TITLE, EN_CHANGE, OnEditNotification)
         COMMAND_HANDLER_EX(IDC_RAND_MSG, EN_CHANGE, OnEditNotification)
         COMMAND_HANDLER_EX(IDC_CB_TITLE_ANIMS, BN_CLICKED, OnButtonClick)
+        COMMAND_HANDLER_EX(IDC_TITLE_FORMAT, EN_CHANGE, OnEditNotification)
     END_MSG_MAP()
     // clang-format on
 
