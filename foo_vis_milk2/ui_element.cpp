@@ -1,8 +1,8 @@
 /*
- *  ui_element.cpp - Implements the MilkDrop 2 visualization component.
+ * ui_element.cpp - Implements the MilkDrop 2 visualization component.
  *
- *  Copyright (c) 2023-2024 Jimmy Cassis
- *  SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #include "pch.h"

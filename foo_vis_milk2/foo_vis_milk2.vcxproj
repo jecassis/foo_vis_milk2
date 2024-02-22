@@ -477,7 +477,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\CHANGELOG.md" />
-    <Text Include="..\LICENSE.md" />
+    <Text Include="..\LICENSE.txt" />
+    <Text Include="..\LICENSES.md" />
     <Text Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

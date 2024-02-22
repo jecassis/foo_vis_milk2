@@ -1,8 +1,8 @@
 /*
- *  pch.h - Pre-compiled header file.
+ * pch.h - Pre-compiled header file.
  *
- *  Copyright (c) 2023-2024 Jimmy Cassis
- *  SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #pragma once

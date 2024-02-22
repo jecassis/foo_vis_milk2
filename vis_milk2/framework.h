@@ -1,8 +1,8 @@
 /*
- *  framework.h - Common headers for MilkDrop 2 library.
+ * framework.h - Common headers for MilkDrop 2 library.
  *
- *  Copyright (c) 2023-2024 Jimmy Cassis
- *  SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #pragma once
@@ -52,24 +52,16 @@
 #include <DirectXMath.h>
 
 #include <algorithm>
-//#include <atomic>
 #include <cassert>
 #include <clocale>
 #include <cmath>
-//#include <cstddef>
-//#include <cstdint>
-//#include <cstdio>
-//#include <cstring>
-//#include <cwchar>
 #include <exception>
-//#include <iterator>
 #include <list>
 #include <memory>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <system_error>
-//#include <tuple>
 #include <vector>
 
 #ifdef NS_EEL2

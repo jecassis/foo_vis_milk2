@@ -1,8 +1,8 @@
 /*
- *  constanttable.cpp - Direct3D 11 constant table.
+ * constanttable.cpp - Direct3D 11 constant table.
  *
- *  Copyright (c) 2021-2024 Jimmy Cassis
- *  SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2021-2024 Jimmy Cassis
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "pch.h"

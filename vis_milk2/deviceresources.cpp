@@ -1,9 +1,9 @@
 /*
- *  deviceresources.cpp - Wrapper for the Direct3D 11 device and swap chain
- *                        (requires DirectX 11.1 Runtime).
+ * deviceresources.cpp - Wrapper for the Direct3D 11 device and swap chain
+ *                       (requires DirectX 11.1 Runtime).
  *
- *  Copyright (c) Microsoft Corporation
- *  SPDX-License-Identifier: MIT
+ * Copyright (c) Microsoft Corporation
+ * SPDX-License-Identifier: MIT
  */
 
 #include "pch.h"

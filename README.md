@@ -18,7 +18,7 @@ Refer to the [build pipeline](.github/workflows/build.yml) jobs for a step-by-st
 
 See [CHANGELOG](CHANGELOG.md) for additional details.
 
-See [LICENSE](LICENSE.md) to become thoroughly confused.
+See [LICENSES](LICENSES.md) to become thoroughly confused.
 
 ## Features
 

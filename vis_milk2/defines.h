@@ -85,7 +85,7 @@
 // launch their default browser to display this page.
 // ***Note that the button will be invisible (on the config panel)
 // at runtime if this string is empty.***
-#define PLUGIN_WEB_URL "http://www.geisswerks.com/milkdrop/"
+#define PLUGIN_WEB_URL "https://www.geisswerks.com/milkdrop/"
 
 // The following two strings - AUTHOR_NAME and COPYRIGHT - will be used
 // in a little box in the config panel, to identify the author and copyright

@@ -1,8 +1,8 @@
 /*
- *  colorps.hlsl - Color pixel shader.
+ * colorps.hlsl - Color pixel shader.
  *
- *  Copyright (c) 2021-2024 Jimmy Cassis
- *  SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2021-2024 Jimmy Cassis
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 struct PS_INPUT

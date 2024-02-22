@@ -1,10 +1,10 @@
 /*
- *  preferences.cpp - Configuration settings for the MilkDrop 2
- *                    visualization component accessible through a
- *                    preferences page and advanced preferences.
+ * preferences.cpp - Configuration settings for the MilkDrop 2
+ *                   visualization component accessible through a
+ *                   preferences page and advanced preferences.
  *
- *  Copyright (c) 2023-2024 Jimmy Cassis
- *  SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #include "pch.h"

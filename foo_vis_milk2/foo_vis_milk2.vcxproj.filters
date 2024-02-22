@@ -106,7 +106,10 @@
     <Text Include="..\CHANGELOG.md">
       <Filter>Documentation Files</Filter>
     </Text>
-    <Text Include="..\LICENSE.md">
+    <Text Include="..\LICENSE.txt">
+      <Filter>Documentation Files</Filter>
+    </Text>
+    <Text Include="..\LICENSES.md">
       <Filter>Documentation Files</Filter>
     </Text>
     <Text Include="..\README.md">

@@ -1,8 +1,8 @@
 /*
- *  texture1ps.hlsl - Texture pixel shader.
+ * texture1ps.hlsl - Texture pixel shader.
  *
- *  Copyright (c) 2021-2024 Jimmy Cassis
- *  SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2021-2024 Jimmy Cassis
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 Texture2D    g_Texture0 : register(t0);

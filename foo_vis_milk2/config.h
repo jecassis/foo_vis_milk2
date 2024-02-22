@@ -1,9 +1,9 @@
 /*
- *  config.h - MilkDrop 2 visualization component's configuration header
- *             file.
+ * config.h - MilkDrop 2 visualization component's configuration header
+ *            file.
  *
- *  Copyright (c) 2023-2024 Jimmy Cassis
- *  SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #pragma once

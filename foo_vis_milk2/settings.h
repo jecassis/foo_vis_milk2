@@ -1,8 +1,8 @@
 /*
- *  settings.h - Defines common settings structure.
+ * settings.h - Defines common settings structure.
  *
- *  Copyright (c) 2023-2024 Jimmy Cassis
- *  SPDX-License-Identifier: MPL-2.0
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #pragma once
