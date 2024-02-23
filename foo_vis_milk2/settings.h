@@ -93,4 +93,7 @@ typedef struct
     wchar_t m_szPluginsDirPath[MAX_PATH];
     wchar_t m_szConfigIniFile[MAX_PATH];
     wchar_t m_szPresetDir[MAX_PATH];
+
+    //--- Formats
+    wchar_t m_szTitleFormat[256];
 } plugin_config;
