@@ -794,8 +794,8 @@
 #define IDC_CB_AUTOGAMMA2               1042
 #define IDC_RAND_TITLE_LABEL            1043
 #define IDC_SYSTEM_FONT                 1043
-#define IDC_CB_SEPTEXT                  1043
 #define IDC_FONT_NAME_2                 1043
+#define IDC_CB_SEPTEXT                  1044
 #define IDC_DECORATIVE_FONT             1044
 #define IDC_HARDCUT_LOUDNESS            1044
 #define IDC_FONT_NAME_1                 1044
