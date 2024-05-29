@@ -21,16 +21,23 @@ The following licenses are specific to code used by the foobar2000 MilkDrop 2 Vi
 
 ---
 
-# Mozilla Public License 2.0
+## Mozilla Public License 2.0
 
 This license applies to the following files or to files in the following directories:
 
+<!--- `foo_vis_milk2.sln` (foobar2000 Component Visual Studio Solution) -->
 - `foo_vis_milk2/` (MilkDrop 2 Visualization Component)
+<!--- `foo_vis_milk2/foo_vis_milk2.vcxproj` (foobar2000 Component DLL Project Definition) -->
+<!--- `foo_vis_milk2/foo_vis_milk2.vcxproj.filters` (foobar2000 Component DLL Project File Categorization) -->
+<!--- `vis_milk2/vis_milk2.vcxproj` (MilkDrop 2 Library Project Definition) -->
+<!--- `vis_milk2/vis_milk2.vcxproj.filters` (MilkDrop 2 Library Project File Categorization) -->
 - `vis_milk2/framework.h` (MilkDrop 2 Library Project Header)
 - `.github/workflows/build.yml` (GitHub Actions CI Workflow)
 - `tools/build-fb2k_component.ps1` (foobar2000 Component Packaging Script)
 - `external/fb2ksdk.patch` (foobar2000 2.0 SDK Patch)
 - `external/pmeel.patch` (projectM-eval Patch)
+<!--- `external/eel2/eel2.vcxproj` (NS-EEL2 Project Definition) -->
+<!--- `external/eel2/eel2.vcxproj.filters` (NS-EEL2 Project File Categorization) -->
 
 ```text
 Copyright (c) 2023-2024 Jimmy Cassis
@@ -412,7 +419,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 ---
 
-# BSD 3-Clause License
+## BSD 3-Clause License
 
 This license applies to MilkDrop 2 DirectX 11 updates and library improvements on top of the open source release in the following files or to files in the following directories:
 
@@ -460,7 +467,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-# foobar2000 SDK License
+## foobar2000 SDK License
 
 This license applies to files in the following directories:
 
@@ -494,7 +501,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-# MIT License
+## MIT License
 
 This license applies to the following files or to files in the following directories:
 
@@ -528,7 +535,7 @@ SOFTWARE.
 
 ---
 
-# Microsoft Public License
+## Microsoft Public License
 
 This license applies to the following files or to files in the following directories:
 
@@ -593,7 +600,7 @@ directly on its contribution.
 
 ---
 
-# Nullsoft BSD License
+## Nullsoft BSD License
 
 This license applies to the following files or to files in the following directories:
 
@@ -631,7 +638,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-# zlib License
+## zlib License
 
 This license applies to the following files or to files in the following directories:
 
@@ -665,17 +672,17 @@ freely, subject to the following restrictions:
 
 ---
 
-# Other Required Notices
+## Other Notices
 
-- **foobar2000** audio player is Copyright � 2001-2023, [Peter Pawlowski](https://www.foobar2000.org/license). All rights reserved.
+- **foobar2000** audio player is Copyright © 2001-2023, [Peter Pawlowski](https://www.foobar2000.org/license). All rights reserved.
 
 ---
 
-# Proprietary Notices
+## Proprietary Notices
 
 The project targets the Microsoft Windows operating system. As such includes components from the "Microsoft Windows SDK" operating system proprietary vendor code. The following license statements apply to such inclusions.
 
-## License Terms for "Microsoft Windows SDK"
+### License Terms for "Microsoft Windows SDK"
 
 These terms can be found in the following files:
 
