@@ -30,7 +30,7 @@ See [LICENSES](LICENSES.md) to become thoroughly confused.
 - Updated all library dependencies to their latest available releases.
 - Deprecated or insecure functions have been rewritten and most unused functionality removed.
 - `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11.
-- Tested on foobar2000 v2.1.2 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22621).
+- Tested on foobar2000 v2.1.5 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22631).
 - In theory, Intel architecture versions work with Windows 8 or later and ARM architecture versions with Windows 10 or later; mainly dictated by the DXGI version required to support hybrid graphics, high DPI displays and HDR.
 
 ## Run Requirements and Installation
@@ -89,7 +89,6 @@ MilkDrop 2 (`vis_milk2`) is a music visualizer - a "plug-in" to the Winamp music
 - Fixing of string resources to flow consistently with Segoe UI spacing and sizing.
 - Minor cleaning and updating of configuration panel to match functioning features and UI modifications.
 - Developer experience improvements, such as:
-
   - Updated dependencies to latest available versions.
   - Refactored EEL2 and DirectXTK into separate projects.
   - PCH and multiprocessor compile enabled for fast builds.

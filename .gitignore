@@ -145,6 +145,7 @@ CMakeLists.txt
 /external/eel2/*
 /external/projectm-eval/
 /external/winamp/*
+/external/columns_ui/
 /external/unused/
 !/external/winamp/data/
 !/external/winamp/wa_ipc.h
