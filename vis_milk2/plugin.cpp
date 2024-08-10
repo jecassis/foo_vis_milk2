@@ -4559,37 +4559,37 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                                 color = PLAYLIST_COLOR_HILITE_TRACK;
 
                             D2D1_COLOR_F fColor = D2D1::ColorF(color, GetAlpha(color));
-                            m_loadPresetItem[i].Initialize(m_lpDX->GetD2DDeviceContext());
-                            m_loadPresetItem[i].SetAlignment(AlignNear, AlignNear);
-                            m_loadPresetItem[i].SetTextColor(fColor);
-                            m_loadPresetItem[i].SetTextOpacity(fColor.a);
-                            m_loadPresetItem[i].SetContainer(r2);
-                            m_loadPresetItem[i].SetVisible(true);
-                            m_loadPresetItem[i].SetText(str2);
-                            m_loadPresetItem[i].SetTextStyle(GetFont(SIMPLE_FONT));
-                            m_loadPresetItem[i].SetTextShadow(false);
-                            m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color, false);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].Initialize(m_lpDX->GetD2DDeviceContext());
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetAlignment(AlignNear, AlignNear);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetTextColor(fColor);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetTextOpacity(fColor.a);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetContainer(r2);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetVisible(true);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetText(str2);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetTextStyle(GetFont(SIMPLE_FONT));
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetTextShadow(false);
+                            m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i%MAX_PRESETS_PER_PAGE], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color, false);
                         }
                         else
                         {
-                            m_loadPresetItem[i].SetContainer(r2);
-                            int nHeight = m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
+                            m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetContainer(r2);
+                            int nHeight = m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i%MAX_PRESETS_PER_PAGE], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
                             FLOAT fHeight = static_cast<FLOAT>(std::max(nFontHeight, nHeight));
                             rect.top += fHeight;
-                            m_text.RegisterElement(&m_loadPresetItem[i]);
+                            m_text.RegisterElement(&m_loadPresetItem[i%MAX_PRESETS_PER_PAGE]);
 
-                            // Calculate dark box rectangle
+                            // Calculate dark box rectangle.
                             box.right = std::max(box.right, box.left + r2.right - r2.left);
                             box.bottom += fHeight; //r2.bottom - r2.top;
                         }
                     }
-                    for (int i = last_line; i < MAX_PRESETS_PER_PAGE; i++)
+                    for (int i = last_line; i < MAX_PRESETS_PER_PAGE * (m_nPresetListCurPos / lines_available + 1); i++)
                     {
                         if (pass == 0)
                         {
-                            if (m_loadPresetItem[i].IsVisible())
+                            if (m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].IsVisible())
                             {
-                                m_loadPresetItem[i].SetVisible(false);
+                                m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetVisible(false);
                                 m_text.UnregisterElement(&m_loadPresetItem[i]);
                             }
                         }
