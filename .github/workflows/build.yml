@@ -22,8 +22,8 @@ jobs:
         configuration: [Release] #, Debug]
         platform: [x86, x64, ARM64, ARM64EC]
     env:
-      SDK_VERSION: '2023-09-23'
-      SDK_SHA256: c64a9e972a77c4f49a9b67464e5a25f0353cf6758c8a537f8c972e55c93b4364
+      SDK_VERSION: '2024-08-07'
+      SDK_SHA256: 4e2051430dce273029e3e349ec3fbd2bbe222f388b21541762f06a3abcf15990
     steps:
       - name: Clone foo_vis_milk2 repository
         uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
             "$(Get-Location)\external\foobar2000\foo_sample", `
             "$(Get-Location)\external\foobar2000\foo_input_validator", `
             "$(Get-Location)\external\foobar2000\helpers-mac" -Recurse
-          Remove-Item -Path "$(Get-Location)\external\*" -Recurse -Include *.xcodeproj, *.mm, *-license.txt, *-readme.txt, *-readme.html
+          Remove-Item -Path "$(Get-Location)\external\*" -Recurse -Include *.xcodeproj, *.mm, *-apple.h, CFObject.h, *-nix.h, *-nix.cpp, *-license.txt, *-readme.txt, *-readme.html
           Rename-Item -Path "$(Get-Location)\external\libPPUI" -NewName libppui
           Rename-Item -Path "$(Get-Location)\external\foobar2000\SDK" -NewName sdk
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client

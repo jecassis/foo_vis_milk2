@@ -26,7 +26,7 @@ See [LICENSES](LICENSES.md) to become thoroughly confused.
 - Supports the Default User Interface (Default UI) only.
 - Configurable through foobar2000 preferences instead of `.ini` files.
 - Can build 32-bit and 64-bit x86 component configurations as well as ARM64 and ARM64EC.
-- Built for foobar2000 2.0 and later with latest Windows 11 SDK (10.0.22621.0) and MSVC (v143).
+- Built for foobar2000 2.0 and later with latest Windows 11 SDK (10.0.26100.0) and MSVC (v143).
 - Updated all library dependencies to their latest available releases.
 - Deprecated or insecure functions have been rewritten and most unused functionality removed.
 - `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11.
@@ -77,6 +77,10 @@ The build assumes the following directory structure:
  tools\ -> contains the packaging and formatting scripts.
  vis_milk2\ -> contains the MilkDrop 2 visualization library code.
 ```
+
+# Build Notes
+- Removed `/d2notypeopt` Visual C++ compiler option as it is applied by default on Visual Studio 2019 version 16.6 and later. ([1](https://hydrogenaud.io/index.php/topic,108411.0.html), [2](https://developercommunity.visualstudio.com/t/invalid-function-call-de-virtualization/1125222))
+- Built all targets using v143 Platform Toolset for as `/arch` being "Not set" should default to `/arch:SSE2` on Visual Studio 2022 version 17.10 and later. ([1](https://hydrogenaud.io/index.php/topic,125795.0.html), [2](https://developercommunity.visualstudio.com/t/Cannot-disable-AVX-and-AVX2-in-VS-2022/10497078))
 
 ## MilkDrop 2
 
