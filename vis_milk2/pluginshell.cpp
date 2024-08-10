@@ -1077,7 +1077,7 @@ void CPluginShell::DoTime()
     }
 
     // Synchronize the audio and video by telling Winamp how many milliseconds we want the audio data,
-    // before it's actually audible.  If we set this to the amount of time it takes to display 1 frame
+    // before it's actually audible. If we set this to the amount of time it takes to display 1 frame
     // (1/fps), the video and audio should be perfectly synchronized.
     /*
     if (m_fps < 2.0f)
@@ -1089,11 +1089,11 @@ void CPluginShell::DoTime()
      */
 }
 
-// We get 576 samples in from winamp.
-// the output of the fft has 'num_frequencies' samples,
-//   and represents the frequency range 0 hz - 22,050 hz.
-// usually, plugins only use half of this output (the range 0 hz - 11,025 hz),
-//   since >10 khz doesn't usually contribute much.
+// Receives 576 samples per channel from the audio source.
+// The output of the FFT has `num_frequencies` samples,
+// and represents the frequency range 0 Hz - 22,050 Hz.
+// Usually, plugins only use half of this output (the range 0 Hz - 11,025 Hz),
+// since frequencies above 10 kHz do not usually contribute much.
 void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
 {
     float temp_wave[2][576]{};
@@ -1105,10 +1105,10 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
         m_sound.fWaveform[1][i] = (float)((pWaveR[i] ^ 128) - 128);
 
         // Simulating single frequencies from 200 to 11,025 Hz.
-        //float freq = 1.0f + 11050*(GetFrame() % 100)*0.01f;
-        //m_sound.fWaveform[0][i] = 10*sinf(i*freq*6.28f/44100.0f);
+        //float freq = 1.0f + 11050 * (GetFrame() % 100) * 0.01f;
+        //m_sound.fWaveform[0][i] = 10 * sinf(i * freq * 6.28f / 44100.0f);
 
-        // damp the input into the FFT a bit, to reduce high-frequency noise:
+        // Dampen the input into the FFT slightly, to reduce high-frequency noise.
         temp_wave[0][i] = 0.5f * (m_sound.fWaveform[0][i] + m_sound.fWaveform[0][old_i]);
         temp_wave[1][i] = 0.5f * (m_sound.fWaveform[1][i] + m_sound.fWaveform[1][old_i]);
         old_i = i;
@@ -1138,20 +1138,20 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
             //   bass:  0-1097          200-761
             //   mids:  1097-4705       761-2897
             //   treb:  4705-11025      2897-11025
-            int start = (int)(NUM_FREQUENCIES * min_freq * powf(mult, (float)i) / 11025.0f);
-            int end = (int)(NUM_FREQUENCIES * min_freq * powf(mult, (float)(i + 1)) / 11025.0f);
+            int start = static_cast<int>(NUM_FREQUENCIES * min_freq * powf(mult, (float)i) / 11025.0f);
+            int end = static_cast<int>(NUM_FREQUENCIES * min_freq * powf(mult, (float)(i + 1)) / 11025.0f);
             if (start < 0) start = 0;
             if (end > NUM_FREQUENCIES) end = NUM_FREQUENCIES;
 
             m_sound.imm[ch][i] = 0;
             for (int j = start; j < end; j++)
                 m_sound.imm[ch][i] += m_sound.fSpectrum[ch][j];
-            m_sound.imm[ch][i] /= (float)(end - start);
+            m_sound.imm[ch][i] /= static_cast<float>(end - start);
         }
     }
 
-    // Some code to find empirical long-term averages for `imm[0..2]`.
     /*
+    // Finds empirical long-term averages for `imm[0..2]`.
     {
         static float sum[3];
         static int count = 0;
@@ -1169,11 +1169,11 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
             {
                 char buf[256];
                 sprintf_s(buf, "%.4f, %.4f, %.4f     (%d samples / ~%d songs)\n",
-                    sum[0]/(float)(count),
-                    sum[1]/(float)(count),
-                    sum[2]/(float)(count),
+                    sum[0] / static_cast<float>(count),
+                    sum[1] / static_cast<float>(count),
+                    sum[2] / static_cast<float>(count),
                     count,
-                    count/(FRAMES_PER_SONG-10)
+                    count / (FRAMES_PER_SONG - 10)
                 );
                 OutputDebugString(buf);
 
@@ -1196,9 +1196,9 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
     }
     */
 
-    // multiply by long-term, empirically-determined inverse averages:
+    // Multiply by long-term, empirically-determined inverse averages:
     // (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
-    //  the average levels were: 0.326781557	0.38087377	0.199888934
+    // the average levels were: 0.326781557	0.38087377	0.199888934
     for (int ch = 0; ch < 2; ch++)
     {
         m_sound.imm[ch][0] /= 0.326781557f; //0.270f;
@@ -1206,7 +1206,7 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
         m_sound.imm[ch][2] /= 0.199888934f; //0.295f;
     }
 
-    // do temporal blending to create attenuated and super-attenuated versions
+    // Do temporal blending to create attenuated and super-attenuated versions.
     for (int ch = 0; ch < 2; ch++)
     {
         for (int i = 0; i < 3; i++)
@@ -1224,8 +1224,8 @@ void CPluginShell::AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR)
             // m_sound.med_avg[i]
             // m_sound.long_avg[i]
             {
-                float med_mix = 0.91f;  //0.800f + 0.11f*powf(t, 0.4f); // primarily used for velocity_damping
-                float long_mix = 0.96f; //0.800f + 0.16f*powf(t, 0.2f); // primarily used for smoke plumes
+                float med_mix = 0.91f;  //0.800f + 0.11f * powf(t, 0.4f); // primarily used for velocity_damping
+                float long_mix = 0.96f; //0.800f + 0.16f * powf(t, 0.2f); // primarily used for smoke plumes
                 med_mix = AdjustRateToFPS(med_mix, 14.0f, m_fps);
                 long_mix = AdjustRateToFPS(long_mix, 14.0f, m_fps);
                 m_sound.med_avg[ch][i] = m_sound.med_avg[ch][i] * (med_mix) + m_sound.imm[ch][i] * (1 - med_mix);
