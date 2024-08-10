@@ -847,7 +847,7 @@ void milk2_config::initialize_paths()
 
 void milk2_config::update_paths()
 {
-    if (m_version >= 2 || cfg_szPresetDir.get().empty())
+    if (m_version < 2 || cfg_szPresetDir.get().empty())
     {
         CHAR szPresetDirA[MAX_PATH];
         wcscpy_s(settings.m_szPresetDir, default_szPresetDir);
