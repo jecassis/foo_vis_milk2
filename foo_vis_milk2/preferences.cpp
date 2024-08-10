@@ -18,6 +18,7 @@ static cfg_bool cfg_bPreventScollLockHandling(guid_cfg_bPreventScollLockHandling
 static cfg_bool cfg_bWarningsDisabled(guid_cfg_bWarningsDisabled, default_bWarningsDisabled2);
 static cfg_bool cfg_bEnableRating(guid_cfg_bEnableRating, !default_bEnableRating);
 static cfg_bool cfg_bShowPressF1ForHelp(guid_cfg_bShowPressF1ForHelp, default_bShowPressF1ForHelp);
+static cfg_bool cfg_bSkip8Conversion(guid_cfg_bSkip8Conversion, default_bSkip8Conversion);
 static cfg_bool cfg_allow_page_tearing_fs(guid_cfg_allow_page_tearing_fs, default_allow_page_tearing_fs);
 static cfg_bool cfg_bSongTitleAnims(guid_cfg_bSongTitleAnims, default_bSongTitleAnims);
 static cfg_bool cfg_bAutoGamma(guid_cfg_bAutoGamma, default_bAutoGamma);
@@ -61,6 +62,7 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     CheckDlgButton(IDC_CB_NOWARN3, static_cast<UINT>(cfg_bWarningsDisabled));
     CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!cfg_bEnableRating));
     CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
+    CheckDlgButton(IDC_CB_SKIP8, static_cast<UINT>(cfg_bSkip8Conversion));
 
     // Maximum FPS.
     CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
@@ -326,6 +328,7 @@ void milk2_preferences_page::reset()
     CheckDlgButton(IDC_CB_NOWARN3, static_cast<UINT>(cfg_bWarningsDisabled));
     CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!cfg_bEnableRating));
     CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
+    CheckDlgButton(IDC_CB_SKIP8, static_cast<UINT>(cfg_bSkip8Conversion));
 
     CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
     UpdateMaxFps(FULLSCREEN);
@@ -391,6 +394,7 @@ void milk2_preferences_page::apply()
     cfg_bWarningsDisabled = static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3));
     cfg_bEnableRating = !static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2));
     cfg_bShowPressF1ForHelp = static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG));
+    cfg_bSkip8Conversion = static_cast<bool>(IsDlgButtonChecked(IDC_CB_SKIP8));
 
     cfg_allow_page_tearing_fs = static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT));
     SaveMaxFps(FULLSCREEN);
@@ -469,6 +473,7 @@ bool milk2_preferences_page::HasChanged() const
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_NOWARN3)) != cfg_bWarningsDisabled) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_NORATING2)) == cfg_bEnableRating) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_PRESS_F1_MSG)) != cfg_bShowPressF1ForHelp) ||
+                            (static_cast<bool>(IsDlgButtonChecked(IDC_CB_SKIP8)) != cfg_bSkip8Conversion) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_FSPT)) != cfg_allow_page_tearing_fs) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS)) != cfg_bHardCutsDisabled) ||
                             (static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2)) != cfg_bAutoGamma) ||
@@ -803,11 +808,11 @@ void milk2_config::reset()
     //--- Extras
     settings.m_bEnableDownmix = default_bEnableDownmix;
     settings.m_bEnableHDR = default_bEnableHDR;
+    settings.m_bSkip8Conversion = static_cast<uint32_t>(cfg_bSkip8Conversion);
     settings.m_nBackBufferFormat = default_nBackBufferFormat;
     settings.m_nDepthBufferFormat = default_nDepthBufferFormat;
     settings.m_nBackBufferCount = default_nBackBufferCount;
     settings.m_nMinFeatureLevel = default_nMinFeatureLevel;
-
     //settings.m_nFpsLimit = default_nFpsLimit;
 
     swprintf_s(settings.m_szTitleFormat, L"%ls", pfc::wideFromUTF8(cfg_szTitleFormat.get()).c_str());
@@ -932,6 +937,7 @@ void milk2_config::build(ui_element_config_builder& builder)
     cfg_bShowPressF1ForHelp = settings.m_show_press_f1_msg;
     //builder << settings.m_bShowMenuToolTips;
     cfg_bSongTitleAnims = settings.m_bSongTitleAnims;
+    cfg_bSkip8Conversion = settings.m_bSkip8Conversion;
 
     builder << settings.m_bShowFPS;
     builder << settings.m_bShowRating;

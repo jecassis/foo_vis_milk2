@@ -104,6 +104,9 @@ static constexpr GUID guid_cfg_szPresetDir = {
 static constexpr GUID guid_cfg_szTitleFormat = {
     0xca37e590, 0xb292, 0x43b5, {0xa2, 0x34, 0x3d, 0xba, 0x21, 0xa7, 0xa0, 0xdb}
 }; // {CA37E590-B292-43B5-A234-3DBA21A7A0DB}
+static const GUID guid_cfg_bSkip8Conversion = {
+    0xa5fce654, 0xe371, 0x4d3b, {0xae, 0x4, 0x62, 0xc5, 0xba, 0x57, 0x68, 0x20}
+}; // {A5FCE654-E371-4D3B-AE04-62C5BA576820}
 
 // Defaults
 // `milk.ini` defaults
@@ -165,6 +168,7 @@ static constexpr int default_nMinFeatureLevel = D3D_FEATURE_LEVEL_9_1;
 static constexpr UINT default_max_fps_fs = 30;
 static constexpr bool default_allow_page_tearing_fs = false;
 static constexpr const char* default_szTitleFormat = "%title%";
+static constexpr bool default_bSkip8Conversion = false;
 
 static WCHAR default_szPluginsDirPath[MAX_PATH];
 static WCHAR default_szConfigIniFile[MAX_PATH];
@@ -205,6 +209,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
         COMMAND_HANDLER_EX(IDC_CB_NOWARN3, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_NORATING2, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_PRESS_F1_MSG, BN_CLICKED, OnButtonClick)
+        COMMAND_HANDLER_EX(IDC_CB_SKIP8, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_W_MAXFPS2, CBN_SELCHANGE, OnComboChange)
         COMMAND_HANDLER_EX(IDC_FS_MAXFPS2, CBN_SELCHANGE, OnComboChange)
         COMMAND_HANDLER_EX(IDC_CB_WPT, BN_CLICKED, OnButtonClick)
