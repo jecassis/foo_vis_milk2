@@ -267,7 +267,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     }
     else if (UI_mode == UI_LOAD_DEL) // waiting to confirm file delete
     {
-        if (chChar >= 'y' && chChar <= 'Y')
+        if (chChar == 'y' || chChar == 'Y')
         {
             // First add pathname to filename.
             wchar_t szDelFile[512] = {0};
@@ -276,14 +276,12 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             g_plugin.DeletePresetFile(szDelFile);
             //m_nCurrentPreset = -1;
         }
-
         UI_mode = UI_LOAD;
-
         return;
     }
     else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
     {
-        if (chChar >= 'y' && chChar <= 'Y')
+        if (chChar == 'y' || chChar == 'Y')
         {
             if (g_plugin.m_pState->m_nMinPSVersion == g_plugin.m_pState->m_nMaxPSVersion)
             {
@@ -349,7 +347,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     }
     else if (UI_mode == UI_SAVE_OVERWRITE) // waiting to confirm overwrite file on save
     {
-        if (chChar >= 'y' && chChar <= 'Y')
+        if (chChar == 'y' || chChar == 'Y')
         {
             // First add pathname + extension to filename.
             wchar_t szNewFile[512] = {0};
