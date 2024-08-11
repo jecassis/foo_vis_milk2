@@ -1022,7 +1022,7 @@ void CTextManager::Render(Matrix3x2F orientation2D)
     m_d2dContext->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
     //FLOAT x, y;
     //m_d2dContext->GetDpi(&x, &y);
-    //D2D1_PIXEL_FORMAT pixelform = m_d2dContext->GetPixelFormat();
+    //D2D1_PIXEL_FORMAT pixel_format = m_d2dContext->GetPixelFormat();
 
     for (auto iter = m_elements.begin(); iter != m_elements.end(); ++iter)
     {

@@ -119,9 +119,9 @@ class CShape
 
     char m_szInit[MAX_BIGSTRING_LEN]; // note: only executed once -> don't need to save codehandle
     char m_szPerFrame[MAX_BIGSTRING_LEN];
-    //char  m_szPerPoint[MAX_BIGSTRING_LEN];
+    //char m_szPerPoint[MAX_BIGSTRING_LEN];
     NSEEL_CODEHANDLE m_pf_codehandle;
-    //int   m_pp_codehandle;
+    //int m_pp_codehandle;
 
     // For per-frame expression evaluation.
     NSEEL_VMCTX m_pf_eel;

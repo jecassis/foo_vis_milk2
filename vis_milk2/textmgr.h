@@ -208,9 +208,9 @@ class CTextManager
     int m_blit_additively;
     int m_nMsg[2];
     td_string m_msg[2][MAX_MSGS];
-    ElementSet m_elements;
     wchar_t* m_next_msg_start_ptr;
     int m_b;
+    ElementSet m_elements;
 
     DXContext* m_lpDX;
 };

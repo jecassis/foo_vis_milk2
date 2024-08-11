@@ -119,8 +119,8 @@ void SetScrollLock(int bNewState, bool bPreventHandling)
         keybd_event(VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
     }
 #else
-	UNREFERENCED_PARAMETER(bNewState);
-	UNREFERENCED_PARAMETER(bPreventHandling);
+    UNREFERENCED_PARAMETER(bNewState);
+    UNREFERENCED_PARAMETER(bPreventHandling);
 #endif
 }
 

@@ -108,8 +108,18 @@ float GetWinampSongPos(HWND hWndWinamp); // returns answer in seconds
 float GetWinampSongLen(HWND hWndWinamp); // returns answer in seconds
 
 #ifdef PROFILING
-#define PROFILE_BEGIN LARGE_INTEGER tx, freq, ty; QueryPerformanceCounter(&tx); QueryPerformanceFrequency(&freq);
-#define PROFILE_END(s) { QueryPerformanceCounter(&ty); float dt = (float)((double)(ty.QuadPart - tx.QuadPart) / (double)freq.QuadPart); char buf[256]; sprintf_s(buf, "  %s = %.1f ms\n", s, dt * 1000); OutputDebugString(buf); tx = ty; }
+#define PROFILE_BEGIN \
+    LARGE_INTEGER tx, freq, ty; \
+    QueryPerformanceCounter(&tx); \
+    QueryPerformanceFrequency(&freq);
+#define PROFILE_END(s) { \
+    QueryPerformanceCounter(&ty); \
+    float dt = static_cast<float>(static_cast<double>(ty.QuadPart - tx.QuadPart) / static_cast<double>(freq.QuadPart)); \
+    char buf[256]; \
+    sprintf_s(buf, "  %s = %.1f ms\n", s, dt * 1000); \
+    OutputDebugString(buf); \
+    tx = ty; \
+}
 #else
 #define PROFILE_BEGIN
 #define PROFILE_END(s)

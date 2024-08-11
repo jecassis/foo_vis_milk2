@@ -379,7 +379,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_fix_slow_text = 0;
     m_enable_hdr = 0;
     m_enable_downmix = 0;
-    m_back_buffer_format = DXGI_FORMAT_UNKNOWN; 
+    m_back_buffer_format = DXGI_FORMAT_UNKNOWN;
     m_depth_buffer_format = DXGI_FORMAT_UNKNOWN;
     m_back_buffer_count = 2;
     m_min_feature_level = D3D_FEATURE_LEVEL_9_1;
@@ -506,7 +506,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_multisample_fs = {1u, 0u}; //D3DMULTISAMPLE_NONE;
     m_multisample_w = {1u, 0u}; //D3DMULTISAMPLE_NONE;
     ZeroMemory(&m_adapter_guid_fs, sizeof(GUID));
-    ZeroMemory(&m_adapter_guid_w , sizeof(GUID));
+    ZeroMemory(&m_adapter_guid_w, sizeof(GUID));
     m_adapter_devicename_w[0] = L'\0';
     m_adapter_devicename_fs[0] = L'\0';
 
@@ -803,9 +803,9 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
     {
         Sleep(30);
         return true;
-    }*/
+    }
 
-    /*// test for lost device
+    // test for lost device
     // (this happens when device is fullscreen & user alt-tabs away,
     //  or when monitor power-saving kicks in)
     HRESULT hr = m_lpDX->m_lpDevice->TestCooperativeLevel();
@@ -815,15 +815,14 @@ int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //,
         CleanUpDX9Stuff(0);
         if (m_lpDX->m_lpDevice->Reset(&m_lpDX->m_d3dpp) != D3D_OK)
         {
-            // note: a basic warning message box will have already been given.
+            // Note: a basic warning message box will have already been given.
             // now suggest specific advice on how to regain more video memory:
-    / *
-            if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
-                SuggestHowToFreeSomeMem();* /
-            return false;  // EXIT THE PLUGIN
+            //if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
+            //    SuggestHowToFreeSomeMem();
+            return false; // EXIT THE PLUGIN
         }
         if (!AllocateDX9Stuff())
-            return false;  // EXIT THE PLUGIN
+            return false; // EXIT THE PLUGIN
     }
     else if (hr != D3D_OK)
     {
@@ -1536,7 +1535,6 @@ void CPluginShell::RenderPlaylist()
                 m_playlist_song[i].SetVisible(false);
                 m_text.UnregisterElement(&m_playlist_song[i]);
             }
-
 }
 
 // Aligns waves, using recursive (mipmap-style) least-error matching.

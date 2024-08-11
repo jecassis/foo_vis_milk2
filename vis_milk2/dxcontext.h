@@ -90,6 +90,7 @@ class DXContext final : public DX::IDeviceNotify
     ID2D1Device* GetD2DDevice() { return m_deviceResources->GetD2DDevice(); }
     ID2D1DeviceContext* GetD2DDeviceContext() { return m_deviceResources->GetD2DDeviceContext(); }
     IDWriteFactory1* GetDWriteFactory() { return m_deviceResources->GetDWriteFactory(); }
+    DX::DeviceResources* GetDeviceResources() { return m_deviceResources.get(); }
 
     // DO NOT WRITE TO THESE FROM OUTSIDE THE CLASS
     int m_ready;

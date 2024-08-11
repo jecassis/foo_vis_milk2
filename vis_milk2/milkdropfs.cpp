@@ -1277,14 +1277,15 @@ void CPlugin::BlurPasses()
             {
                 // Note: only do this first time; if you do it many times,
                 //       then the super-blurred levels will have big black lines along the top & left sides.
-                if (i == 1) {
+                if (i == 1)
+                {
                     XMFLOAT4 v4(w_div, (1 - edge_darken), edge_darken, 5.0f);
                     pCT->SetVector(h[6], &v4); // darken edges
                 }
                 else
                 {
                     XMFLOAT4 v4(w_div, 1.0f, 0.0f, 5.0f);
-                    pCT->SetVector( h[6], &v4); // don't darken
+                    pCT->SetVector(h[6], &v4); // don't darken
                 }
             }
         }
@@ -2195,8 +2196,8 @@ void CPlugin::DrawCustomWaves()
                     float* pdata2 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[1] : m_sound.fWaveform[1];
 
                     // initialize tempdata[2][512]
-                    int j0 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /* (1 - pState->m_wave[i].bSpectrum) */ - pState->m_wave[i].sep / 2;
-                    int j1 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /* (1 - pState->m_wave[i].bSpectrum) */ + pState->m_wave[i].sep / 2;
+                    int j0 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /*(1 - pState->m_wave[i].bSpectrum)*/ - pState->m_wave[i].sep / 2;
+                    int j1 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /*(1 - pState->m_wave[i].bSpectrum)*/ + pState->m_wave[i].sep / 2;
                     float t = (pState->m_wave[i].bSpectrum) ? (max_samples - pState->m_wave[i].sep) / (float)nSamples : 1;
                     float mix1 = powf(pState->m_wave[i].smoothing * 0.98f, 0.5f); // lower exponent -> more default smoothing
                     float mix2 = 1 - mix1;
@@ -3073,21 +3074,19 @@ void CPlugin::DrawUserSprites()
     //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
-    /*
-    lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD); //D3DSHADE_GOURAUD
-    lpDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
-    lpDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-    if (m_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER)
-        lpDevice->SetRenderState(D3DRS_DITHERENABLE, TRUE);
-    lpDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-    lpDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-    lpDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE);
-    lpDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);  // vs. wireframe
-    lpDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_RGBA_01(1,1,1,1));
-    lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTFG_LINEAR );
-    lpDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTFN_LINEAR );
-    lpDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTFP_LINEAR );
-    */
+    //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+    //lpDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+    //lpDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+    //if (m_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER)
+    //    lpDevice->SetRenderState(D3DRS_DITHERENABLE, TRUE);
+    //lpDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+    //lpDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+    //lpDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE);
+    //lpDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID); // vs. wireframe
+    //lpDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_RGBA_01(1,1,1,1));
+    //lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTFG_LINEAR);
+    //lpDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTFN_LINEAR);
+    //lpDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTFP_LINEAR);
 
     for (int iSlot = 0; iSlot < NUM_TEX; iSlot++)
     {
@@ -3241,13 +3240,13 @@ void CPlugin::DrawUserSprites()
                 float dtu = 0.5f; // / (float)m_texmgr.m_tex[iSlot].tex_w;
                 float dtv = 0.5f; // / (float)m_texmgr.m_tex[iSlot].tex_h;
                 v3[0].tu = -dtu;
-                v3[1].tu =  dtu; // /*m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w*/ - dtu;
+                v3[1].tu =  dtu; //m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w
                 v3[2].tu = -dtu;
-                v3[3].tu =  dtu; // /*m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w*/ - dtu;
+                v3[3].tu =  dtu; //m_texmgr.m_tex[iSlot].img_w / (float)m_texmgr.m_tex[iSlot].tex_w
                 v3[0].tv = -dtv;
                 v3[1].tv = -dtv;
-                v3[2].tv =  dtv; // /*m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h*/ - dtv;
-                v3[3].tv =  dtv; // /*m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h*/ - dtv;
+                v3[2].tv =  dtv; //m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h
+                v3[3].tv =  dtv; //m_texmgr.m_tex[iSlot].img_h / (float)m_texmgr.m_tex[iSlot].tex_h
 
                 // Repeat on x,y.
                 for (int k = 0; k < 4; k++)
@@ -3416,8 +3415,8 @@ void CPlugin::DrawUserSprites()
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
     //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
+    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 }
 
@@ -3630,8 +3629,8 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
     //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
+    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
     float fZoom = 1.0f;
@@ -3853,11 +3852,11 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
             v3[i].r = v3[i].g = v3[i].b = v3[i].a = 1.0;
         }
 
-        if (*m_pState->var_pf_brighten /*&& (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR ) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
+        if (*m_pState->var_pf_brighten /*&& (GetCaps()->SrcBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
         {
             // Square root filter.
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);       //?
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT); //?
+            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
+            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
@@ -3878,8 +3877,8 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
         if (*m_pState->var_pf_darken /*&& (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
         {
             // Squaring filter.
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);          //?
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);    //?
+            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
+            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
@@ -3891,10 +3890,10 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
             //lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
         }
 
-        if (*m_pState->var_pf_solarize /*&& (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_DESTCOLOR ) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
+        if (*m_pState->var_pf_solarize /*&& (GetCaps()->SrcBlendCaps & D3DPBLENDCAPS_DESTCOLOR) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
         {
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);        //?
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);  //?
+            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
+            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
@@ -3906,10 +3905,10 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
         }
 
-        if (*m_pState->var_pf_invert /*&& (GetCaps()->SrcBlendCaps  & D3DPBLENDCAPS_INVDESTCOLOR )*/)
+        if (*m_pState->var_pf_invert /*&& (GetCaps()->SrcBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
         {
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);        //?
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);  //?
+            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
+            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
 
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
@@ -3935,7 +3934,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
     //float fZoom = 1.0f;
 
-    float aspect = GetWidth() / (float)(GetHeight() * m_fInvAspectY /* * 4.0f / 3.0f */);
+    float aspect = GetWidth() / (float)(GetHeight() * m_fInvAspectY /* * 4.0f / 3.0f*/);
     float x_aspect_mult = 1.0f;
     float y_aspect_mult = 1.0f;
 
@@ -3952,7 +3951,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
         {1.0f, 1.0f, 1.0f}
     }; // for each vertex, then each comp.
 
-    float fShaderAmount = 1; // since do not know if shader uses it or not!  m_pState->m_fShader.eval(GetTime());
+    float fShaderAmount = 1; // since do not know if shader uses it or not! m_pState->m_fShader.eval(GetTime());
 
     if (fShaderAmount > 0.001f || m_pState->m_bBlending)
     {

@@ -3097,11 +3097,11 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
     HRESULT hr = 1;
     if (szProfile[0] == 'v')
     {
-        hr = GetDevice()->CreateVertexShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), reinterpret_cast<ID3D11VertexShader**>(ppShader), (*ppConstTable));
+        hr = GetDevice()->CreateVertexShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), reinterpret_cast<ID3D11VertexShader**>(ppShader), *ppConstTable);
     }
     else if (szProfile[0] == 'p')
     {
-        hr = GetDevice()->CreatePixelShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), reinterpret_cast<ID3D11PixelShader**>(ppShader), (*ppConstTable));
+        hr = GetDevice()->CreatePixelShader(pShaderByteCode->GetBufferPointer(), pShaderByteCode->GetBufferSize(), reinterpret_cast<ID3D11PixelShader**>(ppShader), *ppConstTable);
     }
 
     if (hr != S_OK)
@@ -5105,7 +5105,7 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
     else
     {
         // Pick a random file.
-        if (!m_bEnableRating || (m_presets[static_cast<size_t>(m_nPresets) - 1].fRatingCum < 0.1f)) // || (m_nRatingReadProgress < m_nPresets))
+        if (!m_bEnableRating || (m_presets[static_cast<size_t>(m_nPresets) - 1].fRatingCum < 0.1f)) //|| (m_nRatingReadProgress < m_nPresets))
         {
             m_nCurrentPreset = m_nDirs + (warand() % (m_nPresets - m_nDirs));
         }
@@ -6190,7 +6190,7 @@ size_t CPlugin::WaitString_GetCursorColumn()
     {
         int column = 0;
         char* ptr = reinterpret_cast<char*>(m_waitstring.szText);
-        while (/* m_waitstring.nCursorPos - column - 1 >= 0 && */*(ptr + m_waitstring.nCursorPos - column - 1) != LINEFEED_CONTROL_CHAR)
+        while (/*m_waitstring.nCursorPos - column - 1 >= 0 &&*/ *(ptr + m_waitstring.nCursorPos - column - 1) != LINEFEED_CONTROL_CHAR)
             column++;
 
         return column;

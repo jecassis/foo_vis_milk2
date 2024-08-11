@@ -407,7 +407,6 @@ void CMilkMenu::UndrawMenus()
         {
             pItem->m_element.SetVisible(false);
             g_plugin.m_text.UnregisterElement(&(pItem->m_element));
-
         }
 
         pItem = pItem->m_pNext;

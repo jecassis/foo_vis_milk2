@@ -169,7 +169,7 @@ void DXContext::OnDisplayChange()
 }
 
 // Call this function on `WM_EXITSIZEMOVE`.
-// Clean up all the DirectX stuff first (textures, vertex 
+// Clean up all the DirectX stuff first (textures, vertex
 // buffers, etc...) and reallocate it afterwards!
 BOOL DXContext::OnWindowSizeChanged(int width, int height)
 {
