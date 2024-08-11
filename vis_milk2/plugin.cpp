@@ -912,6 +912,7 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     m_depth_buffer_format = settings->m_nDepthBufferFormat;
     m_back_buffer_count = settings->m_nBackBufferCount;
     m_min_feature_level = settings->m_nMinFeatureLevel;
+    m_skip_8_conversion = settings->m_bSkip8Conversion;
 
     wcscpy_s(m_szPresetDir, settings->m_szPresetDir);
 
@@ -5600,7 +5601,7 @@ retry:
             goto retry;
         }
 
-        g_plugin.AddError(GetStringW(WASABI_API_LNG_HINST, g_plugin.GetInstance(), IDS_SCANNING_PRESETS), 8.0f, ERR_SCANNING_PRESETS, false);
+        g_plugin.AddError(GetStringW(WASABI_API_LNG_HINST, g_plugin.GetInstance(), IDS_SCANNING_PRESETS), 4.0f, ERR_SCANNING_PRESETS, false);
     }
 
     if (g_plugin.m_bPresetListReady)
@@ -6286,7 +6287,7 @@ void CPlugin::SavePresetAs(wchar_t* szNewFile)
 void CPlugin::DeletePresetFile(wchar_t* szDelFile)
 {
     // Delete file.
-    if (!DeleteFileW(szDelFile))
+    if (!DeleteFile(szDelFile))
     {
         // Error.
         AddError(WASABI_API_LNGSTRINGW(IDS_ERROR_UNABLE_TO_DELETE_THE_FILE), 6.0f, ERR_MISC, true);
