@@ -68,6 +68,7 @@
 #include <vis_milk2/utility.h>
 #endif
 #include <winamp/wa_ipc.h>
+#include <nu/AutoWide.h>
 
 #define MAX_PROPERTY_PAGES 8
 #define MAX_DISPLAY_ADAPTERS 16

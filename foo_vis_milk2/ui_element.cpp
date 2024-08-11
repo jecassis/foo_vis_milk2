@@ -201,7 +201,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // Properties
     void GetDefaultSize(int& width, int& height) const noexcept;
-    void SetPwd(std::string pwd) noexcept;
+    void SetPwd(std::wstring pwd) noexcept;
     void UpdateChannelMode();
     void ToggleFullScreen();
     void ToggleHelp();
@@ -223,7 +223,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     DX::StepTimer m_timer;
 
     // Component paths
-    std::string m_pwd;
+    std::wstring m_pwd;
 
     // Audio data
     unsigned char waves[2][576];
@@ -277,7 +277,7 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
     s_in_suspend = false;
     s_minimized = false;
 
-    m_pwd = ".\\";
+    m_pwd = L".\\";
     set_configuration(config);
 }
 
@@ -335,9 +335,9 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 
     if (!m_milk2)
     {
-        std::string base_path = core_api::get_my_full_path();
-        std::string::size_type t = base_path.rfind('\\');
-        if (t != std::string::npos)
+        std::wstring base_path = static_cast<wchar_t*>(AutoWide(core_api::get_my_full_path()));
+        size_t t = base_path.rfind(L'\\');
+        if (t != std::wstring::npos)
             base_path.erase(t + 1);
         SetPwd(base_path);
 
@@ -885,7 +885,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 
         //swprintf_s(g_plugin.m_szPluginsDirPath, L"%ls", s_config.settings.m_szPluginsDirPath);
         //swprintf_s(g_plugin.m_szConfigIniFile, L"%ls", s_config.settings.m_szConfigIniFile);
-        swprintf_s(g_plugin.m_szComponentDirPath, L"%hs", const_cast<char*>(m_pwd.c_str()));
+        swprintf_s(g_plugin.m_szComponentDirPath, L"%ls", const_cast<wchar_t*>(m_pwd.c_str()));
 
         if (!s_fullscreen)
             g_hWindow = get_wnd();
@@ -1021,7 +1021,7 @@ void milk2_ui_element::GetDefaultSize(int& width, int& height) const noexcept
     height = 480;
 }
 
-void milk2_ui_element::SetPwd(std::string pwd) noexcept
+void milk2_ui_element::SetPwd(std::wstring pwd) noexcept
 {
     m_pwd.assign(pwd);
 }
