@@ -19,6 +19,8 @@
 [CmdletBinding()]
 param
 (
+    [parameter(HelpMessage='Run MSBuild')]
+        [switch] $RunBuild,
     [parameter(HelpMessage='Target Name')]
         [string] $TargetName = 'foo_vis_milk2',
     [parameter(HelpMessage='Target File Name')]
@@ -51,6 +53,8 @@ $x86Version = $null
 $x64Version = $null
 $arm64Version = $null
 $arm64ecVersion = $null
+$msbuildExe = "C:\Program Files\Microsoft Visual Studio\2022\MSBuild\Current\Bin\amd64\MSBuild.exe"
+$SolutionPath = "$(Get-Location)\foo_vis_milk2.sln"
 
 
 # Create the package directory
@@ -67,6 +71,10 @@ $null = New-Item -Path `
     "${PackagePath}\data" -Type Directory -Force
 
 # Copy x86 build output.
+if ($RunBuild)
+{
+    &$msbuildExe $SolutionPath --% -m:8 -t:Build -p:Configuration=Release;Platform=x86
+}
 if (Test-Path -Path "${OutputPath}\Win32\Release\${TargetFileName}")
 {
     if ($VerbosePreference)
@@ -90,6 +98,10 @@ else
 }
 
 # Copy x64 build output.
+if ($RunBuild)
+{
+    &$msbuildExe $SolutionPath --% -m:8 -t:Build -p:Configuration=Release;Platform=x64
+}
 if (Test-Path -Path "${OutputPath}\x64\Release\${TargetFileName}")
 {
     if ($VerbosePreference)
@@ -113,6 +125,10 @@ else
 }
 
 # Copy ARM64 build output.
+if ($RunBuild)
+{
+    &$msbuildExe $SolutionPath --% -m:8 -t:Build -p:Configuration=Release;Platform=ARM64
+}
 if (Test-Path -Path "${OutputPath}\ARM64\Release\${TargetFileName}")
 {
     if ($VerbosePreference)
@@ -136,6 +152,10 @@ else
 }
 
 # Copy ARM64EC build output.
+if ($RunBuild)
+{
+    &$msbuildExe $SolutionPath --% -m:8 -t:Build -p:Configuration=Release;Platform=ARM64EC
+}
 if (Test-Path -Path "${OutputPath}\ARM64EC\Release\${TargetFileName}")
 {
     if ($VerbosePreference)
