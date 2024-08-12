@@ -51,10 +51,11 @@
 
 #include <wrl/client.h>
 
-#include <d3d11_1.h>
-#include <dxgi1_6.h>
-#include <d2d1_1.h>
-#include <dwrite_1.h>
+#include <d3d11_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
+//#include <dxgi1_2.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
+#include <dxgi1_6.h> // Windows 10, version 1803 [desktop apps only]
+#include <d2d1_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
+#include <dwrite_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
 
 #include <vis_milk2/defines.h>
 #include <vis_milk2/md_defines.h>

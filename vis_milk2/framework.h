@@ -52,16 +52,24 @@
 #include <DirectXMath.h>
 
 #include <algorithm>
+//#include <atomic>
 #include <cassert>
 #include <clocale>
 #include <cmath>
+//#include <cstddef>
+//#include <cstdint>
+//#include <cstdio>
+//#include <cstring>
+//#include <cwchar>
 #include <exception>
+//#include <iterator>
 #include <list>
 #include <memory>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <system_error>
+//#include <tuple>
 #include <vector>
 
 #ifdef NS_EEL2

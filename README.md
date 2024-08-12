@@ -31,7 +31,8 @@ See [LICENSES](LICENSES.md) to become thoroughly confused.
 - Deprecated or insecure functions have been rewritten and most unused functionality removed.
 - `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11.
 - Tested on foobar2000 v2.1.5 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22631).
-- In theory, Intel architecture versions work with Windows 8 or later and ARM architecture versions with Windows 10 or later; mainly dictated by the DXGI version required to support hybrid graphics, high DPI displays and HDR.
+- Intel architecture and ARM architecture versions support Windows 10 or later; mainly dictated by the DXGI version required to support hybrid graphics, high DPI displays and HDR.
+  - In theory, Intel architecture versions might run on earlier versions of Windows (7, 8 and 8.1) but this is untested.
 
 ## Run Requirements and Installation
 
@@ -79,6 +80,7 @@ The build assumes the following directory structure:
 ```
 
 # Build Notes
+
 - Removed `/d2notypeopt` Visual C++ compiler option as it is applied by default on Visual Studio 2019 version 16.6 and later. ([1](https://hydrogenaud.io/index.php/topic,108411.0.html), [2](https://developercommunity.visualstudio.com/t/invalid-function-call-de-virtualization/1125222))
 - Built all targets using v143 Platform Toolset for as `/arch` being "Not set" should default to `/arch:SSE2` on Visual Studio 2022 version 17.10 and later. ([1](https://hydrogenaud.io/index.php/topic,125795.0.html), [2](https://developercommunity.visualstudio.com/t/Cannot-disable-AVX-and-AVX2-in-VS-2022/10497078))
 
