@@ -80,25 +80,25 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,15,177,10
     CONTROL         "Suppress all errors and warnings",IDC_CB_NOWARN3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,28,164,10
     CONTROL         "Show ""Press F1 for Help"" message at startup",IDC_CB_PRESS_F1_MSG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,41,178,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,41,165,10
     CONTROL         "Prevent MilkDrop from controlling Scroll Lock key",IDC_CB_SCROLLON4,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,54,173,10
     CONTROL         "Skip conversion to 8-bit samples",IDC_CB_SKIP8,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,67,165,10
     GROUPBOX        "",IDC_STATIC,2,76,165,30
     RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,14,84,53,10
-    COMBOBOX        IDC_FS_MAXFPS2,69,83,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FS_MAXFPS2,69,84,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,94,94,10
     LTEXT           "Title display format:",IDC_TITLE_FORMAT_LABEL,183,2,119,10
-    EDITTEXT        IDC_TITLE_FORMAT,183,11,120,13,ES_AUTOHSCROLL
-    GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,2,106,165,70
-    RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,11,116,115,10
-    EDITTEXT        IDC_BETWEEN_TIME,128,115,32,13,ES_CENTER | ES_AUTOHSCROLL
-    RTEXT           "Additional random time:",IDC_BETWEEN_TIME_RANDOM_LABEL,11,131,115,10
-    EDITTEXT        IDC_BETWEEN_TIME_RANDOM,128,130,32,13,ES_CENTER | ES_AUTOHSCROLL
-    RTEXT           "Auto preset blend time:",IDC_BLEND_AUTO_LABEL,11,146,115,10
-    EDITTEXT        IDC_BLEND_AUTO,128,145,32,13,ES_CENTER | ES_AUTOHSCROLL
-    RTEXT           "User-solicited preset blend time:",IDC_BLEND_USER_LABEL,11,161,115,10
-    EDITTEXT        IDC_BLEND_USER,128,160,32,13,ES_CENTER | ES_AUTOHSCROLL
+    EDITTEXT        IDC_TITLE_FORMAT,183,11,122,13,ES_AUTOHSCROLL
+    GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,2,107,165,70
+    RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,11,117,115,10
+    EDITTEXT        IDC_BETWEEN_TIME,128,116,32,13,ES_CENTER | ES_AUTOHSCROLL
+    RTEXT           "Additional random time:",IDC_BETWEEN_TIME_RANDOM_LABEL,11,132,115,10
+    EDITTEXT        IDC_BETWEEN_TIME_RANDOM,128,131,32,13,ES_CENTER | ES_AUTOHSCROLL
+    RTEXT           "Auto preset blend time:",IDC_BLEND_AUTO_LABEL,11,147,115,10
+    EDITTEXT        IDC_BLEND_AUTO,128,146,32,13,ES_CENTER | ES_AUTOHSCROLL
+    RTEXT           "User-solicited preset blend time:",IDC_BLEND_USER_LABEL,11,162,115,10
+    EDITTEXT        IDC_BLEND_USER,128,161,32,13,ES_CENTER | ES_AUTOHSCROLL
     GROUPBOX        "Hard Cuts (driven by major beats)",IDC_STATIC,2,177,165,51
     RTEXT           "Average time between hard cuts:",IDC_HARDCUT_BETWEEN_TIME_LABEL,10,186,116,10
     EDITTEXT        IDC_HARDCUT_BETWEEN_TIME,128,184,32,13,ES_CENTER | ES_AUTOHSCROLL
@@ -107,7 +107,7 @@ BEGIN
     CTEXT           "Min.",IDC_HARDCUT_LOUDNESS_MIN,88,215,14,9
     CTEXT           "Max.",IDC_HARDCUT_LOUDNESS_MAX,148,215,16,9
     CONTROL         "Disable hard cuts",IDC_CB_HARDCUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,213,72,13
-    GROUPBOX        "Brightness Control for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,168,28,137,58
+    GROUPBOX        "Brightness for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,168,28,137,58
     CONTROL         "Brightness Slider",IDC_BRIGHT_SLIDER2,"msctls_trackbar32",WS_TABSTOP,191,38,92,13
     CTEXT           "0\n(bright)",IDC_T3,187,52,25,16
     CTEXT           "1",IDC_T7,213,52,8,10
@@ -115,7 +115,7 @@ BEGIN
     CTEXT           "3",IDC_T4,251,52,8,10
     CTEXT           "4\n(dark)",IDC_T6,260,52,30,17
     CONTROL         "Guess based on the GPU",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,177,73,95,10
-    GROUPBOX        "Song Title Animations and Custom Messages",IDC_STATIC,168,86,137,74
+    GROUPBOX        "Song Title Animations and Messages",IDC_STATIC,168,86,137,74
     RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,171,95,103,10,WS_DISABLED
     EDITTEXT        IDC_SONGTITLEANIM_DURATION,275,94,28,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
     RTEXT           "Time between\nrandom song title anims.:",IDC_RAND_TITLE_LABEL,178,107,96,16,WS_DISABLED
