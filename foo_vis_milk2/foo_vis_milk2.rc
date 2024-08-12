@@ -70,7 +70,7 @@ BEGIN
     CTEXT           "(""About"" text will be placed in this box automatically at runtime)",IDC_SZ_ABOUT,162,268,223,19,SS_SUNKEN
 END
 
-IDD_PREFS DIALOGEX 0, 0, 327, 268
+IDD_PREFS DIALOGEX 0, 0, 332, 288
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "Segoe UI", 400, 0, 0x0
 BEGIN
@@ -424,9 +424,9 @@ BEGIN
     IDD_PREFS, DIALOG
     BEGIN
         LEFTMARGIN, 2
-        RIGHTMARGIN, 325
+        RIGHTMARGIN, 330
         TOPMARGIN, 2
-        BOTTOMMARGIN, 266
+        BOTTOMMARGIN, 286
         HORZGUIDE, 137
     END
 

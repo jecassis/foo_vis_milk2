@@ -1,3 +1,10 @@
+/*
+ * keyboard.cpp - Implements the visualization component's keyboard behaviors.
+ *
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
 // Keyboard Commands
 // -----------------
 // Note: Keyboard messages from foobar2000 only propagate to the component

@@ -25,17 +25,17 @@
 #include <minwindef.h>
 #include <stringapiset.h>
 
-inline wchar_t* AutoWideDup(const char* convert, UINT codePage = CP_ACP)
+inline wchar_t* AllocateWide(const char* convert, UINT codePage = CP_ACP)
 {
     wchar_t* wide = nullptr;
     if (convert)
     {
         const int size = MultiByteToWideChar(codePage, 0, convert, -1, NULL, 0);
-        if (size > 0 && (wide = static_cast<wchar_t*>(malloc(static_cast<size_t>(size) << 1))) != NULL)
+        if (size > 0 && (wide = new wchar_t[size]) != NULL)
         {
             if (!MultiByteToWideChar(codePage, 0, convert, -1, wide, size))
             {
-                free(wide);
+                delete[] wide;
                 wide = nullptr;
             }
             else
@@ -51,11 +51,11 @@ inline wchar_t* AutoWideDup(const char* convert, UINT codePage = CP_ACP)
 class AutoWide
 {
   public:
-    AutoWide(const char* convert, UINT codePage = CP_ACP) { wide = AutoWideDup(convert, codePage); }
+    AutoWide(const char* convert, UINT codePage = CP_ACP) { wide = AllocateWide(convert, codePage); }
 
     ~AutoWide()
     {
-        free(wide);
+        delete[] wide;
         wide = nullptr;
     }
 
