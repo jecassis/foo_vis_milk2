@@ -48,16 +48,15 @@ using namespace DirectX::PackedVector;
 //  2. Set up the texture stages for texturing (SetTextureStageState)
 //  3. Set the current vertex format (SetVertexShader)
 //  4. Set up the world matrix (SetTransform(D3DTS_WORLD, &my_world_matrix))
-void PrepareFor3DDrawing(
-    D3D11Shim* pDevice,   // a pointer to the D3D device
-    int viewport_width,   // the width of the client area of the window
-    int viewport_height,  // the height of the client area of the window
-    float fov_in_degrees, // the field of view, in degrees
-    float near_clip,      // the distance to the near clip plane; should be > 0!
-    float far_clip,       // the distance to the far clip plane
-    XMVECTOR* pvEye,      // the eyepoint coordinates, in world space
-    XMVECTOR* pvLookat,   // the point toward which the eye is looking, in world space
-    XMVECTOR* pvUp        // a vector indicating which dir. is up; usually <0,1,0>
+void PrepareFor3DDrawing(D3D11Shim* pDevice,   // a pointer to the D3D device
+                         int viewport_width,   // the width of the client area of the window
+                         int viewport_height,  // the height of the client area of the window
+                         float fov_in_degrees, // the field of view, in degrees
+                         float near_clip,      // the distance to the near clip plane; should be > 0!
+                         float far_clip,       // the distance to the far clip plane
+                         XMVECTOR* pvEye,      // the eyepoint coordinates, in world space
+                         XMVECTOR* pvLookat,   // the point toward which the eye is looking, in world space
+                         XMVECTOR* pvUp        // a vector indicating which dir. is up; usually <0,1,0>
 )
 {
     // Set up render state to some nice defaults.
@@ -142,18 +141,7 @@ void PrepareFor2DDrawing(D3D11Shim* pDevice)
 // The `m_fPitch`, `m_fYaw`, and `m_fRoll` variables are floats that
 // contain the model's orientation in terms of pitch, yaw, and roll
 // angles, in radians.
-void MakeWorldMatrix(
-    XMMATRIX* pOut,
-    float xpos,
-    float ypos,
-    float zpos,
-    float sx,
-    float sy,
-    float sz,
-    float pitch,
-    float yaw,
-    float roll
-)
+void MakeWorldMatrix(XMMATRIX* pOut, float xpos, float ypos, float zpos, float sx, float sy, float sz, float pitch, float yaw, float roll)
 {
     XMMATRIX MatTemp;
     *pOut = XMMatrixIdentity();
@@ -174,12 +162,11 @@ void MakeWorldMatrix(
     *pOut = XMMatrixMultiply(*pOut, MatTemp);
 }
 
-void MakeProjectionMatrix(
-    XMMATRIX* pOut,
-    const float near_plane, // Distance to near clipping plane
-    const float far_plane,  // Distance to far clipping plane
-    const float fov_horiz,  // Horizontal field of view angle, in radians
-    const float fov_vert    // Vertical field of view angle, in radians
+void MakeProjectionMatrix(XMMATRIX* pOut,
+                          const float near_plane, // Distance to near clipping plane
+                          const float far_plane,  // Distance to far clipping plane
+                          const float fov_horiz,  // Horizontal field of view angle, in radians
+                          const float fov_vert    // Vertical field of view angle, in radians
 )
 {
     float w = (float)1 / tanf(fov_horiz * 0.5f); // 1/tan(x) == cot(x)

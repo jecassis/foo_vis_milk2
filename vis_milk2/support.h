@@ -37,36 +37,22 @@
 
 using namespace DirectX;
 
-void MakeWorldMatrix(
-    XMMATRIX* pOut,
-    float xpos,
-    float ypos,
-    float zpos,
-    float sx,
-    float sy,
-    float sz,
-    float pitch,
-    float yaw,
-    float roll
+void MakeWorldMatrix(XMMATRIX* pOut, float xpos, float ypos, float zpos, float sx, float sy, float sz, float pitch, float yaw, float roll);
+void MakeProjectionMatrix(XMMATRIX* pOut,
+                          const float near_plane, // Distance to near clipping plane
+                          const float far_plane, // Distance to far clipping plane
+                          const float fov_horiz, // Horizontal field of view angle, in radians
+                          const float fov_vert // Vertical field of view angle, in radians
 );
-void MakeProjectionMatrix(
-    XMMATRIX* pOut,
-    const float near_plane, // Distance to near clipping plane
-    const float far_plane,  // Distance to far clipping plane
-    const float fov_horiz,  // Horizontal field of view angle, in radians
-    const float fov_vert    // Vertical field of view angle, in radians
-);
-void PrepareFor3DDrawing(
-    D3D11Shim* pDevice,
-    int viewport_width,
-    int viewport_height,
-    float fov_in_degrees,
-    float near_clip,
-    float far_clip,
-    XMVECTOR* pvEye,
-    XMVECTOR* pvLookat,
-    XMVECTOR* pvUp
-);
+void PrepareFor3DDrawing(D3D11Shim* pDevice,
+                         int viewport_width,
+                         int viewport_height,
+                         float fov_in_degrees,
+                         float near_clip,
+                         float far_clip,
+                         XMVECTOR* pvEye,
+                         XMVECTOR* pvLookat,
+                         XMVECTOR* pvUp);
 void PrepareFor2DDrawing(D3D11Shim* pDevice);
 
 // Define vertex formats.

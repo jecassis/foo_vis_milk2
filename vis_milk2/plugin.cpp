@@ -1791,12 +1791,11 @@ DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
     DWORD shift = 0;
     for (int i = 0; i < 4; i++)
     {
-        float f = fCubicInterpolate(
-            ((y0 >> shift) & 0xFF) / 255.0f,
-            ((y1 >> shift) & 0xFF) / 255.0f,
-            ((y2 >> shift) & 0xFF) / 255.0f,
-            ((y3 >> shift) & 0xFF) / 255.0f,
-            t);
+        float f = fCubicInterpolate(((y0 >> shift) & 0xFF) / 255.0f,
+                                    ((y1 >> shift) & 0xFF) / 255.0f,
+                                    ((y2 >> shift) & 0xFF) / 255.0f,
+                                    ((y3 >> shift) & 0xFF) / 255.0f,
+                                    t);
         if (f < 0)
             f = 0;
         if (f > 1)
@@ -4955,12 +4954,12 @@ void CPlugin::ConsoleMessage(const wchar_t* function_name, int message_id, int t
         DWORD dw = GetLastError();
 
         if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                      NULL,
-                      dw,
-                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                      (LPTSTR)&lpMsgBuf,
-                      0,
-                      NULL))
+                           NULL,
+                           dw,
+                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                           (LPTSTR)&lpMsgBuf,
+                           0,
+                           NULL))
         {
             wprintf_s(L"Format message failed with 0x%x\n", GetLastError());
             return;
