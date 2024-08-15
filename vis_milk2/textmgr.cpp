@@ -35,8 +35,10 @@ using namespace DX;
 using namespace D2D1;
 using Microsoft::WRL::ComPtr;
 
+#ifndef _FOOBAR
 #define MAX_MSG_CHARS (65536 * 2)
 wchar_t g_szMsgPool[2][MAX_MSG_CHARS];
+#endif
 
 #pragma region TextStyle
 TextStyle::TextStyle(std::wstring fontName,
@@ -357,14 +359,20 @@ void CTextManager::ReleaseDeviceDependentResources()
     }
 }
 
-void CTextManager::Init(DXContext* lpDX /*, ID3D11Texture2D* lpTextSurface*/, int bAdditive)
+void CTextManager::Init(DXContext* lpDX
+#ifndef _FOOBAR
+                        , ID3D11Texture2D* lpTextSurface, int bAdditive
+#endif
+)
 {
     m_lpDX = lpDX;
     m_dwriteFactory = m_lpDX->GetDWriteFactory();
     m_d2dDevice = m_lpDX->GetD2DDevice();
     m_d2dContext = m_lpDX->GetD2DDeviceContext();
-    //m_lpTextSurface = lpTextSurface;
+#ifndef _FOOBAR
+    m_lpTextSurface = lpTextSurface;
     m_blit_additively = bAdditive;
+#endif
 
     ComPtr<ID2D1Factory> factory;
     m_d2dDevice->GetFactory(&factory);
@@ -372,10 +380,12 @@ void CTextManager::Init(DXContext* lpDX /*, ID3D11Texture2D* lpTextSurface*/, in
     ThrowIfFailed(factory.As(&m_d2dFactory));
     ThrowIfFailed(m_d2dFactory->CreateDrawingStateBlock(&m_stateBlock));
 
+#ifndef _FOOBAR
     m_b = 0;
     m_nMsg[0] = 0;
     m_nMsg[1] = 0;
     m_next_msg_start_ptr = g_szMsgPool[m_b];
+#endif
 }
 
 void CTextManager::Finish()
@@ -396,8 +406,10 @@ void CTextManager::Finish()
 
 void CTextManager::ClearAll()
 {
+#ifndef _FOOBAR
     m_nMsg[m_b] = 0;
     m_next_msg_start_ptr = g_szMsgPool[m_b];
+#endif
 }
 
 void CTextManager::DrawBox(D2D1_RECT_F* pRect, DWORD boxColor)
@@ -405,6 +417,9 @@ void CTextManager::DrawBox(D2D1_RECT_F* pRect, DWORD boxColor)
     if (!pRect)
         return;
 
+#ifdef _FOOBAR
+    UNREFERENCED_PARAMETER(boxColor);
+#else
     if ((m_nMsg[m_b] < MAX_MSGS) && (static_cast<DWORD>(m_next_msg_start_ptr - g_szMsgPool[m_b]) + 1 < MAX_MSG_CHARS))
     {
         *m_next_msg_start_ptr = 0;
@@ -418,6 +433,7 @@ void CTextManager::DrawBox(D2D1_RECT_F* pRect, DWORD boxColor)
         m_nMsg[m_b]++;
         m_next_msg_start_ptr += 1;
     }
+#endif
 }
 
 // Returns height of the text in logical units.
@@ -432,6 +448,11 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
         return static_cast<int>(ceilf(pRect->bottom - pRect->top));
     }
 
+#ifdef _FOOBAR
+    UNREFERENCED_PARAMETER(boxColor);
+    UNREFERENCED_PARAMETER(bBox);
+    UNREFERENCED_PARAMETER(color);
+#else
     if (!m_d2dDevice)
         return 0;
 
@@ -469,6 +490,7 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
         }
         return h;
     }
+#endif
 
     // No room for more text? Return accurate information.
     D2D1_RECT_F r2 = pElement->GetBounds(m_lpDX->GetDWriteFactory());
@@ -489,6 +511,7 @@ void CTextManager::DrawNow()
     if (!m_d2dDevice)
         return;
 
+#ifndef _FOOBAR
     if (m_nMsg[m_b] > 0)
     {
 #ifdef DX9_MILKDROP
@@ -996,11 +1019,14 @@ void CTextManager::DrawNow()
         //m_lpDevice->SetTransform(D3DTS_PROJECTION, &ident);
 #endif
     }
+#endif
 
     Render();
 
+#ifndef _FOOBAR
     // Flip.
     m_b = 1 - m_b;
+#endif
 
     ClearAll();
 }

@@ -160,6 +160,7 @@ class TextElement : public ElementBase
     Microsoft::WRL::ComPtr<IDWriteTextLayout> m_textLayout;
 };
 
+#ifndef _FOOBAR
 typedef struct
 {
     wchar_t* msg; // points to some character in `g_szMsgPool[2][]`
@@ -171,16 +172,25 @@ typedef struct
     int added, deleted; // temporary; used during `DrawNow()`
     void* prev_dark_box_ptr; // temporary; used during `DrawNow()`
 } td_string;
+#endif
 
 class CTextManager
 {
   public:
-    CTextManager(){};
+    CTextManager() :
+#ifndef _FOOBAR
+        m_b(0), m_nMsg{0, 0}, m_next_msg_start_ptr(nullptr), m_blit_additively(0),
+#endif
+        m_lpDX(nullptr), m_dwriteFactory(nullptr), m_d2dDevice(nullptr), m_d2dContext(nullptr){};
     ~CTextManager(){};
 
     // Note: If unable to create `lpTextSurface` full size, do not create it at all!
     // Note: OK if `lpTextSurface == NULL`; in that case, text will be drawn directly to screen (but not until end anyway).
-    void Init(DXContext* lpDX, /*ID3D11Texture2D* lpTextSurface,*/ int bAdditive);
+    void Init(DXContext* lpDX
+#ifndef _FOOBAR
+              , ID3D11Texture2D* lpTextSurface, int bAdditive
+#endif
+    );
     void Finish();
 
     // Note: `pFont` must persist until `DrawNow()` is called!
@@ -205,11 +215,13 @@ class CTextManager
     IDWriteFactory* m_dwriteFactory;
     Microsoft::WRL::ComPtr<ID2D1DrawingStateBlock> m_stateBlock;
 
+#ifndef _FOOBAR
     int m_blit_additively;
     int m_nMsg[2];
     td_string m_msg[2][MAX_MSGS];
     wchar_t* m_next_msg_start_ptr;
     int m_b;
+#endif
     ElementSet m_elements;
 
     DXContext* m_lpDX;

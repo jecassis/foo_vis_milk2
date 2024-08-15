@@ -191,7 +191,12 @@ int CPluginShell::AllocateDX11()
 
     if (m_lpDX)
     {
-        m_text.Init(m_lpDX.get(), /*nullptr,*/ 1);
+        //m_text.Finish();
+        m_text.Init(m_lpDX.get()
+#ifndef _FOOBAR
+                    , nullptr, 1
+#endif
+        );
     }
 
     return ret;
