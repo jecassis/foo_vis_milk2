@@ -104,9 +104,10 @@ jobs:
           (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.FileVersion
           Write-Host -NoNewline 'Product Version: '
           (Get-ItemProperty ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')).VersionInfo.ProductVersion
+          $vcversion=(Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\" | Where-Object { $_.PSIsContainer } | Sort-Object -Property Name -Descending | Select-Object -First 1).Name
           $toolhost=('${{ matrix.platform }}' -ireplace 'ARM64(?:EC)?', 'X86').ToUpper()
           $tooltarget=('${{ matrix.platform }}' -ireplace 'ARM64EC', 'arm64').ToLower()
-          &"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.37.32822\bin\Host${toolhost}\${tooltarget}\link.exe" /dump /exports /nologo ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')
+          &"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\${vcversion}\bin\Host${toolhost}\${tooltarget}\link.exe" /dump /exports /nologo ('${{ github.workspace }}\Bin\' + ('${{ matrix.platform }}').Replace('x86', 'Win32') + '\${{ matrix.configuration }}\foo_vis_milk2.dll')
       #- name: Test ${{ matrix.platform }} foobar2000 MilkDrop 2 Visualization Component for ${{ matrix.configuration }}
       #  working-directory: ${{ github.workspace }}
       #  run: |
