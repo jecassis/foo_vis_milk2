@@ -38,6 +38,7 @@ static const GUID VisMilk2LangGUID = {
 
 static bool s_fullscreen = false;
 static bool s_in_toggle = false;
+static bool s_was_topmost = false;
 static bool s_milk2 = false;
 static ULONGLONG s_count = 0ull;
 static constexpr ULONGLONG s_debug_limit = 1ull;
@@ -221,6 +222,9 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // Rendering loop timer
     DX::StepTimer m_timer;
+
+    // Topmost setting
+    bool SetTopMost() noexcept;
 
     // Component paths
     std::wstring m_pwd;
@@ -1062,6 +1066,7 @@ void milk2_ui_element::ToggleFullScreen()
 #endif
         s_fullscreen = !s_fullscreen;
         s_in_toggle = true;
+        SetTopMost();
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
         MILK2_CONSOLE_LOG("ToggleFullScreen2 ", GetWnd())
     }
@@ -1276,6 +1281,39 @@ void milk2_ui_element::UpdatePlaylist()
         }
     }
     g_plugin.m_playlist_top_idx = -1;
+}
+
+// Sets and unsets foobar2000's "Always on Top" setting (if main window is
+// `TOPMOST`) so that visualization window becomes `TOPMOST` on entering
+// fullscreen.
+// Note: Using `SetWindowPos` does not work because foobar2000 appears to
+//       reset itself to `TOPMOST` forcefully when this setting is enabled.
+//       So unsetting and resetting the program's setting is a workaround.
+bool milk2_ui_element::SetTopMost() noexcept
+{
+    LONG_PTR ptr = ::GetWindowLongPtr(core_api::get_main_window(), GWL_EXSTYLE);
+    bool topmost = static_cast<bool>(ptr & WS_EX_TOPMOST);
+    if (topmost)
+    {
+        if (s_fullscreen)
+        {
+            MILK2_CONSOLE_LOG("SetTopMost unsetting main window ", GetWnd());
+            standard_commands::main_always_on_top(); //::SetWindowPos(get_wnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW /*| SWP_NOZORDER | SWP_FRAMECHANGED*/);
+            s_was_topmost = true;
+            return true;
+        }
+    }
+    else
+    {
+        if (s_was_topmost)
+        {
+            MILK2_CONSOLE_LOG("SetTopMost resetting main window ", GetWnd());
+            s_was_topmost = false;
+            standard_commands::main_always_on_top(); //::SetWindowPos(get_wnd(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW /*| SWP_NOZORDER | SWP_FRAMECHANGED*/);
+            return true;
+        }
+    }
+    return false;
 }
 
 void milk2_ui_element::SetSelectionSingle(size_t idx)

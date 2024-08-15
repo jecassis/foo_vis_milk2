@@ -42,6 +42,7 @@
 #include <sdk/playlist.h>
 #include <sdk/vis.h>
 #include <sdk/ui_element.h>
+#include <sdk/menu_helpers.h>
 #include <helpers/atl-misc.h>
 #include <helpers/advconfig_impl.h>
 #include <helpers/BumpableElem.h>
