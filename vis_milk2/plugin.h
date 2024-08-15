@@ -617,6 +617,7 @@ class CPlugin : public CPluginShell
     void LoadRandomPreset(float fBlendTime);
     void LoadPreset(const wchar_t* szPresetFilename, float fBlendTime);
     void LoadPresetTick();
+    void SetPresetListPosition(std::wstring search);
     void FindValidPresetDir();
     wchar_t* GetPresetDir() { return m_szPresetDir; };
     void SavePresetAs(wchar_t* szNewFile); // overwrites the file if it was already there.

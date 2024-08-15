@@ -497,7 +497,7 @@ void milk2_ui_element::OnMove(CPoint ptPos)
 
 void milk2_ui_element::OnSize(UINT nType, CSize size)
 {
-    MILK2_CONSOLE_LOG("OnSize ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd());
+    MILK2_CONSOLE_LOG("OnSize ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd())
     if (nType == SIZE_MINIMIZED)
     {
         if (!s_minimized)
@@ -642,7 +642,7 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
 {
-    MILK2_CONSOLE_LOG("OnContextMenu ", point.x, ", ", point.y, ", ", GetWnd());
+    MILK2_CONSOLE_LOG("OnContextMenu ", point.x, ", ", point.y, ", ", GetWnd())
     if (m_callback->is_edit_mode_enabled())
     {
         SetMsgHandled(FALSE);
@@ -943,7 +943,7 @@ HRESULT milk2_ui_element::Render()
     return g_plugin.PluginRender(waves[0], waves[1]);
 }
 
-// Clears the back buffers.
+// Clears the back buffers and the window contents.
 void milk2_ui_element::Clear()
 {
 }

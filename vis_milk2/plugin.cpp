@@ -5033,6 +5033,7 @@ void CPlugin::PrevPreset(float fBlendTime)
         {
             m_presetHistoryPos = prev;
             LoadPreset(m_presetHistory[m_presetHistoryPos].c_str(), fBlendTime);
+            SetPresetListPosition(m_presetHistory[m_presetHistoryPos]);
         }
     }
 }
@@ -5073,6 +5074,7 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
         {
             m_presetHistoryPos = next;
             LoadPreset(m_presetHistory[m_presetHistoryPos].c_str(), fBlendTime);
+            SetPresetListPosition(m_presetHistory[m_presetHistoryPos]);
             return;
         }
     }
@@ -5474,6 +5476,15 @@ void CPlugin::LoadPresetTick()
 
     if (m_nLoadingPreset > 0)
         m_nLoadingPreset++;
+}
+
+void CPlugin::SetPresetListPosition(std::wstring search)
+{
+    size_t basename = search.find_last_of(L"\\");
+    search = search.substr(basename + 1, search.length() - basename - 1);
+    auto it = std::find_if(m_presets.begin(), m_presets.end(), [&s = search](const PresetInfo& m) -> bool { return m.szFilename == s; });
+    if (it != m_presets.end())
+        m_nCurrentPreset = static_cast<int>(it - m_presets.begin());
 }
 
 void CPlugin::SeekToPreset(wchar_t cStartChar)
