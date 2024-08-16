@@ -43,8 +43,8 @@ static cfg_float cfg_fTimeBetweenRandomSongTitles(guid_cfg_fTimeBetweenRandomSon
 static cfg_float cfg_fTimeBetweenRandomCustomMsgs(guid_cfg_fTimeBetweenRandomCustomMsgs, static_cast<double>(default_fTimeBetweenRandomCustomMsgs));
 static cfg_string cfg_szTitleFormat(guid_cfg_szTitleFormat, default_szTitleFormat);
 static advconfig_branch_factory g_advconfigBranch("MilkDrop", guid_advconfig_branch, advconfig_branch::guid_branch_vis, 0);
-static advconfig_checkbox_factory cfg_bDebugOutput("Debug output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput);
-static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "");
+static advconfig_checkbox_factory cfg_bDebugOutput("Debug output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput, 0);
+static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "", advconfig_entry_string::flag_is_folder_path);
 // clang-format on
 
 #pragma region Preferences Page
