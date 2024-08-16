@@ -732,7 +732,7 @@ class CPlugin : public CPluginShell
     TextElement m_songTitle;
     TextElement m_songStats;
     TextElement m_waitText;
-    TextElement m_menuText[MAX_PRESETS_PER_PAGE];
+    TextElement m_menuText;
     TextElement m_loadPresetInstruction;
     TextElement m_loadPresetDir;
     TextElement m_loadPresetItem[MAX_PRESETS_PER_PAGE];
