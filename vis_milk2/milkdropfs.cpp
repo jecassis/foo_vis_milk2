@@ -3934,7 +3934,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
     //float fZoom = 1.0f;
 
-    float aspect = GetWidth() / (float)(GetHeight() * m_fInvAspectY /* * 4.0f / 3.0f*/);
+    float aspect = GetWidth() / static_cast<float>(GetHeight() * m_fInvAspectY /* * 4.0f / 3.0f*/);
     float x_aspect_mult = 1.0f;
     float y_aspect_mult = 1.0f;
 
