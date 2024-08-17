@@ -409,6 +409,12 @@ void CTextManager::ClearAll()
 #ifndef _FOOBAR
     m_nMsg[m_b] = 0;
     m_next_msg_start_ptr = g_szMsgPool[m_b];
+#else
+    //for (auto it = m_elements.begin(); it != m_elements.end(); ++it)
+    //{
+    //    if ((*it)->IsVisible())
+    //        (*it)->SetVisible(false);
+    //}
 #endif
 }
 

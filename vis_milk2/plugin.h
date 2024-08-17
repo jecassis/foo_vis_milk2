@@ -603,6 +603,7 @@ class CPlugin : public CPluginShell
     void AlignWave(int nSamples);
     void DrawTooltip(wchar_t* str, int xR, int yB);
     void ClearTooltip();
+    void ClearText();
     void RandomizeBlendPattern();
     void GenPlasma(int x0, int x1, int y0, int y1, float dt);
     void LoadPerFrameEvallibVars(CState* pState);
@@ -732,7 +733,7 @@ class CPlugin : public CPluginShell
     TextElement m_songTitle;
     TextElement m_songStats;
     TextElement m_waitText;
-    TextElement m_menuText;
+    TextElement m_menuText[MAX_PRESETS_PER_PAGE / 8];
     TextElement m_loadPresetInstruction;
     TextElement m_loadPresetDir;
     TextElement m_loadPresetItem[MAX_PRESETS_PER_PAGE];

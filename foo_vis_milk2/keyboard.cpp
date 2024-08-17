@@ -79,6 +79,7 @@
 #pragma region Keyboard Controls
 #define waitstring g_plugin.m_waitstring
 #define UI_mode g_plugin.m_UI_mode
+#define RemoveText g_plugin.ClearText
 
 void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
@@ -284,6 +285,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             //m_nCurrentPreset = -1;
         }
         UI_mode = UI_LOAD;
+        RemoveText();
         return;
     }
     else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
@@ -349,7 +351,10 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             g_plugin.SetMenusForPresetVersion(g_plugin.m_pState->m_nWarpPSVersion, g_plugin.m_pState->m_nCompPSVersion);
         }
         if (chChar != '\r')
+        {
             UI_mode = UI_MENU;
+            RemoveText();
+        }
         return;
     }
     else if (UI_mode == UI_SAVE_OVERWRITE) // waiting to confirm overwrite file on save
@@ -366,12 +371,14 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             UI_mode = UI_REGULAR;
             waitstring.bActive = false;
             //m_bPresetLockedByCode = false;
+            RemoveText();
         }
         else if ((chChar >= ' ' && chChar <= 'z') || chChar == '\x1B') // '\x1B' is the ESCAPE key
         {
             // Go back to SAVE AS mode.
             UI_mode = UI_SAVEAS;
             waitstring.bActive = true;
+            RemoveText();
         }
         return;
     }
@@ -640,6 +647,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 return;
             case 's':
             case 'S':
+                /*
                 // Save preset.
                 if (UI_mode == UI_REGULAR)
                 {
@@ -656,8 +664,11 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     LoadString(core_api::get_my_instance(), IDS_SAVE_AS, waitstring.szPrompt, 512);
                     waitstring.szToolTip[0] = L'\0';
                     waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)); // set the starting edit position
+
+                    RemoveText();
                 }
                 else
+                */
                 {
                     const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
                     swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
@@ -670,11 +681,13 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 if (UI_mode == UI_LOAD)
                 {
                     UI_mode = UI_REGULAR;
+                    RemoveText();
                 }
                 else if (UI_mode == UI_REGULAR || UI_mode == UI_MENU)
                 {
                     g_plugin.UpdatePresetList(); // make sure list is completely ready
                     UI_mode = UI_LOAD;
+                    RemoveText();
                     g_plugin.m_bUserPagedUp = false;
                     g_plugin.m_bUserPagedDown = false;
                 }
@@ -685,6 +698,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     UI_mode = UI_REGULAR;
                 else if (UI_mode == UI_REGULAR || UI_mode == UI_LOAD)
                     UI_mode = UI_MENU;
+                RemoveText();
                 return;
             case '-':
                 SetPresetRating(-1.0f);
@@ -853,6 +867,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             case VK_F6:
                 ToggleRating();
                 return;
+            /*
             case VK_F7:
                 if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
                     g_plugin.ReadCustomMessages(); // re-read custom messages
@@ -877,8 +892,11 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     WASABI_API_LNGSTRINGW_BUF(IDS_DIRECTORY_TO_JUMP_TO, waitstring.szPrompt, 512);
                     waitstring.szToolTip[0] = 0;
                     waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)); // set the starting edit position
+
+                    RemoveText();
                 }
                 return;
+            */
             case VK_F9:
                 ToggleShaderHelp();
                 return;
@@ -953,8 +971,9 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         // See the calls to `CMenu::AddItem` from "milkdrop.cpp"
                         // to find the callback functions for different "WaitStrings".
                         g_plugin.m_pCurMenu->OnWaitStringAccept(waitstring.szText);
-                        waitstring.bActive = false;
                         UI_mode = UI_MENU;
+                        waitstring.bActive = false;
+                        RemoveText();
                     }
                     return;
             }
@@ -1115,8 +1134,9 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             /*g_plugin.AddError(WASABI_API_LNGSTRINGW(IDS_STRING_TOO_LONG), 2.5f, ERR_MISC, true);*/
                         }
 
-                        waitstring.bActive = false;
                         UI_mode = UI_MENU;
+                        waitstring.bActive = false;
+                        RemoveText();
                         //m_bPresetLockedByCode = false;
                     }
                     else if (UI_mode == UI_SAVEAS)
@@ -1125,11 +1145,12 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         wchar_t szNewFile[512];
                         swprintf_s(szNewFile, L"%s%s.milk", g_plugin.GetPresetDir(), waitstring.szText);
 
-                        if (GetFileAttributesW(szNewFile) != -1) // check if file already exists
+                        if (GetFileAttributes(szNewFile) != -1) // check if file already exists
                         {
                             // File already exists -> overwrite it?
-                            waitstring.bActive = false;
                             UI_mode = UI_SAVE_OVERWRITE;
+                            waitstring.bActive = false;
+                            RemoveText();
                         }
                         else
                         {
@@ -1139,6 +1160,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             UI_mode = UI_REGULAR;
                             waitstring.bActive = false;
                             //m_bPresetLockedByCode = false;
+                            RemoveText();
                         }
                     }
                     else if (UI_mode == UI_EDIT_MENU_STRING)
@@ -1173,8 +1195,9 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             // OnWaitStringAccept calls the callback function.  See the
                             // calls to `CMenu::AddItem()` from "milkdrop.cpp" to find the
                             // callback functions for different "WaitStrings".
-                            waitstring.bActive = false;
                             UI_mode = UI_MENU;
+                            waitstring.bActive = false;
+                            RemoveText();
                         }
                     }
                     else if (UI_mode == UI_CHANGEDIR)
@@ -1222,8 +1245,9 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                             g_plugin.m_nCurrentPreset = -1;
 
                             // Go to file load menu.
-                            waitstring.bActive = false;
                             UI_mode = UI_LOAD;
+                            waitstring.bActive = false;
+                            RemoveText();
 
                             g_plugin.ClearErrors(ERR_MISC);
                         }
@@ -1232,30 +1256,31 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 case VK_ESCAPE:
                     if (UI_mode == UI_LOAD_RENAME)
                     {
-                        waitstring.bActive = false;
                         UI_mode = UI_LOAD;
+                        waitstring.bActive = false;
                     }
                     else if (UI_mode == UI_SAVEAS || UI_mode == UI_SAVE_OVERWRITE ||
                              UI_mode == UI_EXPORT_SHAPE || UI_mode == UI_IMPORT_SHAPE ||
                              UI_mode == UI_EXPORT_WAVE || UI_mode == UI_IMPORT_WAVE)
                     {
-                        //g_plugin.m_bPresetLockedByCode = false;
-                        waitstring.bActive = false;
                         UI_mode = UI_REGULAR;
+                        waitstring.bActive = false;
+                        //g_plugin.m_bPresetLockedByCode = false;
                     }
                     else if (UI_mode == UI_EDIT_MENU_STRING)
                     {
-                        waitstring.bActive = false;
                         if (waitstring.bDisplayAsCode) // if were editing code...
                             UI_mode = UI_MENU; // return to menu
                         else
                             UI_mode = UI_REGULAR; // otherwise don't (we might have been editing a filename, for example)
+                        waitstring.bActive = false;
                     }
                     else //if (UI_mode == UI_EDIT_MENU_STRING || UI_mode == UI_CHANGEDIR || 1)
                     {
-                        waitstring.bActive = false;
                         UI_mode = UI_REGULAR;
+                        waitstring.bActive = false;
                     }
+                    RemoveText();
                     return;
             }
         }
@@ -1277,11 +1302,15 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     // It is annoying when the music skips if left arrow is pressed
                     // from the Load menu, so instead, exit the menu.
                     if (nChar == VK_LEFT)
+                    {
                         UI_mode = UI_REGULAR;
+                        RemoveText();
+                    }
                 }
                 else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
                 {
                     UI_mode = UI_MENU;
+                    RemoveText();
                 }
                 else if (UI_mode == UI_MASHUP)
                 {
@@ -1299,20 +1328,24 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 if (UI_mode == UI_LOAD || UI_mode == UI_MENU || UI_mode == UI_MASHUP)
                 {
                     UI_mode = UI_REGULAR;
+                    RemoveText();
                 }
                 else if (UI_mode == UI_LOAD_DEL)
                 {
                     UI_mode = UI_LOAD;
+                    RemoveText();
                 }
                 else if (UI_mode == UI_UPGRADE_PIXEL_SHADER)
                 {
                     UI_mode = UI_MENU;
+                    RemoveText();
                 }
                 else if (UI_mode == UI_SAVE_OVERWRITE)
                 {
                     UI_mode = UI_SAVEAS;
                     // Return to "WaitString" mode, leaving all the parameters as they were before.
                     waitstring.bActive = true;
+                    RemoveText();
                 }
                 /*
                 else if (hwnd == g_plugin.GetPluginWindow()) // (don't close on ESC for text window)
@@ -1421,7 +1454,10 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 if (UI_mode == UI_LOAD)
                 {
                     if (g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[0] != '*') // can't delete directories
+                    {
                         UI_mode = UI_LOAD_DEL;
+                        RemoveText();
+                    }
                 }
                 else //if (m_nNumericInputDigits == 0)
                 {
@@ -1469,6 +1505,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     }
                 }
                 return;
+            /*
             case VK_INSERT: // Rename.
                 if (UI_mode == UI_LOAD)
                 {
@@ -1492,9 +1529,11 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
                         // Set the starting edit position.
                         waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
+                        RemoveText();
                     }
                 }
                 return;
+            */
             case VK_RETURN:
                 if (UI_mode == UI_MASHUP)
                 {
@@ -1733,4 +1772,5 @@ void milk2_ui_element::OnKillFocus(CWindow wndFocus)
 
 #undef waitstring
 #undef UI_mode
+#undef RemoveText
 #pragma endregion

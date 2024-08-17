@@ -3480,6 +3480,23 @@ void CPlugin::MilkDropRenderFrame(int redraw)
         else if constexpr (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
     } \
 }
+
+#define MilkDropMenuOut_Box(top, line, font, str, r, flags, color, bDarkBox, boxColor) { \
+    D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
+    D2D1_COLOR_F fBox = D2D1::ColorF(boxColor, GetAlpha(boxColor)); \
+    if (!m_menuText[line].IsVisible()) m_menuText[line].Initialize(m_lpDX->GetD2DDeviceContext()); \
+    m_menuText[line].SetAlignment(AlignCenter, AlignCenter); \
+    m_menuText[line].SetTextColor(fText); \
+    m_menuText[line].SetTextOpacity(fText.a); \
+    m_menuText[line].SetContainer(r); \
+    m_menuText[line].SetText(str); \
+    m_menuText[line].SetTextStyle(font); \
+    m_menuText[line].SetTextShadow(false); \
+    m_menuText[line].SetTextBox(fBox, r); \
+    top += m_text.DrawD2DText(font, &m_menuText[line], static_cast<wchar_t*>(str), &r, flags, color, bDarkBox, boxColor); \
+    if (!m_menuText[line].IsVisible()) m_text.RegisterElement(&m_menuText[line]); \
+    m_menuText[line].SetVisible(true); \
+}
 // clang-format on
 
 // Draws a string in the lower-right corner of the screen.
@@ -4172,28 +4189,33 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             }
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
-        else if (m_UI_mode == UI_LOAD_DEL)
+        else
+#endif
+        if (m_UI_mode == UI_LOAD_DEL)
         {
             D2D1_RECT_F rect{};
+            h = GetFontHeight(SIMPLE_FONT);
             rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
-            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_ARE_YOU_SURE_YOU_WANT_TO_DELETE_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_ARE_YOU_SURE_YOU_WANT_TO_DELETE_PRESET), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
             swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_TO_DELETE), m_presets[m_nPresetListCurPos].szFilename.c_str());
-            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, buf, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            rect.top += h;
+            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), buf, rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0x00000000);
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
         else if (m_UI_mode == UI_SAVE_OVERWRITE)
         {
             D2D1_RECT_F rect{};
             rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
-            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_FILE_ALREADY_EXISTS_OVERWRITE_IT), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_FILE_ALREADY_EXISTS_OVERWRITE_IT), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
             swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_FILE_IN_QUESTION_X_MILK), m_waitstring.szText);
-            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, buf, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), buf, rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
             if (m_bWarpShaderLock)
-                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_WARP_SHADER_WAS_LOCKED), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
+                MilkDropMenuOut_Box(rect.top, 2, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_WARP_SHADER_WAS_LOCKED), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
             if (m_bCompShaderLock)
-                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_COMPOSITE_SHADER_WAS_LOCKED), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
+                MilkDropMenuOut_Box(rect.top, 3, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_COMPOSITE_SHADER_WAS_LOCKED), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
+#ifndef _FOOBAR
         else if (m_UI_mode == UI_MASHUP)
         {
             if (m_nPresets - m_nDirs == 0)
@@ -4419,9 +4441,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 orig_rect.top += PLAYLIST_INNER_MARGIN;
             }
         }
-        else
 #endif
-        if (m_UI_mode == UI_LOAD)
+        else if (m_UI_mode == UI_LOAD)
         {
             if (m_nPresets == 0)
             {
@@ -4609,31 +4630,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 }
             }
         }
-        else if (m_UI_mode == UI_REGULAR && !m_waitstring.bActive)
-        {
-            if (m_loadPresetInstruction.IsVisible())
-            {
-                m_loadPresetInstruction.SetVisible(false);
-                m_text.UnregisterElement(&m_loadPresetInstruction);
-            }
-            if (m_loadPresetDir.IsVisible())
-            {
-                m_loadPresetDir.SetVisible(false);
-                m_text.UnregisterElement(&m_loadPresetDir);
-            }
-            for (int i = 0; i < MAX_PRESETS_PER_PAGE; ++i)
-                if (m_loadPresetItem[i].IsVisible())
-                {
-                    m_loadPresetItem[i].SetVisible(false);
-                    m_text.UnregisterElement(&m_loadPresetItem[i]);
-                }
-            if (m_menuText.IsVisible())
-            {
-                m_menuText.SetVisible(false);
-                m_text.UnregisterElement(&m_menuText);
-            }
-            m_pCurMenu->UndrawMenus();
-        }
     }
     // clang-format on
 
@@ -4685,6 +4681,34 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             }
         }
     }
+}
+
+void CPlugin::ClearText()
+{
+    if (m_loadPresetInstruction.IsVisible())
+    {
+        m_loadPresetInstruction.SetVisible(false);
+        m_text.UnregisterElement(&m_loadPresetInstruction);
+    }
+    if (m_loadPresetDir.IsVisible())
+    {
+        m_loadPresetDir.SetVisible(false);
+        m_text.UnregisterElement(&m_loadPresetDir);
+    }
+    for (int i = 0; i < MAX_PRESETS_PER_PAGE; ++i)
+    {
+        if (m_loadPresetItem[i].IsVisible())
+        {
+            m_loadPresetItem[i].SetVisible(false);
+            m_text.UnregisterElement(&m_loadPresetItem[i]);
+        }
+        if (m_menuText[i].IsVisible())
+        {
+            m_menuText[i].SetVisible(false);
+            m_text.UnregisterElement(&m_menuText[i]);
+        }
+    }
+    m_pCurMenu->UndrawMenus();
 }
 
 void CPlugin::SetMenusForPresetVersion(int WarpPSVersion, int CompPSVersion)
