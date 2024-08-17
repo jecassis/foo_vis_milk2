@@ -73,6 +73,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         MSG_WM_MOVE(OnMove)
         MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
         MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
+        MSG_WM_NCCALCSIZE(OnNcCalcSize)
         MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_DISPLAYCHANGE(OnDisplayChange)
         MSG_WM_DPICHANGED(OnDpiChanged)
@@ -119,6 +120,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void OnMove(CPoint ptPos);
     void OnEnterSizeMove();
     void OnExitSizeMove();
+    LRESULT OnNcCalcSize(BOOL bCalcValidRects, LPARAM lParam);
     BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
     void OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen);
     void OnDpiChanged(UINT nDpiX, UINT nDpiY, PRECT pRect);
@@ -549,6 +551,18 @@ void milk2_ui_element::OnExitSizeMove()
     }
 }
 
+// To avoid a 1-pixel-thick border of noise.
+LRESULT milk2_ui_element::OnNcCalcSize(BOOL bCalcValidRects, LPARAM lParam)
+{
+    MILK2_CONSOLE_LOG("OnNcCalcSize ", GetWnd())
+    if (bCalcValidRects == TRUE)
+    {
+        auto& params = *reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
+        return 0;
+    }
+    return 0;
+}
+
 BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
 {
     typedef struct
@@ -710,6 +724,8 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
             TogglePlaylist();
             break;
         case IDM_QUIT:
+            //g_plugin.m_exiting = 1;
+            //PostMessage(WM_CLOSE, static_cast<WPARAM>(0), static_cast<LPARAM>(0));
             break;
     }
 
@@ -718,12 +734,13 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
 
 LRESULT milk2_ui_element::OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    MILK2_CONSOLE_LOG("OnImeNotify ", GetWnd())
     if (uMsg != WM_IME_NOTIFY)
         return 1;
     if (wParam == IMN_CLOSESTATUSWINDOW)
     {
-        if (s_fullscreen)
-            ToggleFullScreen();
+        //if (s_fullscreen && !s_in_toggle)
+        //    ToggleFullScreen();
     }
     return 0;
 }
@@ -848,6 +865,49 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         m_szBuffer = m_szBuffer.substr(0, p + 1);
         return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
+#if 0
+    else if (lParam == IPC_SETVISWND)
+    {
+        //MILK2_CONSOLE_LOG("IPC_SETVISWND")
+        //SendMessage(m_hwnd_winamp, WM_WA_IPC, (WPARAM)m_hwnd, IPC_SETVISWND);
+    }
+    else if (lParam == IPC_CB_VISRANDOM)
+    {
+        //MILK2_CONSOLE_LOG("IPC_CB_VISRANDOM")
+        //SendMessage(GetWinampWindow(), WM_WA_IPC, (m_bPresetLockOnAtStartup ? 0 : 1) << 16, IPC_CB_VISRANDOM);
+    }
+    else if (lParam == IPC_IS_PLAYING_VIDEO)
+    {
+        //MILK2_CONSOLE_LOG("IPC_IS_PLAYING_VIDEO")
+        //if (m_screenmode == FULLSCREEN && SendMessage(GetWinampWindow(), WM_WA_IPC, 0, IPC_IS_PLAYING_VIDEO) > 1)
+    }
+    else if (lParam == IPC_SET_VIS_FS_FLAG)
+    {
+        //MILK2_CONSOLE_LOG("IPC_SET_VIS_FS_FLAG")
+        //SendMessage(GetWinampWindow(), WM_WA_IPC, 1, IPC_SET_VIS_FS_FLAG);
+    }
+    else if (lParam == IPC_GET_D3DX9)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GET_D3DX9")
+        //HMODULE d3dx9 = (HMODULE)SendMessage(winamp, WM_WA_IPC, 0, IPC_GET_D3DX9);
+    }
+    else if (lParam == IPC_GET_API_SERVICE)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GET_API_SERVICE")
+        //WASABI_API_SVC = (api_service*)SendMessage(hwndParent, WM_WA_IPC, 0, IPC_GET_API_SERVICE);
+    }
+    else if (lParam == IPC_GETDIALOGBOXPARENT)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GETDIALOGBOXPARENT")
+        //HWND parent = (HWND)SendMessage(winamp, WM_WA_IPC, 0, IPC_GETDIALOGBOXPARENT);
+    }
+    else if (lParam == IPC_GET_RANDFUNC)
+    {
+        //MILK2_CONSOLE_LOG("IPC_GET_RANDFUNC")
+        //int warand();
+        //warand = (int (*)(void))SendMessage(hwndParent, WM_WA_IPC, 0, IPC_GET_RANDFUNC);
+    }
+#endif
 
     return 1;
 }
