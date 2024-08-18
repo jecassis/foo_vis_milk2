@@ -63,6 +63,9 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // clang-format off
     BEGIN_MSG_MAP_EX(milk2_ui_element)
+#ifdef _DEBUG
+        OutputDebugMessage(APPLICATION_FILE_NAME ": ", get_wnd(), uMsg, wParam, lParam);
+#endif
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
         MSG_WM_DESTROY(OnDestroy)
@@ -147,7 +150,10 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     //ui_element_config::ptr m_config;
     visualisation_stream_v3::ptr m_vis_stream;
 
-    ULONGLONG m_last_refresh;
+    bool m_in_sizemove;
+    bool m_in_suspend;
+    bool m_minimized;
+
     DWORD m_refresh_interval;
     double m_last_time;
 
@@ -277,11 +283,11 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
                                 flag_on_playlists_removed | flag_on_playback_order_changed)
 {
     m_milk2 = false;
-    m_refresh_interval = 33;
+    m_in_sizemove = false;
+    m_in_suspend = false;
+    m_minimized = false;
     m_last_time = 0.0;
-    s_in_sizemove = false;
-    s_in_suspend = false;
-    s_minimized = false;
+    m_refresh_interval = 33;
 
     m_pwd = L".\\";
     set_configuration(config);
@@ -425,7 +431,7 @@ void milk2_ui_element::OnTimer(UINT_PTR nIDEvent)
 void milk2_ui_element::OnPaint(CDCHandle dc)
 {
     MILK2_CONSOLE_LOG_LIMIT("OnPaint ", GetWnd())
-    if (s_in_sizemove && m_milk2) // foobar2000 does not enter/exit size/move
+    if (m_in_sizemove && m_milk2) // foobar2000 does not enter/exit size/move
     {
         Tick();
     }
@@ -499,25 +505,25 @@ void milk2_ui_element::OnMove(CPoint ptPos)
 
 void milk2_ui_element::OnSize(UINT nType, CSize size)
 {
-    MILK2_CONSOLE_LOG("OnSize ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd())
+    MILK2_CONSOLE_LOG("OnSize0 ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd())
     if (nType == SIZE_MINIMIZED)
     {
-        if (!s_minimized)
+        if (!m_minimized)
         {
-            s_minimized = true;
-            if (!s_in_suspend && m_milk2)
+            m_minimized = true;
+            if (!m_in_suspend && m_milk2)
                 OnSuspending();
-            s_in_suspend = true;
+            m_in_suspend = true;
         }
     }
-    else if (s_minimized)
+    else if (m_minimized)
     {
-        s_minimized = false;
-        if (s_in_suspend && m_milk2)
+        m_minimized = false;
+        if (m_in_suspend && m_milk2)
             OnResuming();
-        s_in_suspend = false;
+        m_in_suspend = false;
     }
-    else if (!s_in_sizemove && m_milk2)
+    else if (!m_in_sizemove && m_milk2)
     {
         int width = size.cx;
         int height = size.cy;
@@ -528,7 +534,7 @@ void milk2_ui_element::OnSize(UINT nType, CSize size)
             width = 128;
         if (height < 128)
             height = 128;
-        MILK2_CONSOLE_LOG("OnSize2 ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd())
+        MILK2_CONSOLE_LOG("OnSize1 ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd())
         g_plugin.OnWindowSizeChanged(size.cx, size.cy);
     }
 }
@@ -536,13 +542,13 @@ void milk2_ui_element::OnSize(UINT nType, CSize size)
 void milk2_ui_element::OnEnterSizeMove()
 {
     MILK2_CONSOLE_LOG("OnEnterSizeMove ", GetWnd())
-    s_in_sizemove = true;
+    m_in_sizemove = true;
 }
 
 void milk2_ui_element::OnExitSizeMove()
 {
     MILK2_CONSOLE_LOG("OnExitSizeMove ", GetWnd())
-    s_in_sizemove = false;
+    m_in_sizemove = false;
     if (m_milk2)
     {
         RECT rc;
@@ -625,16 +631,16 @@ BOOL milk2_ui_element::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
     switch (dwPowerEvent)
     {
         case PBT_APMQUERYSUSPEND:
-            if (!s_in_suspend && m_milk2)
+            if (!m_in_suspend && m_milk2)
                 OnSuspending();
-            s_in_suspend = true;
+            m_in_suspend = true;
             break;
         case PBT_APMRESUMESUSPEND:
-            if (!s_minimized)
+            if (!m_minimized)
             {
-                if (s_in_suspend && m_milk2)
+                if (m_in_suspend && m_milk2)
                     OnResuming();
-                s_in_suspend = false;
+                m_in_suspend = false;
             }
             break;
         default:
@@ -1006,6 +1012,13 @@ HRESULT milk2_ui_element::Render()
 // Clears the back buffers and the window contents.
 void milk2_ui_element::Clear()
 {
+#if 0
+    HDC hdc = GetDC();
+    RECT rect{};
+    GetClientRect(&rect);
+    FillRect(hdc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+    ReleaseDC(hdc);
+#endif
 }
 
 void milk2_ui_element::BuildWaves()
@@ -1093,7 +1106,7 @@ void milk2_ui_element::SetPwd(std::wstring pwd) noexcept
 void milk2_ui_element::ToggleFullScreen()
 {
 #ifndef NO_FULLSCREEN
-    MILK2_CONSOLE_LOG("ToggleFullScreen ", GetWnd())
+    MILK2_CONSOLE_LOG("ToggleFullScreen0 ", GetWnd())
     if (m_milk2)
     {
         if (!s_fullscreen)
@@ -1128,7 +1141,7 @@ void milk2_ui_element::ToggleFullScreen()
         s_in_toggle = true;
         SetTopMost();
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
-        MILK2_CONSOLE_LOG("ToggleFullScreen2 ", GetWnd())
+        MILK2_CONSOLE_LOG("ToggleFullScreen1 ", GetWnd())
     }
 #endif
 }
@@ -1231,6 +1244,15 @@ bool milk2_ui_element::LoadPreset(int select)
 
 std::wstring milk2_ui_element::GetCurrentPreset()
 {
+#ifdef _DEBUG
+    wchar_t buf[512]{};
+    swprintf_s(buf, L"%s", (g_plugin.m_nLoadingPreset != 0) ? g_plugin.m_pNewState->m_szDesc : g_plugin.m_pState->m_szDesc);
+    wcscat_s(buf, L".milk");
+    if (buf == g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename)
+    {
+        MILK2_CONSOLE_LOG("GetCurrentPreset Mismatch --> ", buf, " != ", g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str())
+    }
+#endif
     return g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename;
 }
 
@@ -1357,7 +1379,7 @@ bool milk2_ui_element::SetTopMost() noexcept
     {
         if (s_fullscreen)
         {
-            MILK2_CONSOLE_LOG("SetTopMost unsetting main window ", GetWnd());
+            MILK2_CONSOLE_LOG("SetTopMost unsetting main window ", GetWnd())
             standard_commands::main_always_on_top(); //::SetWindowPos(get_wnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW /*| SWP_NOZORDER | SWP_FRAMECHANGED*/);
             s_was_topmost = true;
             return true;
@@ -1367,7 +1389,7 @@ bool milk2_ui_element::SetTopMost() noexcept
     {
         if (s_was_topmost)
         {
-            MILK2_CONSOLE_LOG("SetTopMost resetting main window ", GetWnd());
+            MILK2_CONSOLE_LOG("SetTopMost resetting main window ", GetWnd())
             s_was_topmost = false;
             standard_commands::main_always_on_top(); //::SetWindowPos(get_wnd(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW /*| SWP_NOZORDER | SWP_FRAMECHANGED*/);
             return true;
@@ -1410,10 +1432,11 @@ class milk2_initquit : public initquit
   public:
     void on_init()
     {
+        MILK2_CONSOLE_LOG("on_init")
         if (core_api::is_quiet_mode_enabled())
             return;
     }
-    void on_quit() {}
+    void on_quit() { MILK2_CONSOLE_LOG("on_quit") }
 };
 
 FB2K_SERVICE_FACTORY(milk2_initquit);
