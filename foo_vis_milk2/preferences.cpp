@@ -363,7 +363,7 @@ void milk2_preferences_page::reset()
 
     SelectItemByValue(GetDlgItem(IDC_STRETCH2), static_cast<DWORD>(cfg_nCanvasStretch));
 
-    SelectItemByValue(GetDlgItem(IDC_TEXSIZECOMBO), static_cast<DWORD>(cfg_nTexSizeX));
+    SelectItemByValue(GetDlgItem(IDC_TEXSIZECOMBO), static_cast<LRESULT>(cfg_nTexSizeX));
 
     SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
     CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(cfg_bAutoGamma));
@@ -588,7 +588,7 @@ inline void milk2_preferences_page::SelectItemByPos(HWND ctrl, int pos)
     SendMessage(ctrl, CB_SETCURSEL, (WPARAM)pos, (LPARAM)0);
 }
 
-int milk2_preferences_page::SelectItemByValue(HWND ctrl, DWORD value)
+int milk2_preferences_page::SelectItemByValue(HWND ctrl, LRESULT value)
 {
     LRESULT count = SendMessage(ctrl, CB_GETCOUNT, (WPARAM)0, (LPARAM)0);
     for (int i = 0; i < count; ++i)

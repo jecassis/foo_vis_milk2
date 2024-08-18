@@ -84,13 +84,14 @@ BEGIN
     CONTROL         "Prevent MilkDrop from controlling Scroll Lock key",IDC_CB_SCROLLON4,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,54,173,10
     CONTROL         "Skip conversion to 8-bit samples",IDC_CB_SKIP8,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,67,165,10
-    CONTROL         "Skip composite shader blending",IDC_CB_NOCOMPSHADER,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,260,165,10
+    CONTROL         "Skip composite shader blending",IDC_CB_NOCOMPSHADER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,247,2,81,10
     GROUPBOX        "",IDC_STATIC,2,76,165,30
-    RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,14,84,53,10
-    COMBOBOX        IDC_FS_MAXFPS2,69,84,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,14,83,53,10
+    COMBOBOX        IDC_FS_MAXFPS2,69,83,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,94,94,10
-    LTEXT           "Title display format:",IDC_TITLE_FORMAT_LABEL,183,2,119,10
-    EDITTEXT        IDC_TITLE_FORMAT,183,11,122,13,ES_AUTOHSCROLL
+    LTEXT           "Title display format:",IDC_TITLE_FORMAT_LABEL,182,2,65,10
+    EDITTEXT        IDC_TITLE_FORMAT,182,12,122,13,ES_AUTOHSCROLL
     GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,2,107,165,70
     RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,11,117,115,10
     EDITTEXT        IDC_BETWEEN_TIME,128,116,32,13,ES_CENTER | ES_AUTOHSCROLL

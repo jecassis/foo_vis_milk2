@@ -171,6 +171,7 @@ class CPluginShell
     int m_enable_hdr;                // 0 or 1
     int m_enable_downmix;            // 0 or 1
     int m_skip_8_conversion;         // 0 or 1
+    int m_skip_comp_shaders;         // 0 or 1
     int m_back_buffer_format;
     int m_depth_buffer_format;
     int m_back_buffer_count;         // 2

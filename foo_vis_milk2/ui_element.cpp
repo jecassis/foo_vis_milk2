@@ -157,10 +157,6 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     DWORD m_refresh_interval;
     double m_last_time;
 
-    bool s_in_sizemove;
-    bool s_in_suspend;
-    bool s_minimized;
-
     enum milk2_ui_timer
     {
         ID_REFRESH_TIMER = 1

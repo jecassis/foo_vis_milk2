@@ -913,6 +913,7 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     m_back_buffer_count = settings->m_nBackBufferCount;
     m_min_feature_level = settings->m_nMinFeatureLevel;
     m_skip_8_conversion = settings->m_bSkip8Conversion;
+    m_skip_comp_shaders = settings->m_bSkipCompShader;
 
     wcscpy_s(m_szPresetDir, settings->m_szPresetDir);
 

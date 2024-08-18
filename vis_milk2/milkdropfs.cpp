@@ -823,46 +823,52 @@ void CPlugin::RenderFrame(int bRedraw)
     //SafeRelease(pZBuffer);
 
     // Show it to the user [composite shader].
-    if (!m_pState->m_bBlending)
+    if (m_skip_comp_shaders)
     {
-        // No blend.
-        if (bNewPresetUsesCompShader)
-            ShowToUser_Shaders(1, false, false, false, false);
-        else
-            ShowToUser_NoShaders(); //1, false, false, false, false);
+        ShowToUser_NoShaders();
     }
     else
     {
-        // Blending.
-        // `ShowToUser(nPass, bAlphaBlend, bFlipAlpha, bCullTiles, bFlipCulling)`
-        // Note: alpha values go from 0..1 during a blend.
-        // Note: bFlipCulling==false means tiles with alpha>0 will draw.
-        //       bFlipCulling==true  means tiles with alpha<255 will draw.
-        // NOTE: ShowToUser_NoShaders() must always come before ShowToUser_Shaders(),
-        //        because it always draws the full quad (it can't do tile culling or alpha blending).
-        //        [third case here]
-        if (bOldPresetUsesCompShader && bNewPresetUsesCompShader)
+        if (!m_pState->m_bBlending)
         {
-            ShowToUser_Shaders(0, false, false, true, true);
-            ShowToUser_Shaders(1, true, false, true, false);
+            // No blend.
+            if (bNewPresetUsesCompShader)
+                ShowToUser_Shaders(1, false, false, false, false);
+            else
+                ShowToUser_NoShaders(); //1, false, false, false, false);
         }
-        else if (!bOldPresetUsesCompShader && bNewPresetUsesCompShader)
+        else
         {
-            ShowToUser_NoShaders();
-            ShowToUser_Shaders(1, true, false, true, false);
-        }
-        else if (bOldPresetUsesCompShader && !bNewPresetUsesCompShader)
-        {
-            // THA FUNKY REVERSAL
-            //ShowToUser_Shaders  (0);
-            //ShowToUser_NoShaders(1);
-            ShowToUser_NoShaders();
-            ShowToUser_Shaders(0, true, true, true, true);
-        }
-        else if (!bOldPresetUsesCompShader && !bNewPresetUsesCompShader)
-        {
-            // Special case - all the blending just happens in the blended state vars, so just pretend there's no blend.
-            ShowToUser_NoShaders(); //1, false, false, false, false);
+            // Blending.
+            // `ShowToUser(nPass, bAlphaBlend, bFlipAlpha, bCullTiles, bFlipCulling)`
+            // Note: alpha values go from 0..1 during a blend.
+            // Note: bFlipCulling==false means tiles with alpha>0 will draw.
+            //       bFlipCulling==true  means tiles with alpha<255 will draw.
+            // Note: ShowToUser_NoShaders() must always come before ShowToUser_Shaders(),
+            //       because it always draws the full quad (it can't do tile culling or alpha blending).
+            if (bOldPresetUsesCompShader && bNewPresetUsesCompShader)
+            {
+                ShowToUser_Shaders(0, false, false, true, true);
+                ShowToUser_Shaders(1, true, false, true, false);
+            }
+            else if (!bOldPresetUsesCompShader && bNewPresetUsesCompShader)
+            {
+                ShowToUser_NoShaders();
+                ShowToUser_Shaders(1, true, false, true, false);
+            }
+            else if (bOldPresetUsesCompShader && !bNewPresetUsesCompShader)
+            {
+                // THA FUNKY REVERSAL
+                //ShowToUser_Shaders  (0);
+                //ShowToUser_NoShaders(1);
+                ShowToUser_NoShaders();
+                ShowToUser_Shaders(0, true, true, true, true);
+            }
+            else if (!bOldPresetUsesCompShader && !bNewPresetUsesCompShader)
+            {
+                // Special case - all the blending just happens in the blended state vars, so just pretend there's no blend.
+                ShowToUser_NoShaders(); //1, false, false, false, false);
+            }
         }
     }
 

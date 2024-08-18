@@ -214,6 +214,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
         COMMAND_HANDLER_EX(IDC_CB_NORATING2, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_PRESS_F1_MSG, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_SKIP8, BN_CLICKED, OnButtonClick)
+        COMMAND_HANDLER_EX(IDC_CB_NOCOMPSHADER, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_W_MAXFPS2, CBN_SELCHANGE, OnComboChange)
         COMMAND_HANDLER_EX(IDC_FS_MAXFPS2, CBN_SELCHANGE, OnComboChange)
         COMMAND_HANDLER_EX(IDC_CB_WPT, BN_CLICKED, OnButtonClick)
@@ -253,7 +254,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     inline void AddItem(HWND ctrl, wchar_t* buffer, UINT id, DWORD itemdata);
     inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata);
     inline void SelectItemByPos(HWND ctrl, int pos);
-    int SelectItemByValue(HWND ctrl, DWORD value);
+    int SelectItemByValue(HWND ctrl, LRESULT value);
     int64_t ReadCBValue(DWORD ctrl_id) const;
     bool IsComboDiff(DWORD ctrl_id, int64_t previous) const;
     wchar_t* FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID);
