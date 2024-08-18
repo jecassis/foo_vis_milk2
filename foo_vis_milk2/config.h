@@ -107,6 +107,9 @@ static constexpr GUID guid_cfg_szTitleFormat = {
 static const GUID guid_cfg_bSkip8Conversion = {
     0xa5fce654, 0xe371, 0x4d3b, {0xae, 0x4, 0x62, 0xc5, 0xba, 0x57, 0x68, 0x20}
 }; // {A5FCE654-E371-4D3B-AE04-62C5BA576820}
+static const GUID guid_cfg_bSkipCompShader = {
+    0xa9220355, 0x1382, 0x41f3, {0xbd, 0x41, 0x7e, 0xb3, 0xe, 0x94, 0xa6, 0x42}
+}; // {A9220355-1382-41F3-BD41-7EB30E94A642}
 
 // Defaults
 // `milk.ini` defaults
@@ -169,6 +172,7 @@ static constexpr UINT default_max_fps_fs = 30;
 static constexpr bool default_allow_page_tearing_fs = false;
 static constexpr const char* default_szTitleFormat = "%title%";
 static constexpr bool default_bSkip8Conversion = false;
+static constexpr bool default_bSkipCompShader = false;
 
 static WCHAR default_szPluginsDirPath[MAX_PATH];
 static WCHAR default_szConfigIniFile[MAX_PATH];

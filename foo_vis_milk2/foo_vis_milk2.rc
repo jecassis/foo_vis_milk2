@@ -84,6 +84,7 @@ BEGIN
     CONTROL         "Prevent MilkDrop from controlling Scroll Lock key",IDC_CB_SCROLLON4,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,54,173,10
     CONTROL         "Skip conversion to 8-bit samples",IDC_CB_SKIP8,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,67,165,10
+    CONTROL         "Skip composite shader blending",IDC_CB_NOCOMPSHADER,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,260,165,10
     GROUPBOX        "",IDC_STATIC,2,76,165,30
     RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,14,84,53,10
     COMBOBOX        IDC_FS_MAXFPS2,69,84,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -559,7 +560,7 @@ BEGIN
             VALUE "FileDescription", APPLICATION_DESCRIPTION
             VALUE "FileVersion", APPLICATION_VERSION
             VALUE "InternalName", APPLICATION_PRODUCT_NAME
-            VALUE "LegalCopyright", "© " APPLICATION_COPYRIGHT
+            VALUE "LegalCopyright", "Â© " APPLICATION_COPYRIGHT
             VALUE "OriginalFilename", APPLICATION_FILE_NAME _APPLICATION_VERSION_EXTENSION
             VALUE "ProductName", APPLICATION_PRODUCT_NAME
             VALUE "ProductVersion", LIBRARY_VERSION

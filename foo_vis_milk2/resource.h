@@ -862,6 +862,7 @@
 #define IDC_T7                          1068
 #define IDC_FONTBOLD3                   1069
 #define IDC_FONTITAL3                   1070
+#define IDC_CB_NOCOMPSHADER             1070
 #define IDC_FONTAA3                     1071
 #define IDC_FONTBOLD4                   1072
 #define IDC_FONTITAL4                   1073
