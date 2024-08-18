@@ -677,7 +677,7 @@ void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg
         buf[desired_len] = L'\0';
     }
 
-    sprintf_s(buf2, "%shwnd=%08p, msg=%ls w=%08x, l=%08x\n", szStartText, hwnd, buf, static_cast<unsigned int>(wParam), static_cast<int>(lParam));
+    sprintf_s(buf2, "%shwnd=0x%08p, msg=%ls w=0x%08x, l=0x%08x\n", szStartText, hwnd, buf, static_cast<unsigned int>(wParam), static_cast<int>(lParam));
     OutputDebugStringA(buf2);
 }
 #endif
