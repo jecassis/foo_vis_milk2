@@ -151,7 +151,7 @@ int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, in
 
 // Loads the `var_pf_*` variables in this CState object with the correct values.
 // for vars that affect pixel motion, that means evaluating them at time==-1,
-// (i.e. no blending w/blendto value); the blending of the file dx/dy
+// (i.e. no blending with blend to value); the blending of the file dx/dy
 // will be done *after* execution of the per-vertex code.
 // for vars that do NOT affect pixel motion, evaluate them at the current time,
 // so that if they're blending, both states see the blended value.

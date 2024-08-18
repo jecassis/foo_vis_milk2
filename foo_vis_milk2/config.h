@@ -285,6 +285,7 @@ class milk2_config
     uint32_t m_sentinel = ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K');
     uint32_t m_version = 2;
 
+    static void resolve_profile();
     static void initialize_paths();
     void update_paths();
 };

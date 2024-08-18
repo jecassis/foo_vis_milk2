@@ -43,6 +43,7 @@ static bool s_milk2 = false;
 static ULONGLONG s_count = 0ull;
 static constexpr ULONGLONG s_debug_limit = 1ull;
 static milk2_config s_config;
+static std::wstring s_pwd;
 
 #pragma region UI Element
 class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base
@@ -111,6 +112,9 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     static const char* g_get_description() { return "MilkDrop 2 Visualization using DirectX 11."; }
 
     void notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size);
+
+  protected:
+    const ui_element_instance_callback_ptr m_callback;
 
   private:
     int OnCreate(LPCREATESTRUCT cs);
@@ -231,15 +235,12 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     bool SetTopMost() noexcept;
 
     // Component paths
+    static void resolve_pwd();
     std::wstring m_pwd;
 
     // Audio data
     unsigned char waves[2][576];
 
-  protected:
-    const ui_element_instance_callback_ptr m_callback;
-
-  private:
     // Playback control
     static_api_ptr_t<playback_control> m_playback_control;
     titleformat_object::ptr m_script;
@@ -339,15 +340,14 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
     MILK2_CONSOLE_LOG("OnCreate ", cs->x, ", ", cs->y, ", ", GetWnd())
 
     if (!s_milk2)
+    {
+        resolve_pwd();
         s_config.init();
+    }
 
     if (!m_milk2)
     {
-        std::wstring base_path = static_cast<wchar_t*>(AutoWide(core_api::get_my_full_path()));
-        size_t t = base_path.rfind(L'\\');
-        if (t != std::wstring::npos)
-            base_path.erase(t + 1);
-        SetPwd(base_path);
+        SetPwd(s_pwd);
 
         try
         {
@@ -405,6 +405,7 @@ void milk2_ui_element::OnDestroy()
         MILK2_CONSOLE_LOG("ExitVis")
         s_fullscreen = false;
         s_in_toggle = false;
+        s_was_topmost = false;
         s_milk2 = false;
         KillTimer(ID_REFRESH_TIMER);
         wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); // save last "Load Preset" menu directory
@@ -864,7 +865,8 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         //MILK2_CONSOLE_LOG("IPC_GETINIDIRECTORYW")
         m_szBuffer = s_config.settings.m_szConfigIniFile;
         size_t p = m_szBuffer.find_last_of(L"\\");
-        m_szBuffer = m_szBuffer.substr(0, p + 1);
+        if (p != std::wstring::npos)
+            m_szBuffer = m_szBuffer.substr(0, p + 1);
         return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
 #if 0
@@ -1412,6 +1414,45 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
         api->activeplaylist_set_selection(single_only ? (pfc::bit_array&)pfc::bit_array_true() : (pfc::bit_array&)pfc::bit_array_one(idx), mask);
     if (focus && idx_focus != idx)
         api->activeplaylist_set_focus_item(idx);
+}
+
+// Resolves PWD, taking care of the case where the path contains non-ASCII
+// characters, which is a limitation of the foobar2000 core API functions.
+void milk2_ui_element::resolve_pwd()
+{
+    std::wstring base_path = static_cast<wchar_t*>(AutoWide(core_api::get_my_full_path()));
+    size_t t = base_path.rfind(L'\\');
+    if (t != std::wstring::npos)
+        base_path.erase(t + 1);
+
+    wchar_t path[MAX_PATH];
+    HMODULE hm = NULL;
+
+    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                          (LPCWSTR)&TEXT(APPLICATION_FILE_NAME),
+                          &hm) == 0)
+    {
+        DWORD ret = GetLastError();
+        MILK2_CONSOLE_LOG("GetModuleHandleEx failed, error = %d\n", ret);
+    }
+    if (GetModuleFileName(hm, path, MAX_PATH) == 0)
+    {
+        DWORD ret = GetLastError();
+        MILK2_CONSOLE_LOG("GetModuleFileName failed, error = %d\n", ret);
+    }
+    std::wstring paths(path);
+    size_t p = paths.rfind(L'\\');
+    if (p != std::wstring::npos)
+        paths.erase(p + 1);
+
+    if (paths != base_path)
+    {
+        s_pwd = paths;
+    }
+    else
+    {
+        s_pwd = base_path;
+    }
 }
 
 // clang-format off

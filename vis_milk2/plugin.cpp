@@ -4991,7 +4991,8 @@ void CPlugin::ConsoleMessage(const wchar_t* function_name, int message_id, int t
         }
 
         // Display the error message.
-        if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function_name) + 40) * sizeof(TCHAR))) == NULL)
+        // Buffer size: lpMsgBuf (includes CR+LF) + function_name + format (41) + dw (4) + '\0' (1)
+        if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)function_name) + 41 + 4 + 1) * sizeof(TCHAR))) == NULL)
             return;
         swprintf_s((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("foo_vis_milk2.dll: %s failed with error %d - %s"), function_name, dw, (LPCTSTR)lpMsgBuf);
         OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
@@ -5506,7 +5507,8 @@ void CPlugin::LoadPresetTick()
 void CPlugin::SetPresetListPosition(std::wstring search)
 {
     size_t basename = search.find_last_of(L"\\");
-    search = search.substr(basename + 1, search.length() - basename - 1);
+    if (basename != std::wstring::npos)
+        search = search.substr(basename + 1, search.length() - basename - 1);
     auto it = std::find_if(m_presets.begin(), m_presets.end(), [&s = search](const PresetInfo& m) -> bool { return m.szFilename == s; });
     if (it != m_presets.end())
         m_nCurrentPreset = static_cast<int>(it - m_presets.begin());
