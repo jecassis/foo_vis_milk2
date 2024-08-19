@@ -674,7 +674,7 @@ freely, subject to the following restrictions:
 
 ## Other Notices
 
-- **foobar2000** audio player is Copyright © 2001-2023, [Peter Pawlowski](https://www.foobar2000.org/license). All rights reserved.
+- **foobar2000** audio player is Copyright © 2001-2024, [Peter Pawlowski](https://www.foobar2000.org/license). All rights reserved.
 
 ---
 
@@ -686,9 +686,9 @@ The project targets the Microsoft Windows operating system. As such includes com
 
 These terms can be found in the following files:
 
-- `C:\Program Files (x86)\Windows Kits\10\Licenses\10.0.22621.0\sdk_license.rtf`
-- `C:\Program Files (x86)\Windows Kits\10\Licenses\10.0.22621.0\sdk_third_party_notices.rtf`
+- `C:\Program Files (x86)\Windows Kits\10\Licenses\10.0.26100.0\sdk_license.rtf`
+- `C:\Program Files (x86)\Windows Kits\10\Licenses\10.0.26100.0\sdk_third_party_notices.rtf`
 
 ---
 
-[Return to top](#Licenses).
+[Return to top](#Licenses)

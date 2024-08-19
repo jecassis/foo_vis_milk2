@@ -18,6 +18,9 @@
 #define APPLICATION_FILE_IS_DLL 1
 #define APPLICATION_DESCRIPTION "MilkDrop 2 Visualization Library"
 #define APPLICATION_SOURCE_URL "https://github.com/jecassis/foo_vis_milk2"
+#define APPLICATION_RELEASE_URL "https://www.foobar2000.org/components/view/foo_vis_milk2"
+#define APPLICATION_DOCUMENTATION_URL "https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components_0.9/foo_vis_milk2"
+#define APPLICATION_DISCUSSION_URL "https://hydrogenaud.io/index.php/topic,125418.0.html"
 
 #define APPLICATION_VERSION_MAJOR 0
 #define APPLICATION_VERSION_MINOR 0

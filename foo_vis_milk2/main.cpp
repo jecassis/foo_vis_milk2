@@ -9,7 +9,12 @@
 #include "pch.h"
 #include "version.h"
 
-#ifdef _DEBUG
+#define APPLICATION_INFORMATION_URLS \
+    APPLICATION_FILE_NAME " releases and documentation can be found here:\n" \
+    " * " APPLICATION_RELEASE_URL "\n" \
+    " * " APPLICATION_DISCUSSION_URL "\n" \
+    " * " APPLICATION_DOCUMENTATION_URL "\n\n"
+
 #define APPLICATION_SOURCE_URLS \
     APPLICATION_FILE_NAME " is released under the Mozilla Public License (MPL) version 2.0. Component source code can be obtained from:\n" \
     " * " APPLICATION_SOURCE_URL " (Mozilla Public License 2.0, BSD 3-Clause License, MIT License)\n" \
@@ -20,9 +25,6 @@
     " * https://github.com/projectM-visualizer/projectm-eval (MIT License)\n" \
     " * https://github.com/microsoft/DirectXTK (MIT License)\n" \
     " * https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ (Proprietary License)"
-#else
-#define APPLICATION_SOURCE_URLS "Documentation and source code can be obtained from:\n * " PLUGIN_WEB_URL
-#endif
 
 // clang-format off
 DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
@@ -34,6 +36,7 @@ DECLARE_COMPONENT_VERSION("MilkDrop 2 Visualisation", APPLICATION_VERSION,
                           "Copyright (c) 2021-" APPLICATION_COPYRIGHT ".\nAll rights reserved.\n\n"
                           "foobar2000 component and DirectX 11 port by " APPLICATION_COMPANY_NAME ".\n"
                           "Built with foobar2000 SDK " STR(FOOBAR2000_SDK_VERSION) " on " __DATE__ " " __TIME__ " " STR(BUILD_TIMEZONE) ".\n\n"
+                          APPLICATION_INFORMATION_URLS
                           APPLICATION_SOURCE_URLS)
 // clang-format on
 

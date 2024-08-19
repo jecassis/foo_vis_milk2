@@ -20,12 +20,10 @@ HWND g_hWindow;
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default.
 //extern "C" {
-//__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-//__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+//    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+//    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 //}
 
-// Anonymous namespace is standard practice in foobar2000 components
-// to prevent name collisions.
 namespace
 {
 static const GUID guid_milk2 = {
@@ -338,7 +336,10 @@ void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p
 int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 {
     MILK2_CONSOLE_LOG("OnCreate ", cs->x, ", ", cs->y, ", ", GetWnd())
-
+#if 0
+    HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
+    SetIcon(hIcon, FALSE); //SetClassLongPtr(get_wnd(), GCLP_HICON, (LONG_PTR)hIcon);
+#endif
     if (!s_milk2)
     {
         resolve_pwd();
@@ -464,6 +465,7 @@ BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
     CRect r;
     WIN32_OP_D(GetClientRect(&r));
     CBrush brush;
+    //const COLORREF rgbBlack = 0x00000000;
     WIN32_OP_D(brush.CreateSolidBrush(m_callback->query_std_color(ui_color_background)) != NULL);
     WIN32_OP_D(dc.FillRect(&r, brush));
 #else
@@ -561,6 +563,7 @@ LRESULT milk2_ui_element::OnNcCalcSize(BOOL bCalcValidRects, LPARAM lParam)
     if (bCalcValidRects == TRUE)
     {
         auto& params = *reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
+        //adjust_fullscreen_client_rect(get_wnd(), params.rgrc[0]);
         return 0;
     }
     return 0;
@@ -1404,8 +1407,8 @@ void milk2_ui_element::SetSelectionSingle(size_t idx)
 void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, bool single_only)
 {
     auto api = playlist_manager::get();
-    size_t total = api->activeplaylist_get_item_count();
-    size_t idx_focus = api->activeplaylist_get_focus_item();
+    const size_t total = api->activeplaylist_get_item_count();
+    const size_t idx_focus = api->activeplaylist_get_focus_item();
 
     bit_array_bittable mask(total);
     mask.set(idx, toggle ? !api->activeplaylist_is_item_selected(idx) : true);

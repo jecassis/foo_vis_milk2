@@ -9,13 +9,17 @@
     .DESCRIPTION
         Helper script that creates the foobar2000 component archive.
     .EXAMPLE
-        ..\tools\build-fb2k_component.ps1
+        PS> .\tools\build-fb2k_component.ps1
     .EXAMPLE
-        .\tools\build-fb2k_component.ps1 -TargetName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -TargetName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
     .EXAMPLE
-        .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -TargetName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TargetName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
+    .INPUTS
+        None.
     .OUTPUTS
         *.fb2k-component
+    .LINK
+        https://github.com/jecassis/foo_vis_milk2
 #>
 
 [CmdletBinding()]
@@ -25,15 +29,15 @@ param
     [switch] $RunBuild,
     [parameter(HelpMessage = 'Build Configuration')]
     [string] $Configuration = 'Release',
-    [parameter(HelpMessage = 'Platforms')]
+    [parameter(HelpMessage = 'Build Platforms')]
     [string[]] $Platforms = @('x86', 'x64', 'ARM64', 'ARM64EC'),
-    [parameter(HelpMessage = 'Target Name')]
-    [string] $TargetName = 'foo_vis_milk2',
-    [parameter(HelpMessage = 'Target File Name')]
+    [parameter(HelpMessage = 'Component and Target Name')]
+    [string] $ComponentName = 'foo_vis_milk2',
+    [parameter(HelpMessage = 'Target DLL File Name with Extension')]
     [string] $TargetFileName,
-    [parameter(HelpMessage = 'Output Path')]
+    [parameter(HelpMessage = 'Build Output Path')]
     [string] $OutputPath = "$(Get-Location)\Bin",
-    [parameter(HelpMessage = 'Version')]
+    [parameter(HelpMessage = 'Component Version')]
     [string] $Version,
     [parameter(HelpMessage = 'Save PDBs')]
     [switch] $SavePDB
@@ -114,7 +118,7 @@ foreach ($platform in $Platforms)
     }
     else
     {
-        Write-Host "FATAL: Missing `"${platform}.Replace('x86', 'Win32')`" build output."
+        Write-Host "FATAL: Missing $(${platform}.Replace('x86', 'Win32')) build output."
         exit 1
     }
 }
