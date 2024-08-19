@@ -32,6 +32,9 @@ static ULONGLONG s_count = 0ull;
 static constexpr ULONGLONG s_debug_limit = 1ull;
 static milk2_config s_config;
 static std::wstring s_pwd;
+#ifdef TIMER_TP
+CRITICAL_SECTION s_cs;
+#endif
 
 #pragma region UI Element
 class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base
@@ -149,10 +152,14 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     DWORD m_refresh_interval;
     double m_last_time;
 
+#ifndef TIMER_TP
+    // Win32 timer
+    ULONGLONG m_last_refresh;
     enum milk2_ui_timer
     {
         ID_REFRESH_TIMER = 1
     };
+#endif
 
     enum milk2_ui_menu_id
     {
@@ -218,6 +225,14 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // Rendering loop timer
     DX::StepTimer m_timer;
+
+#ifdef TIMER_TP
+    // Thread pool timer
+    void StartTimer() noexcept;
+    void StopTimer() noexcept;
+    static VOID CALLBACK TimerCallback(PTP_CALLBACK_INSTANCE Instance, PVOID Context, PTP_TIMER Timer) noexcept;
+    PTP_TIMER m_tpTimer;
+#endif
 
     // Topmost setting
     bool SetTopMost() noexcept;

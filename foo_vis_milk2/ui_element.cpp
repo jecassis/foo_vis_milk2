@@ -38,7 +38,11 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
     m_in_sizemove = false;
     m_in_suspend = false;
     m_minimized = false;
+#ifdef TIMER_TP
+    m_tpTimer = nullptr;
+#else
     m_last_time = 0.0;
+#endif
     m_refresh_interval = 33;
 
     m_pwd = L".\\";
@@ -101,6 +105,9 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
     {
         resolve_pwd();
         s_config.init();
+#ifdef TIMER_TP
+        InitializeCriticalSection(&s_cs);
+#endif
     }
 
     if (!m_milk2)
@@ -120,6 +127,10 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
         {
             FB2K_console_print(core_api::get_my_file_name(), ": Exception while creating visualization stream - ", exc);
         }
+
+#ifdef TIMER_TP
+        m_tpTimer = CreateThreadpoolTimer(TimerCallback, this, NULL);
+#endif
     }
 
     HRESULT hr = S_OK;
@@ -151,6 +162,10 @@ void milk2_ui_element::OnClose()
 void milk2_ui_element::OnDestroy()
 {
     MILK2_CONSOLE_LOG("OnDestroy ", GetWnd())
+#ifdef TIMER_TP
+    StopTimer();
+    EnterCriticalSection(&s_cs);
+#endif
     m_vis_stream.release();
     //DestroyMenu();
 
@@ -165,7 +180,11 @@ void milk2_ui_element::OnDestroy()
         s_in_toggle = false;
         s_was_topmost = false;
         s_milk2 = false;
+#ifndef TIMER_TP
         KillTimer(ID_REFRESH_TIMER);
+#else
+        DeleteCriticalSection(&s_cs);
+#endif
         wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); // save last "Load Preset" menu directory
         g_plugin.PluginQuit();
         //PostQuitMessage(0);
@@ -174,13 +193,18 @@ void milk2_ui_element::OnDestroy()
     {
         s_in_toggle = false;
     }
+#ifdef TIMER_TP
+    LeaveCriticalSection(&s_cs);
+#endif
 }
 
 void milk2_ui_element::OnTimer(UINT_PTR nIDEvent)
 {
     MILK2_CONSOLE_LOG_LIMIT("OnTimer ", GetWnd())
+#ifndef TIMER_TP
     KillTimer(ID_REFRESH_TIMER);
     InvalidateRect(NULL, TRUE);
+#endif
 }
 
 void milk2_ui_element::OnPaint(CDCHandle dc)
@@ -196,12 +220,17 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
         std::ignore = BeginPaint(&ps);
         EndPaint(&ps);
     }
+#ifdef TIMER_TP
+    StartTimer();
+#endif
     ValidateRect(NULL);
-
+#ifndef TIMER_TP
     ULONGLONG now = GetTickCount64();
+#endif
     if (m_vis_stream.is_valid())
     {
         BuildWaves();
+#ifndef TIMER_TP
         ULONGLONG next_refresh = m_last_refresh + m_refresh_interval;
         // (next_refresh < now) would break when GetTickCount() overflows
         if (static_cast<LONGLONG>(next_refresh - now) < 0)
@@ -209,8 +238,11 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
             next_refresh = now;
         }
         SetTimer(ID_REFRESH_TIMER, static_cast<UINT>(next_refresh - now));
+#endif
     }
+#ifndef TIMER_TP
     m_last_refresh = now;
+#endif
 }
 
 BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
@@ -244,7 +276,12 @@ BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
             FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
         }
     }
+#ifndef TIMER_TP
     Tick();
+#endif
+#endif
+#if 0
+    FB2K_console_print(m_timer.GetFramesPerSecond(), "FPS");
 #endif
 
     return TRUE;
@@ -255,7 +292,14 @@ void milk2_ui_element::OnMove(CPoint ptPos)
     MILK2_CONSOLE_LOG("OnMove ", GetWnd())
     if (m_milk2)
     {
+#ifdef TIMER_TP
+        if (TryEnterCriticalSection(&s_cs) == 0)
+            return;
+#endif
         g_plugin.OnWindowMoved();
+#ifdef TIMER_TP
+        LeaveCriticalSection(&s_cs);
+#endif
     }
 }
 
@@ -291,7 +335,14 @@ void milk2_ui_element::OnSize(UINT nType, CSize size)
         if (height < 128)
             height = 128;
         MILK2_CONSOLE_LOG("OnSize1 ", nType, ", ", size.cx, ", ", size.cy, ", ", GetWnd())
+#ifdef TIMER_TP
+        if (TryEnterCriticalSection(&s_cs) == 0)
+            return;
+#endif
         g_plugin.OnWindowSizeChanged(size.cx, size.cy);
+#ifdef TIMER_TP
+        LeaveCriticalSection(&s_cs);
+#endif 
     }
 }
 
@@ -307,9 +358,16 @@ void milk2_ui_element::OnExitSizeMove()
     m_in_sizemove = false;
     if (m_milk2)
     {
+#ifdef TIMER_TP
+        if (TryEnterCriticalSection(&s_cs) == 0)
+            return;
+#endif
         RECT rc;
         WIN32_OP_D(GetClientRect(&rc));
         g_plugin.OnWindowSizeChanged(rc.right - rc.left, rc.bottom - rc.top);
+#ifdef TIMER_TP
+        LeaveCriticalSection(&s_cs);
+#endif
     }
 }
 
@@ -502,8 +560,8 @@ LRESULT milk2_ui_element::OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 1;
     if (wParam == IMN_CLOSESTATUSWINDOW)
     {
-        //if (s_fullscreen && !s_in_toggle)
-        //    ToggleFullScreen();
+        if (s_fullscreen && !s_in_toggle)
+            ToggleFullScreen();
     }
     return 0;
 }
@@ -729,7 +787,13 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
     }
     else
     {
+#ifdef TIMER_TP
+        EnterCriticalSection(&s_cs);
+#endif
         g_plugin.OnWindowSwap(window, width, height);
+#ifdef TIMER_TP
+        LeaveCriticalSection(&s_cs);
+#endif
     }
 
     m_milk2 = true;
@@ -741,9 +805,20 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
 // Executes the render.
 void milk2_ui_element::Tick()
 {
+#ifdef TIMER_TP
+    if (TryEnterCriticalSection(&s_cs) == 0)
+        return;
+#endif
+
     m_timer.Tick([&]() { Update(m_timer); });
 
     Render();
+
+#ifdef TIMER_TP
+    LeaveCriticalSection(&s_cs);
+
+    InvalidateRect(NULL, TRUE);
+#endif
 }
 
 // Updates the world.
@@ -1123,6 +1198,41 @@ void milk2_ui_element::UpdatePlaylist()
     g_plugin.m_playlist_top_idx = -1;
 }
 
+#ifdef TIMER_TP
+// Starts the timer.
+void milk2_ui_element::StartTimer() noexcept
+{
+    MILK2_CONSOLE_LOG_LIMIT("StartTimer ", GetWnd())
+    if (m_tpTimer == nullptr)
+        return;
+
+    FILETIME DueTime{};
+    DWORD RefreshInterval = static_cast<DWORD>(lround(1000.0f / s_config.settings.m_max_fps_fs));
+    SetThreadpoolTimer(m_tpTimer, &DueTime, RefreshInterval, 0);
+}
+
+// Stops the timer.
+void milk2_ui_element::StopTimer() noexcept
+{
+    MILK2_CONSOLE_LOG_LIMIT("StopTimer ", GetWnd())
+    if (m_tpTimer == nullptr)
+        return;
+
+    SetThreadpoolTimer(m_tpTimer, NULL, 0, 0);
+    WaitForThreadpoolTimerCallbacks(m_tpTimer, TRUE);
+    CloseThreadpoolTimer(m_tpTimer);
+}
+
+// Handles a timer tick.
+VOID CALLBACK milk2_ui_element::TimerCallback(PTP_CALLBACK_INSTANCE Instance, PVOID Context, PTP_TIMER Timer) noexcept
+{
+    UNREFERENCED_PARAMETER(Instance);
+    UNREFERENCED_PARAMETER(Timer);
+
+    ((milk2_ui_element*)Context)->Tick();
+}
+#endif
+
 // Sets and unsets foobar2000's "Always on Top" setting (if main window is
 // `TOPMOST`) so that visualization window becomes `TOPMOST` on entering
 // fullscreen.
@@ -1166,6 +1276,8 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
     auto api = playlist_manager::get();
     const size_t total = api->activeplaylist_get_item_count();
     const size_t idx_focus = api->activeplaylist_get_focus_item();
+    //if (idx_focus == pfc::infinite_size)
+    //    return;
 
     bit_array_bittable mask(total);
     mask.set(idx, toggle ? !api->activeplaylist_is_item_selected(idx) : true);
