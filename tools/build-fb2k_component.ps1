@@ -11,9 +11,9 @@
     .EXAMPLE
         PS> .\tools\build-fb2k_component.ps1
     .EXAMPLE
-        PS> .\tools\build-fb2k_component.ps1 -TargetName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
     .EXAMPLE
-        PS> .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TargetName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
     .INPUTS
         None.
     .OUTPUTS
@@ -60,10 +60,10 @@ if (-not (Test-Path Env:VCToolsInstallDir))
 
 if (-not $TargetFileName)
 {
-    $TargetFileName = "${TargetName}.dll"
+    $TargetFileName = "${ComponentName}.dll"
 }
 
-Write-Host "INFO: Building `"$TargetName`" component package..."
+Write-Host "INFO: Building `"$ComponentName`" component package..."
 
 $PackagePath = "$(Get-Location)\component"
 $DataPath = "$(Get-Location)\external\winamp"
@@ -156,15 +156,15 @@ if ($arm64ecVersion -and ($x86Version -ne $arm64ecVersion))
 # Define component output file name.
 if ($Version -eq '')
 {
-    $ArchivePath = "$(Get-Location)\${TargetName}.fb2k-component"
+    $ArchivePath = "$(Get-Location)\${ComponentName}.fb2k-component"
 }
 elseif ($Version)
 {
-    $ArchivePath = "$(Get-Location)\${TargetName}-${Version}.fb2k-component"
+    $ArchivePath = "$(Get-Location)\${ComponentName}-${Version}.fb2k-component"
 }
 else
 {
-    $ArchivePath = "$(Get-Location)\${TargetName}-${x86Version}.fb2k-component"
+    $ArchivePath = "$(Get-Location)\${ComponentName}-${x86Version}.fb2k-component"
 }
 
 # Create component archive.

@@ -561,7 +561,7 @@ BEGIN
             VALUE "FileDescription", APPLICATION_DESCRIPTION
             VALUE "FileVersion", APPLICATION_VERSION
             VALUE "InternalName", APPLICATION_PRODUCT_NAME
-            VALUE "LegalCopyright", "Â© " APPLICATION_COPYRIGHT
+            VALUE "LegalCopyright", "© " APPLICATION_COPYRIGHT
             VALUE "OriginalFilename", APPLICATION_FILE_NAME _APPLICATION_VERSION_EXTENSION
             VALUE "ProductName", APPLICATION_PRODUCT_NAME
             VALUE "ProductVersion", LIBRARY_VERSION
