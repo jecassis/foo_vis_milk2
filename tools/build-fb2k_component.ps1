@@ -52,7 +52,7 @@ $ErrorActionPreference = 'Stop'
 
 # Note: The working directory is the solution directory.
 
-if (-not (Test-Path Env:VCToolsInstallDir))
+if (($RunBuild -or $VerbosePreference) -and -not (Test-Path Env:VCToolsInstallDir))
 {
     Write-Host "FATAL: Run in Developer PowerShell."
     exit 1
