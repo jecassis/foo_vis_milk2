@@ -440,6 +440,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="steptimer.h" />
+    <ClInclude Include="ui_element.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
