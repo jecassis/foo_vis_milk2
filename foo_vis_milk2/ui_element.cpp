@@ -166,7 +166,8 @@ void milk2_ui_element::OnDestroy()
     StopTimer();
     EnterCriticalSection(&s_cs);
 #endif
-    m_vis_stream.release();
+    if (m_vis_stream.is_valid())
+        m_vis_stream.release();
     //DestroyMenu();
 
     if (m_milk2)
@@ -1289,17 +1290,12 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
 }
 
 // Resolves PWD, taking care of the case where the path contains non-ASCII
-// characters, which is a limitation of the foobar2000 core API functions.
+// characters.
 void milk2_ui_element::resolve_pwd()
 {
-    std::wstring base_path = static_cast<wchar_t*>(AutoWide(core_api::get_my_full_path()));
-    size_t t = base_path.rfind(L'\\');
-    if (t != std::wstring::npos)
-        base_path.erase(t + 1);
-
+    // Get PWD path through Win32 API.
     wchar_t path[MAX_PATH];
     HMODULE hm = NULL;
-
     if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                           (LPCWSTR)&TEXT(APPLICATION_FILE_NAME),
                           &hm) == 0)
@@ -1317,6 +1313,17 @@ void milk2_ui_element::resolve_pwd()
     if (p != std::wstring::npos)
         paths.erase(p + 1);
 
+    // Get profile directory path through foobar2000 API.
+    pfc::string8 full_path = filesystem::g_get_native_path(core_api::get_my_full_path());
+    size_t t = full_path.lastIndexOf(L'\\');
+    if (t != SIZE_MAX)
+        full_path = full_path.subString(0, t + 1);
+    size_t path_length = full_path.get_length();
+    std::wstring base_path(path_length, L'\0');
+    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(base_path.c_str()), path_length, full_path.get_ptr(), path_length);
+    base_path = base_path.erase(base_path.find(L'\0'));
+
+    // Use Win32 string it mismatches with the foobar2000 string.
     if (paths != base_path)
     {
         s_pwd = paths;

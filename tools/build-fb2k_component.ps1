@@ -13,7 +13,7 @@
     .EXAMPLE
         PS> .\tools\build-fb2k_component.ps1 -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
     .EXAMPLE
-        PS> .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TimeZone '-0800' -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
     .INPUTS
         None.
     .OUTPUTS
@@ -31,6 +31,8 @@ param
     [string] $Configuration = 'Release',
     [parameter(HelpMessage = 'Build Platforms')]
     [string[]] $Platforms = @('x86', 'x64', 'ARM64', 'ARM64EC'),
+    [parameter(HelpMessage = 'Time Zone')]
+    [string] $TimeZone,
     [parameter(HelpMessage = 'Component and Target Name')]
     [string] $ComponentName = 'foo_vis_milk2',
     [parameter(HelpMessage = 'Target DLL File Name with Extension')]
@@ -58,6 +60,21 @@ if (($RunBuild -or $VerbosePreference) -and -not (Test-Path Env:VCToolsInstallDi
     exit 1
 }
 
+function Format-Xml {
+    [CmdletBinding()]
+    Param ([Parameter(ValueFromPipeline = $true, Mandatory = $true)] [string] $xml)
+    $xd = New-Object -TypeName System.Xml.XmlDocument
+    $sw = New-Object System.IO.StringWriter
+    $tw = New-Object System.Xml.XmlTextWriter($sw)
+    $xd.LoadXml($xml)
+    $tw.Formatting = [System.XML.Formatting]::Indented
+    $tw.Indentation = 2
+    $xd.WriteContentTo($tw)
+    $tw.Flush()
+    $sw.Flush()
+    Write-Output $sw.ToString()
+}
+
 if (-not $TargetFileName)
 {
     $TargetFileName = "${ComponentName}.dll"
@@ -73,6 +90,12 @@ $x64Version = $null
 $arm64Version = $null
 $arm64ecVersion = $null
 $SolutionPath = "$(Get-Location)\foo_vis_milk2.sln"
+
+if (-not ($TimeZone -or ($TimeZone -eq '')))
+{
+    $TimeZone = (Get-Date -Format "%K").Replace(':', '') #("{0:d2}{1:d2}" -f ((Get-TimeZone).BaseUtcOffset.Hours), ((Get-TimeZone).BaseUtcOffset.Minutes))
+}
+$cores = (Get-CimInstance -ClassName Win32_Processor).NumberOfCores
 
 # Create the package directory.
 if (Test-Path -Path $PackagePath)
@@ -93,7 +116,7 @@ foreach ($platform in $Platforms)
     if ($RunBuild)
     {
         Write-Host 'INFO: Running' ${platform}.Replace('x86', 'Win32') $Configuration 'build...'
-        msbuild.exe $SolutionPath -m:8 -t:Build -p:"Configuration=${Configuration};Platform=${platform}" #--% -verbosity:diagnostic
+        msbuild.exe $SolutionPath -m:"${cores}" -t:Build -p:"Configuration=${Configuration};Platform=${platform};TimeZone=${TimeZone}" #--% -verbosity:diagnostic
     }
     if (Test-Path -Path ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${TargetFileName}"))
     {
@@ -111,6 +134,10 @@ foreach ($platform in $Platforms)
             #$toolhost = ($platform -ireplace 'ARM64(?:EC)?', 'X86').ToUpper()
             #$tooltarget = ($platform -ireplace 'ARM64EC', 'arm64').ToLower()
             link.exe /dump /exports /nologo ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\foo_vis_milk2.dll")
+            Write-Host "`nDEBUG: Dumping $(${platform}.Replace('x86', 'Win32')) `"$TargetFileName`" manifest..."
+            mt.exe -nologo -inputresource:("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\foo_vis_milk2.dll;#2") -out:("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest")
+            Get-Content ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest") | Format-Xml
+            Remove-Item ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest") -Force
         }
         $versions += (Get-ItemProperty ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${TargetFileName}")).VersionInfo.FileVersionRaw
         Write-Host "INFO: Copying $(${platform}.Replace('x86', 'Win32')) `"$TargetFileName`" to `"$("${PackagePath}\" + ${platform}.Replace('x86', '').ToLower())`"..."
@@ -172,7 +199,7 @@ Write-Host "INFO: Creating component archive `"$ArchivePath`"..."
 Compress-Archive -Path "${PackagePath}\*" -DestinationPath $ArchivePath -CompressionLevel Optimal -Force
 
 # Save PDBs.
-if ($SavePDB && $Version && $Version -ne '')
+if ($SavePDB -and $Version -and ($Version -ne ''))
 {
     $BackupPath = "$(Get-Location)\data"
     $PdbPath = "${BackupPath}\pdbs\${Version}"

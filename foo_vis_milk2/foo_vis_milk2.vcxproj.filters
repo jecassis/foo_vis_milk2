@@ -122,4 +122,9 @@
       <Filter>Documentation Files</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="dpi.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
+  </ItemGroup>
 </Project>

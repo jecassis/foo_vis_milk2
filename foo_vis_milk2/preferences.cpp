@@ -828,8 +828,7 @@ void milk2_config::reset()
 }
 
 // Resolves profile directory, taking care of the case where the path contains
-// non-ASCII characters, which is a limitation of the foobar2000 core API
-// functions.
+// non-ASCII characters.
 void milk2_config::resolve_profile()
 {
     // Get profile directory path through Win32 API.
@@ -842,14 +841,25 @@ void milk2_config::resolve_profile()
     profile_dir_path.append(L"profile\\");
 
     // Get profile directory path through foobar2000 API.
-    std::string profile_path = core_api::get_profile_path();
-    assert(strncmp(profile_path.substr(0, 7).c_str(), "file://", 7) == 0);
-    profile_path = profile_path.substr(7);
-    profile_path.append("\\");
+    //std::string api_path = core_api::get_profile_path();
+    //assert(strncmp(api_path.substr(0, 7).c_str(), "file://", 7) == 0);
+    //api_path = api_path.substr(strlen("file://"));
+    //api_path.append("\\");
+    pfc::string8 native_path = filesystem::g_get_native_path(core_api::get_profile_path());
+    native_path.end_with_slash();
+    size_t path_length = native_path.get_length();
+    std::wstring profile_path(path_length, L'\0');
+#if 0
+    pfc::stringcvt::string_os_from_utf8 os_path(native_path.get_ptr());
+    profile_path = os_path.get_ptr();
+#else
+    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(profile_path.c_str()), path_length, native_path.get_ptr(), path_length);
+    //profile_path = profile_path.c_str(); // or profile_dir_path.erase(profile_dir_path.find(L'\0'));
+#endif
 
-    // Override the foobar2000 string if it mismatches with the Win32 string.
-    swprintf_s(default_szPluginsDirPath, L"%hs", const_cast<char*>(profile_path.c_str()));
-    if (default_szPluginsDirPath != profile_dir_path.c_str())
+    // Use Win32 string if it mismatches with the foobar2000 string.
+    swprintf_s(default_szPluginsDirPath, L"%ls", profile_path.c_str());
+    if (wcscmp(default_szPluginsDirPath, profile_dir_path.c_str()))
     {
         profile_dir_path.copy(default_szPluginsDirPath, profile_dir_path.length());
         default_szPluginsDirPath[profile_dir_path.length()] = L'\0';

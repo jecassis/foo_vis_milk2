@@ -170,9 +170,6 @@
       <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
@@ -203,9 +200,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
     </ResourceCompile>
@@ -234,9 +228,6 @@
       <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
@@ -267,9 +258,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
     </ResourceCompile>
@@ -298,9 +286,6 @@
       <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
@@ -331,9 +316,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
     </ResourceCompile>
@@ -363,9 +345,6 @@
       <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
@@ -397,9 +376,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
     </ResourceCompile>
@@ -484,6 +460,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Manifest Include="dpi.manifest" />
+  </ItemGroup>
+  <ItemGroup>
     <Image Include="..\vis_milk2\milkdrop.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -495,7 +474,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. The missing file is {0}.</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing. Use NuGet Package Restore to download them. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="('$(Platform)'=='Win32' Or '$(Platform)'=='x64') And !Exists('..\external\directxtk_desktop_2019.2024.6.5.1\build\native\directxtk_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\external\directxtk_desktop_2019.2024.6.5.1\build\native\directxtk_desktop_2019.targets'))" />
     <Error Condition="('$(Platform)'=='ARM64' Or '$(Platform)'=='ARM64EC') And !Exists('..\external\directxtk_desktop_win10.2024.6.5.1\build\native\directxtk_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\external\directxtk_desktop_win10.2024.6.5.1\build\native\directxtk_desktop_win10.targets'))" />

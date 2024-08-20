@@ -85,7 +85,9 @@
 #define IDS_CB_HARDCUTS                 96
 #define IDS_EDIT_CURRENT_PRESET         98
 #define IDS_MOTION                      99
+#define IDR_HELP_TEXT                   100
 #define IDS_DRAWING_CUSTOM_SHAPES       100
+#define IDR_TEXT2                       101
 #define IDD_DIALOG1                     101
 #define IDD_CONFIG                      101
 #define IDS_DRAWING_CUSTOM_WAVES        101
@@ -895,7 +897,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         40011
 #define _APS_NEXT_CONTROL_VALUE         1094
 #define _APS_NEXT_SYMED_VALUE           101

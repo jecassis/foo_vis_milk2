@@ -153,7 +153,7 @@ typedef struct
     float fY;
     float fFontSize;   // [0..100] for custom messages, [0..4] for song titles
     float fGrowth;     // applies to custom messages only
-    int nFontSizeUsed; // height IN PIXELS
+    int nFontSizeUsed; // height in pixels
     float fStartTime;
     float fDuration;
     float fFadeTime; // applies to custom messages only; song title fade times are handled specially

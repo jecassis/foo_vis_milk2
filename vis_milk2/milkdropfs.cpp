@@ -556,7 +556,7 @@ void CPlugin::RenderFrame(int bRedraw)
         /*// Randomly spawn song title, if time.
         if (m_fTimeBetweenRandomSongTitles > 0 &&
             !m_supertext.bRedrawSuperText &&
-            GetTime() >= m_supertext.fStartTime + m_supertext.fDuration + 1.0f/GetFps())
+            GetTime() >= m_supertext.fStartTime + m_supertext.fDuration + 1.0f / GetFps())
         {
             int n = GetNumToSpawn(GetTime(), fDeltaT, 1.0f/m_fTimeBetweenRandomSongTitles, 0.5f, m_nSongTitlesSpawned);
             if (n > 0)
@@ -569,9 +569,9 @@ void CPlugin::RenderFrame(int bRedraw)
         /*// Randomly spawn custom message, if time.
         if (m_fTimeBetweenRandomCustomMsgs > 0 &&
             !m_supertext.bRedrawSuperText &&
-            GetTime() >= m_supertext.fStartTime + m_supertext.fDuration + 1.0f/GetFps())
+            GetTime() >= m_supertext.fStartTime + m_supertext.fDuration + 1.0f / GetFps())
         {
-            int n = GetNumToSpawn(GetTime(), fDeltaT, 1.0f/m_fTimeBetweenRandomCustomMsgs, 0.5f, m_nCustMsgsSpawned);
+            int n = GetNumToSpawn(GetTime(), fDeltaT, 1.0f / m_fTimeBetweenRandomCustomMsgs, 0.5f, m_nCustMsgsSpawned);
             if (n > 0)
             {
                 LaunchCustomMessage(-1);
