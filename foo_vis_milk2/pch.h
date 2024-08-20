@@ -90,3 +90,41 @@
 #define MILK2_CONSOLE_LOG(...)
 #define MILK2_CONSOLE_LOG_LIMIT(...)
 #endif
+
+// Macros
+template <class Interface>
+inline void SafeReleaseT(Interface** ppInterfaceToRelease)
+{
+    if (*ppInterfaceToRelease != NULL)
+    {
+        (*ppInterfaceToRelease)->Release();
+        (*ppInterfaceToRelease) = NULL;
+    }
+}
+
+template <class DestInterface, class SourceInterace>
+inline void SafeReplace(DestInterface** ppDestInterface, SourceInterace* pSourceInterface)
+{
+    if (*ppDestInterface != NULL)
+    {
+        (*ppDestInterface)->Release();
+    }
+    *ppDestInterface = pSourceInterface;
+    if (pSourceInterface)
+    {
+        (*ppDestInterface)->AddRef();
+    }
+}
+
+#ifndef Assert
+#if defined(_DEBUG) || defined(DEBUG)
+#define Assert(b) if (!(b)) { OutputDebugStringA("Assert: " #b "\n"); }
+#else
+#define Assert(b)
+#endif
+#endif
+
+#ifndef HINST_THISCOMPONENT
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
+#endif

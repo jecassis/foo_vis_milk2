@@ -87,6 +87,7 @@
   <ImportGroup Label="ExtensionSettings">
     <Import Project="..\external\directxtk_desktop_2019.2024.6.5.1\build\native\directxtk_desktop_2019.targets" Condition="('$(Platform)'=='Win32' Or '$(Platform)'=='x64') And Exists('..\external\directxtk_desktop_2019.2024.6.5.1\build\native\directxtk_desktop_2019.targets')" />
     <Import Project="..\external\directxtk_desktop_win10.2024.6.5.1\build\native\directxtk_desktop_win10.targets" Condition="('$(Platform)'=='ARM64' Or '$(Platform)'=='ARM64EC') And Exists('..\external\directxtk_desktop_win10.2024.6.5.1\build\native\directxtk_desktop_win10.targets')" />
+    <Import Project="..\external\fx11_desktop_2019.2022.8.18.1\build\native\fx11_desktop_2019.targets" Condition="('$(Platform)'=='Win32' Or '$(Platform)'=='x64') And Exists('..\external\fx11_desktop_2019.2022.8.18.1\build\native\fx11_desktop_2019.targets')" />
     <Import Project="..\external\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\external\wtl.10.0.10320\build\native\wtl.targets')" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
@@ -205,6 +206,16 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <FxCompile>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName />
+      <ObjectFileOutput>$(IntDir)%(Filename).fxo</ObjectFileOutput>
+    </FxCompile>
+    <PreBuildEvent>
+      <Message>Add Shader Resource</Message>
+      <Command>echo IDR_PIXEL_SHADER RCDATA $(IntDir)extrusion.fxo &gt;$(IntDir)extrusion.h</Command>
+    </PreBuildEvent>
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\external\;..\external\foobar2000\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
@@ -225,12 +236,12 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;$(IntDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -408,6 +419,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="preferences.cpp" />
+    <ClCompile Include="supertext.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ui_element.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -416,6 +433,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="steptimer.h" />
+    <ClInclude Include="supertext.h" />
     <ClInclude Include="ui_element.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
@@ -463,6 +481,14 @@
     <Manifest Include="dpi.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="extrusion.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
     <Image Include="..\vis_milk2\milkdrop.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -478,6 +504,7 @@
     </PropertyGroup>
     <Error Condition="('$(Platform)'=='Win32' Or '$(Platform)'=='x64') And !Exists('..\external\directxtk_desktop_2019.2024.6.5.1\build\native\directxtk_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\external\directxtk_desktop_2019.2024.6.5.1\build\native\directxtk_desktop_2019.targets'))" />
     <Error Condition="('$(Platform)'=='ARM64' Or '$(Platform)'=='ARM64EC') And !Exists('..\external\directxtk_desktop_win10.2024.6.5.1\build\native\directxtk_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\external\directxtk_desktop_win10.2024.6.5.1\build\native\directxtk_desktop_win10.targets'))" />
+    <Error Condition="('$(Platform)'=='Win32' Or '$(Platform)'=='x64') And !Exists('..\external\fx11_desktop_2019.2022.8.18.1\build\native\fx11_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\external\fx11_desktop_2019.2022.8.18.1\build\native\fx11_desktop_2019.targets'))" />
     <Error Condition="!Exists('..\external\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\external\wtl.10.0.10320\build\native\wtl.targets'))" />
   </Target>
 </Project>

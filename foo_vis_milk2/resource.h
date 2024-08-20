@@ -91,6 +91,7 @@
 #define IDD_DIALOG1                     101
 #define IDD_CONFIG                      101
 #define IDS_DRAWING_CUSTOM_WAVES        101
+#define IDR_PIXEL_SHADER                102
 #define IDD_PROPPAGE_1                  102
 #define IDS_DRAWING_SIMPLE_WAVEFORM     102
 #define IDD_PROPPAGE_2                  103
@@ -125,9 +126,7 @@
 #define IDS_MENU_COLOR_RED_TT           126
 #define IDS_MENU_COLOR_GREEN            127
 #define IDS_MENU_COLOR_GREEN_TT         128
-#define IDR_HELP_TEXT                   129
 #define IDS_MENU_COLOR_BLUE             129
-#define IDR_TEXT2                       130
 #define IDS_MENU_COLOR_BLUE_TT          130
 #define IDS_MENU_OPACITY                131
 #define IDS_MENU_OPACITY_TT             132
