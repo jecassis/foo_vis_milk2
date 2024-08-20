@@ -140,7 +140,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     LRESULT OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p"), get_wnd()); return m_szWnd; }
+    PWCHAR GetWnd() { swprintf_s(m_szWnd, TEXT("0x%p %dfs %dt"), get_wnd(), s_fullscreen, s_in_toggle); return m_szWnd; }
 
     //ui_element_config::ptr m_config;
     visualisation_stream_v3::ptr m_vis_stream;
@@ -220,7 +220,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // MilkDrop status
     bool m_milk2;
-    WCHAR m_szWnd[19]; // 19 = 2 ("0x") + 16 (64 / 4 -> 64-bit address in hexadecimal) + 1 ('\0')
+    WCHAR m_szWnd[26]; // 26 = 2 ("0x") + 16 (64 / 4 -> 64-bit address in hexadecimal) + 1 ('\0') + 7 (" xfs yt")
     std::wstring m_szBuffer;
 
     // Rendering loop timer
@@ -251,23 +251,23 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     pfc::string_formatter m_state;
 
     // Playback callback methods.
-    void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { UpdateTrack(); }
-    void on_playback_new_track(metadb_handle_ptr p_track) { UpdateTrack(); }
-    void on_playback_stop(play_control::t_stop_reason p_reason) { UpdateTrack(); }
+    void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { MILK2_CONSOLE_LOG("+ PlaybackStart"); UpdateTrack(); }
+    void on_playback_new_track(metadb_handle_ptr p_track) { MILK2_CONSOLE_LOG("+ PlaybackNew"); UpdateTrack(); }
+    void on_playback_stop(play_control::t_stop_reason p_reason) { MILK2_CONSOLE_LOG("+ PlaybackStop"); UpdateTrack(); }
 
     void UpdateTrack();
 
     // Playlist callback methods.
-    void on_items_added(size_t p_playlist, size_t p_start, metadb_handle_list_cref p_data, const bit_array& p_selection) { UpdatePlaylist(); }
-    void on_items_reordered(size_t p_playlist, const size_t* p_order, size_t p_count) { UpdatePlaylist(); }
-    void on_items_removed(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) { UpdatePlaylist(); }
-    void on_items_selection_change(size_t p_playlist, const bit_array& p_affected, const bit_array& p_state) { UpdatePlaylist(); }
-    void on_item_focus_change(size_t p_playlist, size_t p_from, size_t p_to) { UpdatePlaylist(); }
-    void on_items_modified(size_t p_playlist, const bit_array& p_mask) { UpdatePlaylist(); }
-    void on_playlist_activate(t_size p_old, t_size p_new) { UpdatePlaylist(); }
-    void on_playlists_reorder(const t_size* p_order, t_size p_count) { UpdatePlaylist(); }
-    void on_playlists_removed(const bit_array& p_mask, t_size p_old_count, t_size p_new_count) { UpdatePlaylist(); }
-    void on_playback_order_changed(t_size p_new_index) { UpdatePlaylist(); }
+    void on_items_added(size_t p_playlist, size_t p_start, metadb_handle_list_cref p_data, const bit_array& p_selection) { MILK2_CONSOLE_LOG("* PlaylistItemsAdded"); UpdatePlaylist(); }
+    void on_items_reordered(size_t p_playlist, const size_t* p_order, size_t p_count) { MILK2_CONSOLE_LOG("* PlaylistItemsReordered"); UpdatePlaylist(); }
+    void on_items_removed(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) { MILK2_CONSOLE_LOG("* PlaylistItemsRemoved"); UpdatePlaylist(); }
+    void on_items_selection_change(size_t p_playlist, const bit_array& p_affected, const bit_array& p_state) { MILK2_CONSOLE_LOG("* PlaylistSelChange"); UpdatePlaylist(); }
+    void on_item_focus_change(size_t p_playlist, size_t p_from, size_t p_to) { MILK2_CONSOLE_LOG("* PlaylistFocusChange"); UpdatePlaylist(); }
+    void on_items_modified(size_t p_playlist, const bit_array& p_mask) { MILK2_CONSOLE_LOG("* PlaylistModified"); UpdatePlaylist(); }
+    void on_playlist_activate(t_size p_old, t_size p_new) { MILK2_CONSOLE_LOG("* PlaylistActivate"); UpdatePlaylist(); }
+    void on_playlists_reorder(const t_size* p_order, t_size p_count) { MILK2_CONSOLE_LOG("* PlaylistsReorder"); UpdatePlaylist(); }
+    void on_playlists_removed(const bit_array& p_mask, t_size p_old_count, t_size p_new_count) { MILK2_CONSOLE_LOG("* PlaylistsRemoved"); UpdatePlaylist(); }
+    void on_playback_order_changed(t_size p_new_index) { MILK2_CONSOLE_LOG("* PlaybackShuffle"); UpdatePlaylist(); }
 
     void UpdatePlaylist();
     void SetSelectionSingle(size_t idx);

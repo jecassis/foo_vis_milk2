@@ -125,9 +125,7 @@
 #define IDS_MENU_COLOR_RED_TT           126
 #define IDS_MENU_COLOR_GREEN            127
 #define IDS_MENU_COLOR_GREEN_TT         128
-#define IDR_HELP_TEXT                   129
 #define IDS_MENU_COLOR_BLUE             129
-#define IDR_TEXT2                       130
 #define IDS_MENU_COLOR_BLUE_TT          130
 #define IDS_MENU_OPACITY                131
 #define IDS_MENU_OPACITY_TT             132
