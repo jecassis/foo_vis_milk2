@@ -53,6 +53,10 @@ struct ColorsOutput
     float4 Specular;
 };
 
+
+//--------------------------------------------------------------------------------------
+// Functions
+//--------------------------------------------------------------------------------------
 ColorsOutput CalcLighting(float3 worldNormal, float3 worldPos, float3 cameraPos)
 {
     ColorsOutput output = (ColorsOutput) 0.0;
@@ -63,7 +67,7 @@ ColorsOutput CalcLighting(float3 worldNormal, float3 worldPos, float3 cameraPos)
 
     float ambient = 0.5f;
 
-    float3 lightDir = normalize(vLightPos[0] - worldPos);
+    float3 lightDir = normalize(vLightPos[0].xyz - worldPos);
 
     output.Diffuse += min(max(0, dot(lightDir, worldNormal)) + ambient, 1) * vLightColor[0];
 
@@ -83,9 +87,9 @@ PS_INPUT VS(VS_INPUT input)
     float4 worldPos = mul(float4(input.Pos, 1), World);
     float4 cameraPos = mul(worldPos, View);
 
-    output.WorldPos = worldPos;
+    output.WorldPos = worldPos.xyz;
     output.WorldNorm = normalize(mul(input.Norm, (float3x3) World));
-    output.CameraPos = cameraPos;
+    output.CameraPos = cameraPos.xyz;
     output.Pos = mul(cameraPos, Projection);
 
     return output;

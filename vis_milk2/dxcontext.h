@@ -34,6 +34,9 @@
 #include "shell_defines.h"
 #include "deviceresources.h"
 #include "d3d11shim.h"
+#if defined(_M_IX86) || defined(_M_X64)
+#include <foo_vis_milk2/supertext.h>
+#endif
 
 #define DXC_ERR_REGWIN -2
 #define DXC_ERR_CREATEWIN -3
@@ -100,6 +103,7 @@ class DXContext final : public DX::IDeviceNotify
     int m_frame_delay;
     DXCONTEXT_PARAMS m_current_mode;
     std::unique_ptr<D3D11Shim> m_lpDevice;
+    std::unique_ptr<SuperText> m_lpTitleText;
 
   protected:
     HWND m_hwnd;

@@ -37,10 +37,10 @@
     <ClCompile Include="preferences.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ui_element.cpp">
+    <ClCompile Include="supertext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="supertext.cpp">
+    <ClCompile Include="ui_element.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -60,15 +60,35 @@
     <ClInclude Include="settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="supertext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ui_element.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="supertext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="extrusion.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="foo_vis_milk2.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\vis_milk2\milkdrop.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="dpi.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -109,16 +129,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="foo_vis_milk2.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\vis_milk2\milkdrop.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="..\CHANGELOG.md">
       <Filter>Documentation Files</Filter>
     </Text>
@@ -131,15 +141,5 @@
     <Text Include="..\README.md">
       <Filter>Documentation Files</Filter>
     </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="extrusion.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="dpi.manifest">
-      <Filter>Resource Files</Filter>
-    </Manifest>
   </ItemGroup>
 </Project>

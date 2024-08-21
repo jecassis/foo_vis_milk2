@@ -10,10 +10,10 @@
 // C RunTime Header Files
 #include <algorithm>
 #include <stdexcept>
+#include <vector>
 
 #include <DirectXMath.h>
 #include <d3dx11effect.h>
-#include <atlsimpcoll.h>
 
 #include "d3dmath.h"
 #include "resource.h"
@@ -27,46 +27,39 @@ struct SimpleVertex
 class SuperText
 {
   public:
-    SuperText();
+    SuperText(
+        ID2D1Factory1* pD2DFactory,
+        IDWriteFactory1* pDWriteFactory,
+        ID3D11Device1* pDevice,
+        ID3D11DeviceContext1* pContext
+    );
     ~SuperText();
 
-    //HRESULT Initialize();
-
-    //void RunMessageLoop();
-
-  private:
     HRESULT CreateDeviceIndependentResources();
-    HRESULT CreateDeviceResources();
+    HRESULT CreateDeviceDependentResources();
+    void SetSwapChain(IDXGISwapChain1* pSwapChain) { m_pSwapChain = pSwapChain; }
+    void SetDepthStencilView(ID3D11DepthStencilView* pDepthStencilView) { pDepthStencilView = pDepthStencilView; }
+    void SetRenderTargetView(ID3D11RenderTargetView* pRenderTargetView) { m_pRenderTargetView = pRenderTargetView; }
+    HRESULT CreateWindowSizeDependentResources(int nWidth, int nHeight);
     void DiscardDeviceResources();
-
     HRESULT OnRender();
 
-    //void OnTimer();
-
-    //void OnChar(SHORT vkey);
-
-    void GetHardwareAdapter(IDXGIAdapter1** ppAdapter);
-    HRESULT CreateD3DDevice(IDXGIAdapter1* pAdapter, UINT Flags, ID3D11Device** ppDevice, ID3D11DeviceContext** ppContext);
-
+  private:
+    void OnChar(SHORT key);
     HRESULT GenerateTextOutline(bool includeCursor, ID2D1Geometry** ppGeometry);
-
-    //static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
     HRESULT LoadResourceShader(ID3D11Device* pDevice, PCWSTR pszResource, ID3DX11Effect** ppEffect);
-
     HRESULT UpdateTextGeometry();
 
-  private:
-    HWND m_hwnd;
-    ID2D1Factory* m_pD2DFactory;
-    IDWriteFactory* m_pDWriteFactory;
+    // Device-Independent Resources
+    ID2D1Factory1* m_pD2DFactory;
+    IDWriteFactory1* m_pDWriteFactory;
+    ID2D1Geometry* m_pTextGeometry;
+    IDWriteTextLayout* m_pTextLayout;
 
     // Device-Dependent Resources
-    Microsoft::WRL::ComPtr<IDXGIFactory2> m_dxgiFactory;
-    ID3D11Device* m_pDevice;
-    ID3D11DeviceContext* m_pContext;
-    IDXGISwapChain* m_pSwapChain;
-    IDXGIFactory6* m_pFactory;
+    ID3D11Device1* m_pDevice;
+    ID3D11DeviceContext1* m_pContext;
+    IDXGISwapChain1* m_pSwapChain;
     ID3D11RasterizerState* m_pState;
     ID3D11Texture2D* m_pDepthStencil;
     ID3D11DepthStencilView* m_pDepthStencilView;
@@ -83,10 +76,6 @@ class SuperText
     ID3DX11EffectVectorVariable* m_pLightPosVariableNoRef;
     ID3DX11EffectVectorVariable* m_pLightColorVariableNoRef;
 
-    // Device-Independent Resources
-    ID2D1Geometry* m_pTextGeometry;
-    IDWriteTextLayout* m_pTextLayout;
-
     DirectX::XMFLOAT4X4 m_WorldMatrix;
     DirectX::XMFLOAT4X4 m_ViewMatrix;
     DirectX::XMFLOAT4X4 m_ProjectionMatrix;
@@ -94,5 +83,5 @@ class SuperText
     static const D3D11_INPUT_ELEMENT_DESC s_InputLayout[];
     static const UINT sc_vertexBufferCount;
 
-    ATL::CSimpleArray<WCHAR> m_characters;
+    std::vector<WCHAR> m_characters;
 };

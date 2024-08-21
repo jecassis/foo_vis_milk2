@@ -214,7 +214,7 @@
     </FxCompile>
     <PreBuildEvent>
       <Message>Add Shader Resource</Message>
-      <Command>echo IDR_PIXEL_SHADER RCDATA $(IntDir)extrusion.fxo &gt;$(IntDir)extrusion.h</Command>
+      <Command>echo IDR_PIXEL_SHADER RCDATA $(IntDir)extrusion.fxo&gt; $(IntDir)extrusion.ri</Command>
     </PreBuildEvent>
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\external\;..\external\foobar2000\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -240,7 +240,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_FOOBAR;_SUPERTEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\;$(IntDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -438,7 +438,21 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="extrusion.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="foo_vis_milk2.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\vis_milk2\milkdrop.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="dpi.manifest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -453,6 +467,12 @@
     <None Include="..\tools\build-fb2k_component.ps1" />
     <None Include="..\tools\clang-format-all.ps1" />
     <None Include="..\vis_milk2\help.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CHANGELOG.md" />
+    <Text Include="..\LICENSE.txt" />
+    <Text Include="..\LICENSES.md" />
+    <Text Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\foobar2000\sdk\foobar2000_sdk.vcxproj">
@@ -476,26 +496,6 @@
     <ProjectReference Include="..\vis_milk2\vis_milk2.vcxproj">
       <Project>{7ee6f699-4ea5-4409-b212-dcfd192c811b}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="dpi.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="extrusion.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\vis_milk2\milkdrop.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\CHANGELOG.md" />
-    <Text Include="..\LICENSE.txt" />
-    <Text Include="..\LICENSES.md" />
-    <Text Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
