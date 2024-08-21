@@ -892,16 +892,11 @@ class OutlineRenderer : public IDWriteTextRenderer
 /* static*/ const UINT SuperText::sc_vertexBufferCount = 3 * 1000; // must be a multiple of 3
 
 // Constructor -- initializes member data.
-SuperText::SuperText(
-    ID2D1Factory1* pD2DFactory,
-    IDWriteFactory1* pDWriteFactory,
-    ID3D11Device1* pDevice,
-    ID3D11DeviceContext1* pContext
-) :
-    m_pD2DFactory(pD2DFactory),
-    m_pDWriteFactory(pDWriteFactory),
-    m_pDevice(pDevice),
-    m_pContext(pContext),
+SuperText::SuperText() :
+    m_pD2DFactory(nullptr),
+    m_pDWriteFactory(nullptr),
+    m_pDevice(nullptr),
+    m_pContext(nullptr),
     m_pSwapChain(nullptr),
     m_pState(nullptr),
     m_pDepthStencil(nullptr),
@@ -939,19 +934,13 @@ SuperText::~SuperText()
 // DWrite, and WIC factories; and a DWrite Text Format object
 // (used for identifying particular font characteristics) and
 // a D2D geometry.
-HRESULT SuperText::CreateDeviceIndependentResources()
+HRESULT SuperText::CreateDeviceIndependentResources(ID2D1Factory1* pD2DFactory, IDWriteFactory1* pDWriteFactory)
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
 
-#if 0
-    // Create D2D factory
-    hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
-
-    if (SUCCEEDED(hr))
-    {
-        // Create DWrite factory
-        hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(m_pDWriteFactory), reinterpret_cast<IUnknown**>(&m_pDWriteFactory));
-    }
+    // Create D2D factory and DWrite factory.
+    m_pD2DFactory = pD2DFactory;
+    m_pDWriteFactory = pDWriteFactory;
 
     // Add command-prompt-ish like text to the start of the string.
     if (SUCCEEDED(hr))
@@ -969,9 +958,6 @@ HRESULT SuperText::CreateDeviceIndependentResources()
     {
         hr = UpdateTextGeometry();
     }
-#else
-    hr = S_OK;
-#endif
 
     return hr;
 }
@@ -1134,9 +1120,13 @@ HRESULT SuperText::GenerateTextOutline(bool includeCursor, ID2D1Geometry** ppGeo
 }
 
 // Creates the D3D device-bound resources that are required to render.
-HRESULT SuperText::CreateDeviceDependentResources()
+HRESULT SuperText::CreateDeviceDependentResources(ID3D11Device1* pDevice, ID3D11DeviceContext1* pContext)
 {
     HRESULT hr = E_FAIL;
+
+    // Create D3D device and context.
+    m_pDevice = pDevice;
+    m_pContext = pContext;
 
     if (m_pDevice)
     {
@@ -1484,21 +1474,20 @@ HRESULT SuperText::OnRender()
             {
                 D3DMatrixRotationY(&m_WorldMatrix, a);
 
-                // Setup our lighting parameters
+                // Setup the lighting parameters.
                 XMFLOAT4 vLightPos[3] = {XMFLOAT4(1200.0f, -20.0f, 400.0f, 0.0f)};
                 XMFLOAT4 vLightColors[3] = {XMFLOAT4(0.9f, 0.0f, 0.0f, 1.0f)};
 
-                // Swap chain will tell us how big the back buffer is
+                // Swap chain will contain the size of the back buffer.
                 DXGI_SWAP_CHAIN_DESC swapDesc;
                 hr = m_pSwapChain->GetDesc(&swapDesc);
 
                 if (SUCCEEDED(hr))
                 {
-                    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1, 0);
+                    //m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1, 0);
 
-                    const float black[4] = {0};
-
-                    m_pContext->ClearRenderTargetView(m_pRenderTargetView, black);
+                    //const float black[4] = {0};
+                    //m_pContext->ClearRenderTargetView(m_pRenderTargetView, black);
 
                     m_pTechniqueNoRef->GetPassByIndex(0)->Apply(0, m_pContext);
 
@@ -1536,10 +1525,10 @@ HRESULT SuperText::OnRender()
                         }
                     }
 
-                    if (SUCCEEDED(hr))
-                    {
-                        hr = m_pSwapChain->Present(1, 0);
-                    }
+                    //if (SUCCEEDED(hr))
+                    //{
+                    //    hr = m_pSwapChain->Present(1, 0);
+                    //}
                 }
             }
             pGeometry->Release();

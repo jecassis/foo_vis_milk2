@@ -27,16 +27,11 @@ struct SimpleVertex
 class SuperText
 {
   public:
-    SuperText(
-        ID2D1Factory1* pD2DFactory,
-        IDWriteFactory1* pDWriteFactory,
-        ID3D11Device1* pDevice,
-        ID3D11DeviceContext1* pContext
-    );
+    SuperText();
     ~SuperText();
 
-    HRESULT CreateDeviceIndependentResources();
-    HRESULT CreateDeviceDependentResources();
+    HRESULT CreateDeviceIndependentResources(ID2D1Factory1* pD2DFactory, IDWriteFactory1* pDWriteFactory);
+    HRESULT CreateDeviceDependentResources(ID3D11Device1 * pDevice, ID3D11DeviceContext1* pContext);
     void SetSwapChain(IDXGISwapChain1* pSwapChain) { m_pSwapChain = pSwapChain; }
     void SetDepthStencilView(ID3D11DepthStencilView* pDepthStencilView) { pDepthStencilView = pDepthStencilView; }
     void SetRenderTargetView(ID3D11RenderTargetView* pRenderTargetView) { m_pRenderTargetView = pRenderTargetView; }
