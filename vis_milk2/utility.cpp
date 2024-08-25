@@ -277,9 +277,9 @@ LPVOID GetTextResource(UINT id, int no_fallback)
 {
     LPVOID data = nullptr;
     HINSTANCE hinst = NULL; //WASABI_API_LNG_HINST;
-    HRSRC hrsrc = FindResource(hinst, MAKEINTRESOURCE(id), L"TEXT");
+    HRSRC hrsrc = FindResource(hinst, MAKEINTRESOURCE(id), RT_RCDATA /*L"TEXT"*/);
     if (!hrsrc && !no_fallback)
-        hrsrc = FindResource((hinst = HINST_THISCOMPONENT /*WASABI_API_ORIG_HINST*/), MAKEINTRESOURCE(id), L"TEXT");
+        hrsrc = FindResource((hinst = HINST_THISCOMPONENT /*WASABI_API_ORIG_HINST*/), MAKEINTRESOURCE(id), RT_RCDATA /*L"TEXT"*/);
     if (hrsrc)
     {
         HGLOBAL hglob = LoadResource(hinst, hrsrc);

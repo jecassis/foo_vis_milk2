@@ -536,10 +536,10 @@ IDI_PLUGIN_ICON         ICON                    "..\\vis_milk2\\milkdrop.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Text
+// RCData
 //
 
-IDR_HELP_TEXT           TEXT                    "..\\vis_milk2\\help.bin"
+IDR_HELP_TEXT           RCDATA                  "..\\vis_milk2\\help.bin"
 
 
 /////////////////////////////////////////////////////////////////////////////

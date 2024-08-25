@@ -412,10 +412,9 @@ void OnUserEditedCompShaders(LPARAM param1, LPARAM param2)
 // Modify the help screen text here.
 // Watch the number of lines, though; if there are too many, they will get cut off;
 // and watch the length of the lines, since there is no wordwrap.
-// A good guideline: your entire help screen should be visible when fullscreen
+// A good guideline: the entire help screen should be visible when fullscreen
 // at 640x480 and using the default help screen font.
-wchar_t* g_szHelp = 0;
-int g_szHelp_W = 0;
+wchar_t* g_szHelp = nullptr;
 
 // Here, you have the option of overriding the "default defaults"
 // for the stuff on tab 1 of the config panel, replacing them
@@ -471,10 +470,8 @@ void CPlugin::OverrideDefaults()
 // the plugin shell (framework), do so from OverrideDefaults() above.)
 void CPlugin::MilkDropPreInitialize()
 {
-    // Attempt to load a Unicode `F1` help message, otherwise revert to the ANSI version.
-    g_szHelp = reinterpret_cast<wchar_t*>(GetTextResource(IDR_TEXT2, 1));
-    if (!g_szHelp) g_szHelp = reinterpret_cast<wchar_t*>(GetTextResource(IDR_HELP_TEXT, 0));
-    else g_szHelp_W = 1;
+    // Attempt to load a Unicode `F1` help message.
+    g_szHelp = reinterpret_cast<wchar_t*>(GetTextResource(IDR_HELP_TEXT, 0));
 
     // CONFIG PANEL SETTINGS THAT MilkDrop ADDED (TAB #2)
     m_bInitialPresetSelected = false;

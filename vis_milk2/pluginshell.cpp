@@ -65,7 +65,6 @@ typedef struct _SIMPLEVERTEX
 #define SIMPLE_VERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
 extern wchar_t* g_szHelp;
-extern int g_szHelp_W;
 //extern winampVisModule mod1;
 
 CPluginShell::CPluginShell() { /* This should remain empty! */ }
@@ -1305,16 +1304,8 @@ void CPluginShell::RenderBuiltInTextMsgs()
             m_helpManual.SetContainer(r);
             m_helpManual.SetVisible(true);
 
-            if (!g_szHelp_W)
-            {
-                m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
-                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, DT_CALCRECT, textColor, true, backColor);
-            }
-            else
-            {
-                m_helpManual.SetText(g_szHelp);
-                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, g_szHelp, &r, DT_CALCRECT, textColor, true, backColor);
-            }
+            m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
+            m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, DT_CALCRECT, textColor, true, backColor);
 
             r.top += static_cast<FLOAT>(m_upper_left_corner_y);
             r.left += static_cast<FLOAT>(m_left_edge);
@@ -1328,16 +1319,9 @@ void CPluginShell::RenderBuiltInTextMsgs()
             r.right -= PLAYLIST_INNER_MARGIN;
             r.bottom -= PLAYLIST_INNER_MARGIN;
             m_helpManual.SetContainer(r);
-            if (!g_szHelp_W)
-            {
-                m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
-                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, 0, textColor, true, backColor);
-            }
-            else
-            {
-                m_helpManual.SetText(g_szHelp);
-                m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, g_szHelp, &r, 0, textColor, true, backColor);
-            }
+            m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
+            m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, 0, textColor, true, backColor);
+
             m_text.RegisterElement(&m_helpManual);
 
             m_upper_left_corner_y += static_cast<int>(r.bottom - r.top + PLAYLIST_INNER_MARGIN * 3.0f);

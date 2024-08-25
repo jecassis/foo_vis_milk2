@@ -91,7 +91,6 @@
 #define IDD_DIALOG1                     101
 #define IDD_CONFIG                      101
 #define IDS_DRAWING_CUSTOM_WAVES        101
-#define IDR_TEXT2                       102
 #define IDD_PROPPAGE_1                  102
 #define IDS_DRAWING_SIMPLE_WAVEFORM     102
 #define IDD_PROPPAGE_2                  103
