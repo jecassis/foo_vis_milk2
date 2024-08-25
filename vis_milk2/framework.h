@@ -41,7 +41,7 @@
 
 #include <d3d11_1.h>
 #include <d3d11shader.h>
-#include <dxgi1_6.h> // "dxgi1_2.h" for Windows 7 (Windows 8 and Platform Update for Windows 7) but "dxgi1_6.h" (Windows 10, version 1803) for `IDXGIFactory5::CheckFeatureSupport()`
+#include <dxgi1_6.h> // "dxgi1_2.h" for Windows 7 (Windows 8 and Platform Update for Windows 7) and "dxgi1_6.h" (Windows 10, version 1803)
 #include <d2d1_1.h>
 #include <dwrite_1.h>
 #ifdef _DEBUG
