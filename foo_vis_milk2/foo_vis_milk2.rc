@@ -57,6 +57,7 @@ END
 // Dialog
 //
 
+#ifndef _FOOBAR
 IDD_CONFIG DIALOGEX 0, 0, 390, 292
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "(Window title will be assigned at runtime)"
@@ -72,6 +73,7 @@ BEGIN
     CTEXT           "For settings help, click the '?' in the upper-right corner and then click on the item.",IDC_STATIC,6,268,153,19,SS_SUNKEN
     CTEXT           "(""About"" text will be placed in this box automatically at runtime)",IDC_SZ_ABOUT,162,268,223,19,SS_SUNKEN
 END
+#endif
 
 IDD_PREFS DIALOGEX 0, 0, 332, 288
 STYLE DS_SETFONT | WS_CHILD
@@ -146,6 +148,7 @@ BEGIN
     COMBOBOX        IDC_TEXSIZECOMBO,204,245,99,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
+#ifndef _FOOBAR
 IDD_PROPPAGE_1 DIALOGEX 0, 0, 320, 240
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -408,6 +411,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,196,147,50,13
     PUSHBUTTON      "Cancel",IDCANCEL,250,147,50,13
 END
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -418,6 +422,7 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+#ifndef _FOOBAR
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 6
@@ -425,6 +430,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 287
     END
+#endif
 
     IDD_PREFS, DIALOG
     BEGIN
@@ -435,6 +441,7 @@ BEGIN
         HORZGUIDE, 137
     END
 
+#ifndef _FOOBAR
     IDD_PROPPAGE_1, DIALOG
     BEGIN
     END
@@ -474,6 +481,7 @@ BEGIN
         TOPMARGIN, 4
         BOTTOMMARGIN, 160
     END
+#endif
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -483,6 +491,7 @@ END
 // AFX_DIALOG_LAYOUT
 //
 
+#ifndef _FOOBAR
 IDD_UI_ELEMENT AFX_DIALOG_LAYOUT
 BEGIN
     0
@@ -502,6 +511,7 @@ IDD_MYPREFERENCES AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -509,6 +519,7 @@ END
 // Menu
 //
 
+#ifndef _FOOBAR
 IDR_WINDOWED_CONTEXT_MENU MENU
 BEGIN
     POPUP "Options:"
@@ -522,6 +533,7 @@ BEGIN
         MENUITEM "&Quit",                       ID_QUIT
     END
 END
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -564,7 +576,7 @@ BEGIN
             VALUE "FileDescription", APPLICATION_DESCRIPTION
             VALUE "FileVersion", APPLICATION_VERSION
             VALUE "InternalName", APPLICATION_PRODUCT_NAME
-            VALUE "LegalCopyright", "Â© " APPLICATION_COPYRIGHT
+            VALUE "LegalCopyright", "© " APPLICATION_COPYRIGHT
             VALUE "OriginalFilename", APPLICATION_FILE_NAME _APPLICATION_VERSION_EXTENSION
             VALUE "ProductName", APPLICATION_PRODUCT_NAME
             VALUE "ProductVersion", LIBRARY_VERSION
