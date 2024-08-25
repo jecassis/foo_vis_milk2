@@ -12,9 +12,14 @@
 //#define _WIN32_WINNT 0x0600 // Windows Vista
 #define _WIN32_WINNT 0x0601 // Windows 7
 //#define _WIN32_WINNT 0x0602 // Windows 8
-#else
-#define _WIN32_WINNT 0x0603 // Windows 8.1
+//#else
+//#define _WIN32_WINNT 0x0603 // Windows 8.1
 #endif
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00 // Windows 10
+#endif
+#include <sdkddkver.h>
 
 //#define NODRAWTEXT // `DrawText()` and `DT_*` definitions --> From "WinUser.h"
 //#define NOGDI // All GDI defines and routines --> From "wingdi.h"
@@ -92,37 +97,29 @@
 #endif
 
 // Macros
-template <class Interface>
-inline void SafeReleaseT(Interface** ppInterfaceToRelease)
+template <class T>
+inline void SafeReleaseT(T** ppT)
 {
-    if (*ppInterfaceToRelease != NULL)
+    if (*ppT)
     {
-        (*ppInterfaceToRelease)->Release();
-        (*ppInterfaceToRelease) = NULL;
+        (*ppT)->Release();
+        *ppT = NULL;
     }
 }
 
-template <class DestInterface, class SourceInterace>
-inline void SafeReplace(DestInterface** ppDestInterface, SourceInterace* pSourceInterface)
+template <class T, class U>
+inline void SafeReplace(T** ppD, U* pS)
 {
-    if (*ppDestInterface != NULL)
+    if (*ppD)
     {
-        (*ppDestInterface)->Release();
+        (*ppD)->Release();
     }
-    *ppDestInterface = pSourceInterface;
-    if (pSourceInterface)
+    *ppD = pS;
+    if (pS)
     {
-        (*ppDestInterface)->AddRef();
+        (*ppD)->AddRef();
     }
 }
-
-#ifndef Assert
-#if defined(_DEBUG) || defined(DEBUG)
-#define Assert(b) if (!(b)) { OutputDebugStringA("Assert: " #b "\n"); }
-#else
-#define Assert(b)
-#endif
-#endif
 
 #ifndef HINST_THISCOMPONENT
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;

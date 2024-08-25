@@ -79,8 +79,8 @@ class DeviceResources
     auto GetD2DDevice() const noexcept { return m_d2dDevice.Get(); }
     auto GetD2DDeviceContext() const noexcept { return m_d2dContext.Get(); }
     auto GetD2DTargetBitmap() const noexcept { return m_d2dTargetBitmap.Get(); }
-    FLOAT GetDpiX() { return m_dpiX; }
-    FLOAT GetDpiY() { return m_dpiY; }
+    FLOAT GetDpiX() const noexcept { return m_dpiX; }
+    FLOAT GetDpiY() const noexcept { return m_dpiY; }
 
     // Performance events
     void PIXBeginEvent(_In_z_ const wchar_t* name) { m_d3dAnnotation->BeginEvent(name); }

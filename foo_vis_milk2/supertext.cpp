@@ -7,6 +7,11 @@
 
 #include "pch.h"
 #include "supertext.h"
+namespace
+{
+#include "extrusionps.inc"
+#include "extrusionvs.inc"
+}
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -19,8 +24,8 @@ static const XMFLOAT3 sc_eyeLocation(0.0f, -100.0f, 400.0f);
 static const XMFLOAT3 sc_eyeAt(0.0f, -50.0f, 0.0f);
 static const XMFLOAT3 sc_eyeUp(0.0f, -1.0f, 0.0f);
 
-// If the system cannot find this font, DWrite will fall back to another font
-// family.
+// If the system cannot find this font, DirectWrite will fall back to another
+// font family.
 static const PCWSTR sc_fontFace = L"Gabriola";
 static const float sc_fontSize = 96.0f;
 
@@ -58,13 +63,13 @@ class NoRefComObject : public T
 
 // Returns true if the bounds are empty.
 // Direct2D uses the convention that "right > left" is empty.
-bool IsEmptyBounds(D2D1_RECT_F& bounds)
+static bool IsEmptyBounds(D2D1_RECT_F& bounds)
 {
     return bounds.left > bounds.right;
 }
 
 // Creates a path geometry containing no figures.
-HRESULT CreateEmptyGeometry(ID2D1Factory* pFactory, ID2D1Geometry** ppGeometry)
+static HRESULT CreateEmptyGeometry(ID2D1Factory* pFactory, ID2D1Geometry** ppGeometry)
 {
     HRESULT hr;
     ID2D1PathGeometry* pGeometry = NULL;
@@ -200,7 +205,7 @@ class PointSnapper
 
 // Helper function that performs "flattening" -- transforms a geometry with Beziers into one
 // containing only line segments.
-HRESULT D2DFlatten(ID2D1Geometry* pGeometry, float flatteningTolerance, ID2D1Geometry** ppGeometry)
+static HRESULT D2DFlatten(ID2D1Geometry* pGeometry, float flatteningTolerance, ID2D1Geometry** ppGeometry)
 {
     HRESULT hr;
     ID2D1Factory* pFactory = NULL;
@@ -247,7 +252,7 @@ HRESULT D2DFlatten(ID2D1Geometry* pGeometry, float flatteningTolerance, ID2D1Geo
 // self-intersections.
 // Note: Uses the default flattening tolerance and hence should not be used
 // with very small geometries.
-HRESULT D2DOutline(ID2D1Geometry* pGeometry, ID2D1Geometry** ppGeometry)
+static HRESULT D2DOutline(ID2D1Geometry* pGeometry, ID2D1Geometry** ppGeometry)
 {
     HRESULT hr;
     ID2D1Factory* pFactory = NULL;
@@ -288,7 +293,7 @@ HRESULT D2DOutline(ID2D1Geometry* pGeometry, ID2D1Geometry** ppGeometry)
 // Helper function for Boolean operations.
 // Note: Uses the default flattening tolerance and hence
 // should not be used with very small geometries.
-HRESULT D2DCombine(D2D1_COMBINE_MODE combineMode, ID2D1Geometry* pGeometry1, ID2D1Geometry* pGeometry2, ID2D1Geometry** ppGeometry)
+static HRESULT D2DCombine(D2D1_COMBINE_MODE combineMode, ID2D1Geometry* pGeometry1, ID2D1Geometry* pGeometry2, ID2D1Geometry** ppGeometry)
 {
     HRESULT hr;
     ID2D1Factory* pFactory = NULL;
@@ -335,7 +340,7 @@ HRESULT D2DCombine(D2D1_COMBINE_MODE combineMode, ID2D1Geometry* pGeometry1, ID2
 class Extruder
 {
   public:
-    static HRESULT ExtrudeGeometry(ID2D1Geometry* pGeometry, float height, std::vector<SimpleVertex>& vertices)
+    static HRESULT ExtrudeGeometry(ID2D1Geometry* pGeometry, float height, std::vector<PNVertex>& vertices)
     {
         HRESULT hr;
 
@@ -426,7 +431,7 @@ class Extruder
     class ExtrudingSink : public ID2D1SimplifiedGeometrySink, public ID2D1TessellationSink
     {
       public:
-        ExtrudingSink(float height, std::vector<SimpleVertex>* pVertices) : m_height(height), m_vertices(*pVertices), m_hr(S_OK) {}
+        ExtrudingSink(float height, std::vector<PNVertex>* pVertices) : m_height(height), m_vertices(*pVertices), m_startPoint({0.0f, 0.0f}), m_lastPoint({0.0f, 0.0f}), m_hr(S_OK) {}
 
         STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT* /*beziers*/, UINT /*beziersCount*/)
         {
@@ -440,7 +445,7 @@ class Extruder
             {
                 for (UINT i = 0; SUCCEEDED(m_hr) && i < pointsCount; ++i)
                 {
-                    Vertex2D v;
+                    Vertex2D v{};
 
                     v.pt = XMFLOAT2(points[i].x, points[i].y);
 
@@ -469,9 +474,9 @@ class Extruder
 
                 Vertex2D v = {
                     XMFLOAT2(startPoint.x, startPoint.y),
-                    XMFLOAT2(0, 0), // dummy
-                    XMFLOAT2(0, 0), // dummy
-                    XMFLOAT2(0, 0) // dummy
+                    XMFLOAT2(0.0f, 0.0f), // dummy
+                    XMFLOAT2(0.0f, 0.0f), // dummy
+                    XMFLOAT2(0.0f, 0.0f)  // dummy
                 };
 
                 m_figureVertices.push_back(v);
@@ -512,7 +517,7 @@ class Extruder
                     // Step 2: Interpolate normals as appropriate.
                     for (UINT i = 0; i < static_cast<UINT>(m_figureVertices.size()); ++i)
                     {
-                        UINT h = (i + static_cast<UINT>(m_figureVertices.size()) - 1) % m_figureVertices.size();
+                        UINT h = static_cast<int64_t>(i + static_cast<UINT>(m_figureVertices.size()) - 1) % m_figureVertices.size();
 
                         XMFLOAT2 n1 = m_figureVertices[h].norm;
                         XMFLOAT2 n2 = m_figureVertices[i].norm;
@@ -542,7 +547,7 @@ class Extruder
                     // interpNorm2 == begin normal of next segment
                     for (UINT i = 0; i < static_cast<UINT>(m_figureVertices.size()); ++i)
                     {
-                        UINT j = (i + 1) % m_figureVertices.size();
+                        UINT j = static_cast<int64_t>(i + 1) % m_figureVertices.size();
 
                         XMFLOAT2 pt = m_figureVertices[i].pt;
                         XMFLOAT2 nextPt = m_figureVertices[j].pt;
@@ -552,7 +557,7 @@ class Extruder
 
                         // These 6 vertices define two adjacent triangles that
                         // together form a quad.
-                        SimpleVertex newVertices[6] = {
+                        PNVertex newVertices[6] = {
                             {XMFLOAT3(pt.x,     pt.y,      m_height / 2), XMFLOAT3(ptNorm3.x,     ptNorm3.y,     0.0f)},
                             {XMFLOAT3(pt.x,     pt.y,     -m_height / 2), XMFLOAT3(ptNorm3.x,     ptNorm3.y,     0.0f)},
                             {XMFLOAT3(nextPt.x, nextPt.y, -m_height / 2), XMFLOAT3(nextPtNorm2.x, nextPtNorm2.y, 0.0f)},
@@ -606,7 +611,7 @@ class Extruder
                         tri.point2 = tmp;
                     }
 
-                    SimpleVertex newVertices[] = {
+                    PNVertex newVertices[] = {
                         {XMFLOAT3(tri.point1.x, tri.point1.y, m_height / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f) },
                         {XMFLOAT3(tri.point2.x, tri.point2.y, m_height / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f) },
                         {XMFLOAT3(tri.point3.x, tri.point3.y, m_height / 2),  XMFLOAT3(0.0f, 0.0f, 1.0f) },
@@ -631,7 +636,7 @@ class Extruder
       private:
         XMFLOAT2 GetNormal(UINT i)
         {
-            UINT j = (i + 1) % m_figureVertices.size();
+            UINT j = static_cast<int64_t>(i + 1) % m_figureVertices.size();
 
             XMFLOAT2 vecij;
             XMVECTOR pti = XMLoadFloat2(&m_figureVertices[i].pt);
@@ -666,7 +671,7 @@ class Extruder
         D2D1_POINT_2F m_lastPoint;
         D2D1_POINT_2F m_startPoint;
 
-        std::vector<SimpleVertex>& m_vertices;
+        std::vector<PNVertex>& m_vertices;
 
         std::vector<Vertex2D> m_figureVertices;
     };
@@ -884,7 +889,7 @@ class OutlineRenderer : public IDWriteTextRenderer
 };
 
 // Static Data
-/*static*/ const D3D11_INPUT_ELEMENT_DESC SuperText::s_InputLayout[] = {
+/*static*/ const D3D11_INPUT_ELEMENT_DESC SuperText::sc_PNVertexLayout[] = {
     {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
     {"NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 };
@@ -902,28 +907,25 @@ SuperText::SuperText() :
     m_pDepthStencil(nullptr),
     m_pDepthStencilView(nullptr),
     m_pRenderTargetView(nullptr),
-    m_pShader(nullptr),
     m_pVertexBuffer(nullptr),
     m_pVertexLayout(nullptr),
-    m_pTechniqueNoRef(nullptr),
-    m_pWorldVariableNoRef(nullptr),
-    m_pViewVariableNoRef(nullptr),
-    m_pProjectionVariableNoRef(nullptr),
-    m_pLightPosVariableNoRef(nullptr),
-    m_pLightColorVariableNoRef(nullptr),
     m_pTextGeometry(nullptr),
     m_pTextLayout(nullptr)
 {
+    XMStoreFloat4x4(&m_ProjectionMatrix, XMMatrixTranspose(XMMatrixIdentity()));
+    XMStoreFloat4x4(&m_ViewMatrix, XMMatrixTranspose(XMMatrixIdentity()));
+    XMStoreFloat4x4(&m_WorldMatrix, XMMatrixTranspose(XMMatrixIdentity()));
 }
 
 // Destructor -- tears down member data.
 SuperText::~SuperText()
 {
-    SafeReleaseT(&m_pState);
-    SafeReleaseT(&m_pDepthStencil);
-    SafeReleaseT(&m_pShader);
-    SafeReleaseT(&m_pVertexBuffer);
-    SafeReleaseT(&m_pVertexLayout);
+    m_pState.Reset();
+    m_pDepthStencil.Reset();
+    m_pDepthStencilView.Reset();
+    m_pRenderTargetView.Reset();
+    m_pVertexBuffer.Reset();
+    m_pVertexLayout.Reset();
     SafeReleaseT(&m_pTextGeometry);
     SafeReleaseT(&m_pTextLayout);
 }
@@ -1013,7 +1015,7 @@ HRESULT SuperText::UpdateTextGeometry()
                     pTypography->Release();
                 }
 
-                NoRefComObject<OutlineRenderer> renderer(m_pD2DFactory);
+                NoRefComObject<OutlineRenderer> renderer(m_pD2DFactory.Get());
 
                 hr = pLayout->Draw(
                     NULL, // clientDrawingContext
@@ -1154,7 +1156,7 @@ HRESULT SuperText::CreateDeviceDependentResources(ID3D11Device1* pDevice, ID3D11
         if (SUCCEEDED(hr))
         {
             // Create rasterizer state object
-            D3D11_RASTERIZER_DESC rsDesc;
+            D3D11_RASTERIZER_DESC rsDesc{};
             rsDesc.AntialiasedLineEnable = FALSE;
             rsDesc.CullMode = D3D11_CULL_BACK;
             rsDesc.DepthBias = 0;
@@ -1166,12 +1168,12 @@ HRESULT SuperText::CreateDeviceDependentResources(ID3D11Device1* pDevice, ID3D11
             rsDesc.ScissorEnable = FALSE;
             rsDesc.SlopeScaledDepthBias = 0;
 
-            hr = m_pDevice->CreateRasterizerState(&rsDesc, &m_pState);
+            hr = m_pDevice->CreateRasterizerState(&rsDesc, m_pState.ReleaseAndGetAddressOf());
         }
 
         if (SUCCEEDED(hr))
         {
-            m_pContext->RSSetState(m_pState);
+            m_pContext->RSSetState(m_pState.Get());
 
             msaaQuality = 0;
             for (sampleCount = sc_maxMsaaSampleCount; SUCCEEDED(hr) && sampleCount > 0; --sampleCount)
@@ -1197,8 +1199,8 @@ HRESULT SuperText::CreateWindowSizeDependentResources(int nWidth, int nHeight)
     HRESULT hr = E_FAIL;
     //UINT msaaQuality = 0;
     //UINT sampleCount = 0;
-    ID3D11Resource* pBackBufferResource = NULL;
-    //IDXGISurface* pBackBuffer = NULL;
+    ComPtr<ID3D11Resource> pBackBufferResource;
+    ComPtr<IDXGISurface> pBackBuffer;
 
     if (m_pDevice && m_pSwapChain)
     {
@@ -1210,143 +1212,134 @@ HRESULT SuperText::CreateWindowSizeDependentResources(int nWidth, int nHeight)
             hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBufferResource));
         }
 
-        //if (SUCCEEDED(hr))
-        //{
-        //    CD3D11_RENDER_TARGET_VIEW_DESC renderDesc;
-        //    renderDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        //    renderDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
-        //    renderDesc.Texture2D.MipSlice = 0;
-
-        //    hr = m_pDevice->CreateRenderTargetView(pBackBufferResource, &renderDesc, &m_pRenderTargetView);
-        //}
-
-        //if (SUCCEEDED(hr))
-        //{
-        //    CD3D11_TEXTURE2D_DESC texDesc;
-        //    texDesc.ArraySize = 1;
-        //    texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-        //    texDesc.CPUAccessFlags = 0;
-        //    texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        //    texDesc.Height = nHeight;
-        //    texDesc.Width = nWidth;
-        //    texDesc.MipLevels = 1;
-        //    texDesc.MiscFlags = 0;
-        //    texDesc.SampleDesc.Count = sampleCount;
-        //    texDesc.SampleDesc.Quality = msaaQuality - 1;
-        //    texDesc.Usage = D3D11_USAGE_DEFAULT;
-
-        //    hr = m_pDevice->CreateTexture2D(&texDesc, NULL, &m_pDepthStencil);
-
-        //    if (SUCCEEDED(hr))
-        //    {
-        //        D3D11_DEPTH_STENCIL_VIEW_DESC depthViewDesc;
-        //        depthViewDesc.Format = texDesc.Format;
-        //        depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-        //        depthViewDesc.Texture2D.MipSlice = 0;
-        //        depthViewDesc.Flags = 0;
-
-        //        hr = m_pDevice->CreateDepthStencilView(m_pDepthStencil, &depthViewDesc, &m_pDepthStencilView);
-        //    }
-        //}
-
-        //if (SUCCEEDED(hr))
-        //{
-        //    ID3D11RenderTargetView* viewList[1] = {m_pRenderTargetView};
-        //    m_pContext->OMSetRenderTargets(1, viewList, m_pDepthStencilView);
-
-        //    // Set a new viewport based on the new dimensions
-        //    D3D11_VIEWPORT viewport;
-        //    viewport.Width = static_cast<FLOAT>(nWidth);
-        //    viewport.Height = static_cast<FLOAT>(nHeight);
-        //    viewport.TopLeftX = 0;
-        //    viewport.TopLeftY = 0;
-        //    viewport.MinDepth = 0;
-        //    viewport.MaxDepth = 1;
-        //    m_pContext->RSSetViewports(1, &viewport);
-
-        //    // Get a surface in the swap chain
-        //    hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-        //}
-
-        if (!m_pShader)
+        if (true)
         {
             if (SUCCEEDED(hr))
             {
-                // Load pixel shader
-                hr = LoadResourceShader(m_pDevice, MAKEINTRESOURCE(IDR_PIXEL_SHADER), &m_pShader);
+                // Create views on the RT buffers and set them on the device
+                hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(pBackBufferResource.GetAddressOf()));
             }
 
             if (SUCCEEDED(hr))
             {
-                // Obtain the technique
-                m_pTechniqueNoRef = m_pShader->GetTechniqueByName("Render");
-                hr = m_pTechniqueNoRef ? S_OK : E_FAIL;
+                CD3D11_RENDER_TARGET_VIEW_DESC renderDesc;
+                renderDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+                renderDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+                renderDesc.Texture2D.MipSlice = 0;
+
+                hr = m_pDevice->CreateRenderTargetView(pBackBufferResource.Get(), &renderDesc, m_pRenderTargetView.ReleaseAndGetAddressOf());
             }
 
             if (SUCCEEDED(hr))
             {
-                // Obtain the variables
-                m_pWorldVariableNoRef = m_pShader->GetVariableByName("World")->AsMatrix();
-                hr = m_pWorldVariableNoRef ? S_OK : E_FAIL;
+                CD3D11_TEXTURE2D_DESC texDesc;
+                texDesc.ArraySize = 1;
+                texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+                texDesc.CPUAccessFlags = 0;
+                texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+                texDesc.Height = nHeight;
+                texDesc.Width = nWidth;
+                texDesc.MipLevels = 1;
+                texDesc.MiscFlags = 0;
+                texDesc.SampleDesc.Count = 1; //sampleCount;
+                texDesc.SampleDesc.Quality = 0; //msaaQuality - 1;
+                texDesc.Usage = D3D11_USAGE_DEFAULT;
+
+                hr = m_pDevice->CreateTexture2D(&texDesc, NULL, m_pDepthStencil.ReleaseAndGetAddressOf());
+
+                if (SUCCEEDED(hr))
+                {
+                    D3D11_DEPTH_STENCIL_VIEW_DESC depthViewDesc{};
+                    depthViewDesc.Format = texDesc.Format;
+                    depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+                    depthViewDesc.Texture2D.MipSlice = 0;
+                    depthViewDesc.Flags = 0;
+
+                    hr = m_pDevice->CreateDepthStencilView(m_pDepthStencil.Get(), &depthViewDesc, m_pDepthStencilView.ReleaseAndGetAddressOf());
+                }
             }
 
             if (SUCCEEDED(hr))
             {
-                m_pViewVariableNoRef = m_pShader->GetVariableByName("View")->AsMatrix();
-                hr = m_pViewVariableNoRef ? S_OK : E_FAIL;
+                ID3D11RenderTargetView* viewList[1] = {m_pRenderTargetView.Get()};
+                m_pContext->OMSetRenderTargets(1, viewList, m_pDepthStencilView.Get());
+
+                // Set a new viewport based on the new dimensions
+                D3D11_VIEWPORT viewport{};
+                viewport.Width = static_cast<FLOAT>(nWidth);
+                viewport.Height = static_cast<FLOAT>(nHeight);
+                viewport.TopLeftX = 0;
+                viewport.TopLeftY = 0;
+                viewport.MinDepth = 0;
+                viewport.MaxDepth = 1;
+                m_pContext->RSSetViewports(1, &viewport);
+
+                // Get a surface in the swap chain
+                hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(pBackBuffer.GetAddressOf()));
             }
 
             if (SUCCEEDED(hr))
             {
-                m_pProjectionVariableNoRef = m_pShader->GetVariableByName("Projection")->AsMatrix();
-                hr = m_pProjectionVariableNoRef ? S_OK : E_FAIL;
+                D3D11_BUFFER_DESC bd{};
+
+                // Create the constant buffers.
+                bd.Usage = D3D11_USAGE_DEFAULT;
+                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                bd.CPUAccessFlags = 0;
+                bd.ByteWidth = (sizeof(ConstantBufferNeverChanges) + 15) / 16 * 16;
+                hr = m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferNeverChanges);
+
+                bd.ByteWidth = (sizeof(ConstantBufferChangeOnResize) + 15) / 16 * 16;
+                hr |= m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferChangeOnResize);
+
+                bd.ByteWidth = (sizeof(ConstantBufferChangesEveryFrame) + 15) / 16 * 16;
+                hr |= m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferChangesEveryFrame);
             }
 
             if (SUCCEEDED(hr))
             {
-                m_pLightPosVariableNoRef = m_pShader->GetVariableByName("vLightPos")->AsVector();
-                hr = m_pLightPosVariableNoRef ? S_OK : E_FAIL;
+                D3D11_SAMPLER_DESC sampDesc{};
+                sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+                sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+                sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+                sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+                sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+                sampDesc.MinLOD = 0;
+                sampDesc.MaxLOD = FLT_MAX;
+                hr = m_pDevice->CreateSamplerState(&sampDesc, m_samplerLinear.GetAddressOf());
             }
 
             if (SUCCEEDED(hr))
             {
-                m_pLightColorVariableNoRef = m_pShader->GetVariableByName("vLightColor")->AsVector();
-                hr = m_pLightColorVariableNoRef ? S_OK : E_FAIL;
-            }
+                // Create the input layout.
+                hr = m_pDevice->CreateInputLayout(sc_PNVertexLayout, ARRAYSIZE(sc_PNVertexLayout), extrusionvsCode, sizeof(extrusionvsCode), &m_vertexLayout);
 
-            if (SUCCEEDED(hr))
-            {
-                // Define the input layout
-                UINT numElements = ARRAYSIZE(s_InputLayout);
-
-                // Create the input layout
-                D3DX11_PASS_DESC PassDesc;
-                m_pTechniqueNoRef->GetPassByIndex(0)->GetDesc(&PassDesc);
-
-                hr = m_pDevice->CreateInputLayout(s_InputLayout, numElements, PassDesc.pIAInputSignature, PassDesc.IAInputSignatureSize, &m_pVertexLayout);
+                // Load the shaders [and textures].
+                hr |= m_pDevice->CreateVertexShader(extrusionvsCode, sizeof(extrusionvsCode), nullptr, &m_vertexShader);
+                hr |= m_pDevice->CreatePixelShader(extrusionpsCode, sizeof(extrusionpsCode), nullptr, &m_pixelShader);
             }
 
             if (SUCCEEDED(hr))
             {
                 // Set the input layout.
-                m_pContext->IASetInputLayout(m_pVertexLayout);
+                m_pContext->IASetInputLayout(m_pVertexLayout.Get());
 
-                D3D11_BUFFER_DESC bd;
+                D3D11_BUFFER_DESC bd{};
                 bd.Usage = D3D11_USAGE_DYNAMIC;
-                bd.ByteWidth = sc_vertexBufferCount * sizeof(SimpleVertex);
+                bd.ByteWidth = sc_vertexBufferCount * sizeof(PNVertex);
                 bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
                 bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
                 bd.MiscFlags = 0;
 
-                hr = m_pDevice->CreateBuffer(&bd, NULL, &m_pVertexBuffer);
+                hr = m_pDevice->CreateBuffer(&bd, NULL, m_pVertexBuffer.GetAddressOf());
             }
 
             if (SUCCEEDED(hr))
             {
                 // Set the vertex buffer.
-                UINT stride = sizeof(SimpleVertex);
+                UINT stride = sizeof(PNVertex);
                 UINT offset = 0;
-                ID3D11Buffer* pVertexBuffer = m_pVertexBuffer;
+                ID3D11Buffer* pVertexBuffer = m_pVertexBuffer.Get();
 
                 m_pContext->IASetVertexBuffers(
                     0, // StartSlot
@@ -1360,28 +1353,45 @@ HRESULT SuperText::CreateWindowSizeDependentResources(int nWidth, int nHeight)
                 m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
                 // Initialize the world matrices.
-                D3DMatrixIdentity(&m_WorldMatrix);
+                XMStoreFloat4x4(&m_WorldMatrix, XMMatrixTranspose(XMMatrixIdentity()));
 
                 // Initialize the view matrix.
-                D3DMatrixLookAtLH(&m_ViewMatrix, &sc_eyeLocation, &sc_eyeAt, &sc_eyeUp);
+                XMStoreFloat4x4(&m_ViewMatrix, XMMatrixTranspose(XMMatrixLookAtLH(XMLoadFloat3(&sc_eyeLocation), XMLoadFloat3(&sc_eyeAt), XMLoadFloat3(&sc_eyeUp))));
 
                 // Initialize the projection matrix.
-                D3DMatrixPerspectiveFovLH(
-                    &m_ProjectionMatrix,
-                    (float)XM_PI * 0.24f, // fovy
-                    nWidth / (FLOAT)nHeight, // aspect
-                    0.1f, // zn
-                    800.0f // zf
+                XMStoreFloat4x4(&m_ProjectionMatrix, XMMatrixTranspose(XMMatrixPerspectiveFovLH(
+                        (float)XM_PI * 0.24f, // fovy
+                        nWidth / (float)nHeight, // aspect
+                        0.1f, // zn
+                        800.0f // zf
+                    ))
+                );
+                // 0-degree Z-rotation
+                static const XMFLOAT4X4 Rotation0(
+                    1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f, 1.0f
                 );
 
                 // Update variables that never change.
-                m_pViewVariableNoRef->SetMatrix((float*)&m_ViewMatrix);
+                ConstantBufferNeverChanges constantBufferNeverChanges{};
+                constantBufferNeverChanges.View = m_ViewMatrix;
+                XMStoreFloat4(&constantBufferNeverChanges.LightPosition[0], XMVectorSet(1200.0f, -20.0f, 400.0f, 0.0f));
+                XMStoreFloat4(&constantBufferNeverChanges.LightColor[0], XMVectorSet(0.9f, 0.0f, 0.0f, 1.0f));
+                m_pContext->UpdateSubresource(m_constantBufferNeverChanges.Get(), 0, nullptr, &constantBufferNeverChanges, 0, 0);
 
-                m_pProjectionVariableNoRef->SetMatrix((float*)&m_ProjectionMatrix);
+                ConstantBufferChangeOnResize changesOnResize{};
+                changesOnResize.Projection = m_ProjectionMatrix;
+                m_pContext->UpdateSubresource(m_constantBufferChangeOnResize.Get(), 0, nullptr, &changesOnResize, 0, 0);
+
+                ConstantBufferChangesEveryFrame changesEveryFrame{};
+                changesEveryFrame.World = m_WorldMatrix;
+                m_pContext->UpdateSubresource(m_constantBufferChangesEveryFrame.Get(), 0, nullptr, &changesEveryFrame, 0, 0);
             }
         }
 
-        SafeReleaseT(&pBackBufferResource);
+        pBackBufferResource.Reset();
     }
 
     return hr;
@@ -1395,11 +1405,12 @@ HRESULT SuperText::CreateWindowSizeDependentResources(int nWidth, int nHeight)
 // holding onto.
 void SuperText::DiscardDeviceResources()
 {
-    SafeReleaseT(&m_pState);
-    SafeReleaseT(&m_pDepthStencil);
-    SafeReleaseT(&m_pShader);
-    SafeReleaseT(&m_pVertexBuffer);
-    SafeReleaseT(&m_pVertexLayout);
+    m_pState.Reset();
+    m_pDepthStencil.Reset();
+    m_pDepthStencilView.Reset();
+    m_pRenderTargetView.Reset();
+    m_pVertexBuffer.Reset();
+    m_pVertexLayout.Reset();
 }
 
 //void SuperText::OnChar(SHORT key)
@@ -1462,7 +1473,7 @@ HRESULT SuperText::OnRender()
 
         if (SUCCEEDED(hr))
         {
-            std::vector<SimpleVertex> vertices;
+            std::vector<PNVertex> vertices;
 
             hr = Extruder::ExtrudeGeometry(
                 pGeometry,
@@ -1472,11 +1483,7 @@ HRESULT SuperText::OnRender()
 
             if (SUCCEEDED(hr))
             {
-                D3DMatrixRotationY(&m_WorldMatrix, a);
-
-                // Setup the lighting parameters.
-                XMFLOAT4 vLightPos[3] = {XMFLOAT4(1200.0f, -20.0f, 400.0f, 0.0f)};
-                XMFLOAT4 vLightColors[3] = {XMFLOAT4(0.9f, 0.0f, 0.0f, 1.0f)};
+                XMStoreFloat4x4(&m_WorldMatrix, XMMatrixTranspose(XMMatrixRotationY(a)));
 
                 // Swap chain will contain the size of the back buffer.
                 DXGI_SWAP_CHAIN_DESC swapDesc;
@@ -1484,22 +1491,34 @@ HRESULT SuperText::OnRender()
 
                 if (SUCCEEDED(hr))
                 {
-                    //m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1, 0);
+                    ID3D11RenderTargetView* const targets[1] = {m_pRenderTargetView.Get()};
+                    m_pContext->OMSetRenderTargets(1, targets, m_pDepthStencilView.Get());
 
-                    //const float black[4] = {0};
-                    //m_pContext->ClearRenderTargetView(m_pRenderTargetView, black);
+                    m_pContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-                    m_pTechniqueNoRef->GetPassByIndex(0)->Apply(0, m_pContext);
+                    const float clearColor[4] = {/*0.5f, 0.5f, 0.8f*/ 0.0f, 0.0f, 0.0f, 1.0f};
 
-                    // Update variables that change once per frame
-                    m_pWorldVariableNoRef->SetMatrix((float*)&m_WorldMatrix);
+                    m_pContext->ClearRenderTargetView(m_pRenderTargetView.Get(), clearColor);
 
-                    // Update lighting variables
-                    m_pLightPosVariableNoRef->SetFloatVectorArray((float*)vLightPos, 0, 1);
-                    m_pLightColorVariableNoRef->SetFloatVectorArray((float*)vLightColors, 0, 1);
+                    // Setup the graphics pipeline.
+                    m_pContext->IASetInputLayout(m_vertexLayout.Get());
+                    m_pContext->VSSetConstantBuffers(0, 1, m_constantBufferNeverChanges.GetAddressOf());
+                    m_pContext->VSSetConstantBuffers(1, 1, m_constantBufferChangeOnResize.GetAddressOf());
+                    m_pContext->VSSetConstantBuffers(2, 1, m_constantBufferChangesEveryFrame.GetAddressOf());
 
-                    // Render the scene
-                    m_pTechniqueNoRef->GetPassByIndex(0)->Apply(0, m_pContext);
+                    m_pContext->PSSetConstantBuffers(0, 1, m_constantBufferNeverChanges.GetAddressOf());
+                    //m_pContext->PSSetConstantBuffers(1, 1, m_constantBufferChangeOnResize.GetAddressOf());
+                    //m_pContext->PSSetConstantBuffers(2, 1, m_constantBufferChangesEveryFrame.GetAddressOf());
+                    m_pContext->PSSetSamplers(0, 1, m_samplerLinear.GetAddressOf());
+
+                    // Update variables that change once per frame.
+                    ConstantBufferChangesEveryFrame constantBufferChangesEveryFrame{};
+                    XMStoreFloat4x4(&constantBufferChangesEveryFrame.World, XMLoadFloat4x4(&m_WorldMatrix));
+                    m_pContext->UpdateSubresource(m_constantBufferChangesEveryFrame.Get(), 0, nullptr, &constantBufferChangesEveryFrame, 0, 0);
+
+                    // Render the scene.
+                    m_pContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+                    m_pContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
                     UINT verticesLeft = static_cast<UINT>(vertices.size());
 
@@ -1510,69 +1529,23 @@ HRESULT SuperText::OnRender()
                         UINT verticesToCopy = std::min(verticesLeft, sc_vertexBufferCount);
 
                         D3D11_MAPPED_SUBRESOURCE resource;
-                        hr = m_pContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                        hr = m_pContext->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 
                         if (SUCCEEDED(hr))
                         {
-                            memcpy(resource.pData, &vertices[index], verticesToCopy * sizeof(SimpleVertex));
+                            memcpy(resource.pData, &vertices[index], verticesToCopy * sizeof(PNVertex));
 
-                            m_pContext->Unmap(m_pVertexBuffer, 0);
+                            m_pContext->Unmap(m_pVertexBuffer.Get(), 0);
 
-                            m_pContext->Draw(verticesToCopy, 0);
+                            m_pContext->Draw(verticesToCopy, 0); //D3D11 ERROR: ID3D11DeviceContext::Draw: Input Assembler - Vertex Shader linkage error: Signatures between stages are incompatible. The input stage requires Semantic/Index (NORMAL,0) as input, but it is not provided by the output stage. [EXECUTION ERROR #342: DEVICE_SHADER_LINKAGE_SEMANTICNAME_NOT_FOUND]
 
                             verticesLeft -= verticesToCopy;
                             index += verticesToCopy;
                         }
                     }
-
-                    //if (SUCCEEDED(hr))
-                    //{
-                    //    hr = m_pSwapChain->Present(1, 0);
-                    //}
                 }
             }
             pGeometry->Release();
-        }
-    }
-
-    return hr;
-}
-
-// Loads and creates a pixel shader from a DLL resource.
-HRESULT SuperText::LoadResourceShader(ID3D11Device* pDevice, PCWSTR pszResource, ID3DX11Effect** ppShader)
-{
-    HRESULT hr = S_OK;
-#if 0
-    HMODULE hm = NULL;
-    wchar_t path[MAX_PATH];
-    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)&TEXT("foo_vis_milk2"), &hm) == 0)
-    {
-        DWORD ret = GetLastError();
-        MILK2_CONSOLE_LOG("GetModuleHandleEx failed, error = %d\n", ret);
-    }
-    if (GetModuleFileName(hm, path, MAX_PATH) == 0)
-    {
-        DWORD ret = GetLastError();
-        MILK2_CONSOLE_LOG("GetModuleFileName failed, error = %d\n", ret);
-    }
-#endif
-    HRSRC hResource = ::FindResource(HINST_THISCOMPONENT, pszResource, RT_RCDATA);
-    hr = hResource ? S_OK : E_FAIL;
-
-    if (SUCCEEDED(hr))
-    {
-        HGLOBAL hResourceData = ::LoadResource(HINST_THISCOMPONENT, hResource);
-        hr = hResourceData ? S_OK : E_FAIL;
-
-        if (SUCCEEDED(hr))
-        {
-            LPVOID pData = ::LockResource(hResourceData);
-            hr = pData ? S_OK : E_FAIL;
-
-            if (SUCCEEDED(hr))
-            {
-                hr = D3DX11CreateEffectFromMemory(pData, ::SizeofResource(HINST_THISCOMPONENT, hResource), 0, pDevice, ppShader);
-            }
         }
     }
 

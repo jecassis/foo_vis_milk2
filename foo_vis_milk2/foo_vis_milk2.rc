@@ -5,9 +5,9 @@
 //
 #include "resource.h"
 #include "version.h"
-#ifdef _SUPERTEXT
-#include "extrusion.ri"
-#endif
+//#ifdef _SUPERTEXT //defined(_M_IX86) || defined(_M_X64)
+//#include "extrusion.ri"
+//#endif
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
