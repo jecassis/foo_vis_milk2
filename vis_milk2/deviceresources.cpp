@@ -33,7 +33,8 @@ inline bool SdkLayersAvailable() noexcept
                                    nullptr,
                                    D3D11_CREATE_DEVICE_DEBUG, // Check for the SDK layers.
                                    nullptr, // Any feature level will do.
-                                   0, D3D11_SDK_VERSION,
+                                   0,
+                                   D3D11_SDK_VERSION,
                                    nullptr, // No need to keep the D3D device reference.
                                    nullptr, // No need to know the feature level.
                                    nullptr // No need to keep the D3D device context reference.
@@ -65,8 +66,11 @@ inline long ComputeIntersectionArea(long ax1, long ay1, long ax2, long ay2, long
 } // namespace
 
 // Constructor for DeviceResources.
-DeviceResources::DeviceResources(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthBufferFormat, UINT backBufferCount,
-                                 D3D_FEATURE_LEVEL minFeatureLevel, unsigned int flags) noexcept :
+DeviceResources::DeviceResources(DXGI_FORMAT backBufferFormat,
+                                 DXGI_FORMAT depthBufferFormat,
+                                 UINT backBufferCount,
+                                 D3D_FEATURE_LEVEL minFeatureLevel,
+                                 unsigned int flags) noexcept :
     m_screenViewport{},
     m_backBufferFormat(backBufferFormat),
     m_depthBufferFormat(depthBufferFormat),
@@ -303,14 +307,18 @@ void DeviceResources::CreateWindowSizeDependentResources()
     if (m_swapChain)
     {
         // If the swap chain already exists, resize it.
-        HRESULT hr = m_swapChain->ResizeBuffers(m_backBufferCount, backBufferWidth, backBufferHeight, backBufferFormat,
+        HRESULT hr = m_swapChain->ResizeBuffers(m_backBufferCount,
+                                                backBufferWidth,
+                                                backBufferHeight,
+                                                backBufferFormat,
                                                 (m_options & c_AllowTearing) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u);
 
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
 #ifdef _DEBUG
             char buff[64] = {};
-            sprintf_s(buff, "Device Lost on ResizeBuffers: Reason code 0x%08X\n",
+            sprintf_s(buff,
+                      "Device Lost on ResizeBuffers: Reason code 0x%08X\n",
                       static_cast<unsigned int>((hr == DXGI_ERROR_DEVICE_REMOVED) ? m_d3dDevice->GetDeviceRemovedReason() : hr));
             OutputDebugStringA(buff);
 #endif
@@ -337,7 +345,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
         swapChainDesc.BufferCount = m_backBufferCount;
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
-        swapChainDesc.Scaling = DXGI_SCALING_STRETCH; // NONE?
+        swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.SwapEffect = (m_options & (c_FlipPresent | c_AllowTearing | c_EnableHDR)) ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
         swapChainDesc.Flags = (m_options & c_AllowTearing) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u;
@@ -545,7 +553,8 @@ void DeviceResources::Present()
     {
 #ifdef _DEBUG
         char buff[64] = {};
-        sprintf_s(buff, "Device Lost on Present: Reason code 0x%08X\n",
+        sprintf_s(buff,
+                  "Device Lost on Present: Reason code 0x%08X\n",
                   static_cast<unsigned int>((hr == DXGI_ERROR_DEVICE_REMOVED) ? m_d3dDevice->GetDeviceRemovedReason() : hr));
         OutputDebugStringA(buff);
 #endif
