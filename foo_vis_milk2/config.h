@@ -209,7 +209,6 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
         COMMAND_HANDLER_EX(IDC_CB_NOWARN3, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_NORATING2, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_PRESS_F1_MSG, BN_CLICKED, OnButtonClick)
-        COMMAND_HANDLER_EX(IDC_CB_SKIP8, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_NOCOMPSHADER, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_W_MAXFPS2, CBN_SELCHANGE, OnComboChange)
         COMMAND_HANDLER_EX(IDC_FS_MAXFPS2, CBN_SELCHANGE, OnComboChange)

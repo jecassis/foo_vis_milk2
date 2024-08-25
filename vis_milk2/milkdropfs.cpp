@@ -621,7 +621,7 @@ void CPlugin::RenderFrame(int bRedraw)
         mdsound.fWave[1][0] *= scale;
         float mix2 = m_pState->m_fWaveSmoothing.eval(GetTime());
         float mix1 = scale * (1.0f - mix2);
-        for (int i = 1; i < 576; i++)
+        for (int i = 1; i < NUM_AUDIO_BUFFER_SAMPLES; i++)
         {
             mdsound.fWave[0][i] = mdsound.fWave[0][i] * mix1 + mdsound.fWave[0][i - 1] * mix2;
             mdsound.fWave[1][i] = mdsound.fWave[1][i] * mix1 + mdsound.fWave[1][i - 1] * mix2;
@@ -804,7 +804,7 @@ void CPlugin::RenderFrame(int bRedraw)
     // Draw audio data.
     DrawCustomShapes(); // draw these first; better for feedback if the waves draw *over* them.
     DrawCustomWaves();
-    DrawWave(mdsound.fWave[0], mdsound.fWave[1]);
+    DrawWave(mdsound.fWave[0].data(), mdsound.fWave[1].data());
     DrawSprites();
 
     float fProgress = (GetTime() - m_supertext.fStartTime) / m_supertext.fDuration;
@@ -1768,7 +1768,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
     //lpDevice->SetTexture(0, m_lpVS[0]);
     lpDevice->SetVertexShader(NULL, NULL);
-    //lpDevice->SetFVF( MDVERTEX_FORMAT );
+    //lpDevice->SetFVF(MDVERTEX_FORMAT);
 
     // Texel alignment.
     //float texel_offset_x = 0.5f / (float)m_nTexSizeX;
@@ -2198,8 +2198,8 @@ void CPlugin::DrawCustomWaves()
                 {
                     float tempdata[2][512];
                     float mult = ((pState->m_wave[i].bSpectrum) ? 0.15f : 0.004f) * pState->m_wave[i].scaling * pState->m_fWaveScale.eval(-1);
-                    float* pdata1 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[0] : m_sound.fWaveform[0];
-                    float* pdata2 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[1] : m_sound.fWaveform[1];
+                    float* pdata1 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[0].data() : m_sound.fWaveform[0].data();
+                    float* pdata2 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[1].data() : m_sound.fWaveform[1].data();
 
                     // initialize tempdata[2][512]
                     int j0 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /*(1 - pState->m_wave[i].bSpectrum)*/ - pState->m_wave[i].sep / 2;
@@ -2681,8 +2681,7 @@ void CPlugin::DrawWave(float* fL, float* fR)
                 if (wave == 8)
                     nVerts = 256;
                 else
-                    sample_offset =
-                        (NUM_WAVEFORM_SAMPLES - nVerts) / 2; //mdsound.GoGoAlignatron(nVerts); // only call this once nVerts is final!
+                    sample_offset = (NUM_WAVEFORM_SAMPLES - nVerts) / 2; //mdsound.GoGoAlignatron(nVerts); // only call this once nVerts is final!
 
                 if (m_pState->m_bModWaveAlphaByVolume)
                     alpha *= ((mdsound.imm_rel[0] + mdsound.imm_rel[1] + mdsound.imm_rel[2]) * 0.333f - m_pState->m_fModWaveAlphaStart.eval(GetTime())) / (m_pState->m_fModWaveAlphaEnd.eval(GetTime()) - m_pState->m_fModWaveAlphaStart.eval(GetTime()));
@@ -3585,7 +3584,7 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
             pCT->SetMatrix(p->rot_mat[i], &temp);
         }
     }
-    // the last 4 are totally random, each frame
+    // The last 4 are totally random, each frame.
     for (int i = 20; i < 24; i++)
     {
         if (p->rot_mat[i])
@@ -4279,10 +4278,10 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
     }
 
     WORD indices[7 * 15 * 6];
-    i = 0;
-    for (y = 0; y < 7; y++)
+    int i = 0;
+    for (int y = 0; y < 7; y++)
     {
-        for (x = 0; x < 15; x++)
+        for (int x = 0; x < 15; x++)
         {
             indices[i++] = static_cast<WORD>(y * 16 + x);
             indices[i++] = static_cast<WORD>(y * 16 + x + 1);

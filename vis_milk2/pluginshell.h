@@ -89,14 +89,6 @@ class CPluginShell
     void ReadFont(const int n);
     void WriteFont(const int n);
 
-    // Configuration panel and Windows messaging processes.
-    static LRESULT CALLBACK WindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK ConfigDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK FontDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK DesktopOptionsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK DualheadDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
     // GET METHODS
     // ------------------------------------------------------------
     int GetFrame() const; // returns current frame number (starts at zero)
@@ -128,12 +120,6 @@ class CPluginShell
     int GetHeight() const; // returns height of plugin window interior, in pixels. Note: in windowed mode, this is a fudged, larger, aligned value, and on final display, it gets cropped.
     int GetBitDepth() const; // returns 8, 16, 24 (rare), or 32
     D3D11Shim* GetDevice() const; // returns a pointer to the DirectX 11 device. NOT persistent; can change!
-    //D3DCAPS9* GetCaps();           // returns a pointer to the D3DCAPS9 structure for the device.  NOT persistent; can change.
-    //D3DFORMAT GetBackBufFormat();  // returns the pixel format of the back buffer (probably D3DFMT_R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A4R4G4B4, D3DFMT_R3G3B2, D3DFMT_A8R3G3B2, D3DFMT_X4R4G4B4, or D3DFMT_UNKNOWN)
-    //D3DFORMAT GetBackBufZFormat(); // returns the pixel format of the back buffer's Z buffer (probably D3DFMT_D16_LOCKABLE, D3DFMT_D32, D3DFMT_D15S1, D3DFMT_D24S8, D3DFMT_D16, D3DFMT_D24X8, D3DFMT_D24X4S4, or D3DFMT_UNKNOWN)
-
-    //char* GetDriverFilename(); // returns a text string with the filename of the current display adapter driver, such as "nv4_disp.dll"
-    //char* GetDriverDescription(); // returns a text string describing the current display adapter, such as "NVIDIA GeForce4 Ti 4200"
 
     // PURE VIRTUAL FUNCTIONS (...must be implemented by derived classes)
     // ------------------------------------------------------------
@@ -147,8 +133,6 @@ class CPluginShell
     virtual void CleanUpMilkDropDX11(int final_cleanup) = 0;
     virtual void MilkDropRenderFrame(int redraw) = 0;
     virtual void MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner_y, int* lower_left_corner_y, int* lower_right_corner_y, int xL, int xR) = 0;
-    //virtual LRESULT MilkDropWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam) = 0;
-    //virtual BOOL MilkDropConfigTabProc(int nPage, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
     virtual void OnAltK() = 0; // does not *have* to be implemented
     virtual void DumpDebugMessage(const wchar_t* s) = 0;
     virtual void PopupMessage(int message_id, int title_id, bool dump = false) = 0;
@@ -296,30 +280,6 @@ class CPluginShell
     void EnforceMaxFPS();
 
   private:
-    /*
-    // WINDOWPROC FUNCTIONS
-    LRESULT PluginShellWindowProc(HWND hWnd, unsigned uMsg, WPARAM wParam, LPARAM lParam); // in "windowproc.cpp"
-
-    // CONFIGURATION PANEL FUNCTIONS
-    LRESULT PluginShellConfigDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT PluginShellConfigTab1Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT PluginShellFontDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT PluginShellDesktopOptionsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT PluginShellDualheadDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    bool InitConfig(HWND hDialogWnd);
-    void EndConfig();
-    void UpdateAdapters(int screenmode);
-    void UpdateFSAdapterDispModes(); // fullscreen-only
-    void UpdateDispModeMultiSampling(int screenmode);
-    void UpdateMaxFps(int screenmode);
-    int GetCurrentlySelectedAdapter(int screenmode);
-    void SaveDisplayMode();
-    void SaveMultiSamp(int screenmode);
-    void SaveAdapter(int screenmode);
-    void SaveMaxFps(int screenmode);
-    void OnTabChanged(int nNewTab);
-    */
-
     // CHANGES
     friend class CShaderParams;
 };

@@ -548,8 +548,8 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_prev_end_of_frame.QuadPart = 0;
 
     // PRIVATE AUDIO PROCESSING DATA
-    memset(m_oldwave[0], 0.0f, sizeof(float) * NUM_AUDIO_BUFFER_SAMPLES);
-    memset(m_oldwave[1], 0.0f, sizeof(float) * NUM_AUDIO_BUFFER_SAMPLES);
+    memset(m_oldwave[0], 0, sizeof(float) * NUM_AUDIO_BUFFER_SAMPLES);
+    memset(m_oldwave[1], 0, sizeof(float) * NUM_AUDIO_BUFFER_SAMPLES);
     m_prev_align_offset[0] = 0;
     m_prev_align_offset[1] = 0;
     m_align_weights_ready = 0;
@@ -780,14 +780,14 @@ void CPluginShell::WriteConfig()
 #ifndef _FOOBAR
 int CPluginShell::PluginRender(unsigned char* pWaveL, unsigned char* pWaveR) //, unsigned char *pSpecL, unsigned char *pSpecR)
 #else
-int CPluginShell::PluginRender(float* pWaveL, float* pWaveR) //, unsigned char *pSpecL, unsigned char *pSpecR)
+int CPluginShell::PluginRender(float* pWaveL, float* pWaveR)
 #endif
 {
     // Return `FALSE' here to tell Winamp to terminate the plugin.
     if (!m_lpDX || !m_lpDX->m_ready)
     {
-        // note: 'm_ready' will go false when a device reset fatally fails
-        //       (for example, when user resizes window, or toggles fullscreen.)
+        // Note: 'm_ready' will go false when a device reset fatally fails
+        //       (for example, when user resizes window, or toggles fullscreen).
         m_exiting = 1;
         return false; // EXIT THE PLUGIN
     }
@@ -806,14 +806,14 @@ int CPluginShell::PluginRender(float* pWaveL, float* pWaveR) //, unsigned char *
         return true;
     }
 
-    // test for lost device
+    // Test for lost device.
     // (this happens when device is fullscreen & user alt-tabs away,
     //  or when monitor power-saving kicks in)
     HRESULT hr = m_lpDX->m_lpDevice->TestCooperativeLevel();
     if (hr == D3DERR_DEVICENOTRESET)
     {
-        // device WAS lost, and is now ready to be reset (and come back online):
-        CleanUpDX9Stuff(0);
+        // Device WAS lost, and is now ready to be reset (and come back online).
+        CleanUpDX11Stuff(0);
         if (m_lpDX->m_lpDevice->Reset(&m_lpDX->m_d3dpp) != D3D_OK)
         {
             // Note: a basic warning message box will have already been given.
@@ -822,12 +822,12 @@ int CPluginShell::PluginRender(float* pWaveL, float* pWaveR) //, unsigned char *
             //    SuggestHowToFreeSomeMem();
             return false; // EXIT THE PLUGIN
         }
-        if (!AllocateDX9Stuff())
+        if (!AllocateDX11Stuff())
             return false; // EXIT THE PLUGIN
     }
     else if (hr != D3D_OK)
     {
-        // device is lost, and not yet ready to come back; sleep.
+        // Device is lost, and not yet ready to come back; sleep.
         Sleep(30);
         return true;
     }

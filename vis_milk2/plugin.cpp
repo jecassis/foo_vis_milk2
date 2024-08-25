@@ -5020,7 +5020,9 @@ void ErrorOutput(LPCTSTR lpszFunction)
                   NULL);
 
     // Display the error message.
-    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+    // Buffer size: lpMsgBuf (includes CR+LF) + lpszFunction + format (40) + dw (4) + '\0' (1)
+    if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40 + 4 + 1) * sizeof(TCHAR))) == NULL)
+        return;
     swprintf_s((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), lpszFunction, dw, (LPCTSTR)lpMsgBuf);
     OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
 
@@ -6450,7 +6452,7 @@ void CPlugin::ReadCustomMessages()
     // First, clear all old data
     for (int n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
     {
-        wcscpy_s(m_CustomMessageFont[n].szFace, L"arial");
+        wcscpy_s(m_CustomMessageFont[n].szFace, L"Arial");
         m_CustomMessageFont[n].bBold = false;
         m_CustomMessageFont[n].bItal = false;
         m_CustomMessageFont[n].nColorR = 255;
@@ -6479,7 +6481,7 @@ void CPlugin::ReadCustomMessages()
         m_CustomMessage[n].bOverrideColorB = false;
         m_CustomMessage[n].bBold = false;
         m_CustomMessage[n].bItal = false;
-        wcscpy_s(m_CustomMessage[n].szFace, L"arial");
+        wcscpy_s(m_CustomMessage[n].szFace, L"Arial");
         m_CustomMessage[n].nColorR = 255;
         m_CustomMessage[n].nColorG = 255;
         m_CustomMessage[n].nColorB = 255;
@@ -6496,7 +6498,7 @@ void CPlugin::ReadCustomMessages()
         swprintf_s(szSectionName, L"font%02d", n);
 
         // Get face, bold, italic, x, y for this custom message FONT.
-        GetPrivateProfileString(szSectionName, L"face", L"arial", m_CustomMessageFont[n].szFace, ARRAYSIZE(m_CustomMessageFont[n].szFace), m_szMsgIniFile);
+        GetPrivateProfileString(szSectionName, L"face", L"Arial", m_CustomMessageFont[n].szFace, ARRAYSIZE(m_CustomMessageFont[n].szFace), m_szMsgIniFile);
         m_CustomMessageFont[n].bBold = GetPrivateProfileBoolW(szSectionName, L"bold", m_CustomMessageFont[n].bBold, m_szMsgIniFile);
         m_CustomMessageFont[n].bItal = GetPrivateProfileBoolW(szSectionName, L"ital", m_CustomMessageFont[n].bItal, m_szMsgIniFile);
         m_CustomMessageFont[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", m_CustomMessageFont[n].nColorR, m_szMsgIniFile);
@@ -6593,7 +6595,7 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
     m_supertext.fDuration = m_CustomMessage[nMsgNum].fTime;
     m_supertext.fFadeTime = m_CustomMessage[nMsgNum].fFade;
 
-    // Overrideables.
+    // Overridables.
     if (m_CustomMessage[nMsgNum].bOverrideFace)
         wcscpy_s(m_supertext.nFontFace, m_CustomMessage[nMsgNum].szFace);
     else
@@ -6616,8 +6618,7 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
     if (m_supertext.nColorB > 255) m_supertext.nColorB = 255;
 
     // Fix '&'s for display.
-    /*
-    {
+    /*{
         int pos = 0;
         int len = wcslen_s(m_supertext.szText);
         while (m_supertext.szText[pos] && pos < 255)

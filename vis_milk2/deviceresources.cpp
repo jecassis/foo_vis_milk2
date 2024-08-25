@@ -297,7 +297,6 @@ void DeviceResources::CreateWindowSizeDependentResources()
     m_d2dContext->SetTarget(nullptr);
     m_d2dTargetBitmap.Reset();
     m_d3dContext->Flush();
-    m_d2dContext->Flush();
 
     // Determine the render target size in pixels.
     const UINT backBufferWidth = std::max<UINT>(static_cast<UINT>(m_outputSize.right - m_outputSize.left), 1u);

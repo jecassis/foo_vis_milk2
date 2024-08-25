@@ -597,9 +597,7 @@ class CPlugin : public CPluginShell
     void GenCompPShaderText(char* szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert);
 
     //====[ 2. Methods added ]=====================================================================================
-    void RefreshTab2(HWND hwnd);
     void RenderFrame(int bRedraw);
-    void AlignWave(int nSamples);
     void DrawTooltip(wchar_t* str, int xR, int yB);
     void ClearTooltip();
     void ClearText();
