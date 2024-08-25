@@ -28,35 +28,34 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef __NULLSOFT_DX_PLUGIN_SHELL_FFT_H__
-#define __NULLSOFT_DX_PLUGIN_SHELL_FFT_H__
+#pragma once
+
+#include <complex>
+#include <vector>
 
 class FFT
 {
   public:
-    FFT();
-    ~FFT();
-    void Init(int samples_in, int samples_out, int bEqualize = 1, float envelope_power = 1.0f);
-    void time_to_frequency_domain(float* in_wavedata, float* out_spectraldata);
-    int GetNumFreq() const { return NFREQ; };
-    void CleanUp();
+    FFT(size_t samplesIn, size_t samplesOut, bool equalize = true, float envelopePower = 1.0f);
+
+    void TimeToFrequencyDomain(const std::vector<float>& waveformData, std::vector<float>& spectralData);
+
+    size_t GetNumFrequencies() const { return m_numFrequencies; }
 
   private:
-    int m_ready;
-    int m_samples_in;
-    int NFREQ;
+    void InitEqualizeTable(bool equalize);
 
     void InitEnvelopeTable(float power);
-    void InitEqualizeTable();
+
     void InitBitRevTable();
+
     void InitCosSinTable();
 
-    int* bitrevtable;
-    float* envelope;
-    float* equalize;
-    float* temp1;
-    float* temp2;
-    float (*cossintable)[2];
-};
+    size_t m_samplesIn; // Number of waveform samples to use for the FFT calculation.
+    size_t m_numFrequencies; // Number of frequency samples calculated by the FFT.
 
-#endif
+    std::vector<size_t> m_bitRevTable; // Index table for frequency-specific waveform data lookups.
+    std::vector<float> m_envelope; // Equalizer envelope table.
+    std::vector<float> m_equalize; // Equalization values.
+    std::vector<std::complex<float>> m_cosSinTable; // Table with complex polar coordinates for the different frequency domains used in the FFT.
+};

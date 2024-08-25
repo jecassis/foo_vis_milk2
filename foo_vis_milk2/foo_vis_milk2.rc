@@ -88,9 +88,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,41,165,10
     CONTROL         "Prevent MilkDrop from controlling Scroll Lock key",IDC_CB_SCROLLON4,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,54,173,10
-    CONTROL         "Skip conversion to 8-bit samples",IDC_CB_SKIP8,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,2,67,165,10
     CONTROL         "Skip composite shader blending",IDC_CB_NOCOMPSHADER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,247,2,81,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,67,160,10
     GROUPBOX        "",IDC_STATIC,2,76,165,30
     RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,14,83,53,10
     COMBOBOX        IDC_FS_MAXFPS2,69,83,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP

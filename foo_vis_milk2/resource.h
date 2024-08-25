@@ -854,7 +854,6 @@
 #define IDC_MAX_BYTES_CAPTION2          1065
 #define IDC_FONTBOLD2                   1066
 #define IDC_W_MAXFPS_CAPTION1           1066
-#define IDC_CB_SKIP8                    1066
 #define IDC_FONTITAL2                   1067
 #define IDC_FS_MAXFPS_CAPTION1          1067
 #define IDC_TITLE_FORMAT                1067

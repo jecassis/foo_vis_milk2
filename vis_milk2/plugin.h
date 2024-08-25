@@ -54,7 +54,6 @@ typedef enum { UI_REGULAR, UI_MENU, UI_LOAD, UI_LOAD_DEL, UI_LOAD_RENAME, UI_SAV
 typedef struct { float rad; float ang; float a; float c; } td_vertinfo; //blending: mix = std::max(0, std::min(1, a * t + c));
 // clang-format on
 
-#define MD_FFT_SAMPLES 512 // for old [pre-vms] milkdrop sound analysis
 typedef struct
 {
     float imm[3];      // bass, mids, treble (absolute)
@@ -62,8 +61,8 @@ typedef struct
     float avg[3];      // bass, mids, treble (absolute)
     float avg_rel[3];  // bass, mids, treble (relative to song; 1=avg, 0.9~below, 1.1~above)
     float long_avg[3]; // bass, mids, treble (absolute)
-    float fWave[2][576];
-    float fSpecLeft[MD_FFT_SAMPLES];
+    std::array<std::array<float, NUM_AUDIO_BUFFER_SAMPLES>, 2> fWave;
+    std::vector<float> fSpecLeft; //[NUM_FFT_SAMPLES]
 } td_mdsounddata;
 
 typedef struct
@@ -489,7 +488,7 @@ class CPlugin : public CPluginShell
     void NextPreset(float fBlendTime); // if not retracing our former steps, it will choose a random one.
     void OnFinishedLoadingPreset();
 
-    FFT mdfft;
+    FFT mdfft{NUM_AUDIO_BUFFER_SAMPLES, NUM_FFT_SAMPLES, true, 1.0f};
     td_mdsounddata mdsound;
 
     // Displaying text to user.

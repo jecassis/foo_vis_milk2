@@ -31,6 +31,7 @@
 #ifndef __NULLSOFT_DX_PLUGIN_SHELL_H__
 #define __NULLSOFT_DX_PLUGIN_SHELL_H__
 
+#include <array>
 #include <vector>
 #include "defines.h"
 #include "shell_defines.h"
@@ -58,8 +59,8 @@ typedef struct
     float med_avg[2][3]; // bass, mids, treble, more damping, for each channel (long-term average is 1)
     float long_avg[2][3]; // bass, mids, treble, heavy damping, for each channel (long-term average is 1)
     float infinite_avg[2][3]; // bass, mids, treble: winamp's average output levels (1)
-    float fWaveform[2][576]; // Not all 576 are valid! - only `NUM_WAVEFORM_SAMPLES` samples are valid for each channel (note: `NUM_WAVEFORM_SAMPLES` is declared in "shell_defines.h")
-    float fSpectrum[2][NUM_FREQUENCIES]; // NUM_FREQUENCIES samples for each channel (note: NUM_FREQUENCIES is declared in `shell_defines.h`)
+    std::array<std::array<float, NUM_AUDIO_BUFFER_SAMPLES>, 2> fWaveform; // Not all 576 are valid! - only `NUM_WAVEFORM_SAMPLES` samples are valid for each channel
+    std::array<std::vector<float>, 2> fSpectrum; // NUM_FREQUENCIES samples for each channel
 } td_soundinfo; // ...range is 0 Hz to 22050 Hz, evenly spaced.
 
 class CPluginShell
@@ -70,7 +71,11 @@ class CPluginShell
 
     int PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance); // called by "vis.cpp" on behalf of Winamp
     int PluginInitialize(int iWidth, int iHeight);
+#ifndef _FOOBAR
     int PluginRender(unsigned char* pWaveL, unsigned char* pWaveR);
+#else
+    int PluginRender(float* pWaveL, float* pWaveR);
+#endif
     void PluginQuit();
     void OnWindowSizeChanged(int width, int height);
     void OnWindowSwap(HWND window, int width, int height);
@@ -123,9 +128,9 @@ class CPluginShell
     int GetHeight() const; // returns height of plugin window interior, in pixels. Note: in windowed mode, this is a fudged, larger, aligned value, and on final display, it gets cropped.
     int GetBitDepth() const; // returns 8, 16, 24 (rare), or 32
     D3D11Shim* GetDevice() const; // returns a pointer to the DirectX 11 device. NOT persistent; can change!
-    //D3DCAPS9* GetCaps();           // returns a pointer to the D3DCAPS9 structer for the device.  NOT persistent; can change.
-    //D3DFORMAT GetBackBufFormat();  // returns the pixelformat of the back buffer (probably D3DFMT_R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A4R4G4B4, D3DFMT_R3G3B2, D3DFMT_A8R3G3B2, D3DFMT_X4R4G4B4, or D3DFMT_UNKNOWN)
-    //D3DFORMAT GetBackBufZFormat(); // returns the pixelformat of the back buffer's Z buffer (probably D3DFMT_D16_LOCKABLE, D3DFMT_D32, D3DFMT_D15S1, D3DFMT_D24S8, D3DFMT_D16, D3DFMT_D24X8, D3DFMT_D24X4S4, or D3DFMT_UNKNOWN)
+    //D3DCAPS9* GetCaps();           // returns a pointer to the D3DCAPS9 structure for the device.  NOT persistent; can change.
+    //D3DFORMAT GetBackBufFormat();  // returns the pixel format of the back buffer (probably D3DFMT_R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A4R4G4B4, D3DFMT_R3G3B2, D3DFMT_A8R3G3B2, D3DFMT_X4R4G4B4, or D3DFMT_UNKNOWN)
+    //D3DFORMAT GetBackBufZFormat(); // returns the pixel format of the back buffer's Z buffer (probably D3DFMT_D16_LOCKABLE, D3DFMT_D32, D3DFMT_D15S1, D3DFMT_D24S8, D3DFMT_D16, D3DFMT_D24X8, D3DFMT_D24X4S4, or D3DFMT_UNKNOWN)
 
     //char* GetDriverFilename(); // returns a text string with the filename of the current display adapter driver, such as "nv4_disp.dll"
     //char* GetDriverDescription(); // returns a text string describing the current display adapter, such as "NVIDIA GeForce4 Ti 4200"
@@ -254,8 +259,8 @@ class CPluginShell
     LARGE_INTEGER m_prev_end_of_frame;
 
     // PRIVATE AUDIO PROCESSING DATA
-    FFT m_fftobj;
-    float m_oldwave[2][576]; // for wave alignment
+    FFT m_fftobj{NUM_AUDIO_BUFFER_SAMPLES, NUM_FREQUENCIES};
+    float m_oldwave[2][NUM_AUDIO_BUFFER_SAMPLES]; // for wave alignment
     int m_prev_align_offset[2]; // for wave alignment
     int m_align_weights_ready;
 
@@ -263,7 +268,11 @@ class CPluginShell
     void ReadConfig();
     void WriteConfig();
     void DoTime();
+#ifndef _FOOBAR
     void AnalyzeNewSound(unsigned char* pWaveL, unsigned char* pWaveR);
+#else
+    void AnalyzeNewSound(float* pWaveL, float* pWaveR);
+#endif
     void AlignWaves();
     int InitDirectX();
     void CleanUpDirectX();

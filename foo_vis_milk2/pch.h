@@ -33,6 +33,15 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <d3d11_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
+#include <dxgi1_6.h> // Windows 10, version 1803 [desktop apps only]
+#include <d2d1_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
+#include <dwrite_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
+
+#include <wrl/client.h>
+
+#include <array>
+
 #include <helpers/foobar2000-lite+atl.h>
 #include <sdk/componentversion.h>
 #include <sdk/coreversion.h>
@@ -54,14 +63,6 @@
 #include <helpers/DarkMode.h>
 #include <pfc/string-conv-lite.h>
 #include <libppui/win32_op.h>
-
-#include <wrl/client.h>
-
-#include <d3d11_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
-//#include <dxgi1_2.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
-#include <dxgi1_6.h> // Windows 10, version 1803 [desktop apps only]
-#include <d2d1_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
-#include <dwrite_1.h> // Windows 8 and Platform Update for Windows 7 [desktop apps | UWP apps]
 
 #include <vis_milk2/defines.h>
 #include <vis_milk2/md_defines.h>

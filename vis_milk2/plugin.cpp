@@ -592,7 +592,6 @@ void CPlugin::MilkDropPreInitialize()
     m_szUpdatePresetMask[0] = 0;
     //m_nRatingReadProgress = -1;
 
-    mdfft.Init(576, MD_FFT_SAMPLES, -1);
     memset(&mdsound, 0, sizeof(mdsound));
 
     for (int i = 0; i < PRESET_HIST_LEN; i++)
@@ -909,7 +908,6 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     m_depth_buffer_format = settings->m_nDepthBufferFormat;
     m_back_buffer_count = settings->m_nBackBufferCount;
     m_min_feature_level = settings->m_nMinFeatureLevel;
-    m_skip_8_conversion = settings->m_bSkip8Conversion;
     m_skip_comp_shaders = settings->m_bSkipCompShader;
 
     wcscpy_s(m_szPresetDir, settings->m_szPresetDir);
@@ -6814,25 +6812,25 @@ void CPlugin::KillSprite(int iSlot)
 
 void CPlugin::DoCustomSoundAnalysis()
 {
-    memcpy(mdsound.fWave[0], m_sound.fWaveform[0], sizeof(float) * 576);
-    memcpy(mdsound.fWave[1], m_sound.fWaveform[1], sizeof(float) * 576);
+    std::copy(m_sound.fWaveform[0].begin(), m_sound.fWaveform[0].end(), mdsound.fWave[0].begin());
+    std::copy(m_sound.fWaveform[1].begin(), m_sound.fWaveform[1].end(), mdsound.fWave[1].begin());
 
     // Do our own [UN-NORMALIZED] fft.
-    float fWaveLeft[576] = {0.0f};
-    for (int i = 0; i < 576; i++)
+    std::vector<float> fWaveLeft(NUM_AUDIO_BUFFER_SAMPLES);
+    for (int i = 0; i < NUM_AUDIO_BUFFER_SAMPLES; i++)
         fWaveLeft[i] = m_sound.fWaveform[0][i];
 
-    memset(mdsound.fSpecLeft, 0, sizeof(float) * MD_FFT_SAMPLES);
+    std::fill(mdsound.fSpecLeft.begin(), mdsound.fSpecLeft.end(), 0.0f);
 
-    mdfft.time_to_frequency_domain(fWaveLeft, mdsound.fSpecLeft);
-    //for (i = 0; i < MD_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i] * fSpecLeft[i] + fSpecTemp[i] * fSpecTemp[i]);
+    mdfft.TimeToFrequencyDomain(fWaveLeft, mdsound.fSpecLeft);
+    //for (i = 0; i < NUM_FFT_SAMPLES; i++) fSpecLeft[i] = sqrtf(fSpecLeft[i] * fSpecLeft[i] + fSpecTemp[i] * fSpecTemp[i]);
 
     // Sum spectrum up into 3 bands.
     for (int i = 0; i < 3; i++)
     {
         // Note: only look at bottom half of spectrum!  (hence divide by 6 instead of 3)
-        int start = MD_FFT_SAMPLES * i / 6;
-        int end = MD_FFT_SAMPLES * (i + 1) / 6;
+        int start = NUM_FFT_SAMPLES * i / 6;
+        int end = NUM_FFT_SAMPLES * (i + 1) / 6;
         int j;
 
         mdsound.imm[i] = 0;

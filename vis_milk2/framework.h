@@ -37,8 +37,6 @@
 #include <process.h>
 //#include <shellapi.h>
 
-#include <wrl/client.h>
-
 #include <d3d11_1.h>
 #include <d3d11shader.h>
 #include <dxgi1_6.h> // "dxgi1_2.h" for Windows 7 (Windows 8 and Platform Update for Windows 7) and "dxgi1_6.h" (Windows 10, version 1803)
@@ -52,11 +50,15 @@
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 
+#include <wrl/client.h>
+
 #include <algorithm>
+#include <array>
 //#include <atomic>
 #include <cassert>
 #include <clocale>
 #include <cmath>
+#include <complex>
 //#include <cstddef>
 //#include <cstdint>
 //#include <cstdio>

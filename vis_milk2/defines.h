@@ -40,7 +40,7 @@
 #define LONGNAME "MilkDrop v2.25k"  // appears at bottom of config panel
 #define LONGNAMEW TEXT(LONGNAME)
 
-// INT_VERSION is the major version #, multipled by 100 (ie. version 1.02
+// INT_VERSION is the major version #, multiplied by 100 (ie. version 1.02
 // would be 102). If the app goes to read in the INI file and sees that
 // the INI file is from an older version of your plugin, it will ignore
 // their old settings and reset them to the defaults for the new version;
@@ -148,27 +148,29 @@
 // `GetExtraFont(EXTRA_2)` for extra font #2, and so on.
 #define NUM_EXTRA_FONTS 2 // <- do not exceed 5 here!
 #define TOOLTIP_FONT EXTRA_1
-//#define EXTRA_FONT_1_NAME "Tooltips" // Defined in the stringtable resources
+//#define EXTRA_FONT_1_NAME "Tooltips" <- Defined in the STRINGTABLE  resources
 #define EXTRA_FONT_1_DEFAULT_FACE L"Calibri"
 #define EXTRA_FONT_1_DEFAULT_SIZE 14
 #define EXTRA_FONT_1_DEFAULT_BOLD 0
 #define EXTRA_FONT_1_DEFAULT_ITAL 0
 #define EXTRA_FONT_1_DEFAULT_AA 0
 #define SONGTITLE_FONT EXTRA_2
-//#define EXTRA_FONT_2_NAME "Animated Song Titles" // Defined in the stringtable resources
+//#define EXTRA_FONT_2_NAME "Animated Song Titles" <- Defined in the STRINGTABLE resources
 #define EXTRA_FONT_2_DEFAULT_FACE L"Georgia"
 #define EXTRA_FONT_2_DEFAULT_SIZE 18
 #define EXTRA_FONT_2_DEFAULT_BOLD 0
 #define EXTRA_FONT_2_DEFAULT_ITAL 1
 #define EXTRA_FONT_2_DEFAULT_AA 1
 
-#define WINDOWCAPTION SHORTNAME // the caption that will appear on the plugin window
-#define DLLDESC LONGNAME        // the description of this DLL, as it appears in Winamp's list of viz plugins
-#define MODULEDESC LONGNAME     // the description of this visualization module within the DLL (..this framework is set up for just 1 module per DLL)
+#define WINDOWCAPTION SHORTNAME // caption that will appear on the plugin window
+#define DLLDESC LONGNAME        // description of this DLL, as it appears in Winamp's list of visualization plugins
+#define MODULEDESC LONGNAME     // description of this visualization module within the DLL (..this framework is set up for just 1 module per DLL)
 
 // Finally, a few parameters that will control how things are done
 // inside the plugin shell:
-#define NUM_WAVEFORM_SAMPLES 480 // RANGE: 32-576. This is the # of samples of waveform data that you want.
+#define NUM_AUDIO_BUFFER_SAMPLES 576 // number of waveform data samples stored in the buffer for analysis
+#define NUM_FFT_SAMPLES 512 // number of spectrum analyzer samples
+#define NUM_WAVEFORM_SAMPLES 480 // number of waveform data samples available for rendering a frame (RANGE: 32-576)
                                  // Note: if it is less than 576, then VMS will do its best
                                  //       to line up the waveforms from frame to frame for you, using
                                  //       the extra samples as 'squish' space.
@@ -179,13 +181,12 @@
                                  // render a sub-portion of that in some cases (say, 200 samples),
                                  // make sure you render the *middle* 200 samples (#100-300), because
                                  // the alignment happens *mostly at the center*.
-
 #define NUM_FREQUENCIES 512 // number of frequency samples desired from the FFT, for 0-11kHz range.
                             //   ** this must be a power of 2!
                             //   ** the actual FFT will use twice this many frequencies **
 
-#define TEXT_MARGIN 10             // the number of pixels of margin to leave between text and the edge of the screen
-#define PLAYLIST_INNER_MARGIN 4.0f // the extra margin between the playlist box and the text inside
+#define TEXT_MARGIN 10             // number of pixels of margin to leave between text and the edge of the screen
+#define PLAYLIST_INNER_MARGIN 4.0f // extra margin between the playlist box and the text inside
 
 #define PLAYLIST_COLOR_PLAYING_TRACK 0xFFCCFF00 // alpha|red|green|blue
 #define PLAYLIST_COLOR_HILITE_TRACK 0xFFFF5050
@@ -200,6 +201,6 @@
 #define MAX_PRESETS_PER_PAGE 32
 
 #define PRESS_F1_DUR 3.0f  // in seconds
-#define PRESS_F1_EXP 10.0f // exponent for how quickly it accelerates to leave the screen. 1 = linear; >1 = stays and then dashes off at end
+#define PRESS_F1_EXP 10.0f // exponent for how quickly it accelerates to leave the screen: 1 = linear, >1 = stays and then dashes off at end
 
 #endif

@@ -840,7 +840,7 @@ HRESULT milk2_ui_element::Render()
 
     Clear();
 
-    return g_plugin.PluginRender(waves[0], waves[1]);
+    return g_plugin.PluginRender(waves[0].data(), waves[1].data());
 }
 
 // Clears the back buffers and the window contents.
@@ -884,7 +884,7 @@ void milk2_ui_element::BuildWaves()
     if (use_fake || !m_vis_stream->get_chunk_absolute(chunk, time - dt, dt))
     {
         //m_vis_stream->make_fake_chunk_absolute(chunk, time - dt, dt);
-        for (uint32_t i = 0; i < 576U; ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(NUM_AUDIO_BUFFER_SAMPLES); ++i)
         {
             waves[0][i] = waves[1][i] = 0U;
         }
@@ -892,16 +892,17 @@ void milk2_ui_element::BuildWaves()
     }
     auto count = chunk.get_sample_count();
     auto sample_rate = chunk.get_srate();
-    auto channels = chunk.get_channel_count() > 1 ? 2 : 1;
-    std::vector<int16_t> audio_data(count * channels, 0);
-    audio_math::convert_to_int16(chunk.get_data(), count * channels, audio_data.data(), 1.0);
+    auto channels = chunk.get_channel_count();
+    audio_sample* audio_data = chunk.get_data();
 
-    size_t top = std::min(count / channels, static_cast<size_t>(576));
+    size_t top = std::min(count / channels, static_cast<size_t>(NUM_AUDIO_BUFFER_SAMPLES));
     for (size_t i = 0; i < top; ++i)
     {
-        waves[0][i] = static_cast<unsigned char>(audio_data[i * channels] * 255.0f);
+        waves[0][i] = static_cast<float>(audio_data[i * channels] * 128.0f);
         if (channels >= 2)
-            waves[1][i] = static_cast<unsigned char>(audio_data[i * channels + 1] * 255.0f);
+            waves[1][i] = static_cast<float>(audio_data[i * channels + 1] * 128.0f);
+        else
+            waves[1][i] = waves[0][i];
     }
 }
 #pragma endregion

@@ -82,7 +82,6 @@ typedef struct
     //--- Extras
     bool m_bEnableDownmix;
     bool m_bEnableHDR;
-    bool m_bSkip8Conversion;
     bool m_bSkipCompShader;
     uint32_t m_nBackBufferFormat;
     uint32_t m_nDepthBufferFormat;

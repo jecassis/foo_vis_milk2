@@ -242,7 +242,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     std::wstring m_pwd;
 
     // Audio data
-    unsigned char waves[2][576];
+    std::array<std::array<float, NUM_AUDIO_BUFFER_SAMPLES>, 2> waves;
 
     // Playback control
     static_api_ptr_t<playback_control> m_playback_control;

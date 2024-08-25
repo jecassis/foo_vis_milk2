@@ -192,7 +192,7 @@ void D3D11Shim::DrawIndexedPrimitive(unsigned int primType, unsigned int uStartV
     if (m_bCBufferIsDirty)
     {
         D3D11_MAPPED_SUBRESOURCE res;
-        if (S_OK == m_pContext->Map(m_pCBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res))
+        if (SUCCEEDED(m_pContext->Map(m_pCBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res)))
         {
             memcpy(res.pData, &m_transforms, sizeof(cbTransforms));
             m_pContext->Unmap(m_pCBuffer, 0);
