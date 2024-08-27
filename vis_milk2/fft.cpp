@@ -33,13 +33,6 @@
 
 constexpr float PI = 3.141592653589793238462643383279502884197169399f;
 
-// `samples_in`: number of waveform samples to feed into the FFT.
-// `samples_out`: number of frequency samples desired; MUST BE A POWER OF 2.
-// `bEqualize`: set to 1 if you want the magnitude of the basses and trebles
-//              to be roughly equalized; 0 to leave them untouched.
-// `envelope_power`: set to -1 to disable the envelope; otherwise, specify
-//                   the envelope power desired. See `InitEnvelopeTable()`
-//                   for more information.
 FFT::FFT(size_t samplesIn, size_t samplesOut, bool equalize, float envelopePower) :
     m_samplesIn(samplesIn),
     m_numFrequencies(samplesOut * 2)
@@ -69,17 +62,6 @@ void FFT::InitEqualizeTable(bool equalize)
     }
 }
 
-// This precomputation is for multiplying the waveform sample
-// by a bell-curve-shaped envelope, so we don't see the ugly
-// frequency response (oscillations) of a square filter.
-//
-// A power of 1.0 will compute the FFT with exactly one convolution.
-// A power of 2.0 is like doing it twice; the resulting frequency
-// output will be smoothed out and the peaks will be "fatter".
-// A power of 0.5 is closer to not using an envelope, and you start
-// to get the frequency response of the square filter as 'power'
-// approaches zero; the peaks get tighter and more precise, but
-// you also see small oscillations around their bases.
 void FFT::InitEnvelopeTable(float power)
 {
     if (power < 0.0f)
@@ -158,50 +140,12 @@ void FFT::InitCosSinTable()
     while (dftsize <= m_numFrequencies)
     {
         const float theta = static_cast<float>(-2.0f * PI / static_cast<float>(dftsize));
-        m_cosSinTable[i] = std::polar(1.0f, theta); // Radius 1 is the unity circle.
+        m_cosSinTable[i] = std::polar(1.0f, theta); // radius 1 implies the unit circle
         i++;
         dftsize <<= 1;
     }
 }
 
-// Converts time-domain samples from `in_wavedata[]`
-// into frequency-domain samples in `out_spectraldata[]`.
-// The array lengths are set at construction via parameters.
-//
-// The last sample of the output data will be the frequency
-// that is 1/4th of the input sampling rate. For example,
-// if the input wave data is sampled at 44,100 Hz, then the last
-// sample of the spectral data output will represent the frequency
-// 11,025 Hz. The first sample will be 0 Hz. The frequencies of
-// the rest of the samples vary linearly in between.
-//
-// Note that since human hearing is limited to the range 200 - 20,000
-// Hz, 200 Hz is a low bass hum and 20,000 Hz is an ear-piercing high shriek.
-//
-// Each time the frequency doubles, that sounds like going up an octave.
-// That means that the difference between 200 and 300 Hz is FAR more
-// than the difference between 5000 and 5100, for example!
-// So, when trying to analyze bass, look at (probably)
-// the 200 - 800 Hz range; whereas for treble, look at the 1,400 -
-// 11,025 Hz range.
-//
-// To get 3 bands, try it this way:
-//   a) 11,025 / 200 = 55.125
-//   b) To get the number of octaves between 200 and 11,025 Hz, solve for n:
-//          2^n = 55.125
-//          n = log(55.125) / log(2)
-//          n = 5.785
-//   c) So each band should represent 5.785 / 3 = 1.928 octaves; their ranges are:
-//          1) 200 - 200 * 2^1.928                        or  200  - 761   Hz
-//          2) 200 * 2^1.928 - 200 * 2^(1.928 * 2)        or  761  - 2897  Hz
-//          3) 200 * 2^(1.928 * 2) - 200 * 2^(1.928 * 3)  or  2897 - 11025 Hz
-//
-// A simple sine-wave-based envelope is convolved with the waveform
-// data before doing the FFT to ameliorate the bad frequency response
-// of a square (i.e., nonexistent) filter.
-//
-// If the input signal is not of a very high quality, dampening (blurring) it
-// will reduce high-frequency noise that would otherwise show up in the output.
 void FFT::TimeToFrequencyDomain(const std::vector<float>& waveformData, std::vector<float>& spectralData)
 {
     if (m_bitRevTable.empty() || m_cosSinTable.empty() || waveformData.size() < m_samplesIn)
