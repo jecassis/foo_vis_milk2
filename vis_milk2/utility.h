@@ -41,10 +41,10 @@ float PowCosineInterp(float x, float pow);
 float AdjustRateToFPS(float per_frame_decay_rate_at_fps1, float fps1, float actual_fps);
 
 // `GetPrivateProfileInt()` is part of the Win32 API.
-#define GetPrivateProfileBoolW(w, x, y, z) (static_cast<bool>(GetPrivateProfileInt(w, x, y, z) != 0))
-float GetPrivateProfileFloatW(const wchar_t* szSectionName, const wchar_t* szKeyName, const float fDefault, const wchar_t* szIniFile);
-bool WritePrivateProfileIntW(int d, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName);
-bool WritePrivateProfileFloatW(float f, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName);
+#define GetPrivateProfileBool(w, x, y, z) (static_cast<bool>(GetPrivateProfileInt(w, x, y, z) != 0))
+float GetPrivateProfileFloat(const wchar_t* szSectionName, const wchar_t* szKeyName, const float fDefault, const wchar_t* szIniFile);
+bool WritePrivateProfileInt(int d, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName);
+bool WritePrivateProfileFloat(float f, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName);
 
 extern _locale_t g_use_C_locale;
 

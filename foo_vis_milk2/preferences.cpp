@@ -897,6 +897,8 @@ void milk2_config::update_paths()
     }
     wcscpy_s(settings.m_szPluginsDirPath, default_szPluginsDirPath);
     wcscpy_s(settings.m_szConfigIniFile, default_szConfigIniFile);
+    wcscpy_s(settings.m_szMsgIniFile, default_szMsgIniFile);
+    wcscpy_s(settings.m_szImgIniFile, default_szImgIniFile);
 }
 
 // Reads the configuration.

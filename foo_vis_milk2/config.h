@@ -50,13 +50,13 @@ static constexpr GUID guid_cfg_fHardCutHalflife = {
 static constexpr GUID guid_cfg_fHardCutLoudnessThresh = {
     0x5dc9f051, 0xf880, 0x43df, {0xb4, 0x8c, 0xdf, 0x78, 0x15, 0x66, 0xf3, 0x5e}
 }; // {5DC9F051-F880-43DF-B48C-DF781566F35E}
-static const GUID guid_cfg_bHardCutsDisabled = {
+static constexpr GUID guid_cfg_bHardCutsDisabled = {
     0x5d1a0e92, 0x3f95, 0x410c, {0xad, 0x66, 0xb4, 0xa5, 0xfa, 0x4f, 0xdc, 0xf4}
 }; // {5D1A0E92-3F95-410C-AD66-B4A5FA4FDCF4}
-static const GUID guid_cfg_n16BitGamma = {
+static constexpr GUID guid_cfg_n16BitGamma = {
     0x350ba0d5, 0xee5b, 0x4886, {0x96, 0x3, 0x7f, 0xd4, 0xf5, 0xf8, 0x1b, 0x10}
 }; // {350BA0D5-EE5B-4886-9603-7FD4F5F81B10}
-static const GUID guid_cfg_bAutoGamma = {
+static constexpr GUID guid_cfg_bAutoGamma = {
     0xe40b6e03, 0xdeea, 0x4515, {0x96, 0xb2, 0xd0, 0xe0, 0xe6, 0x8b, 0x58, 0x86}
 }; // {E40B6E03-DEEA-4515-96B2-D0E0E68B5886}
 static constexpr GUID guid_cfg_nMaxImages = {
@@ -68,28 +68,28 @@ static constexpr GUID guid_cfg_nMaxBytes = {
 static constexpr GUID guid_cfg_nMaxPSVersion = {
     0xcb39278b, 0x4c19, 0x4931, {0x92, 0x63, 0x63, 0x1f, 0x69, 0x24, 0xf1, 0xc4}
 }; // {CB39278B-4C19-4931-9263-631F6924F1C4}
-static const GUID guid_cfg_bSongTitleAnims = {
+static constexpr GUID guid_cfg_bSongTitleAnims = {
     0x7ff565aa, 0x8402, 0x4ae0, {0x99, 0xc7, 0x11, 0x18, 0x44, 0x1d, 0xee, 0xc2}
 }; // {7FF565AA-8402-4AE0-99C7-1118441DEEC2}
-static const GUID guid_cfg_fSongTitleAnimDuration = {
+static constexpr GUID guid_cfg_fSongTitleAnimDuration = {
     0xe539e22c, 0x2c41, 0x4238, {0xae, 0xa9, 0x52, 0x25, 0xda, 0x29, 0xba, 0xcf}
 }; // {E539E22C-2C41-4238-AEA9-5225DA29BACF}
-static const GUID guid_cfg_fTimeBetweenRandomSongTitles = {
+static constexpr GUID guid_cfg_fTimeBetweenRandomSongTitles = {
     0xbea5f8e5, 0x48d1, 0x4063, {0xa1, 0xf2, 0x9d, 0x2, 0xfd, 0x33, 0xce, 0x4d}
 }; // {BEA5F8E5-48D1-4063-A1F2-9D02FD33CE4D}
-static const GUID guid_cfg_fTimeBetweenRandomCustomMsgs = {
+static constexpr GUID guid_cfg_fTimeBetweenRandomCustomMsgs = {
     0xd7778394, 0x8ed4, 0x4d0b, {0xb8, 0xec, 0x2e, 0x1d, 0xfb, 0x25, 0x49, 0x74}
 }; // {D7778394-8ED4-4D0B-B8EC-2E1DFB254974}
-static const GUID guid_cfg_nCanvasStretch = {
+static constexpr GUID guid_cfg_nCanvasStretch = {
     0xce121917, 0xc83d, 0x4a0b, {0xb7, 0x4c, 0x56, 0xf8, 0x3c, 0x97, 0xbe, 0x6c}
 }; // {CE121917-C83D-4A0B-B74C-56F83C97BE6C}
-static const GUID guid_cfg_nGridX = {
+static constexpr GUID guid_cfg_nGridX = {
     0xacf37191, 0xfbb4, 0x4ffa, {0x95, 0x24, 0xd1, 0x17, 0xba, 0x11, 0x4, 0x47}
 }; // {ACF37191-FBB4-4FFA-9524-D117BA110447}
-static const GUID guid_cfg_nTexSizeX = {
+static constexpr GUID guid_cfg_nTexSizeX = {
     0xa2cd1e44, 0x9056, 0x4a2c, {0x97, 0x9e, 0x5b, 0xa4, 0x52, 0x34, 0x80, 0x3e}
 }; // {A2CD1E44-9056-4A2C-979E-5BA45234803E}
-static const GUID guid_cfg_nTexBitsPerCh = {
+static constexpr GUID guid_cfg_nTexBitsPerCh = {
     0xab5a6d53, 0xb4c9, 0x41c3, {0xa5, 0x66, 0x1d, 0x83, 0x90, 0xdb, 0x1e, 0xfa}
 }; // {AB5A6D53-B4C9-41C3-A566-1D8390DB1EFA}
 static constexpr GUID guid_advconfig_branch = {
@@ -104,7 +104,7 @@ static constexpr GUID guid_cfg_szPresetDir = {
 static constexpr GUID guid_cfg_szTitleFormat = {
     0xca37e590, 0xb292, 0x43b5, {0xa2, 0x34, 0x3d, 0xba, 0x21, 0xa7, 0xa0, 0xdb}
 }; // {CA37E590-B292-43B5-A234-3DBA21A7A0DB}
-static const GUID guid_cfg_bSkipCompShader = {
+static constexpr GUID guid_cfg_bSkipCompShader = {
     0xa9220355, 0x1382, 0x41f3, {0xbd, 0x41, 0x7e, 0xb3, 0xe, 0x94, 0xa6, 0x42}
 }; // {A9220355-1382-41F3-BD41-7EB30E94A642}
 

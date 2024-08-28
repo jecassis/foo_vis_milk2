@@ -75,7 +75,7 @@ float AdjustRateToFPS(float per_frame_decay_rate_at_fps1, float fps1, float actu
     return per_frame_decay_rate_at_fps2;
 }
 
-float GetPrivateProfileFloatW(const wchar_t* szSectionName, const wchar_t* szKeyName, const float fDefault, const wchar_t* szIniFile)
+float GetPrivateProfileFloat(const wchar_t* szSectionName, const wchar_t* szKeyName, const float fDefault, const wchar_t* szIniFile)
 {
     wchar_t string[64];
     wchar_t szDefault[64];
@@ -90,14 +90,14 @@ float GetPrivateProfileFloatW(const wchar_t* szSectionName, const wchar_t* szKey
     return ret;
 }
 
-bool WritePrivateProfileFloatW(float f, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName)
+bool WritePrivateProfileFloat(float f, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName)
 {
     wchar_t szValue[32];
     _swprintf_s_l(szValue, ARRAYSIZE(szValue), L"%f", g_use_C_locale, f);
     return (WritePrivateProfileString(szSectionName, szKeyName, szValue, szIniFile) != 0);
 }
 
-bool WritePrivateProfileIntW(int d, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName)
+bool WritePrivateProfileInt(int d, const wchar_t* szKeyName, const wchar_t* szIniFile, const wchar_t* szSectionName)
 {
     wchar_t szValue[32];
     swprintf_s(szValue, L"%d", d);

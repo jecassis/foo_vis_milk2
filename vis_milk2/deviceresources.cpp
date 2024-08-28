@@ -490,6 +490,7 @@ void DeviceResources::HandleDeviceLost()
     m_d3dContext.Reset();
     m_d3dAnnotation.Reset();
 
+    m_d2dContext->SetTarget(nullptr);
     m_d2dTargetBitmap.Reset();
     m_d2dContext.Reset();
 

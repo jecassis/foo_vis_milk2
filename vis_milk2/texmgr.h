@@ -104,7 +104,7 @@ class texmgr
     td_tex m_tex[NUM_TEX];
 
   protected:
-    // bool TryCreateDDrawSurface(int iSlot, int w, int h);
+    //bool TryCreateDDrawSurface(int iSlot, int w, int h);
     void FreeVars(int iSlot);
     void FreeCode(int iSlot);
     void RegisterBuiltInVariables(int iSlot);

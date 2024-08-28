@@ -497,9 +497,9 @@ HRESULT D3D11Shim::CreateTextureFromFile(LPCWSTR szFileName, ID3D11Resource** te
 {
     std::string strFileName(_WideToUTF8(szFileName));
     if (GetExtension(strFileName) == "dds")
-        return CreateDDSTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or ThrowIfFailed
+        return CreateDDSTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
     else
-        return CreateWICTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or ThrowIfFailed
+        return CreateWICTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
 }
 
 bool D3D11Shim::LockRect(ID3D11Resource* pResource, UINT uSubRes, D3D11_MAP mapType, D3D11_MAPPED_SUBRESOURCE* res)

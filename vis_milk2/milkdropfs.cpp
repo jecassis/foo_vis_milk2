@@ -149,6 +149,292 @@ int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, in
     return (int)(fNumToSpawn + 0.49f);
 }
 
+// Clear the window contents to avoid a 1-pixel thick border of noise that
+// sometimes sticks around.
+void CPlugin::ClearGraphicsWindow()
+{
+    /*
+    RECT rect;
+    GetClientRect(GetPluginWindow(), &rect);
+
+    HDC hdc = GetDC(GetPluginWindow());
+    FillRect(hdc, &rect, m_hBlackBrush);
+    ReleaseDC(GetPluginWindow(), hdc);
+    */
+}
+
+bool CPlugin::RenderStringToTitleTexture()
+{
+    if (m_supertext.szText[0] == L'\0')
+        return false;
+
+    wchar_t szTextToDraw[512];
+    swprintf_s(szTextToDraw, L" %s ", m_supertext.szText); // add a space at end for italicized fonts and at start, too, because it's centered!
+
+#if 0
+    if (!m_lpDDSTitle)
+        return false;
+
+    D3D11Shim* lpDevice = GetDevice();
+    if (!lpDevice)
+        return false;
+
+    // Remember the original backbuffer and zbuffer.
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
+    //Microsoft::WRL::ComPtr<ID3D11Texture2D> pZBuffer;
+    lpDevice->GetRenderTarget(&pBackBuffer);
+    //lpDevice->GetDepthStencilSurface(&pZBuffer);
+
+    // Set render target to m_lpDDSTitle.
+    {
+        lpDevice->SetTexture(0, NULL);
+        lpDevice->SetRenderTarget(m_lpDDSTitle);
+        lpDevice->SetTexture(0, NULL);
+    }
+
+    // Clear the texture to black.
+    {
+        lpDevice->SetVertexShader(NULL, NULL);
+        //lpDevice->SetFVF(WFVERTEX_FORMAT);
+        lpDevice->SetTexture(0, NULL);
+
+        lpDevice->SetBlendState(false);
+
+        // Set up a quad.
+        WFVERTEX verts[4];
+        for (int i = 0; i < 4; i++)
+        {
+            verts[i].x = (i % 2 == 0) ? -1.0f : 1.0f;
+            verts[i].y = (i / 2 == 0) ? -1.0f : 1.0f;
+            verts[i].z = 0.0f;
+            verts[i].a = 1.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
+        }
+
+        lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(WFVERTEX));
+    }
+#endif
+
+    int g_title_font_sizes[] = {
+        // NOTE: DO NOT EXCEED 64 FONTS HERE.
+        6,  8,  10, 12, 14, 16,
+        20, 26, 32, 38, 44, 50, 56,
+        64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144,
+        160, 192, 224, 256, 288, 320, 352, 384, 416, 448,
+        480, 512
+    };
+
+    /*// 1. Clip title if too many characters.
+    if (m_supertext.bIsSongTitle)
+    {
+        // truncate song title if too long; don't clip custom messages, though!
+        int clip_chars = 32;
+        int user_title_size = GetFontHeight(SONGTITLE_FONT);
+
+        #define MIN_CHARS 8         // max clip_chars *for BIG FONTS*
+        #define MAX_CHARS 64        // max clip chars *for tiny fonts*
+        float t = (user_title_size-10)/(float)(128-10);
+        t = min(1,max(0,t));
+        clip_chars = (int)(MAX_CHARS - (MAX_CHARS-MIN_CHARS)*t);
+
+        if ((int)strlen(szTextToDraw) > clip_chars+3)
+            lstrcpy(&szTextToDraw[clip_chars], "...");
+    }*/
+
+    bool ret = false;
+
+    // Use 2 lines; must leave room for bottom of 'g' characters and such!
+    D2D1_RECT_F rect{};
+    rect.left = static_cast<FLOAT>(0);
+    rect.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since we're actually drawing!
+    rect.top = static_cast<FLOAT>(m_nTitleTexSizeY * 1 / 21); // otherwise, top of '%' could be cut off (1/21 seems safe)
+    rect.bottom = static_cast<FLOAT>(m_nTitleTexSizeY * 17 / 21); // otherwise, bottom of 'g' could be cut off (18/21 seems safe, but we want some leeway)
+
+    DWORD textColor = 0xFFFFFFFF;
+    DWORD backColor = 0xD0000000;
+    D2D1_COLOR_F fTextColor = D2D1::ColorF(textColor, static_cast<FLOAT>(((textColor & 0xFF000000) >> 24) / 255.0f));
+    D2D1_COLOR_F fBackColor = D2D1::ColorF(backColor, static_cast<FLOAT>(((backColor & 0xFF000000) >> 24) / 255.0f));
+
+    if (!m_supertext.bIsSongTitle)
+    {
+        // Custom message -> pick font to use that will best fill the texture.
+        std::unique_ptr<TextStyle> gdi_font;
+
+        int lo = 0;
+        int hi = sizeof(g_title_font_sizes) / sizeof(int) - 1;
+
+        // Limit the size of the font used.
+        //int user_title_size = GetFontHeight(SONGTITLE_FONT);
+        //while (g_title_font_sizes[hi] > user_title_size*2 && hi>4)
+        //    hi--;
+
+        D2D1_RECT_F temp{};
+        Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
+        while (1) //(lo < hi-1)
+        {
+            int mid = (lo + hi) / 2;
+
+            // Create new DirectWrite font at 'mid' size.
+            gdi_font = std::make_unique<TextStyle>(
+                m_supertext.nFontFace,
+                static_cast<float>(g_title_font_sizes[mid]),
+                m_supertext.bBold ? DWRITE_FONT_WEIGHT_BLACK : DWRITE_FONT_WEIGHT_REGULAR,
+                m_supertext.bItal ? DWRITE_FONT_STYLE_ITALIC: DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_TEXT_ALIGNMENT_CENTER
+            );
+
+            if (gdi_font)
+            {
+                // create new d3dx font at 'mid' size:
+                if (lo == hi - 1)
+                    break; // DONE; but the 'lo'-size font is ready for use!
+
+                temp = rect;
+                if (!m_ddsTitle.IsVisible())
+                {
+                    m_ddsTitle.Initialize(m_lpDX->GetD2DDeviceContext());
+                }
+                m_ddsTitle.SetAlignment(AlignCenter, AlignCenter);
+                m_ddsTitle.SetTextColor(fTextColor);
+                m_ddsTitle.SetTextOpacity(fTextColor.a);
+                m_ddsTitle.SetContainer(temp);
+                m_ddsTitle.SetText(szTextToDraw);
+                m_ddsTitle.SetTextStyle(gdi_font.get());
+                m_ddsTitle.SetTextShadow(true);
+
+                // Compute size of text if drawn with font of this size.
+                int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CALCRECT, textColor, false, backColor);
+
+                // Adjust and prepare to reiterate.
+                if (static_cast<LONG>(temp.right) >= rect.right || h > rect.bottom - rect.top)
+                    hi = mid;
+                else
+                    lo = mid;
+
+                gdi_font.reset();
+            }
+        }
+
+        if (gdi_font)
+        {
+            // Do actual drawing + set m_supertext.nFontSizeUsed; use 'lo' size
+            int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER | DT_CALCRECT, textColor, false, backColor);
+            temp.left = static_cast<FLOAT>(0);
+            temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
+            temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
+            temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
+            m_supertext.nFontSizeUsed = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER, textColor, false, backColor);
+
+            ret = true;
+        }
+        else
+        {
+            ret = false;
+        }
+
+        // Clean up font.
+        gdi_font.release();
+    }
+    else // Song title
+    {
+        D2D1_RECT_F temp{};
+        std::unique_ptr<TextStyle> m_gdi_title_font_doublesize;
+        Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
+        wchar_t* str = m_supertext.szText;
+
+        // Create 'm_gdi_title_font_doublesize'.
+        int songtitle_font_size = m_fontinfo[SONGTITLE_FONT].nSize * m_nTitleTexSizeX / 256;
+        if (songtitle_font_size < 6)
+            songtitle_font_size = 6;
+
+        m_gdi_title_font_doublesize = std::make_unique<TextStyle>(
+            m_fontinfo[SONGTITLE_FONT].szFace,
+            static_cast<float>(songtitle_font_size),
+            m_fontinfo[SONGTITLE_FONT].bBold ? DWRITE_FONT_WEIGHT_BLACK : DWRITE_FONT_WEIGHT_REGULAR,
+            m_fontinfo[SONGTITLE_FONT].bItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
+            DWRITE_TEXT_ALIGNMENT_CENTER
+        );
+        //{
+        //    MessageBoxW(NULL,
+        //                wasabiApiLangString(IDS_ERROR_CREATING_DOUBLE_SIZED_GDI_TITLE_FONT),
+        //                wasabiApiLangString(IDS_MILKDROP_ERROR, title, sizeof(title)),
+        //                MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+        //    return false;
+        //}
+
+        // Clip the text manually...
+        // NOTE: DT_END_ELLIPSIS CAUSES NOTHING TO DRAW.
+        int h = 0;
+        int max_its = 6;
+        int it = 0;
+        while (it < max_its)
+        {
+            it++;
+
+            temp = rect;
+            if (!m_ddsTitle.IsVisible())
+            {
+                m_ddsTitle.Initialize(m_lpDX->GetD2DDeviceContext());
+            }
+            m_ddsTitle.SetAlignment(AlignCenter, AlignCenter);
+            m_ddsTitle.SetTextColor(fTextColor);
+            m_ddsTitle.SetTextOpacity(fTextColor.a);
+            m_ddsTitle.SetContainer(temp);
+            m_ddsTitle.SetText(str);
+            m_ddsTitle.SetTextStyle(m_gdi_title_font_doublesize.get());
+            m_ddsTitle.SetTextShadow(true);
+            h = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, /*DT_NOPREFIX | DT_END_ELLIPSIS*/ DT_SINGLELINE | DT_CALCRECT, textColor, false, backColor);
+            if (static_cast<int>(temp.right - temp.left) <= m_nTitleTexSizeX)
+                break;
+
+            // 11/01/2009 DO - disabled as it was causing to users 'random' titles against
+            // what is expected so we now just work on the ellipse at the end approach which
+
+            // Manually clip the text... chop segments off the front
+            /*wchar_t* p = wcsstr(str, L" - ");
+            if (p)
+            {
+                str = p+3;
+                continue;
+            }*/
+
+            // No more stuff to chop off the front; chop off the end with "...".
+            size_t len = wcsnlen_s(str, 256);
+            float fPercentToKeep = 0.91f * m_nTitleTexSizeX / (temp.right - temp.left);
+            if (len > 8)
+                lstrcpy(&str[(int)(len * fPercentToKeep)], L"...");
+            break;
+        }
+
+        // Now actually draw it.
+        temp.left = static_cast<FLOAT>(0);
+        temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
+        temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
+        temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
+
+        // NOTE: DT_END_ELLIPSIS CAUSES NOTHING TO DRAW, IF YOU USE W/D3DX9!
+        m_supertext.nFontSizeUsed = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, DT_SINGLELINE | DT_CENTER /*| DT_NOPREFIX | DT_END_ELLIPSIS*/, textColor, false, backColor);
+
+        ret = true;
+    }
+
+#if 0
+    // Change the render target back to the original setup.
+    lpDevice->SetTexture(0, NULL);
+    lpDevice->SetRenderTarget(pBackBuffer.Get());
+    //lpDevice->SetDepthStencilSurface(pZBuffer.Get());
+    //SafeRelease(pBackBuffer);
+    //SafeRelease(pZBuffer);
+#endif
+
+    if (ret && !m_ddsTitle.IsVisible())
+    {
+        m_ddsTitle.SetVisible(true);
+        m_text.RegisterElement(&m_ddsTitle);
+    }
+
+    return ret;
+}
+
 // Loads the `var_pf_*` variables in this CState object with the correct values.
 // for vars that affect pixel motion, that means evaluating them at time==-1,
 // (i.e. no blending with blend to value); the blending of the file dx/dy
@@ -553,20 +839,20 @@ void CPlugin::RenderFrame(int bRedraw)
                 LoadRandomPreset(m_fBlendTimeAuto);
         }
 
-        /*// Randomly spawn song title, if time.
+        // Randomly spawn song title, if time.
         if (m_fTimeBetweenRandomSongTitles > 0 &&
             !m_supertext.bRedrawSuperText &&
             GetTime() >= m_supertext.fStartTime + m_supertext.fDuration + 1.0f / GetFps())
         {
-            int n = GetNumToSpawn(GetTime(), fDeltaT, 1.0f/m_fTimeBetweenRandomSongTitles, 0.5f, m_nSongTitlesSpawned);
+            int n = GetNumToSpawn(GetTime(), fDeltaT, 1.0f / m_fTimeBetweenRandomSongTitles, 0.5f, m_nSongTitlesSpawned);
             if (n > 0)
             {
                 LaunchSongTitleAnim();
                 m_nSongTitlesSpawned += n;
             }
-        }*/
+        }
 
-        /*// Randomly spawn custom message, if time.
+        // Randomly spawn custom message, if time.
         if (m_fTimeBetweenRandomCustomMsgs > 0 &&
             !m_supertext.bRedrawSuperText &&
             GetTime() >= m_supertext.fStartTime + m_supertext.fDuration + 1.0f / GetFps())
@@ -577,7 +863,7 @@ void CPlugin::RenderFrame(int bRedraw)
                 LaunchCustomMessage(-1);
                 m_nCustMsgsSpawned += n;
             }
-        }*/
+        }
 
         // Update `m_fBlendProgress`.
         if (m_pState->m_bBlending)
@@ -718,6 +1004,14 @@ void CPlugin::RenderFrame(int bRedraw)
     }
     */
 
+    // Render string to m_lpDDSTitle, if necessary.
+    if (m_supertext.bRedrawSuperText)
+    {
+        if (!RenderStringToTitleTexture())
+            m_supertext.fStartTime = -1.0f;
+        m_supertext.bRedrawSuperText = false;
+    }
+
     // Set up to render [from NULL] to VS0 (for motion vectors).
     {
         lpDevice->SetTexture(0, NULL);
@@ -810,9 +1104,14 @@ void CPlugin::RenderFrame(int bRedraw)
     float fProgress = (GetTime() - m_supertext.fStartTime) / m_supertext.fDuration;
 
     // If song title animation just ended, burn it into the VS.
-    if (m_supertext.fStartTime >= 0 && fProgress >= 1.0f && !m_supertext.bRedrawSuperText)
+    if (m_supertext.fStartTime >= 0.0f && fProgress >= 1.0f && !m_supertext.bRedrawSuperText)
     {
         ShowSongTitleAnim(m_nTexSizeX, m_nTexSizeY, 1.0f);
+        if (m_ddsTitle.IsVisible())
+        {
+            m_ddsTitle.SetVisible(false);
+            m_text.UnregisterElement(&m_ddsTitle);
+        }
     }
 
     // Change the render target back to the original setup.
@@ -2955,7 +3254,7 @@ void CPlugin::DrawSprites()
     lpDevice->SetTexture(0, NULL);
     lpDevice->SetVertexShader(NULL, NULL);
     lpDevice->SetVertexColor(true);
-    //lpDevice->SetFVF( WFVERTEX_FORMAT );
+    //lpDevice->SetFVF(WFVERTEX_FORMAT);
 
     if (*m_pState->var_pf_darken_center)
     {
@@ -3129,6 +3428,7 @@ void CPlugin::DrawUserSprites()
             {
                 // Set up to render [from NULL] to VS1 (for burn-in).
                 lpDevice->SetTexture(0, NULL);
+
                 lpDevice->SetRenderTarget(m_lpVS[1]);
 
                 lpDevice->SetTexture(0, NULL);
@@ -3615,9 +3915,9 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
     lpDevice->SetTexture(0, m_lpVS[1]);
     lpDevice->SetVertexShader(NULL, NULL);
     lpDevice->SetPixelShader(NULL, NULL);
-    //lpDevice->SetFVF( SPRITEVERTEX_FORMAT );
+    //lpDevice->SetFVF(SPRITEVERTEX_FORMAT);
 
-    // stages 0 and 1 always just use bilinear filtering.
+    // Stages 0 and 1 always just use bilinear filtering.
     lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
     //lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
     //lpDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
@@ -3626,9 +3926,9 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
     //lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
     //lpDevice->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 
-    // note: this texture stage state setup works for 0 or 1 texture.
-    // if you set a texture, it will be modulated with the current diffuse color.
-    // if you don't set a texture, it will just use the current diffuse color.
+    // Note: This texture stage state setup works for 0 or 1 texture.
+    //       If a texture is set, it will be modulated with the current diffuse color.
+    //       If a texture is not set, it will just use the current diffuse color.
     lpDevice->SetShader(0);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
@@ -4121,9 +4421,8 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
 void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 {
-    int i, x, y;
-
-    if (!m_lpDDSTitle) // this *can* be NULL, if not much video mem!
+#if 0
+    if (!m_lpDDSTitle)
         return;
 
     D3D11Shim* lpDevice = GetDevice();
@@ -4132,7 +4431,6 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     lpDevice->SetTexture(0, m_lpDDSTitle);
     lpDevice->SetVertexShader(NULL, NULL);
-    lpDevice->SetShader(0);
     //lpDevice->SetFVF(SPRITEVERTEX_FORMAT);
 
     lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
@@ -4172,11 +4470,11 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
         //if (fSizeX > 0.92f) fSizeX = 0.92f;
         //if (fSizeY > 0.92f) fSizeY = 0.92f;
-        i = 0;
+        int i = 0;
         float vert_clip = VERT_CLIP; //1.0f;//0.45f; // warning: visible clipping has been observed at 0.4!
-        for (y = 0; y < 8; y++)
+        for (int y = 0; y < 8; y++)
         {
-            for (x = 0; x < 16; x++)
+            for (int x = 0; x < 16; x++)
             {
                 v3[i].tu = x / 15.0f;
                 v3[i].tv = (y / 7.0f - 0.5f) * vert_clip + 0.5f;
@@ -4191,9 +4489,9 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         // Warping.
         float ramped_progress = std::max(0.0f, 1 - fProgress * 1.5f);
         float t2 = powf(ramped_progress, 1.8f) * 1.3f;
-        for (y = 0; y < 8; y++)
+        for (int y = 0; y < 8; y++)
         {
-            for (x = 0; x < 16; x++)
+            for (int x = 0; x < 16; x++)
             {
                 i = y * 16 + x;
                 v3[i].x += t2 * 0.070f * sinf(GetTime() * 0.31f + v3[i].x * 0.39f - v3[i].y * 1.94f);
@@ -4237,11 +4535,11 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         }
 
         //if (fSize > 0.92f) fSize = 0.92f;
-        i = 0;
+        int i = 0;
         float vert_clip = VERT_CLIP; //0.67f; // warning: visible clipping has been observed at 0.5 (for very short strings) and even 0.6 (for wingdings)!
-        for (y = 0; y < 8; y++)
+        for (int y = 0; y < 8; y++)
         {
-            for (x = 0; x < 16; x++)
+            for (int x = 0; x < 16; x++)
             {
                 v3[i].tu = x / 15.0f;
                 v3[i].tv = (y / 7.0f - 0.5f) * vert_clip + 0.5f;
@@ -4253,7 +4551,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
             }
         }
 
-        // Apply 'growth' factor and move to user-specified (x,y).
+        // Apply "growth" factor and move to user-specified (x,y).
         //if (fabsf(m_supertext.fGrowth-1.0f) > 0.001f)
         {
             float t = (1.0f) * (1 - fProgress) + (fProgress) * (m_supertext.fGrowth);
@@ -4270,7 +4568,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
             for (i = 0; i < 128; i++)
             {
-                // note: (x,y) are in (-1,1) range, but m_supertext.f{X|Y} are in (0..1) range
+                // Note: (x,y) are in (-1,1) range, but `m_supertext.f{X|Y}` are in (0..1) range.
                 v3[i].x = (v3[i].x) * t + dx;
                 v3[i].y = (v3[i].y) * t + dy;
             }
@@ -4292,7 +4590,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         }
     }
 
-    // final flip on y
+    // Final flip on Y.
     //for (i=0; i<128; i++)
     //    v3[i].y *= -1.0f;
     for (i = 0; i < 128; i++)
@@ -4356,4 +4654,9 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
     }
     lpDevice->SetBlendState(false);
+#else
+    UNREFERENCED_PARAMETER(w);
+    UNREFERENCED_PARAMETER(h);
+    UNREFERENCED_PARAMETER(fProgress);
+#endif
 }

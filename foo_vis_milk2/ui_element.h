@@ -247,17 +247,18 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     // Playback control
     static_api_ptr_t<playback_control> m_playback_control;
     titleformat_object::ptr m_script;
+    titleformat_object::ptr m_title;
     titleformat_object::ptr m_search;
     pfc::string_formatter m_state;
 
-    // Playback callback methods.
+    // Playback callback methods
     void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { MILK2_CONSOLE_LOG("+ PlaybackStart"); UpdateTrack(); }
     void on_playback_new_track(metadb_handle_ptr p_track) { MILK2_CONSOLE_LOG("+ PlaybackNew"); UpdateTrack(); }
     void on_playback_stop(play_control::t_stop_reason p_reason) { MILK2_CONSOLE_LOG("+ PlaybackStop"); UpdateTrack(); }
 
     void UpdateTrack();
 
-    // Playlist callback methods.
+    // Playlist callback methods
     void on_items_added(size_t p_playlist, size_t p_start, metadb_handle_list_cref p_data, const bit_array& p_selection) { MILK2_CONSOLE_LOG("* PlaylistItemsAdded"); UpdatePlaylist(); }
     void on_items_reordered(size_t p_playlist, const size_t* p_order, size_t p_count) { MILK2_CONSOLE_LOG("* PlaylistItemsReordered"); UpdatePlaylist(); }
     void on_items_removed(size_t p_playlist, const bit_array& p_mask, size_t p_old_count, size_t p_new_count) { MILK2_CONSOLE_LOG("* PlaylistItemsRemoved"); UpdatePlaylist(); }

@@ -413,9 +413,9 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     if (g_plugin.m_nNumericInputDigits >= 2)
                     {
                         if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
-                            ; //g_plugin.LaunchCustomMessage(g_plugin.m_nNumericInputNum);
+                            g_plugin.LaunchCustomMessage(g_plugin.m_nNumericInputNum);
                         else if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_SPRITE)
-                            ; //g_plugin.LaunchSprite(g_plugin.m_nNumericInputNum, -1);
+                            g_plugin.LaunchSprite(g_plugin.m_nNumericInputNum, -1);
                         else if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_SPRITE_KILL)
                         {
                             for (int x = 0; x < NUM_TEX; x++)
@@ -489,7 +489,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 return;
             case 't':
             case 'T':
-                //g_plugin.LaunchSongTitleAnim();
+                g_plugin.LaunchSongTitleAnim();
                 return;
             case 'o':
                 g_plugin.m_pState->m_fWarpAmount /= 1.1f;
@@ -867,11 +867,11 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             case VK_F6:
                 ToggleRating();
                 return;
-            /*
             case VK_F7:
                 if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
                     g_plugin.ReadCustomMessages(); // re-read custom messages
                 return;
+            /*
             case VK_F8:
                 {
                     UI_mode = UI_CHANGEDIR;
@@ -1145,7 +1145,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         wchar_t szNewFile[512];
                         swprintf_s(szNewFile, L"%s%s.milk", g_plugin.GetPresetDir(), waitstring.szText);
 
-                        if (GetFileAttributes(szNewFile) != -1) // check if file already exists
+                        if (GetFileAttributes(szNewFile) != INVALID_FILE_ATTRIBUTES) // check if file already exists
                         {
                             // File already exists -> overwrite it?
                             UI_mode = UI_SAVE_OVERWRITE;
@@ -1683,9 +1683,9 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
                 if (g_plugin.GetFrame() > 0)
                     ToggleFullScreen();
                 return;
-            case ID_DESKTOP_MODE:
-                //if (g_plugin.GetFrame() > 0)
-                //    ToggleDesktop();
+            //case ID_DESKTOP_MODE:
+            //    if (g_plugin.GetFrame() > 0)
+            //        ToggleDesktop();
                 return;
             case ID_SHOWHELP:
                 ToggleHelp();

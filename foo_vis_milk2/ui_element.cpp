@@ -634,18 +634,24 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         }
         return -1;
     }
-    else if (lParam == IPC_GETPLAYLISTTITLEW)
+    else if (lParam == IPC_GETPLAYLISTTITLEW || lParam == IPC_GET_PLAYING_TITLE)
     {
-        //MILK2_CONSOLE_LOG("IPC_GETPLAYLISTTITLEW")
-        if (m_script.is_empty())
+        //MILK2_CONSOLE_LOG(IPC_GETPLAYLISTTITLEW ? "IPC_GETPLAYLISTTITLEW" : "IPC_GET_PLAYING_TITLE")
+        titleformat_object::ptr title_format;
+        if (lParam == IPC_GETPLAYLISTTITLEW && m_script.is_empty())
         {
             pfc::string8 pattern = pfc::utf8FromWide(s_config.settings.m_szTitleFormat);
             static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_script, pattern);
         }
+        if (lParam == IPC_GET_PLAYING_TITLE && m_title.is_empty())
+        {
+            pfc::string8 pattern = default_szTitleFormat;
+            static_api_ptr_t<titleformat_compiler>()->compile_safe_ex(m_title, pattern);
+        }
         pfc::string_formatter state;
         metadb_handle_list list;
         api->activeplaylist_get_all_items(list);
-        if (wParam == -1 || !(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, m_script, NULL))
+        if (wParam == -1 || !(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, IPC_GETPLAYLISTTITLEW ? m_script : m_title, NULL))
             if (m_playback_control->is_playing())
                 state = "Opening...";
             else

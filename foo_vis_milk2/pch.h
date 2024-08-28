@@ -8,13 +8,10 @@
 #pragma once
 
 #include <winsdkver.h>
-#ifndef _DEBUG
 //#define _WIN32_WINNT 0x0600 // Windows Vista
 #define _WIN32_WINNT 0x0601 // Windows 7
 //#define _WIN32_WINNT 0x0602 // Windows 8
-//#else
 //#define _WIN32_WINNT 0x0603 // Windows 8.1
-#endif
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0A00 // Windows 10
@@ -62,7 +59,6 @@
 #include <helpers/BumpableElem.h>
 #include <helpers/DarkMode.h>
 #include <pfc/string-conv-lite.h>
-#include <libppui/win32_op.h>
 
 #include <vis_milk2/defines.h>
 #include <vis_milk2/md_defines.h>

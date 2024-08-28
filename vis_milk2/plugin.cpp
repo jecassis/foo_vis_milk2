@@ -82,6 +82,7 @@
 #define WASABI_API_ORIG_HINST GetInstance()
 #include "api.h"
 //#include "resource.h"
+#include <nu/AutoChar.h>
 #include <nu/AutoWide.h>
 
 //#pragma comment(lib, "d3dcompiler.lib")
@@ -119,6 +120,14 @@ static CRITICAL_SECTION g_cs;
 #define IsAlphabetChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
 #define IsAlphanumericChar(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0' && x <= '9') || x == '.')
 #define IsNumericChar(x) (x >= '0' && x <= '9')
+
+// Check if file exists.
+BOOL FileExists(LPCTSTR szPath)
+{
+    DWORD dwAttrib = GetFileAttributes(szPath);
+
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
 
 // Copies the given string to the clipboard.
 void copyStringToClipboardA(const char* source)
@@ -539,14 +548,6 @@ void CPlugin::MilkDropPreInitialize()
     m_bCompShaderLock = false;
     m_bNeedRescanTexturesDir = true;
 
-    // Vertex declarations.
-    //m_pSpriteVertDecl = NULL;
-    //m_pWfVertDecl = NULL;
-    //m_pMyVertDecl = NULL;
-
-    m_gdi_title_font_doublesize = NULL;
-    m_d3dx_title_font_doublesize = NULL;
-
     // RUNTIME SETTINGS THAT MilkDrop ADDED
     m_prev_time = GetTime() - 0.0333f; // note: this will be updated each frame, at bottom of `MilkDropRenderFn()`.
     m_bTexSizeWasAutoPow2 = false;
@@ -611,9 +612,6 @@ void CPlugin::MilkDropPreInitialize()
     m_bShowSongLen = false;
     m_fShowRatingUntilThisTime = -1.0f;
     //ClearErrors();
-    m_szDebugMessage[0] = 0;
-    m_szSongTitle[0] = 0;
-    m_szSongTitlePrev[0] = 0;
 
     m_lpVS[0] = NULL;
     m_lpVS[1] = NULL;
@@ -638,8 +636,8 @@ void CPlugin::MilkDropPreInitialize()
     m_nNumericInputMode = NUMERIC_INPUT_MODE_CUST_MSG;
     m_nNumericInputNum = 0;
     m_nNumericInputDigits = 0;
-    //td_custom_msg_font m_CustomMessageFont[MAX_CUSTOM_MESSAGE_FONTS];
-    //td_custom_msg m_CustomMessage[MAX_CUSTOM_MESSAGES];
+    //td_custom_msg_font m_customMessageFont[MAX_CUSTOM_MESSAGE_FONTS];
+    //td_custom_msg m_customMessage[MAX_CUSTOM_MESSAGES];
 
     //texmgr m_texmgr; // for user sprites
 
@@ -679,63 +677,63 @@ void CPlugin::MilkDropReadConfig()
     int n = 0;
     wchar_t* pIni = GetConfigIniFile();
 
-    m_bEnableRating = GetPrivateProfileBoolW(L"settings", L"bEnableRating", m_bEnableRating, pIni);
-    m_bHardCutsDisabled = GetPrivateProfileBoolW(L"settings", L"bHardCutsDisabled", m_bHardCutsDisabled, pIni);
-    g_bDebugOutput = GetPrivateProfileBoolW(L"settings", L"bDebugOutput", g_bDebugOutput, pIni);
-    //m_bShowSongInfo = GetPrivateProfileBoolW(L"settings", L"bShowSongInfo", m_bShowSongInfo, pIni);
-    m_bShowPressF1ForHelp = GetPrivateProfileBoolW(L"settings", L"bShowPressF1ForHelp", m_bShowPressF1ForHelp, pIni);
-    //m_bShowMenuToolTips = GetPrivateProfileBoolW(L"settings", L"bShowMenuToolTips", m_bShowMenuToolTips, pIni);
-    m_bSongTitleAnims = GetPrivateProfileBoolW(L"settings", L"bSongTitleAnims", m_bSongTitleAnims, pIni);
+    m_bEnableRating = GetPrivateProfileBool(L"settings", L"bEnableRating", m_bEnableRating, pIni);
+    m_bHardCutsDisabled = GetPrivateProfileBool(L"settings", L"bHardCutsDisabled", m_bHardCutsDisabled, pIni);
+    g_bDebugOutput = GetPrivateProfileBool(L"settings", L"bDebugOutput", g_bDebugOutput, pIni);
+    //m_bShowSongInfo = GetPrivateProfileBool(L"settings", L"bShowSongInfo", m_bShowSongInfo, pIni);
+    m_bShowPressF1ForHelp = GetPrivateProfileBool(L"settings", L"bShowPressF1ForHelp", m_bShowPressF1ForHelp, pIni);
+    //m_bShowMenuToolTips = GetPrivateProfileBool(L"settings", L"bShowMenuToolTips", m_bShowMenuToolTips, pIni);
+    m_bSongTitleAnims = GetPrivateProfileBool(L"settings", L"bSongTitleAnims", m_bSongTitleAnims, pIni);
 
-    m_bShowFPS = GetPrivateProfileBoolW(L"settings", L"bShowFPS", m_bShowFPS, pIni);
-    m_bShowRating = GetPrivateProfileBoolW(L"settings", L"bShowRating", m_bShowRating, pIni);
-    m_bShowPresetInfo = GetPrivateProfileBoolW(L"settings", L"bShowPresetInfo", m_bShowPresetInfo, pIni);
-    //m_bShowDebugInfo = GetPrivateProfileBoolW(L"settings", L"bShowDebugInfo", m_bShowDebugInfo, pIni);
-    m_bShowSongTitle = GetPrivateProfileBoolW(L"settings", L"bShowSongTitle", m_bShowSongTitle, pIni);
-    m_bShowSongTime = GetPrivateProfileBoolW(L"settings", L"bShowSongTime", m_bShowSongTime, pIni);
-    m_bShowSongLen = GetPrivateProfileBoolW(L"settings", L"bShowSongLen", m_bShowSongLen, pIni);
+    m_bShowFPS = GetPrivateProfileBool(L"settings", L"bShowFPS", m_bShowFPS, pIni);
+    m_bShowRating = GetPrivateProfileBool(L"settings", L"bShowRating", m_bShowRating, pIni);
+    m_bShowPresetInfo = GetPrivateProfileBool(L"settings", L"bShowPresetInfo", m_bShowPresetInfo, pIni);
+    //m_bShowDebugInfo = GetPrivateProfileBool(L"settings", L"bShowDebugInfo", m_bShowDebugInfo, pIni);
+    m_bShowSongTitle = GetPrivateProfileBool(L"settings", L"bShowSongTitle", m_bShowSongTitle, pIni);
+    m_bShowSongTime = GetPrivateProfileBool(L"settings", L"bShowSongTime", m_bShowSongTime, pIni);
+    m_bShowSongLen = GetPrivateProfileBool(L"settings", L"bShowSongLen", m_bShowSongLen, pIni);
 
-    //m_bFixPinkBug = GetPrivateProfileBoolW(L"settings", L"bFixPinkBug", m_bFixPinkBug, pIni);
-    int nTemp = GetPrivateProfileBoolW(L"settings", L"bFixPinkBug", -1, pIni);
+    //m_bFixPinkBug = GetPrivateProfileBool(L"settings", L"bFixPinkBug", m_bFixPinkBug, pIni);
+    int nTemp = GetPrivateProfileBool(L"settings", L"bFixPinkBug", -1, pIni);
     if (nTemp == 0)
         m_n16BitGamma = 0;
     else if (nTemp == 1)
         m_n16BitGamma = 2;
-    m_n16BitGamma = GetPrivateProfileIntW(L"settings", L"n16BitGamma", m_n16BitGamma, pIni);
-    m_bAutoGamma = GetPrivateProfileBoolW(L"settings", L"bAutoGamma", m_bAutoGamma, pIni);
-    //m_bAlways3D = GetPrivateProfileBoolW(L"settings", L"bAlways3D", m_bAlways3D, pIni);
-    //m_fStereoSep = GetPrivateProfileFloatW(L"settings", L"fStereoSep", m_fStereoSep, pIni);
-    //m_bFixSlowText = GetPrivateProfileBoolW(L"settings", L"bFixSlowText", m_bFixSlowText, pIni);
-    //m_bAlwaysOnTop = GetPrivateProfileBoolW(L"settings", L"bAlwaysOnTop", m_bAlwaysOnTop, pIni);
+    m_n16BitGamma = GetPrivateProfileInt(L"settings", L"n16BitGamma", m_n16BitGamma, pIni);
+    m_bAutoGamma = GetPrivateProfileBool(L"settings", L"bAutoGamma", m_bAutoGamma, pIni);
+    //m_bAlways3D = GetPrivateProfileBool(L"settings", L"bAlways3D", m_bAlways3D, pIni);
+    //m_fStereoSep = GetPrivateProfileFloat(L"settings", L"fStereoSep", m_fStereoSep, pIni);
+    //m_bFixSlowText = GetPrivateProfileBool(L"settings", L"bFixSlowText", m_bFixSlowText, pIni);
+    //m_bAlwaysOnTop = GetPrivateProfileBool(L"settings", L"bAlwaysOnTop", m_bAlwaysOnTop, pIni);
     //m_bWarningsDisabled = GetPrivateProfileBool("settings","bWarningsDisabled",m_bWarningsDisabled, pIni);
-    m_bWarningsDisabled2 = GetPrivateProfileBoolW(L"settings", L"bWarningsDisabled2", m_bWarningsDisabled2, pIni);
-    //m_bAnisotropicFiltering = GetPrivateProfileBoolW(L"settings", L"bAnisotropicFiltering", m_bAnisotropicFiltering, pIni);
-    m_bPresetLockOnAtStartup = GetPrivateProfileBoolW(L"settings", L"bPresetLockOnAtStartup", m_bPresetLockOnAtStartup, pIni);
-    m_bPreventScollLockHandling = GetPrivateProfileBoolW(L"settings", L"m_bPreventScollLockHandling", m_bPreventScollLockHandling, pIni);
+    m_bWarningsDisabled2 = GetPrivateProfileBool(L"settings", L"bWarningsDisabled2", m_bWarningsDisabled2, pIni);
+    //m_bAnisotropicFiltering = GetPrivateProfileBool(L"settings", L"bAnisotropicFiltering", m_bAnisotropicFiltering, pIni);
+    m_bPresetLockOnAtStartup = GetPrivateProfileBool(L"settings", L"bPresetLockOnAtStartup", m_bPresetLockOnAtStartup, pIni);
+    m_bPreventScollLockHandling = GetPrivateProfileBool(L"settings", L"m_bPreventScollLockHandling", m_bPreventScollLockHandling, pIni);
 
-    m_nCanvasStretch = GetPrivateProfileIntW(L"settings", L"nCanvasStretch", m_nCanvasStretch, pIni);
-    m_nTexSizeX = GetPrivateProfileIntW(L"settings", L"nTexSize", m_nTexSizeX, pIni);
+    m_nCanvasStretch = GetPrivateProfileInt(L"settings", L"nCanvasStretch", m_nCanvasStretch, pIni);
+    m_nTexSizeX = GetPrivateProfileInt(L"settings", L"nTexSize", m_nTexSizeX, pIni);
     m_nTexSizeY = m_nTexSizeX;
     m_bTexSizeWasAutoPow2 = (m_nTexSizeX == -2);
     m_bTexSizeWasAutoExact = (m_nTexSizeX == -1);
-    m_nTexBitsPerCh = GetPrivateProfileIntW(L"settings", L"nTexBitsPerCh", m_nTexBitsPerCh, pIni);
-    m_nGridX = GetPrivateProfileIntW(L"settings", L"nMeshSize", m_nGridX, pIni);
+    m_nTexBitsPerCh = GetPrivateProfileInt(L"settings", L"nTexBitsPerCh", m_nTexBitsPerCh, pIni);
+    m_nGridX = GetPrivateProfileInt(L"settings", L"nMeshSize", m_nGridX, pIni);
     m_nGridY = m_nGridX * 3 / 4;
-    m_nMaxPSVersion_ConfigPanel = GetPrivateProfileIntW(L"settings", L"MaxPSVersion", m_nMaxPSVersion_ConfigPanel, pIni);
-    m_nMaxImages = GetPrivateProfileIntW(L"settings", L"MaxImages", m_nMaxImages, pIni);
-    m_nMaxBytes = GetPrivateProfileIntW(L"settings", L"MaxBytes", m_nMaxBytes, pIni);
+    m_nMaxPSVersion_ConfigPanel = GetPrivateProfileInt(L"settings", L"MaxPSVersion", m_nMaxPSVersion_ConfigPanel, pIni);
+    m_nMaxImages = GetPrivateProfileInt(L"settings", L"MaxImages", m_nMaxImages, pIni);
+    m_nMaxBytes = GetPrivateProfileInt(L"settings", L"MaxBytes", m_nMaxBytes, pIni);
 
-    m_fBlendTimeUser = GetPrivateProfileFloatW(L"settings", L"fBlendTimeUser", m_fBlendTimeUser, pIni);
-    m_fBlendTimeAuto = GetPrivateProfileFloatW(L"settings", L"fBlendTimeAuto", m_fBlendTimeAuto, pIni);
-    m_fTimeBetweenPresets = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenPresets", m_fTimeBetweenPresets, pIni);
-    m_fTimeBetweenPresetsRand = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenPresetsRand", m_fTimeBetweenPresetsRand, pIni);
-    m_fHardCutLoudnessThresh = GetPrivateProfileFloatW(L"settings", L"fHardCutLoudnessThresh", m_fHardCutLoudnessThresh, pIni);
-    m_fHardCutHalflife = GetPrivateProfileFloatW(L"settings", L"fHardCutHalflife", m_fHardCutHalflife, pIni);
-    m_fSongTitleAnimDuration = GetPrivateProfileFloatW(L"settings", L"fSongTitleAnimDuration", m_fSongTitleAnimDuration, pIni);
-    m_fTimeBetweenRandomSongTitles = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomSongTitles", m_fTimeBetweenRandomSongTitles, pIni);
-    m_fTimeBetweenRandomCustomMsgs = GetPrivateProfileFloatW(L"settings", L"fTimeBetweenRandomCustomMsgs", m_fTimeBetweenRandomCustomMsgs, pIni);
+    m_fBlendTimeUser = GetPrivateProfileFloat(L"settings", L"fBlendTimeUser", m_fBlendTimeUser, pIni);
+    m_fBlendTimeAuto = GetPrivateProfileFloat(L"settings", L"fBlendTimeAuto", m_fBlendTimeAuto, pIni);
+    m_fTimeBetweenPresets = GetPrivateProfileFloat(L"settings", L"fTimeBetweenPresets", m_fTimeBetweenPresets, pIni);
+    m_fTimeBetweenPresetsRand = GetPrivateProfileFloat(L"settings", L"fTimeBetweenPresetsRand", m_fTimeBetweenPresetsRand, pIni);
+    m_fHardCutLoudnessThresh = GetPrivateProfileFloat(L"settings", L"fHardCutLoudnessThresh", m_fHardCutLoudnessThresh, pIni);
+    m_fHardCutHalflife = GetPrivateProfileFloat(L"settings", L"fHardCutHalflife", m_fHardCutHalflife, pIni);
+    m_fSongTitleAnimDuration = GetPrivateProfileFloat(L"settings", L"fSongTitleAnimDuration", m_fSongTitleAnimDuration, pIni);
+    m_fTimeBetweenRandomSongTitles = GetPrivateProfileFloat(L"settings", L"fTimeBetweenRandomSongTitles", m_fTimeBetweenRandomSongTitles, pIni);
+    m_fTimeBetweenRandomCustomMsgs = GetPrivateProfileFloat(L"settings", L"fTimeBetweenRandomCustomMsgs", m_fTimeBetweenRandomCustomMsgs, pIni);
 
-    GetPrivateProfileStringW(L"settings", L"szPresetDir", m_szPresetDir, m_szPresetDir, sizeof(m_szPresetDir), pIni);
+    GetPrivateProfileString(L"settings", L"szPresetDir", m_szPresetDir, m_szPresetDir, sizeof(m_szPresetDir), pIni);
 #endif
 
     ReadCustomMessages();
@@ -769,62 +767,62 @@ void CPlugin::MilkDropWriteConfig()
 #ifndef _FOOBAR
     // Use this function           declared in   to write a value of this type
     // -----------------           -----------   -----------------------------
-    // WritePrivateProfileIntW     utility.h     int
-    // WritePrivateProfileIntW     utility.h     bool
-    // WritePrivateProfileFloatW   utility.h     float
+    // WritePrivateProfileInt      utility.h     int
+    // WritePrivateProfileInt      utility.h     bool
+    // WritePrivateProfileFloat    utility.h     float
     // WritePrivateProfileString   WinBase.h     string
 
     wchar_t* pIni = GetConfigIniFile();
 
-    // constants:
-    WritePrivateProfileStringW(L"settings", L"bConfigured", L"1", pIni);
+    // Constants.
+    WritePrivateProfileString(L"settings", L"bConfigured", L"1", pIni);
 
-    //note: m_szPresetDir is not written here; it is written manually, whenever it changes.
+    // Note: `m_szPresetDir` is not written here; it is written manually, whenever it changes.
 
     wchar_t szSectionName[] = L"settings";
 
-    WritePrivateProfileIntW(m_bSongTitleAnims, L"bSongTitleAnims", pIni, L"settings");
-    WritePrivateProfileIntW(m_bHardCutsDisabled, L"bHardCutsDisabled", pIni, L"settings");
-    WritePrivateProfileIntW(m_bEnableRating, L"bEnableRating", pIni, L"settings");
-    WritePrivateProfileIntW(g_bDebugOutput, L"bDebugOutput", pIni, L"settings");
+    WritePrivateProfileInt(m_bSongTitleAnims, L"bSongTitleAnims", pIni, L"settings");
+    WritePrivateProfileInt(m_bHardCutsDisabled, L"bHardCutsDisabled", pIni, L"settings");
+    WritePrivateProfileInt(m_bEnableRating, L"bEnableRating", pIni, L"settings");
+    WritePrivateProfileInt(g_bDebugOutput, L"bDebugOutput", pIni, L"settings");
 
     //WritePrivateProfileInt(m_bShowPresetInfo, "bShowPresetInfo", pIni, "settings");
     //WritePrivateProfileInt(m_bShowSongInfo, "bShowSongInfo", pIni, "settings");
     //WritePrivateProfileInt(m_bFixPinkBug, "bFixPinkBug", pIni, "settings");
 
-    WritePrivateProfileIntW(m_bShowPressF1ForHelp, L"bShowPressF1ForHelp", pIni, L"settings");
+    WritePrivateProfileInt(m_bShowPressF1ForHelp, L"bShowPressF1ForHelp", pIni, L"settings");
     //WritePrivateProfileInt(m_bShowMenuToolTips, "bShowMenuToolTips", pIni, "settings");
-    WritePrivateProfileIntW(m_n16BitGamma, L"n16BitGamma", pIni, L"settings");
-    WritePrivateProfileIntW(m_bAutoGamma, L"bAutoGamma", pIni, L"settings");
+    WritePrivateProfileInt(m_n16BitGamma, L"n16BitGamma", pIni, L"settings");
+    WritePrivateProfileInt(m_bAutoGamma, L"bAutoGamma", pIni, L"settings");
 
-    //WritePrivateProfileIntW(m_bAlways3D, "bAlways3D", pIni, "settings");
+    //WritePrivateProfileInt(m_bAlways3D, "bAlways3D", pIni, "settings");
     //WritePrivateProfileFloat(m_fStereoSep, "fStereoSep", pIni, "settings");
-    //WritePrivateProfileIntW(m_bFixSlowText, "bFixSlowText", pIni, "settings");
+    //WritePrivateProfileInt(m_bFixSlowText, "bFixSlowText", pIni, "settings");
     //itePrivateProfileInt(m_bAlwaysOnTop, "bAlwaysOnTop", pIni, "settings");
-    //WritePrivateProfileIntW(m_bWarningsDisabled, "bWarningsDisabled", pIni, "settings");
-    WritePrivateProfileIntW(m_bWarningsDisabled2, L"bWarningsDisabled2", pIni, L"settings");
-    //WritePrivateProfileIntW(m_bAnisotropicFiltering, "bAnisotropicFiltering", pIni, "settings");
-    WritePrivateProfileIntW(m_bPresetLockOnAtStartup, L"bPresetLockOnAtStartup", pIni, L"settings");
-    WritePrivateProfileIntW(m_bPreventScollLockHandling, L"m_bPreventScollLockHandling", pIni, L"settings");
+    //WritePrivateProfileInt(m_bWarningsDisabled, "bWarningsDisabled", pIni, "settings");
+    WritePrivateProfileInt(m_bWarningsDisabled2, L"bWarningsDisabled2", pIni, L"settings");
+    //WritePrivateProfileInt(m_bAnisotropicFiltering, "bAnisotropicFiltering", pIni, "settings");
+    WritePrivateProfileInt(m_bPresetLockOnAtStartup, L"bPresetLockOnAtStartup", pIni, L"settings");
+    WritePrivateProfileInt(m_bPreventScollLockHandling, L"m_bPreventScollLockHandling", pIni, L"settings");
     // note: this is also written at exit of the visualizer
 
-    WritePrivateProfileIntW(m_nCanvasStretch, L"nCanvasStretch", pIni, L"settings");
-    WritePrivateProfileIntW(m_nTexSizeX, L"nTexSize", pIni, L"settings");
-    WritePrivateProfileIntW(m_nTexBitsPerCh, L"nTexBitsPerCh", pIni, L"settings");
-    WritePrivateProfileIntW(m_nGridX, L"nMeshSize", pIni, L"settings");
-    WritePrivateProfileIntW(m_nMaxPSVersion_ConfigPanel, L"MaxPSVersion", pIni, L"settings");
-    WritePrivateProfileIntW(m_nMaxImages, L"MaxImages", pIni, L"settings");
-    WritePrivateProfileIntW(m_nMaxBytes, L"MaxBytes", pIni, L"settings");
+    WritePrivateProfileInt(m_nCanvasStretch, L"nCanvasStretch", pIni, L"settings");
+    WritePrivateProfileInt(m_nTexSizeX, L"nTexSize", pIni, L"settings");
+    WritePrivateProfileInt(m_nTexBitsPerCh, L"nTexBitsPerCh", pIni, L"settings");
+    WritePrivateProfileInt(m_nGridX, L"nMeshSize", pIni, L"settings");
+    WritePrivateProfileInt(m_nMaxPSVersion_ConfigPanel, L"MaxPSVersion", pIni, L"settings");
+    WritePrivateProfileInt(m_nMaxImages, L"MaxImages", pIni, L"settings");
+    WritePrivateProfileInt(m_nMaxBytes, L"MaxBytes", pIni, L"settings");
 
-    WritePrivateProfileFloatW(m_fBlendTimeAuto, L"fBlendTimeAuto", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fBlendTimeUser, L"fBlendTimeUser", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenPresets, L"fTimeBetweenPresets", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenPresetsRand, L"fTimeBetweenPresetsRand", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fHardCutLoudnessThresh, L"fHardCutLoudnessThresh", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fHardCutHalflife, L"fHardCutHalflife", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fSongTitleAnimDuration, L"fSongTitleAnimDuration", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenRandomSongTitles, L"fTimeBetweenRandomSongTitles", pIni, L"settings");
-    WritePrivateProfileFloatW(m_fTimeBetweenRandomCustomMsgs, L"fTimeBetweenRandomCustomMsgs", pIni, L"settings");
+    WritePrivateProfileFloat(m_fBlendTimeAuto, L"fBlendTimeAuto", pIni, L"settings");
+    WritePrivateProfileFloat(m_fBlendTimeUser, L"fBlendTimeUser", pIni, L"settings");
+    WritePrivateProfileFloat(m_fTimeBetweenPresets, L"fTimeBetweenPresets", pIni, L"settings");
+    WritePrivateProfileFloat(m_fTimeBetweenPresetsRand, L"fTimeBetweenPresetsRand", pIni, L"settings");
+    WritePrivateProfileFloat(m_fHardCutLoudnessThresh, L"fHardCutLoudnessThresh", pIni, L"settings");
+    WritePrivateProfileFloat(m_fHardCutHalflife, L"fHardCutHalflife", pIni, L"settings");
+    WritePrivateProfileFloat(m_fSongTitleAnimDuration, L"fSongTitleAnimDuration", pIni, L"settings");
+    WritePrivateProfileFloat(m_fTimeBetweenRandomSongTitles, L"fTimeBetweenRandomSongTitles", pIni, L"settings");
+    WritePrivateProfileFloat(m_fTimeBetweenRandomCustomMsgs, L"fTimeBetweenRandomCustomMsgs", pIni, L"settings");
 #endif
 }
 
@@ -911,6 +909,9 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     m_skip_comp_shaders = settings->m_bSkipCompShader;
 
     wcscpy_s(m_szPresetDir, settings->m_szPresetDir);
+    //wcscpy_s(m_szConfigIniFile, settings->m_szConfigIniFile);
+    wcscpy_s(m_szMsgIniFile, settings->m_szMsgIniFile);
+    wcscpy_s(m_szImgIniFile, settings->m_szImgIniFile);
 
     return true;
 }
@@ -3219,14 +3220,6 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     SafeRelease(m_lpVS[0]);
     SafeRelease(m_lpVS[1]);
     SafeRelease(m_lpDDSTitle);
-    SafeRelease(m_d3dx_title_font_doublesize);
-
-    // NOTE: THIS CODE IS IN THE RIGHT PLACE.
-    //if (m_gdi_title_font_doublesize)
-    //{
-    //    DeleteObject(m_gdi_title_font_doublesize);
-    //    m_gdi_title_font_doublesize = NULL;
-    //}
 
     m_texmgr.Finish();
 
@@ -3265,9 +3258,9 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     // This setting is closely tied to the modern skin "random" button.
     // The "random" state should be preserved from session to session.
     // It's pretty safe to do, because the Scroll Lock key is hard to
-    //   accidentally click... :)
+    // accidentally click... :)
 #ifndef _FOOBAR
-    WritePrivateProfileIntW(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bPresetLockedByUser, L"bPresetLockOnAtStartup", GetConfigIniFile(), L"settings");
 #endif
 }
 
@@ -3748,7 +3741,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
     // 4. Render text in upper-left corner.
     {
-#ifndef _FOOBAR
         wchar_t buf0[64000] = {0}; // must fit the longest strings (code strings are 32768 chars)
                                    // and leave extra space for &->&&, and [,[,& insertion
         char buf0A[64000] = {0};
@@ -3840,18 +3832,18 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             wcscpy_s(buf0, m_waitstring.szText);
             strcpy_s(buf0A, reinterpret_cast<char*>(m_waitstring.szText));
 
-            int temp_cursor_pos = m_waitstring.nCursorPos;
-            int temp_anchor_pos = m_waitstring.nSelAnchorPos;
+            size_t temp_cursor_pos = m_waitstring.nCursorPos;
+            size_t temp_anchor_pos = m_waitstring.nSelAnchorPos;
 
             if (bBrackets)
             {
                 if (m_waitstring.bDisplayAsCode)
                 {
                     // Insert "[]" around the selection.
-                    int start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
-                    int end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
-                    int len = strlen(buf0A);
-                    int i;
+                    size_t start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
+                    size_t end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
+                    size_t len = strnlen_s(buf0A, 64000);
+                    size_t i;
 
                     for (i = len; i > end; i--)
                         buf0A[i + 1] = buf0A[i];
@@ -3866,10 +3858,10 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 else
                 {
                     // Insert "[]" around the selection.
-                    int start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
-                    int end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
-                    int len = wcslen(buf0);
-                    int i;
+                    size_t start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
+                    size_t end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
+                    size_t len = wcsnlen_s(buf0, 64000);
+                    size_t i;
 
                     for (i = len; i > end; i--)
                         buf0[i + 1] = buf0[i];
@@ -3896,7 +3888,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0A[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (int i = strlen(buf0A); i >= temp_cursor_pos; i--)
+                            for (size_t i = strnlen_s(buf0A, 64000); i >= temp_cursor_pos; i--)
                                 buf0A[i + 1] = buf0A[i];
                             buf0A[temp_cursor_pos] = '_';
                         }
@@ -3914,7 +3906,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0A[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (int i = strlen(buf0A); i >= temp_cursor_pos; i--)
+                            for (size_t i = strnlen_s(buf0A, 64000); i >= temp_cursor_pos; i--)
                                 buf0A[i + 1] = buf0A[i];
                             buf0A[temp_cursor_pos] = ' ';
                         }
@@ -3935,7 +3927,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (int i = wcslen(buf0); i >= temp_cursor_pos; i--)
+                            for (size_t i = wcsnlen_s(buf0, 6400); i >= temp_cursor_pos; i--)
                                 buf0[i + 1] = buf0[i];
                             buf0[temp_cursor_pos] = L'_';
                         }
@@ -3953,7 +3945,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (int i = wcslen(buf0); i >= temp_cursor_pos; i--)
+                            for (size_t i = wcsnlen_s(buf0, 6400); i >= temp_cursor_pos; i--)
                                 buf0[i + 1] = buf0[i];
                             buf0[temp_cursor_pos] = L' ';
                         }
@@ -4124,8 +4116,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             {
                 assert(m_pState->m_nMaxPSVersion == m_nMaxPSVersion);
                 swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_USES_HIGHEST_PIXEL_SHADER_VERSION), m_nMaxPSVersion);
-                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, buf, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], buf, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
             }
             else
             {
@@ -4134,16 +4126,16 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     switch (m_pState->m_nMinPSVersion)
                     {
                         case MD2_PS_NONE:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_0:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_X:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_3_0:
                             assert(false);
@@ -4158,24 +4150,24 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     switch (m_pState->m_nMinPSVersion)
                     {
                         case MD2_PS_NONE:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_0:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_2_X:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         case MD2_PS_3_0:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
                             break;
                         default:
                             assert(false);
@@ -4186,7 +4178,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
         else
-#endif
         if (m_UI_mode == UI_LOAD_DEL)
         {
             D2D1_RECT_F rect{};
@@ -4211,7 +4202,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 MilkDropMenuOut_Box(rect.top, 3, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_DO_NOT_FORGET_COMPOSITE_SHADER_WAS_LOCKED), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, true, 0xFFCC0000);
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
-#ifndef _FOOBAR
         else if (m_UI_mode == UI_MASHUP)
         {
             if (m_nPresets - m_nDirs == 0)
@@ -4263,10 +4253,10 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     }
                 }
 
-                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT1), m_menuText, MTO_UPPER_LEFT, true);
-                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT2), m_menuText, MTO_UPPER_LEFT, true);
-                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT3), m_menuText, MTO_UPPER_LEFT, true);
-                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT4), m_menuText, MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT1), m_menuText[0], MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT2), m_menuText[1], MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT3), m_menuText[2], MTO_UPPER_LEFT, true);
+                MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESET_MASH_UP_TEXT4), m_menuText[3], MTO_UPPER_LEFT, true);
                 *upper_left_corner_y += static_cast<int>(PLAYLIST_INNER_MARGIN);
 
                 D2D1_RECT_F rect{};
@@ -4339,7 +4329,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     int width = 0;
                     int height = 0;
 
-                    int start_y = orig_rect.top;
+                    //int start_y = orig_rect.top;
                     for (int mash = 0; mash < MASH_SLOTS; mash++)
                     {
                         int idx = m_nMashPreset[mash];
@@ -4347,7 +4337,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         swprintf_s(buf, L"%s%s", WASABI_API_LNGSTRINGW(mashNames[mash]), m_presets[idx].szFilename.c_str());
                         D2D1_RECT_F r2 = orig_rect;
                         r2.top += height;
-                        height += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, buf, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), (mash == m_nMashSlot) ? PLAYLIST_COLOR_HILITE_TRACK : PLAYLIST_COLOR_NORMAL, false);
+                        height += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[mash], buf, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), (mash == m_nMashSlot) ? PLAYLIST_COLOR_HILITE_TRACK : PLAYLIST_COLOR_NORMAL, false);
                         width = std::max(width, static_cast<int>(r2.right - r2.left));
                     }
                     if (pass == 0)
@@ -4377,7 +4367,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     {
                         // Remove the extension before displaying the filename. Also pad with spaces.
                         //wcscpy_s(str, m_pPresetAddr[i]);
-                        bool bIsDir = (m_presets[i].szFilename.c_str()[0] == '*');
+                        bool bIsDir = (m_presets[i].szFilename.c_str()[0] == L'*');
                         bool bIsRunning = false;
                         bool bIsSelected = (i == m_nMashPreset[m_nMashSlot]);
 
@@ -4410,7 +4400,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             color = PLAYLIST_COLOR_HILITE_TRACK;
 
                         D2D1_RECT_F r2 = rect;
-                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText, str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), color, false);
+                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[i], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), color, false);
                         if (pass == 0) // calculating dark box
                         {
                             box.right = std::max(box.right, box.left + r2.right - r2.left);
@@ -4437,7 +4427,6 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 orig_rect.top += PLAYLIST_INNER_MARGIN;
             }
         }
-#endif
         else if (m_UI_mode == UI_LOAD)
         {
             if (m_nPresets == 0)
@@ -4913,15 +4902,15 @@ void CPlugin::BuildMenus()
     }
 }
 
-#if 0
+#ifndef _FOOBAR
 void CPlugin::WriteRealtimeConfig()
 {
-    WritePrivateProfileIntW(m_bShowFPS, L"bShowFPS", GetConfigIniFile(), L"settings");
-    WritePrivateProfileIntW(m_bShowRating, L"bShowRating", GetConfigIniFile(), L"settings");
-    WritePrivateProfileIntW(m_bShowPresetInfo, L"bShowPresetInfo", GetConfigIniFile(), L"settings");
-    WritePrivateProfileIntW(m_bShowSongTitle, L"bShowSongTitle", GetConfigIniFile(), L"settings");
-    WritePrivateProfileIntW(m_bShowSongTime, L"bShowSongTime", GetConfigIniFile(), L"settings");
-    WritePrivateProfileIntW(m_bShowSongLen, L"bShowSongLen", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bShowFPS, L"bShowFPS", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bShowRating, L"bShowRating", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bShowPresetInfo, L"bShowPresetInfo", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bShowSongTitle, L"bShowSongTitle", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bShowSongTime, L"bShowSongTime", GetConfigIniFile(), L"settings");
+    WritePrivateProfileInt(m_bShowSongLen, L"bShowSongLen", GetConfigIniFile(), L"settings");
 }
 #endif
 
@@ -5763,7 +5752,7 @@ retry:
                     fclose(f);
 
                     if (!bRatingKnown)
-                        fRating = GetPrivateProfileFloatW(L"preset00", L"fRating", 3.0f, szFullPath);
+                        fRating = GetPrivateProfileFloat(L"preset00", L"fRating", 3.0f, szFullPath);
                     fRating = std::max(0.0f, std::min(5.0f, fRating));
                 }
             }
@@ -6344,7 +6333,7 @@ void CPlugin::DeletePresetFile(wchar_t* szDelFile)
 //       the slot that the to-be-renamed preset occupies!
 void CPlugin::RenamePresetFile(wchar_t* szOldFile, wchar_t* szNewFile)
 {
-    if (GetFileAttributes(szNewFile) != -1) // check if file already exists
+    if (GetFileAttributes(szNewFile) != INVALID_FILE_ATTRIBUTES) // check if file already exists
     {
         // Error.
         AddError(WASABI_API_LNGSTRINGW(IDS_ERROR_A_FILE_ALREADY_EXISTS_WITH_THAT_FILENAME), 6.0f, ERR_PRESET, true);
@@ -6418,7 +6407,7 @@ void CPlugin::SetCurrentPresetRating(float fNewRating)
     //char szPresetFileWithPath[512];
     //sprintf_s(szPresetFileNoPath, "%s.milk", m_pState->m_szDesc);
     //sprintf_s(szPresetFileWithPath, "%s%s.milk", GetPresetDir(), m_pState->m_szDesc);
-    WritePrivateProfileFloatW(fNewRating, L"fRating", m_szCurrentPresetFile, L"preset00");
+    WritePrivateProfileFloat(fNewRating, L"fRating", m_szCurrentPresetFile, L"preset00");
 
     // Update the copy of the preset in memory.
     m_pState->m_fRating = fNewRating;
@@ -6452,58 +6441,60 @@ void CPlugin::ReadCustomMessages()
     // First, clear all old data
     for (int n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
     {
-        wcscpy_s(m_CustomMessageFont[n].szFace, L"Arial");
-        m_CustomMessageFont[n].bBold = false;
-        m_CustomMessageFont[n].bItal = false;
-        m_CustomMessageFont[n].nColorR = 255;
-        m_CustomMessageFont[n].nColorG = 255;
-        m_CustomMessageFont[n].nColorB = 255;
+        wcscpy_s(m_customMessageFont[n].szFace, L"Arial");
+        m_customMessageFont[n].bBold = false;
+        m_customMessageFont[n].bItal = false;
+        m_customMessageFont[n].nColorR = 255;
+        m_customMessageFont[n].nColorG = 255;
+        m_customMessageFont[n].nColorB = 255;
     }
 
     for (int n = 0; n < MAX_CUSTOM_MESSAGES; n++)
     {
-        m_CustomMessage[n].szText[0] = 0;
-        m_CustomMessage[n].nFont = 0;
-        m_CustomMessage[n].fSize = 50.0f; // [0..100]  note that size is not absolute, but relative to the size of the window
-        m_CustomMessage[n].x = 0.5f;
-        m_CustomMessage[n].y = 0.5f;
-        m_CustomMessage[n].randx = 0;
-        m_CustomMessage[n].randy = 0;
-        m_CustomMessage[n].growth = 1.0f;
-        m_CustomMessage[n].fTime = 1.5f;
-        m_CustomMessage[n].fFade = 0.2f;
+        m_customMessage[n].szText[0] = 0;
+        m_customMessage[n].nFont = 0;
+        m_customMessage[n].fSize = 50.0f; // [0..100]  note that size is not absolute, but relative to the size of the window
+        m_customMessage[n].x = 0.5f;
+        m_customMessage[n].y = 0.5f;
+        m_customMessage[n].randx = 0;
+        m_customMessage[n].randy = 0;
+        m_customMessage[n].growth = 1.0f;
+        m_customMessage[n].fTime = 1.5f;
+        m_customMessage[n].fFade = 0.2f;
 
-        m_CustomMessage[n].bOverrideBold = false;
-        m_CustomMessage[n].bOverrideItal = false;
-        m_CustomMessage[n].bOverrideFace = false;
-        m_CustomMessage[n].bOverrideColorR = false;
-        m_CustomMessage[n].bOverrideColorG = false;
-        m_CustomMessage[n].bOverrideColorB = false;
-        m_CustomMessage[n].bBold = false;
-        m_CustomMessage[n].bItal = false;
-        wcscpy_s(m_CustomMessage[n].szFace, L"Arial");
-        m_CustomMessage[n].nColorR = 255;
-        m_CustomMessage[n].nColorG = 255;
-        m_CustomMessage[n].nColorB = 255;
-        m_CustomMessage[n].nRandR = 0;
-        m_CustomMessage[n].nRandG = 0;
-        m_CustomMessage[n].nRandB = 0;
+        m_customMessage[n].bOverrideBold = false;
+        m_customMessage[n].bOverrideItal = false;
+        m_customMessage[n].bOverrideFace = false;
+        m_customMessage[n].bOverrideColorR = false;
+        m_customMessage[n].bOverrideColorG = false;
+        m_customMessage[n].bOverrideColorB = false;
+        m_customMessage[n].bBold = false;
+        m_customMessage[n].bItal = false;
+        wcscpy_s(m_customMessage[n].szFace, L"Arial");
+        m_customMessage[n].nColorR = 255;
+        m_customMessage[n].nColorG = 255;
+        m_customMessage[n].nColorB = 255;
+        m_customMessage[n].nRandR = 0;
+        m_customMessage[n].nRandG = 0;
+        m_customMessage[n].nRandB = 0;
     }
 
-#ifndef _FOOBAR
     // Then read in the new file.
+    if (!FileExists(m_szMsgIniFile))
+        return;
+
     for (int n = 0; n < MAX_CUSTOM_MESSAGE_FONTS; n++)
     {
         wchar_t szSectionName[32];
         swprintf_s(szSectionName, L"font%02d", n);
 
         // Get face, bold, italic, x, y for this custom message FONT.
-        GetPrivateProfileString(szSectionName, L"face", L"Arial", m_CustomMessageFont[n].szFace, ARRAYSIZE(m_CustomMessageFont[n].szFace), m_szMsgIniFile);
-        m_CustomMessageFont[n].bBold = GetPrivateProfileBoolW(szSectionName, L"bold", m_CustomMessageFont[n].bBold, m_szMsgIniFile);
-        m_CustomMessageFont[n].bItal = GetPrivateProfileBoolW(szSectionName, L"ital", m_CustomMessageFont[n].bItal, m_szMsgIniFile);
-        m_CustomMessageFont[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", m_CustomMessageFont[n].nColorR, m_szMsgIniFile);
-        m_CustomMessageFont[n].nColorG = GetPrivateProfileIntW(szSectionName, L"g", m_CustomMessageFont[n].nColorG, m_szMsgIniFile);
-        m_CustomMessageFont[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", m_CustomMessageFont[n].nColorB, m_szMsgIniFile);
+        GetPrivateProfileString(szSectionName, L"face", L"Arial", m_customMessageFont[n].szFace, ARRAYSIZE(m_customMessageFont[n].szFace), m_szMsgIniFile);
+        m_customMessageFont[n].bBold = GetPrivateProfileBool(szSectionName, L"bold", m_customMessageFont[n].bBold, m_szMsgIniFile);
+        m_customMessageFont[n].bItal = GetPrivateProfileBool(szSectionName, L"ital", m_customMessageFont[n].bItal, m_szMsgIniFile);
+        m_customMessageFont[n].nColorR = GetPrivateProfileInt(szSectionName, L"r", m_customMessageFont[n].nColorR, m_szMsgIniFile);
+        m_customMessageFont[n].nColorG = GetPrivateProfileInt(szSectionName, L"g", m_customMessageFont[n].nColorG, m_szMsgIniFile);
+        m_customMessageFont[n].nColorB = GetPrivateProfileInt(szSectionName, L"b", m_customMessageFont[n].nColorB, m_szMsgIniFile);
     }
 
     for (int n = 0; n < MAX_CUSTOM_MESSAGES; n++)
@@ -6512,46 +6503,44 @@ void CPlugin::ReadCustomMessages()
         swprintf_s(szSectionName, L"message%02d", n);
 
         // Get fontID, size, text, etc. for this custom message.
-        GetPrivateProfileString(szSectionName, L"text", L"", m_CustomMessage[n].szText, ARRAYSIZE(m_CustomMessage[n].szText), m_szMsgIniFile);
-        if (m_CustomMessage[n].szText[0])
+        GetPrivateProfileString(szSectionName, L"text", L"", m_customMessage[n].szText, ARRAYSIZE(m_customMessage[n].szText), m_szMsgIniFile);
+        if (m_customMessage[n].szText[0])
         {
-            m_CustomMessage[n].nFont = GetPrivateProfileIntW(szSectionName, L"font", m_CustomMessage[n].nFont, m_szMsgIniFile);
-            m_CustomMessage[n].fSize = GetPrivateProfileFloatW(szSectionName, L"size", m_CustomMessage[n].fSize, m_szMsgIniFile);
-            m_CustomMessage[n].x = GetPrivateProfileFloatW(szSectionName, L"x", m_CustomMessage[n].x, m_szMsgIniFile);
-            m_CustomMessage[n].y = GetPrivateProfileFloatW(szSectionName, L"y", m_CustomMessage[n].y, m_szMsgIniFile);
-            m_CustomMessage[n].randx = GetPrivateProfileFloatW(szSectionName, L"randx", m_CustomMessage[n].randx, m_szMsgIniFile);
-            m_CustomMessage[n].randy = GetPrivateProfileFloatW(szSectionName, L"randy", m_CustomMessage[n].randy, m_szMsgIniFile);
+            m_customMessage[n].nFont = GetPrivateProfileInt(szSectionName, L"font", m_customMessage[n].nFont, m_szMsgIniFile);
+            m_customMessage[n].fSize = GetPrivateProfileFloat(szSectionName, L"size", m_customMessage[n].fSize, m_szMsgIniFile);
+            m_customMessage[n].x = GetPrivateProfileFloat(szSectionName, L"x", m_customMessage[n].x, m_szMsgIniFile);
+            m_customMessage[n].y = GetPrivateProfileFloat(szSectionName, L"y", m_customMessage[n].y, m_szMsgIniFile);
+            m_customMessage[n].randx = GetPrivateProfileFloat(szSectionName, L"randx", m_customMessage[n].randx, m_szMsgIniFile);
+            m_customMessage[n].randy = GetPrivateProfileFloat(szSectionName, L"randy", m_customMessage[n].randy, m_szMsgIniFile);
 
-            m_CustomMessage[n].growth = GetPrivateProfileFloatW(szSectionName, L"growth", m_CustomMessage[n].growth, m_szMsgIniFile);
-            m_CustomMessage[n].fTime = GetPrivateProfileFloatW(szSectionName, L"time", m_CustomMessage[n].fTime, m_szMsgIniFile);
-            m_CustomMessage[n].fFade = GetPrivateProfileFloatW(szSectionName, L"fade", m_CustomMessage[n].fFade, m_szMsgIniFile);
-            m_CustomMessage[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", m_CustomMessage[n].nColorR, m_szMsgIniFile);
-            m_CustomMessage[n].nColorG = GetPrivateProfileIntW(szSectionName, L"g", m_CustomMessage[n].nColorG, m_szMsgIniFile);
-            m_CustomMessage[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", m_CustomMessage[n].nColorB, m_szMsgIniFile);
-            m_CustomMessage[n].nRandR = GetPrivateProfileIntW(szSectionName, L"randr", m_CustomMessage[n].nRandR, m_szMsgIniFile);
-            m_CustomMessage[n].nRandG = GetPrivateProfileIntW(szSectionName, L"randg", m_CustomMessage[n].nRandG, m_szMsgIniFile);
-            m_CustomMessage[n].nRandB = GetPrivateProfileIntW(szSectionName, L"randb", m_CustomMessage[n].nRandB, m_szMsgIniFile);
+            m_customMessage[n].growth = GetPrivateProfileFloat(szSectionName, L"growth", m_customMessage[n].growth, m_szMsgIniFile);
+            m_customMessage[n].fTime = GetPrivateProfileFloat(szSectionName, L"time", m_customMessage[n].fTime, m_szMsgIniFile);
+            m_customMessage[n].fFade = GetPrivateProfileFloat(szSectionName, L"fade", m_customMessage[n].fFade, m_szMsgIniFile);
+            m_customMessage[n].nColorR = GetPrivateProfileInt(szSectionName, L"r", m_customMessage[n].nColorR, m_szMsgIniFile);
+            m_customMessage[n].nColorG = GetPrivateProfileInt(szSectionName, L"g", m_customMessage[n].nColorG, m_szMsgIniFile);
+            m_customMessage[n].nColorB = GetPrivateProfileInt(szSectionName, L"b", m_customMessage[n].nColorB, m_szMsgIniFile);
+            m_customMessage[n].nRandR = GetPrivateProfileInt(szSectionName, L"randr", m_customMessage[n].nRandR, m_szMsgIniFile);
+            m_customMessage[n].nRandG = GetPrivateProfileInt(szSectionName, L"randg", m_customMessage[n].nRandG, m_szMsgIniFile);
+            m_customMessage[n].nRandB = GetPrivateProfileInt(szSectionName, L"randb", m_customMessage[n].nRandB, m_szMsgIniFile);
 
             // Overrides: r,g,b,face,bold,ital
-            GetPrivateProfileString(szSectionName, L"face", L"", m_CustomMessage[n].szFace, ARRAYSIZE(m_CustomMessage[n].szFace), m_szMsgIniFile);
-            m_CustomMessage[n].bBold = GetPrivateProfileIntW(szSectionName, L"bold", -1, m_szMsgIniFile);
-            m_CustomMessage[n].bItal = GetPrivateProfileIntW(szSectionName, L"ital", -1, m_szMsgIniFile);
-            m_CustomMessage[n].nColorR = GetPrivateProfileIntW(szSectionName, L"r", -1, m_szMsgIniFile);
-            m_CustomMessage[n].nColorG = GetPrivateProfileIntW(szSectionName, L"g", -1, m_szMsgIniFile);
-            m_CustomMessage[n].nColorB = GetPrivateProfileIntW(szSectionName, L"b", -1, m_szMsgIniFile);
+            GetPrivateProfileString(szSectionName, L"face", L"", m_customMessage[n].szFace, ARRAYSIZE(m_customMessage[n].szFace), m_szMsgIniFile);
+            m_customMessage[n].bBold = GetPrivateProfileInt(szSectionName, L"bold", -1, m_szMsgIniFile);
+            m_customMessage[n].bItal = GetPrivateProfileInt(szSectionName, L"ital", -1, m_szMsgIniFile);
+            m_customMessage[n].nColorR = GetPrivateProfileInt(szSectionName, L"r", -1, m_szMsgIniFile);
+            m_customMessage[n].nColorG = GetPrivateProfileInt(szSectionName, L"g", -1, m_szMsgIniFile);
+            m_customMessage[n].nColorB = GetPrivateProfileInt(szSectionName, L"b", -1, m_szMsgIniFile);
 
-            m_CustomMessage[n].bOverrideFace = (m_CustomMessage[n].szFace[0] != 0);
-            m_CustomMessage[n].bOverrideBold = (m_CustomMessage[n].bBold != -1);
-            m_CustomMessage[n].bOverrideItal = (m_CustomMessage[n].bItal != -1);
-            m_CustomMessage[n].bOverrideColorR = (m_CustomMessage[n].nColorR != -1);
-            m_CustomMessage[n].bOverrideColorG = (m_CustomMessage[n].nColorG != -1);
-            m_CustomMessage[n].bOverrideColorB = (m_CustomMessage[n].nColorB != -1);
+            m_customMessage[n].bOverrideFace = (m_customMessage[n].szFace[0] != 0);
+            m_customMessage[n].bOverrideBold = (m_customMessage[n].bBold != -1);
+            m_customMessage[n].bOverrideItal = (m_customMessage[n].bItal != -1);
+            m_customMessage[n].bOverrideColorR = (m_customMessage[n].nColorR != -1);
+            m_customMessage[n].bOverrideColorG = (m_customMessage[n].nColorG != -1);
+            m_customMessage[n].bOverrideColorB = (m_customMessage[n].nColorB != -1);
         }
     }
-#endif
 }
 
-#ifdef DX9_MILKDROP
 void CPlugin::LaunchCustomMessage(int nMsgNum)
 {
     if (nMsgNum > 99)
@@ -6562,54 +6551,54 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
         int count = 0;
         // Choose randomly.
         for (nMsgNum = 0; nMsgNum < 100; nMsgNum++)
-            if (m_CustomMessage[nMsgNum].szText[0])
+            if (m_customMessage[nMsgNum].szText[0])
                 count++;
 
         int sel = (warand() % count) + 1;
         count = 0;
         for (nMsgNum = 0; nMsgNum < 100; nMsgNum++)
         {
-            if (m_CustomMessage[nMsgNum].szText[0])
+            if (m_customMessage[nMsgNum].szText[0])
                 count++;
             if (count == sel)
                 break;
         }
     }
 
-    if (nMsgNum < 0 || nMsgNum >= MAX_CUSTOM_MESSAGES || m_CustomMessage[nMsgNum].szText[0] == 0)
+    if (nMsgNum < 0 || nMsgNum >= MAX_CUSTOM_MESSAGES || m_customMessage[nMsgNum].szText[0] == 0)
     {
         return;
     }
 
-    int fontID = m_CustomMessage[nMsgNum].nFont;
+    int fontID = m_customMessage[nMsgNum].nFont;
 
     m_supertext.bRedrawSuperText = true;
     m_supertext.bIsSongTitle = false;
-    wcscpy_s(m_supertext.szText, m_CustomMessage[nMsgNum].szText);
+    wcscpy_s(m_supertext.szText, m_customMessage[nMsgNum].szText);
 
     // Regular properties.
-    m_supertext.fFontSize = m_CustomMessage[nMsgNum].fSize;
-    m_supertext.fX = m_CustomMessage[nMsgNum].x + m_CustomMessage[nMsgNum].randx * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
-    m_supertext.fY = m_CustomMessage[nMsgNum].y + m_CustomMessage[nMsgNum].randy * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
-    m_supertext.fGrowth = m_CustomMessage[nMsgNum].growth;
-    m_supertext.fDuration = m_CustomMessage[nMsgNum].fTime;
-    m_supertext.fFadeTime = m_CustomMessage[nMsgNum].fFade;
+    m_supertext.fFontSize = m_customMessage[nMsgNum].fSize;
+    m_supertext.fX = m_customMessage[nMsgNum].x + m_customMessage[nMsgNum].randx * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
+    m_supertext.fY = m_customMessage[nMsgNum].y + m_customMessage[nMsgNum].randy * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f);
+    m_supertext.fGrowth = m_customMessage[nMsgNum].growth;
+    m_supertext.fDuration = m_customMessage[nMsgNum].fTime;
+    m_supertext.fFadeTime = m_customMessage[nMsgNum].fFade;
 
     // Overridables.
-    if (m_CustomMessage[nMsgNum].bOverrideFace)
-        wcscpy_s(m_supertext.nFontFace, m_CustomMessage[nMsgNum].szFace);
+    if (m_customMessage[nMsgNum].bOverrideFace)
+        wcscpy_s(m_supertext.nFontFace, m_customMessage[nMsgNum].szFace);
     else
-        wcscpy_s(m_supertext.nFontFace, m_CustomMessageFont[fontID].szFace);
-    m_supertext.bItal = (m_CustomMessage[nMsgNum].bOverrideItal) ? (m_CustomMessage[nMsgNum].bItal != 0) : (m_CustomMessageFont[fontID].bItal != 0);
-    m_supertext.bBold = (m_CustomMessage[nMsgNum].bOverrideBold) ? (m_CustomMessage[nMsgNum].bBold != 0) : (m_CustomMessageFont[fontID].bBold != 0);
-    m_supertext.nColorR = (m_CustomMessage[nMsgNum].bOverrideColorR) ? m_CustomMessage[nMsgNum].nColorR : m_CustomMessageFont[fontID].nColorR;
-    m_supertext.nColorG = (m_CustomMessage[nMsgNum].bOverrideColorG) ? m_CustomMessage[nMsgNum].nColorG : m_CustomMessageFont[fontID].nColorG;
-    m_supertext.nColorB = (m_CustomMessage[nMsgNum].bOverrideColorB) ? m_CustomMessage[nMsgNum].nColorB : m_CustomMessageFont[fontID].nColorB;
+        wcscpy_s(m_supertext.nFontFace, m_customMessageFont[fontID].szFace);
+    m_supertext.bItal = (m_customMessage[nMsgNum].bOverrideItal) ? (m_customMessage[nMsgNum].bItal != 0) : (m_customMessageFont[fontID].bItal != 0);
+    m_supertext.bBold = (m_customMessage[nMsgNum].bOverrideBold) ? (m_customMessage[nMsgNum].bBold != 0) : (m_customMessageFont[fontID].bBold != 0);
+    m_supertext.nColorR = (m_customMessage[nMsgNum].bOverrideColorR) ? m_customMessage[nMsgNum].nColorR : m_customMessageFont[fontID].nColorR;
+    m_supertext.nColorG = (m_customMessage[nMsgNum].bOverrideColorG) ? m_customMessage[nMsgNum].nColorG : m_customMessageFont[fontID].nColorG;
+    m_supertext.nColorB = (m_customMessage[nMsgNum].bOverrideColorB) ? m_customMessage[nMsgNum].nColorB : m_customMessageFont[fontID].nColorB;
 
     // Randomize color.
-    m_supertext.nColorR += (int)(m_CustomMessage[nMsgNum].nRandR * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
-    m_supertext.nColorG += (int)(m_CustomMessage[nMsgNum].nRandG * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
-    m_supertext.nColorB += (int)(m_CustomMessage[nMsgNum].nRandB * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
+    m_supertext.nColorR += (int)(m_customMessage[nMsgNum].nRandR * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
+    m_supertext.nColorG += (int)(m_customMessage[nMsgNum].nRandG * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
+    m_supertext.nColorB += (int)(m_customMessage[nMsgNum].nRandB * ((warand() % 1037) / 1037.0f * 2.0f - 1.0f));
     if (m_supertext.nColorR < 0) m_supertext.nColorR = 0;
     if (m_supertext.nColorG < 0) m_supertext.nColorG = 0;
     if (m_supertext.nColorB < 0) m_supertext.nColorB = 0;
@@ -6639,11 +6628,13 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
 
 void CPlugin::LaunchSongTitleAnim()
 {
+    GetWinampSongTitle(GetWinampWindow(), m_supertext.szText, ARRAYSIZE(m_supertext.szText));
+    if (wcscmp(m_supertext.szText, L"Stopped.") == 0 || wcscmp(m_supertext.szText, L"Opening...") == 0 || wcscmp(m_supertext.szText, L"") == 0)
+        return;
     m_supertext.bRedrawSuperText = true;
     m_supertext.bIsSongTitle = true;
-    wcscpy_s(m_supertext.szText, m_szSongTitle);
     wcscpy_s(m_supertext.nFontFace, m_fontinfo[SONGTITLE_FONT].szFace);
-    m_supertext.fFontSize = (float)m_fontinfo[SONGTITLE_FONT].nSize;
+    m_supertext.fFontSize = static_cast<float>(m_fontinfo[SONGTITLE_FONT].nSize);
     m_supertext.bBold = m_fontinfo[SONGTITLE_FONT].bBold;
     m_supertext.bItal = m_fontinfo[SONGTITLE_FONT].bItalic;
     m_supertext.fX = 0.5f;
@@ -6663,15 +6654,15 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
     char szTemp[8192];
     wchar_t img[512], section[64];
 
-    initcode[0] = 0;
-    code[0] = 0;
-    img[0] = 0;
+    initcode[0] = '\0';
+    code[0] = '\0';
+    img[0] = '\0';
     swprintf_s(section, L"img%02d", nSpriteNum);
     sprintf_s(sectionA, "img%02d", nSpriteNum);
 
     // 1. Read in image filename.
     GetPrivateProfileString(section, L"img", L"", img, ARRAYSIZE(img) - 1, m_szImgIniFile);
-    if (img[0] == 0)
+    if (img[0] == L'\0')
     {
         wchar_t buf[1024] = {0};
         swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_COULD_NOT_FIND_IMG_OR_NOT_DEFINED), nSpriteNum);
@@ -6712,7 +6703,7 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
             else
                 sprintf_s(szLineName, "code_%d", line);
 
-            GetPrivateProfileStringA(sectionA, szLineName, "~!@#$", szTemp, 8192, AutoCharFn(m_szImgIniFile));
+            GetPrivateProfileStringA(sectionA, szLineName, "~!@#$", szTemp, 8192, AutoChar(m_szImgIniFile));
             len = strlen(szTemp);
 
             if ((strcmp(szTemp, "~!@#$") == 0) || // if the key was missing,
@@ -6809,7 +6800,6 @@ void CPlugin::KillSprite(int iSlot)
 {
     m_texmgr.KillTex(iSlot);
 }
-#endif
 
 void CPlugin::DoCustomSoundAnalysis()
 {

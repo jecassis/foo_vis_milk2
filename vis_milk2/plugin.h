@@ -365,19 +365,6 @@ class CPlugin : public CPluginShell
     int m_nMaxImages;
     int m_nMaxBytes;
 
-    /*
-    char m_szFontFace[NUM_FONTS][128];
-    int m_nFontSize[NUM_FONTS];
-    bool m_bFontBold[NUM_FONTS];
-    bool m_bFontItalic[NUM_FONTS];
-    char m_szTitleFontFace[128];
-    int m_nTitleFontSize; // percentage of screen width (0..100)
-    bool m_bTitleFontBold;
-    bool m_bTitleFontItalic;
-    */
-    HFONT m_gdi_title_font_doublesize;
-    IUnknown* m_d3dx_title_font_doublesize;
-
     // PIXEL SHADERS
     UINT m_dwShaderFlags; // Shader compilation/linking flags
     //ID3DXFragmentLinker* m_pFragmentLinker; // Fragment linker interface
@@ -510,9 +497,6 @@ class CPlugin : public CPluginShell
     void AddError(wchar_t* szMsg, float fDuration, ErrorCategory category = ERR_ALL, bool bBold = true);
     void ClearErrors(int category = ERR_ALL);
 
-    char m_szDebugMessage[512];
-    wchar_t m_szSongTitle[512];
-    wchar_t m_szSongTitlePrev[512];
     //HFONT m_hfont[3]; // 0=fancy font (for song titles, preset name)
                         // 1=legible font (the main font)
                         // 2=tooltip font (for tooltips in the menu system)
@@ -547,7 +531,7 @@ class CPlugin : public CPluginShell
     int m_nBlurTexH[NUM_BLUR_TEX];
 #endif
     int m_nHighestBlurTexUsedThisFrame;
-    ID3D11Texture2D* m_lpDDSTitle; // CAREFUL: MIGHT BE NULL (if not enough memory)!
+    ID3D11Texture2D* m_lpDDSTitle;
     int m_nTitleTexSizeX, m_nTitleTexSizeY;
     MDVERTEX* m_verts;
     MDVERTEX* m_verts_temp;
@@ -571,8 +555,8 @@ class CPlugin : public CPluginShell
     int m_nNumericInputMode; // NUMERIC_INPUT_MODE_CUST_MSG, NUMERIC_INPUT_MODE_SPRITE
     int m_nNumericInputNum;
     int m_nNumericInputDigits;
-    td_custom_msg_font m_CustomMessageFont[MAX_CUSTOM_MESSAGE_FONTS];
-    td_custom_msg m_CustomMessage[MAX_CUSTOM_MESSAGES];
+    td_custom_msg_font m_customMessageFont[MAX_CUSTOM_MESSAGE_FONTS];
+    td_custom_msg m_customMessage[MAX_CUSTOM_MESSAGES];
 
     texmgr m_texmgr; // for user sprites
 
@@ -606,10 +590,9 @@ class CPlugin : public CPluginShell
     void LoadPerFrameEvallibVars(CState* pState);
     void LoadCustomWavePerFrameEvallibVars(CState* pState, int i);
     void LoadCustomShapePerFrameEvallibVars(CState* pState, int i, int instance);
-#if 0
+#ifndef _FOOBAR
     void WriteRealtimeConfig(); // called on Finish()
-#endif
-#ifdef _FOOBAR
+#else
     bool PanelSettings(plugin_config* settings);
 #endif
     void LoadRandomPreset(float fBlendTime);
@@ -624,17 +607,13 @@ class CPlugin : public CPluginShell
     void SetCurrentPresetRating(float fNewRating);
     void SeekToPreset(wchar_t cStartChar);
     bool ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2);
-#ifdef DX9_MILKDROP
     void ClearGraphicsWindow(); // for windowed mode only
     void LaunchCustomMessage(int nMsgNum);
-#endif
     void ReadCustomMessages();
-#ifdef DX9_MILKDROP
     void LaunchSongTitleAnim();
 
     bool RenderStringToTitleTexture();
-#endif
-    void ShowSongTitleAnim(/*IDirect3DTexture9* lpRenderTarget,*/ int w, int h, float fProgress);
+    void ShowSongTitleAnim(int w, int h, float fProgress);
     void DrawWave(float* fL, float* fR);
     void DrawCustomWaves();
     void DrawCustomShapes();
@@ -652,10 +631,8 @@ class CPlugin : public CPluginShell
     void MergeSortPresets(int left, int right);
     void BuildMenus();
     void SetMenusForPresetVersion(int WarpPSVersion, int CompPSVersion);
-#ifdef DX9_MILKDROP
     bool LaunchSprite(int nSpriteNum, int nSlot);
     void KillSprite(int iSlot);
-#endif
     void DoCustomSoundAnalysis();
     void DrawMotionVectors();
 
@@ -730,11 +707,12 @@ class CPlugin : public CPluginShell
     TextElement m_songTitle;
     TextElement m_songStats;
     TextElement m_waitText;
-    TextElement m_menuText[MAX_PRESETS_PER_PAGE / 8];
+    TextElement m_menuText[MAX_PRESETS_PER_PAGE / 2];
     TextElement m_loadPresetInstruction;
     TextElement m_loadPresetDir;
     TextElement m_loadPresetItem[MAX_PRESETS_PER_PAGE];
     TextElement m_warningText;
+    TextElement m_ddsTitle;
 };
 
 #endif

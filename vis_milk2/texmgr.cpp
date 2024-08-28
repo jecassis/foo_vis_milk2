@@ -197,7 +197,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
 
     if (!bTextureInstanced)
     {
-        // Free old resources:
+        // Free old resources.
         /*
         if (m_tex[iSlot].pSurface)
         {
@@ -231,40 +231,6 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
             SafeRelease(m_tex[iSlot].pSurface);
             return TEXMGR_ERR_BADFILE;
         }
-
-        /*
-        D3DXIMAGE_INFO info;
-        HRESULT hr = D3DXCreateTextureFromFileExW(
-            m_lpDD,
-            szFilename,
-            D3DX_DEFAULT,
-            D3DX_DEFAULT,
-            D3DX_DEFAULT, // create a mip chain
-            0,
-            D3DFMT_UNKNOWN,
-            D3DPOOL_DEFAULT,
-            D3DX_DEFAULT,
-            D3DX_DEFAULT,
-            0xFF000000 | ck,
-            &info,
-            NULL,
-            &m_tex[iSlot].pSurface);
-
-        if (hr != S_OK)
-        {
-            switch(hr)
-            {
-            case E_OUTOFMEMORY:
-            case D3DERR_OUTOFVIDEOMEMORY:
-                return TEXMGR_ERR_OUTOFMEM;
-            default:
-                return TEXMGR_ERR_BADFILE;
-            }
-        }
-
-        m_tex[iSlot].img_w = info.Width;
-        m_tex[iSlot].img_h = info.Height;
-    */
 
         m_tex[iSlot].img_w = tex2DDesc.Width;
         m_tex[iSlot].img_h = tex2DDesc.Height;
@@ -568,7 +534,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
         m_tex[iSlot].pSurface->Unlock(0);
 
         End_Jpeg_Read();
-    */
+        */
     }
 
     m_tex[iSlot].fStartTime = time;
@@ -576,11 +542,11 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
 
     int ret = TEXMGR_ERR_SUCCESS;
 
-    // compile & run init. code:
+    // Compile and run initialization code.
     if (!RunInitCode(iSlot, szInitCode))
         ret |= TEXMGR_WARN_ERROR_IN_INIT_CODE;
 
-    // compile & save per-frame code:
+    // Compile and save per-frame code.
     strcpy_s(m_tex[iSlot].m_szExpr, szCode);
     FreeCode(iSlot);
     if (!RecompileExpressions(iSlot))
@@ -609,7 +575,7 @@ void texmgr::KillTex(int iSlot)
             m_tex[iSlot].pSurface->Release();
         m_tex[iSlot].pSurface = NULL;
     }
-    m_tex[iSlot].szFileName[0] = 0;
+    m_tex[iSlot].szFileName[0] = L'\0';
 
     FreeCode(iSlot);
 }
@@ -642,9 +608,9 @@ void texmgr::StripLinefeedCharsAndComments(char* src, char* dest)
 
 bool texmgr::RunInitCode(int iSlot, char* szInitCode)
 {
-    // Warning: destroys contents of `m_tex[iSlot].m_szExpr`,
-    //   so be sure to call `RunInitCode()` before writing or
-    //   compiling that string!
+    // Warning: Destroys contents of `m_tex[iSlot].m_szExpr`,
+    //          so be sure to call `RunInitCode()` before writing or
+    //          compiling that string!
     FreeCode(iSlot);
     FreeVars(iSlot);
     RegisterBuiltInVariables(iSlot);
@@ -652,8 +618,9 @@ bool texmgr::RunInitCode(int iSlot, char* szInitCode)
     strcpy_s(m_tex[iSlot].m_szExpr, szInitCode);
     bool ret = RecompileExpressions(iSlot);
 
-    // set default values of output variables:
-    // (by not setting these every frame, we allow the values to persist from frame-to-frame.)
+    // Set default values of output variables.
+    // By not setting these every frame, the values are allowed to
+    // persist from frame-to-frame.
     *(m_tex[iSlot].var_x) = 0.5;
     *(m_tex[iSlot].var_y) = 0.5;
     *(m_tex[iSlot].var_sx) = 1.0;
@@ -683,8 +650,9 @@ bool texmgr::RecompileExpressions(int iSlot)
 {
     char* expr = m_tex[iSlot].m_szExpr;
 
-    // QUICK FIX: if the string ONLY has spaces and linefeeds, erase it,
-    // because for some strange reason this would cause an error in compileCode().
+    // QUICK FIX: If the string ONLY has spaces and linefeeds, erase it,
+    //            because for some strange reason this would cause an error
+    //            in `compileCode()`.
     {
         char* p = expr;
         while (*p == ' ' || *p == LINEFEED_CONTROL_CHAR)
@@ -693,8 +661,9 @@ bool texmgr::RecompileExpressions(int iSlot)
             expr[0] = 0;
     }
 
-    // Replace line feed control characters with spaces, so they do not mess up the code compiler,
-    // and strip out any comments ('//') before sending to `CompileCode()`.
+    // Replace line feed control characters with spaces, so they do not mess
+    // up the code compiler, and strip out any comments ('//') before sending
+    // to `CompileCode()`.
     char buf[sizeof(m_tex[iSlot].m_szExpr)];
     StripLinefeedCharsAndComments(expr, buf);
 
@@ -730,9 +699,9 @@ void texmgr::FreeVars(int /* iSlot */)
 {
 }
 
+// Free the compiled expressions.
 void texmgr::FreeCode(int iSlot)
 {
-    // Free the compiled expressions.
     if (m_tex[iSlot].m_codehandle)
     {
         NSEEL_code_free(m_tex[iSlot].m_codehandle);
