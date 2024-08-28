@@ -343,7 +343,7 @@ void milk2_ui_element::OnSize(UINT nType, CSize size)
         g_plugin.OnWindowSizeChanged(size.cx, size.cy);
 #ifdef TIMER_TP
         LeaveCriticalSection(&s_cs);
-#endif 
+#endif
     }
 }
 
@@ -1167,6 +1167,7 @@ void milk2_ui_element::UpdateChannelMode()
         m_vis_stream->set_channel_mode(s_config.settings.m_bEnableDownmix ? visualisation_stream_v3::channel_mode_mono : visualisation_stream_v3::channel_mode_default);
     }
 }
+// clang-format on
 
 void milk2_ui_element::UpdateTrack()
 {
@@ -1190,7 +1191,6 @@ void milk2_ui_element::UpdateTrack()
         m_state = "Stopped.";
     }
 }
-// clang-format on
 
 void milk2_ui_element::UpdatePlaylist()
 {

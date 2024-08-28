@@ -681,16 +681,15 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 if (UI_mode == UI_LOAD)
                 {
                     UI_mode = UI_REGULAR;
-                    RemoveText();
                 }
                 else if (UI_mode == UI_REGULAR || UI_mode == UI_MENU)
                 {
                     g_plugin.UpdatePresetList(); // make sure list is completely ready
                     UI_mode = UI_LOAD;
-                    RemoveText();
                     g_plugin.m_bUserPagedUp = false;
                     g_plugin.m_bUserPagedDown = false;
                 }
+                RemoveText();
                 return;
             case 'm':
             case 'M':

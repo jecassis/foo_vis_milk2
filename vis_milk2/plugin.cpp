@@ -3486,6 +3486,21 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     if (!m_menuText[line].IsVisible()) m_text.RegisterElement(&m_menuText[line]); \
     m_menuText[line].SetVisible(true); \
 }
+
+#define MilkDropStringOut_Box(top, element, font, str, r, flags, color, bDarkBox) { \
+    D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
+    if (!element.IsVisible()) element.Initialize(m_lpDX->GetD2DDeviceContext()); \
+    element.SetAlignment(AlignNear, AlignNear); \
+    element.SetTextColor(fText); \
+    element.SetTextOpacity(fText.a); \
+    element.SetContainer(r); \
+    element.SetText(str); \
+    element.SetTextStyle(font); \
+    element.SetTextShadow(false); \
+    top += m_text.DrawD2DText(font, &element, static_cast<wchar_t*>(str), &r, flags, color, bDarkBox); \
+    if (!element.IsVisible()) m_text.RegisterElement(&element); \
+    element.SetVisible(true); \
+}
 // clang-format on
 
 // Draws a string in the lower-right corner of the screen.
@@ -3741,9 +3756,9 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
     // 4. Render text in upper-left corner.
     {
-        wchar_t buf0[64000] = {0}; // must fit the longest strings (code strings are 32768 chars)
-                                   // and leave extra space for &->&&, and [,[,& insertion
-        char buf0A[64000] = {0};
+        wchar_t buf0[65536] = {0}; // Must fit the longest strings (code strings are 32768 chars)
+        char buf0A[65536] = {0};   // and leave extra space for &->&&, and [,[,& insertion
+        size_t last_wait = 0;
 
         SelectFont(SIMPLE_FONT);
 
@@ -3751,7 +3766,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         if (m_waitstring.bActive)
         {
             // 1. Draw the prompt string.
-            MilkDropTextOut(m_waitstring.szPrompt, m_waitText, MTO_UPPER_LEFT, true);
+            MilkDropTextOut(m_waitstring.szPrompt, m_waitText[last_wait], MTO_UPPER_LEFT, true); last_wait++;
 
             // Extra instructions.
             bool bIsWarp = m_waitstring.bDisplayAsCode && (m_pCurMenu == &m_menuPreset) && !wcscmp(m_menuPreset.GetCurItem()->m_szName, L"[ edit warp shader ]");
@@ -3760,11 +3775,11 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             {
                 if (m_bShowShaderHelp)
                 {
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESS_F9_TO_HIDE_SHADER_QREF), m_waitText, MTO_UPPER_LEFT, true);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESS_F9_TO_HIDE_SHADER_QREF), m_waitText[last_wait], MTO_UPPER_LEFT, true); last_wait++;
                 }
                 else
                 {
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESS_F9_TO_SHOW_SHADER_QREF), m_waitText, MTO_UPPER_LEFT, true);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_PRESS_F9_TO_SHOW_SHADER_QREF), m_waitText[last_wait], MTO_UPPER_LEFT, true); last_wait++;
                 }
                 *upper_left_corner_y += h * 2 / 3;
 
@@ -3772,37 +3787,47 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 {
                     // Draw dark box based on longest line and number of lines...
                     r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
-                    m_text.DrawD2DText(pFont, &m_waitText, WASABI_API_LNGSTRINGW(IDS_STRING615), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false, 0xFF000000);
+                    D2D1_COLOR_F fgColor = D2D1::ColorF(0xFFFFFFFF, GetAlpha(0xFFFFFFFF));
+                    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, 0xD0 / 255.0f);
+                    if (!m_waitText[last_wait].IsVisible())
+                        m_waitText[last_wait].Initialize(m_lpDX->GetD2DDeviceContext());
+                    m_waitText[last_wait].SetAlignment(AlignCenter, AlignCenter);
+                    m_waitText[last_wait].SetTextColor(fgColor);
+                    m_waitText[last_wait].SetTextOpacity(fgColor.a);
+                    m_waitText[last_wait].SetContainer(r);
+                    m_waitText[last_wait].SetText(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP_LONG));
+                    m_waitText[last_wait].SetTextStyle(pFont);
+                    m_waitText[last_wait].SetTextShadow(false);
+                    m_text.DrawD2DText(pFont, &m_waitText[last_wait], WASABI_API_LNGSTRINGW(IDS_SHADER_HELP_LONG), &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false);
                     D2D1_RECT_F darkbox = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y - 2), static_cast<FLOAT>(xL + r.right - r.left), static_cast<FLOAT>(*upper_left_corner_y + (r.bottom - r.top) * 13 + 2));
                     DrawDarkTranslucentBox(&darkbox);
-                    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, 0xD0 / 255.0f);
-                    m_waitText.SetTextBox(bgColor, darkbox);
+                    m_waitText[last_wait].ReleaseDeviceDependentResources();
 
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING616), m_waitText, MTO_UPPER_LEFT, false);
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING617), m_waitText, MTO_UPPER_LEFT, false);
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING618), m_waitText, MTO_UPPER_LEFT, false);
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING619), m_waitText, MTO_UPPER_LEFT, false);
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING620), m_waitText, MTO_UPPER_LEFT, false);
-                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING621), m_waitText, MTO_UPPER_LEFT, false);
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP0), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP1), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP2), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP3), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP4), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                    MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_SHADER_HELP5), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
                     if (bIsWarp)
                     {
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING622), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING623), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING624), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING625), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING626), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING627), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING628), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP0), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP1), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP2), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP3), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP4), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP5), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_WARP_HELP6), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
                     }
                     else if (bIsComp)
                     {
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING629), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING630), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING631), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING632), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING633), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING634), m_waitText, MTO_UPPER_LEFT, false);
-                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_STRING635), m_waitText, MTO_UPPER_LEFT, false);
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP0), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP1), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP2), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP3), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP4), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP5), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
+                        MilkDropTextOut(WASABI_API_LNGSTRINGW(IDS_COMP_HELP6), m_waitText[last_wait], MTO_UPPER_LEFT, false); last_wait++;
                     }
                     *upper_left_corner_y += h * 2 / 3;
                 }
@@ -3819,7 +3844,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     shader_msg_id = IDS_COMPOSITE_SHADER_LOCKED;
 
                 WASABI_API_LNGSTRINGW_BUF(shader_msg_id, buf, 256);
-                MilkDropTextOut_Box(buf, m_waitText, 0xFFFFFFFF, MTO_UPPER_LEFT, true, 0xFF000000);
+                MilkDropTextOut_Box(buf, m_waitText[last_wait], 0xFFFFFFFF, MTO_UPPER_LEFT, true, 0xFF000000); last_wait++;
                 *upper_left_corner_y += h * 2 / 3;
             }
             else
@@ -3842,7 +3867,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     // Insert "[]" around the selection.
                     size_t start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
                     size_t end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
-                    size_t len = strnlen_s(buf0A, 64000);
+                    size_t len = strnlen_s(buf0A, 65536);
                     size_t i;
 
                     for (i = len; i > end; i--)
@@ -3860,7 +3885,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     // Insert "[]" around the selection.
                     size_t start = (temp_cursor_pos < temp_anchor_pos) ? temp_cursor_pos : temp_anchor_pos;
                     size_t end = (temp_cursor_pos > temp_anchor_pos) ? temp_cursor_pos - 1 : temp_anchor_pos - 1;
-                    size_t len = wcsnlen_s(buf0, 64000);
+                    size_t len = wcsnlen_s(buf0, 65536);
                     size_t i;
 
                     for (i = len; i > end; i--)
@@ -3888,7 +3913,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0A[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (size_t i = strnlen_s(buf0A, 64000); i >= temp_cursor_pos; i--)
+                            for (size_t i = strnlen_s(buf0A, 65536); i >= temp_cursor_pos; i--)
                                 buf0A[i + 1] = buf0A[i];
                             buf0A[temp_cursor_pos] = '_';
                         }
@@ -3906,7 +3931,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0A[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (size_t i = strnlen_s(buf0A, 64000); i >= temp_cursor_pos; i--)
+                            for (size_t i = strnlen_s(buf0A, 65536); i >= temp_cursor_pos; i--)
                                 buf0A[i + 1] = buf0A[i];
                             buf0A[temp_cursor_pos] = ' ';
                         }
@@ -3927,7 +3952,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (size_t i = wcsnlen_s(buf0, 6400); i >= temp_cursor_pos; i--)
+                            for (size_t i = wcsnlen_s(buf0, 65536); i >= temp_cursor_pos; i--)
                                 buf0[i + 1] = buf0[i];
                             buf0[temp_cursor_pos] = L'_';
                         }
@@ -3945,7 +3970,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         }
                         else if (buf0[temp_cursor_pos] == LINEFEED_CONTROL_CHAR)
                         {
-                            for (size_t i = wcsnlen_s(buf0, 6400); i >= temp_cursor_pos; i--)
+                            for (size_t i = wcsnlen_s(buf0, 65536); i >= temp_cursor_pos; i--)
                                 buf0[i + 1] = buf0[i];
                             buf0[temp_cursor_pos] = L' ';
                         }
@@ -3993,8 +4018,18 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         sprintf_s(buf2, "   %sX", &buf0A[start]); // put a final 'X' instead of ' ' because CALCRECT returns w==0 if string is entirely whitespace!
                         D2D1_RECT_F r2 = rect;
                         r2.bottom = 4096.0f;
-                        r = D2D1::RectF(0.0f, 0.0f, 2048.0f, 2048.0f);
-                        m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &r2, DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
+                        D2D1_COLOR_F fgColor = D2D1::ColorF(0xFFFFFFFF, GetAlpha(0xFFFFFFFF));
+                        if (!m_waitText[last_wait].IsVisible())
+                            m_waitText[last_wait].Initialize(m_lpDX->GetD2DDeviceContext());
+                        m_waitText[last_wait].SetAlignment(AlignCenter, AlignCenter);
+                        m_waitText[last_wait].SetTextColor(fgColor);
+                        m_waitText[last_wait].SetTextOpacity(fgColor.a);
+                        m_waitText[last_wait].SetContainer(r2);
+                        m_waitText[last_wait].SetText(AutoWide(buf2));
+                        m_waitText[last_wait].SetTextStyle(GetFont(SIMPLE_FONT));
+                        m_waitText[last_wait].SetTextShadow(false);
+                        m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText[last_wait], AutoWide(buf2), &r2, DT_CALCRECT /*| DT_WORDBREAK*/, 0xFFFFFFFF, false);
+                        m_waitText[last_wait].ReleaseDeviceDependentResources();
                         float fH = r2.bottom - r2.top;
                         ypixels += fH;
                         buf0A[pos] = ch;
@@ -4006,7 +4041,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         {
                             if (exit_on_next_page)
                             {
-                                buf0A[start] = 0; // so text stops where the box stops, when we draw the text
+                                buf0A[start] = '\0'; // so text stops where the box stops, when we draw the text
                                 break;
                             }
 
@@ -4021,7 +4056,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         box.bottom += fH;
                         box.right = std::max(box.right, box.left + r2.right - r2.left);
 
-                        if (buf0A[pos] == 0)
+                        if (buf0A[pos] == '\0')
                             break;
                         pos++;
                     }
@@ -4052,7 +4087,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         DWORD color = MENU_COLOR;
                         if (m_waitstring.nCursorPos >= start && m_waitstring.nCursorPos <= pos)
                             color = MENU_HILITE_COLOR;
-                        rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, AutoWide(buf2), &rect, 0 /*| DT_WORDBREAK*/, color, false);
+                        MilkDropStringOut_Box(rect.top, m_waitText[last_wait], GetFont(SIMPLE_FONT), AutoWide(buf2), rect, static_cast<DWORD>(0) /*| DT_WORDBREAK*/, color, false); last_wait++;
                         buf0A[pos] = ch;
 
                         if (rect.top > rect.bottom)
@@ -4063,7 +4098,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         start = pos;
                     }
                 }
-                // note: *upper_left_corner_y is updated above, when the dark box is drawn.
+                // Note: `*upper_left_corner_y` is updated above, when the dark box is drawn.
             }
             else
             {
@@ -4071,11 +4106,24 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
                 // Display on one line.
                 D2D1_RECT_F box = rect;
+                D2D1_COLOR_F fgColor = D2D1::ColorF(MENU_COLOR, GetAlpha(MENU_COLOR));
                 box.bottom = 4096.0f;
-                swprintf_s(buf2, L"    %sX", buf0); // put a final 'X' instead of ' ' b/c CALCRECT returns w==0 if string is entirely whitespace!
-                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &box, DT_CALCRECT, MENU_COLOR, false);
+                swprintf_s(buf2, L"    %sX", buf0); // put a final 'X' instead of ' ' because `CALCRECT` returns zero width if string is entirely whitespace!
+                if (!m_waitText[last_wait].IsVisible())
+                    m_waitText[last_wait].Initialize(m_lpDX->GetD2DDeviceContext());
+                m_waitText[last_wait].SetAlignment(AlignNear, AlignNear);
+                m_waitText[last_wait].SetTextColor(fgColor);
+                m_waitText[last_wait].SetTextOpacity(fgColor.a);
+                m_waitText[last_wait].SetContainer(box);
+                m_waitText[last_wait].SetText(buf2);
+                m_waitText[last_wait].SetTextStyle(GetFont(SIMPLE_FONT));
+                m_waitText[last_wait].SetTextShadow(false);
+                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText[last_wait], buf2, &box, DT_CALCRECT, MENU_COLOR, false);
+                if (!m_waitText[last_wait].IsVisible())
+                    m_text.RegisterElement(&m_waitText[last_wait]);
+                m_waitText[last_wait].SetVisible(true);
 
-                // Use r2 to draw a dark box.
+                // Use `box` to draw a dark box.
                 box.top -= PLAYLIST_INNER_MARGIN;
                 box.left -= PLAYLIST_INNER_MARGIN;
                 box.right += PLAYLIST_INNER_MARGIN;
@@ -4084,7 +4132,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 *upper_left_corner_y += static_cast<int>(box.bottom - box.top + PLAYLIST_INNER_MARGIN * 3.0f);
 
                 swprintf_s(buf2, L"    %s ", buf0);
-                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText, buf2, &rect, 0, MENU_COLOR, false);
+                m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_waitText[last_wait++], buf2, &rect, static_cast<DWORD>(0), MENU_COLOR, false);
             }
         }
         // clang-format off
@@ -4116,8 +4164,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             {
                 assert(m_pState->m_nMaxPSVersion == m_nMaxPSVersion);
                 swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_USES_HIGHEST_PIXEL_SHADER_VERSION), m_nMaxPSVersion);
-                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], buf, &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), buf, rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESS_ESC_TO_RETURN), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
             }
             else
             {
@@ -4126,16 +4174,16 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     switch (m_pState->m_nMinPSVersion)
                     {
                         case MD2_PS_NONE:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_2_0:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS2X), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_2_X:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_3_0:
                             assert(false);
@@ -4150,24 +4198,24 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     switch (m_pState->m_nMinPSVersion)
                     {
                         case MD2_PS_NONE:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 2, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_2_0:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS2X), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 2, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_2_X:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS2X), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS3), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 2, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_3_0:
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[0], WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[1], WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
-                            rect.top += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[2], WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), &rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true);
+                            MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_CURRENTLY_USES_PS3), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_TO_USE_PS4), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 2, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         default:
                             assert(false);
@@ -4682,15 +4730,23 @@ void CPlugin::ClearText()
     }
     for (int i = 0; i < MAX_PRESETS_PER_PAGE; ++i)
     {
+        if (m_waitText[i].IsVisible())
+        {
+            m_waitText[i].SetVisible(false);
+            m_text.UnregisterElement(&m_waitText[i]);
+        }
+        if (i < MAX_PRESETS_PER_PAGE / 2)
+        {
+            if (m_menuText[i].IsVisible())
+            {
+                m_menuText[i].SetVisible(false);
+                m_text.UnregisterElement(&m_menuText[i]);
+            }
+        }
         if (m_loadPresetItem[i].IsVisible())
         {
             m_loadPresetItem[i].SetVisible(false);
             m_text.UnregisterElement(&m_loadPresetItem[i]);
-        }
-        if (m_menuText[i].IsVisible())
-        {
-            m_menuText[i].SetVisible(false);
-            m_text.UnregisterElement(&m_menuText[i]);
         }
     }
     m_pCurMenu->UndrawMenus();
@@ -6031,7 +6087,7 @@ void CPlugin::WaitString_NukeSelection()
         size_t end = (m_waitstring.nCursorPos > static_cast<unsigned int>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos - 1 : m_waitstring.nSelAnchorPos - 1;
         size_t len = (m_waitstring.bDisplayAsCode ? strlen(reinterpret_cast<char*>(m_waitstring.szText)) : wcslen(m_waitstring.szText));
         size_t how_far_to_shift = end - start + 1;
-        size_t num_chars_to_shift = len - end; // includes NULL char
+        size_t num_chars_to_shift = len - end; // includes NULL character
 
         if (m_waitstring.bDisplayAsCode)
         {
@@ -6076,9 +6132,10 @@ void CPlugin::WaitString_Copy()
                 m_waitstring.szClipboardA[i] = *(ptr + start + i);
             m_waitstring.szClipboardA[chars_to_copy] = 0;
 
-            char tmp[64000];
-            ConvertLFCToCRsA(m_waitstring.szClipboardA, tmp);
-            copyStringToClipboardA(tmp);
+            std::vector<char> tmp;
+            tmp.resize(65536);
+            ConvertLFCToCRsA(m_waitstring.szClipboardA, tmp.data());
+            copyStringToClipboardA(tmp.data());
         }
         else
         {
@@ -6086,9 +6143,10 @@ void CPlugin::WaitString_Copy()
                 m_waitstring.szClipboard[i] = m_waitstring.szText[start + i];
             m_waitstring.szClipboard[chars_to_copy] = 0;
 
-            wchar_t tmp[64000];
-            ConvertLFCToCRsW(m_waitstring.szClipboard, tmp);
-            copyStringToClipboardW(tmp);
+            std::vector<wchar_t> tmp;
+            tmp.resize(65536);
+            ConvertLFCToCRsW(m_waitstring.szClipboard, tmp.data());
+            copyStringToClipboardW(tmp.data());
         }
     }
 }
@@ -6103,15 +6161,17 @@ void CPlugin::WaitString_Paste()
 
         if (m_waitstring.bDisplayAsCode)
         {
-            char tmp[64000];
-            strcpy_s(tmp, getStringFromClipboardA());
-            ConvertCRsToLFCA(tmp, m_waitstring.szClipboardA);
+            std::vector<char> tmp;
+            tmp.resize(65536);
+            strcpy_s(tmp.data(), 65536, getStringFromClipboardA());
+            ConvertCRsToLFCA(tmp.data(), m_waitstring.szClipboardA);
         }
         else
         {
-            wchar_t tmp[64000];
-            wcscpy_s(tmp, getStringFromClipboardW());
-            ConvertCRsToLFCW(tmp, m_waitstring.szClipboard);
+            std::vector<wchar_t> tmp;
+            tmp.resize(65536);
+            wcscpy_s(tmp.data(), 65536, getStringFromClipboardW());
+            ConvertCRsToLFCW(tmp.data(), m_waitstring.szClipboard);
         }
 
         size_t len;

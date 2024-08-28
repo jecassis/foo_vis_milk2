@@ -489,6 +489,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 return FALSE;
             case VK_ESCAPE:
                 g_plugin.m_UI_mode = UI_REGULAR;
+                g_plugin.ClearText();
                 return FALSE;
             case VK_BACK:
             case VK_LEFT:
@@ -500,6 +501,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 else
                 {
                     g_plugin.m_UI_mode = UI_REGULAR; // exit the menu
+                    g_plugin.ClearText();
                 }
                 return FALSE;
             case VK_RETURN:
@@ -539,6 +541,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                                 g_plugin.m_waitstring.szToolTip[0] = 0;
                                 g_plugin.m_waitstring.nCursorPos = wcslen(g_plugin.m_waitstring.szText); // set the starting edit position
                             }
+                            g_plugin.ClearText();
                             break;
                         case MENUITEMTYPE_BOOL:
                             *((bool*)addr) = !(*((bool*)addr));
@@ -577,6 +580,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             g_plugin.m_waitstring.nCursorPos = strnlen_s(reinterpret_cast<char*>(g_plugin.m_waitstring.szText), ARRAYSIZE(g_plugin.m_waitstring.szText));
                             if (pItem->m_nLastCursorPos < g_plugin.m_waitstring.nCursorPos)
                                 g_plugin.m_waitstring.nCursorPos = pItem->m_nLastCursorPos;
+                            g_plugin.ClearText();
                             break;
                         /*
                         case MENUITEMTYPE_OSC:
