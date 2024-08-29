@@ -4436,7 +4436,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     if (m_supertext.bIsSongTitle)
     {
-        m_superTitle->CreateWindowSizeDependentResources(GetWidth(), GetHeight());
+        m_superTitle->CreateWindowSizeDependentResources(w, h);
         m_superTitle->SetTextFont(m_supertext.szText, m_supertext.nFontFace, static_cast<float>(m_supertext.nFontSizeUsed));
         m_superTitle->OnRender();
 #if 0
@@ -4654,8 +4654,6 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
 #else
     }
-        UNREFERENCED_PARAMETER(w);
-        UNREFERENCED_PARAMETER(h);
         UNREFERENCED_PARAMETER(fProgress);
 #endif
     lpDevice->SetBlendState(false);

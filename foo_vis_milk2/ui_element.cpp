@@ -694,6 +694,16 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
             m_szBuffer = m_szBuffer.substr(0, p + 1);
         return reinterpret_cast<LRESULT>(m_szBuffer.c_str());
     }
+    else if (lParam == IPC_FETCH_ALBUMART)
+    {
+        //MILK2_CONSOLE_LOG("IPC_FETCH_ALBUMART")
+        artFetchData art_data{};
+        art_data.imgData = m_raster.data();
+        art_data.imgDataLen = static_cast<int>(m_raster.size());
+        art_data.type[0] = L'j'; art_data.type[1] = L'p'; art_data.type[2] = L'g'; art_data.type[3] = L'\0';
+        m_art_data = art_data;
+        return reinterpret_cast<LRESULT>(&m_art_data);
+    }
 #if 0
     else if (lParam == IPC_SETVISWND)
     {
@@ -1338,6 +1348,76 @@ void milk2_ui_element::resolve_pwd()
     else
     {
         s_pwd = base_path;
+    }
+}
+
+// Retrieves image raster data and clears the file path.
+void milk2_ui_element::get_raster_data(const uint8_t* data, size_t size) noexcept
+{
+    m_art_file.clear();
+    std::vector<uint8_t> empty;
+    m_raster.swap(empty);
+    if ((data != nullptr) && (size != 0))
+    {
+        m_raster.assign(data, data + size);
+    }
+}
+
+// Registers with the album art notifier.
+void milk2_ui_element::artwork_register()
+{
+#if 0
+    // Register with the album art notification manager.
+    auto AlbumArtNotificationManager = now_playing_album_art_notify_manager_v2::tryGet();
+
+    if (AlbumArtNotificationManager.is_valid())
+        AlbumArtNotificationManager->add(this);
+
+    // Get the artwork data from the album art.
+    if (m_art_file.empty())
+    {
+        auto aanm = now_playing_album_art_notify_manager_v2::get();
+
+        if (aanm != nullptr)
+        {
+            album_art_data_ptr aad = aanm->current();
+
+            if (aad.is_valid())
+            {
+                get_raster_data(static_cast<const uint8_t*>(aad->data()), aad->size());
+            }
+        }
+    }
+#endif
+}
+
+// Loads embedded album art.
+void milk2_ui_element::load_album_art(const metadb_handle_ptr& track, abort_callback& abort)
+{
+    static_api_ptr_t<album_art_manager_v2> aam;
+
+    auto extractor = aam->open(pfc::list_single_ref_t(track), pfc::list_single_ref_t(album_art_ids::cover_front), abort);
+
+    try
+    {
+        auto aad = extractor->query(album_art_ids::cover_front, abort);
+
+        if (aad.is_valid())
+        {
+            get_raster_data(static_cast<const uint8_t*>(aad->data()), aad->size());
+        }
+    }
+    catch (const exception_album_art_not_found&)
+    {
+        return;
+    }
+    catch (const exception_aborted&)
+    {
+        throw;
+    }
+    catch (...)
+    {
+        return;
     }
 }
 

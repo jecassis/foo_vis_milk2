@@ -45,6 +45,7 @@
 #include <sdk/preferences_page.h>
 #include <sdk/cfg_var.h>
 #include <sdk/advconfig_impl.h>
+#include <sdk/album_art.h>
 #include <sdk/audio_chunk.h>
 #include <sdk/console.h>
 #include <sdk/initquit.h>

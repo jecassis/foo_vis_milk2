@@ -273,5 +273,14 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void UpdatePlaylist();
     void SetSelectionSingle(size_t idx);
     void SetSelectionSingle(size_t idx, bool toggle, bool focus, bool single_only);
+
+    // Artwork
+    artFetchData m_art_data;
+    std::vector<uint8_t> m_raster;
+    std::wstring m_art_file;
+
+    void get_raster_data(const uint8_t* data, size_t size) noexcept;
+    void artwork_register();
+    void load_album_art(const metadb_handle_ptr& track, abort_callback& abort);
 };
 } // namespace
