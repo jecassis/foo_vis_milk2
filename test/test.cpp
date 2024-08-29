@@ -1,0 +1,156 @@
+/*
+ * test.cpp - Tests for foobar2000 component's exported interface.
+ *
+ * Copyright (c) 2023-2024 Jimmy Cassis
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+#include "pch.h"
+#include <CppUnitTest.h>
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+namespace MilkDrop2
+{
+BEGIN_TEST_MODULE_ATTRIBUTE()
+TEST_MODULE_ATTRIBUTE(L"Date", L"2024")
+END_TEST_MODULE_ATTRIBUTE()
+
+TEST_MODULE_INITIALIZE(Milk2Initialize)
+{
+    Logger::WriteMessage("MilkDrop 2 Test Module Initialize\n");
+}
+
+TEST_MODULE_CLEANUP(Milk2Cleanup)
+{
+    Logger::WriteMessage("MilkDrop 2 Test Module Cleanup\n");
+}
+
+TEST_CLASS(Milk2DllTest)
+{
+  private:
+    //static ServiceManager* service;
+
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+            //case WM_WA_IPC:
+            //    {
+            //        switch (lParam)
+            //        {
+            //            case IPC_GET_API_SERVICE:
+            //                return reinterpret_cast<LRESULT>(service);
+            //        }
+            //    }
+            //    break;
+            case WM_DESTROY:
+                //if (service)
+                //{
+                //    delete service;
+                //}
+                PostQuitMessage(0);
+                break;
+            default:
+                return DefWindowProc(hwnd, uMsg, wParam, lParam);
+        }
+        return NULL;
+    }
+
+  public:
+    Milk2DllTest()
+    {
+        Logger::WriteMessage("Milk2DllTest()\n");
+    }
+
+    ~Milk2DllTest()
+    {
+        Logger::WriteMessage("~Milk2DllTest()");
+    }
+
+    TEST_CLASS_INITIALIZE(Milk2DllTestInitialize)
+    {
+        Logger::WriteMessage("MilkDrop 2 DLL Test Initialize\n");
+    }
+
+    TEST_CLASS_CLEANUP(Milk2DllTestCleanup)
+    {
+        Logger::WriteMessage("MilkDrop 2 DLL Test Cleanup\n");
+    }
+
+    BEGIN_TEST_METHOD_ATTRIBUTE(SmokeTest)
+        TEST_OWNER(L"foo_vis_milk2")
+        TEST_PRIORITY(1)
+    END_TEST_METHOD_ATTRIBUTE()
+
+    TEST_METHOD(SmokeTest)
+    {
+        Logger::WriteMessage("Smoke DLL Load Test\n");
+
+        static const wchar_t* class_name = L"Messages";
+        WNDCLASSEX wx = {0};
+        wx.cbSize = sizeof(WNDCLASSEX);
+        wx.lpfnWndProc = WindowProc;
+        wx.hInstance = GetModuleHandle(NULL);
+        wx.lpszClassName = class_name;
+        Assert::IsNotNull(wx.hInstance);
+
+        foobar2000_api_impl* papi = new foobar2000_api_impl();
+
+        RegisterClassEx(&wx);
+        HWND hWnd = CreateWindowEx(0, class_name, L"Message Window", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+        Assert::IsNotNull(hWnd);
+
+        foobar2000_client* component = foobar2000_get_interface(papi, wx.hInstance);
+        Assert::IsNotNull(component);
+
+        uint32_t ver = component->get_version();
+        //service_factory_base* serv = component->get_service_list();
+        //bool present = serv->is_service_present(guid_milk2);
+        //stream_writer* ws = nullptr;
+        //stream_reader* rs = nullptr;
+        //component->get_config(ws, fb2k::noAbort);
+        //component->set_config(rs, fb2k::noAbort);
+        //component->set_library_path("path", "test");
+        component->services_init(true);
+        bool debug = component->is_debug();
+
+        Assert::AreEqual(static_cast<uint32_t>(FOOBAR2000_TARGET_VERSION), ver, L"foobar2000 component client version mismatches");
+#ifdef _DEBUG
+        Assert::IsTrue(debug, L"foobar2000 component client is not in debug mode.");
+#else
+        Assert::IsFalse(debug, L"foobar2000 component client is in debug mode.");
+#endif
+
+        //MSG msg = {};
+        //while (GetMessage(&msg, NULL, 0, 0))
+        //{
+        //    TranslateMessage(&msg);
+        //    DispatchMessage(&msg);
+        //}
+
+        hWnd = NULL;
+    }
+
+    TEST_METHOD(PassTest)
+    {
+        Logger::WriteMessage("Pass Test\n");
+        Assert::AreEqual(0, 0, L"Pass test failed!");
+    }
+
+    TEST_METHOD_INITIALIZE(MethodInit)
+    {
+        Logger::WriteMessage("Test Method Initialize\n");
+    }
+
+    TEST_METHOD_CLEANUP(MethodCleanup)
+    {
+        Logger::WriteMessage("Test Method Cleanup\n");
+    }
+
+    //TEST_METHOD(FailTest)
+    //{
+    //    Assert::Fail(L"Fail Test\n");
+    //}
+};
+}
