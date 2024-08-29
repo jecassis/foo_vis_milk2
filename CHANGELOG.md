@@ -2,16 +2,16 @@
 
 ## Current foobar2000 Component Status
 
-In order to complete the port from Winamp large amounts of functionality has been removed, lost, or untested:
+In order to complete the port from Winamp some functionality has been removed, lost, or modified:
 
-- Some text, image and texture rendering.
-- Customization through INI file.
-- Older presets may not fully work.
-- Interactive preset and shader editing.
-- Desktop mode.
-- Fake fullscreen mode and dual header functionality.
-- VJ mode.
-- Custom messages.
+- Some text, image and texture rendering [modified].
+- Title and custom messages [modified, still uses INI files].
+- Customization through INI file [removed, moved to foobar2000 preferences].
+- Older presets may not fully work [changed EEL].
+<!--- Interactive preset and shader editing [partially removed]. -->
+- Desktop mode [removed].
+- Fake fullscreen mode and dual header functionality [removed].
+- VJ mode [removed].
 
 ## MilkDrop 2 Library Notes
 

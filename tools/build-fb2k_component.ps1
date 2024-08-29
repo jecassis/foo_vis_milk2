@@ -83,7 +83,7 @@ if (-not $TargetFileName)
 Write-Host "INFO: Building `"$ComponentName`" component package..."
 
 $PackagePath = "$(Get-Location)\component"
-$DataPath = "$(Get-Location)\external\winamp"
+$WinampPath = "$(Get-Location)\external\winamp"
 $versions = @()
 $x86Version = $null
 $x64Version = $null
@@ -150,11 +150,11 @@ foreach ($platform in $Platforms)
     }
 }
 
-# Copy data and presets.
-if (Test-Path -Path "${DataPath}\data\*")
+# Copy shaders.
+if (Test-Path -Path "${WinampPath}\data\*")
 {
     Write-Host "INFO: Copying shaders to `"${PackagePath}\data`"..."
-    Copy-Item "${DataPath}\data\*" -Destination "${PackagePath}\data" -Force
+    Copy-Item "${WinampPath}\data\*" -Destination "${PackagePath}\data" -Force
 }
 else
 {

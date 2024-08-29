@@ -108,6 +108,9 @@
     <None Include="..\.clang-format">
       <Filter>Configuration Files</Filter>
     </None>
+    <None Include="..\.doxyfile">
+      <Filter>Configuration Files</Filter>
+    </None>
     <None Include="..\.gitattributes">
       <Filter>Configuration Files</Filter>
     </None>
@@ -140,6 +143,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\BUILDING.md">
+      <Filter>Documentation Files</Filter>
+    </Text>
     <Text Include="..\CHANGELOG.md">
       <Filter>Documentation Files</Filter>
     </Text>

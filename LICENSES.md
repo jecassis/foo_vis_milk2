@@ -33,6 +33,7 @@ This license applies to the following files or to files in the following directo
 <!--- `vis_milk2/vis_milk2.vcxproj.filters` (MilkDrop 2 Library Project File Categorization) -->
 - `vis_milk2/framework.h` (MilkDrop 2 Library Project Header)
 - `.github/workflows/build.yml` (GitHub Actions CI Workflow)
+- `test/` (Tests for MilkDrop 2 Visualization Component)
 - `tools/build-fb2k_component.ps1` (foobar2000 Component Packaging Script)
 - `external/fb2ksdk.patch` (foobar2000 2.0 SDK Patch)
 - `external/pmeel.patch` (projectM-eval Patch)

@@ -1,0 +1,78 @@
+# Doxyfile
+
+# Use doxygen to compare the used configuration file with the template
+# configuration file:
+# doxygen -x [configFile]
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+
+PROJECT_NAME = "MilkDrop 2 Visualization Component for foobar2000"
+PROJECT_NUMBER =
+PROJECT_BRIEF =
+PROJECT_LOGO =
+OUTPUT_DIRECTORY = data/dox
+JAVADOC_AUTOBRIEF = YES
+TAB_SIZE = 4
+MARKDOWN_ID_STYLE = GITHUB
+BUILTIN_STL_SUPPORT = NO
+NUM_PROC_THREADS = 0
+
+#---------------------------------------------------------------------------
+# Build related configuration options
+#---------------------------------------------------------------------------
+
+EXTRACT_ALL = YES
+EXTRACT_PRIVATE = YES
+EXTRACT_PRIV_VIRTUAL = YES
+EXTRACT_PACKAGE = YES
+EXTRACT_STATIC = YES
+EXTRACT_LOCAL_CLASSES = YES
+EXTRACT_ANON_NSPACES = YES
+
+#---------------------------------------------------------------------------
+# Configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+
+QUIET = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the input files
+#---------------------------------------------------------------------------
+
+INPUT = foo_vis_milk2 \
+        vis_milk2
+FILE_PATTERNS = *.c \
+                *.cpp \
+                *.inl \
+                *.h \
+                *.inc \
+                *.md
+RECURSIVE = YES
+EXCLUDE =
+EXCLUDE_PATTERNS =
+
+#---------------------------------------------------------------------------
+# Configuration options related to the HTML output
+#---------------------------------------------------------------------------
+
+GENERATE_HTML = YES
+HTML_OUTPUT = html
+HTML_FILE_EXTENSION = .html
+HTML_COLORSTYLE = AUTO_DARK
+
+#---------------------------------------------------------------------------
+# Configuration options related to the LaTeX output
+#---------------------------------------------------------------------------
+
+GENERATE_LATEX = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the preprocessor
+#---------------------------------------------------------------------------
+
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION = NO
+INCLUDE_PATH = Obj/x64/Debug/foo_vis_milk2
+EXPAND_AS_DEFINED =

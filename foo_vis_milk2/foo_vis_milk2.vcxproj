@@ -412,12 +412,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="preferences.cpp" />
-    <ClCompile Include="supertext.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="supertext.cpp" />
     <ClCompile Include="ui_element.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -491,6 +486,7 @@
     <None Include="extrusion.hlsli" />
     <None Include="packages.config" />
     <None Include="..\.clang-format" />
+    <None Include="..\.doxyfile" />
     <None Include="..\.gitattributes" />
     <None Include="..\.github\workflows\build.yml" />
     <None Include="..\.gitignore" />
@@ -503,6 +499,7 @@
     <None Include="..\vis_milk2\help.bin" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\BUILDING.md" />
     <Text Include="..\CHANGELOG.md" />
     <Text Include="..\LICENSE.txt" />
     <Text Include="..\LICENSES.md" />
