@@ -1634,6 +1634,9 @@ int CPlugin::AllocateMilkDropDX11()
             m_supertext.bRedrawSuperText = true;
         }
     }
+#ifdef _FOOBAR
+    m_superTitle = std::make_unique<SuperText>(m_lpDX.get());
+#endif
 
     m_texmgr.Init(GetDevice());
 
@@ -3220,6 +3223,9 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     SafeRelease(m_lpVS[0]);
     SafeRelease(m_lpVS[1]);
     SafeRelease(m_lpDDSTitle);
+#ifdef _FOOBAR
+    m_superTitle.reset();
+#endif
 
     m_texmgr.Finish();
 

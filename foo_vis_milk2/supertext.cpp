@@ -1,5 +1,5 @@
 /*
- * supertext.cpp - .
+ * supertext.cpp - Interactive 3-D text implementation file.
  *
  * Copyright (c) Microsoft Corporation
  * SPDX-License-Identifier: MIT
@@ -24,16 +24,11 @@ static const XMFLOAT3 sc_eyeLocation(0.0f, -100.0f, 400.0f);
 static const XMFLOAT3 sc_eyeAt(0.0f, -50.0f, 0.0f);
 static const XMFLOAT3 sc_eyeUp(0.0f, -1.0f, 0.0f);
 
-// If the system cannot find this font, DirectWrite will fall back to another
-// font family.
-static const PCWSTR sc_fontFace = L"Gabriola";
-static const float sc_fontSize = 96.0f;
-
-// Template that creates dummy IUnknown method implementations.
+// Template that creates dummy `IUnknown` method implementations.
 // This is useful in situations where one is absolutely sure
-// none of the IUnknown methods will be called (neither D2D nor
-// DWrite will call these methods on a ID2D1SimplifiedGeometrySink
-// or IDWriteTextRenderer). Using this technique also allows one
+// none of the `IUnknown` methods will be called (neither D2D nor
+// DWrite will call these methods on a `ID2D1SimplifiedGeometrySink`
+// or `IDWriteTextRenderer`). Using this technique also allows one
 // to stack allocate such objects.
 template <class T>
 class NoRefComObject : public T
@@ -345,12 +340,12 @@ class Extruder
         HRESULT hr;
 
         // The basic idea here is to generate the side faces by walking the
-        // geometry and constructing quads, and use ID2D1Geometry::Tessellate
+        // geometry and constructing quads, and use `ID2D1Geometry::Tessellate`
         // to generate the front and back faces.
         //
         // There are two things to be careful of here:
         //
-        // 1) We must not produce overlapping triangles, as this can cause
+        // 1) Must not produce overlapping triangles, as this can cause
         //    "depth-buffer fighting".
         // 2) The vertices on the front and back faces must perfectly align with
         //    the vertices on the side faces.
@@ -359,16 +354,16 @@ class Extruder
         // solving issue 1 easy.
         //
         // Issue 2 is more complicated, since the D2D tessellation algorithm
-        // will jitter vertices slightly. To get around this, we snap vertices
+        // will jitter vertices slightly. To get around this, snap vertices
         // to grid-points. To ensure that the tessellation jittering does cause
-        // a vertex to be snapped to a neighboring grid-point, we actually snap
+        // a vertex to be snapped to a neighboring grid-point, actually snap
         // the  vertices twice: once prior to tessellating and once after
-        // tessellating. As long as our grid points are spaced further than
-        // twice max-jitter distance, we can be sure the vertices will snap
+        // tessellating. As long as the grid points are spaced further than
+        // twice max-jitter distance, one can be sure the vertices will snap
         // to the right spot.
         ID2D1Geometry* pFlattenedGeometry = NULL;
 
-        // Flatten the geometry first so we don't have to worry about stitching
+        // Flatten the geometry first so there is no need to worry about stitching
         // together seams of Beziers.
         hr = D2DFlatten(pGeometry, sc_flatteningTolerance, &pFlattenedGeometry);
 
@@ -897,33 +892,35 @@ class OutlineRenderer : public IDWriteTextRenderer
 /* static*/ const UINT SuperText::sc_vertexBufferCount = 3 * 1000; // must be a multiple of 3
 
 // Constructor -- initializes member data.
-SuperText::SuperText() :
+SuperText::SuperText(DXContext* lpDX) :
     m_pD2DFactory(nullptr),
     m_pDWriteFactory(nullptr),
     m_pDevice(nullptr),
     m_pContext(nullptr),
     m_pSwapChain(nullptr),
     m_pState(nullptr),
-    m_pDepthStencil(nullptr),
-    m_pDepthStencilView(nullptr),
-    m_pRenderTargetView(nullptr),
     m_pVertexBuffer(nullptr),
     m_pVertexLayout(nullptr),
     m_pTextGeometry(nullptr),
     m_pTextLayout(nullptr)
 {
-    XMStoreFloat4x4(&m_ProjectionMatrix, XMMatrixTranspose(XMMatrixIdentity()));
-    XMStoreFloat4x4(&m_ViewMatrix, XMMatrixTranspose(XMMatrixIdentity()));
-    XMStoreFloat4x4(&m_WorldMatrix, XMMatrixTranspose(XMMatrixIdentity()));
+    m_characters = L"> ";
+    m_fontFace = L"Gabriola";
+    m_fontSize = 96.0f;
+
+    XMStoreFloat4x4(&m_ProjectionMatrix, XMMatrixIdentity());
+    XMStoreFloat4x4(&m_ViewMatrix, XMMatrixIdentity());
+    XMStoreFloat4x4(&m_WorldMatrix, XMMatrixIdentity());
+
+    CreateDeviceIndependentResources(lpDX->GetD2DFactory(), lpDX->GetDWriteFactory());
+    CreateDeviceDependentResources(lpDX->GetD3DDevice(), lpDX->GetDeviceResources()->GetD3DDeviceContext());
+    SetSwapChain(lpDX->GetDeviceResources()->GetSwapChain());
 }
 
 // Destructor -- tears down member data.
 SuperText::~SuperText()
 {
     m_pState.Reset();
-    m_pDepthStencil.Reset();
-    m_pDepthStencilView.Reset();
-    m_pRenderTargetView.Reset();
     m_pVertexBuffer.Reset();
     m_pVertexLayout.Reset();
     SafeReleaseT(&m_pTextGeometry);
@@ -947,12 +944,7 @@ HRESULT SuperText::CreateDeviceIndependentResources(ID2D1Factory1* pD2DFactory, 
     // Add command-prompt-ish like text to the start of the string.
     if (SUCCEEDED(hr))
     {
-        m_characters.push_back('>');
-        hr = S_OK;
-    }
-    if (SUCCEEDED(hr))
-    {
-        m_characters.push_back(' ');
+        m_characters = L"> ";
         hr = S_OK;
     }
 
@@ -974,12 +966,12 @@ HRESULT SuperText::UpdateTextGeometry()
     IDWriteTextFormat* pFormat = NULL;
 
     hr = m_pDWriteFactory->CreateTextFormat(
-        sc_fontFace,
+        m_fontFace,
         NULL,
         DWRITE_FONT_WEIGHT_EXTRA_BOLD,
         DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL,
-        sc_fontSize,
+        m_fontSize,
         L"", // locale name
         &pFormat
     );
@@ -987,11 +979,11 @@ HRESULT SuperText::UpdateTextGeometry()
     {
         IDWriteTextLayout* pLayout = NULL;
         hr = m_pDWriteFactory->CreateTextLayout(
-            &m_characters[0],
-            static_cast<UINT32>(m_characters.size()),
+            m_characters.data(),
+            static_cast<UINT32>(m_characters.length()),
             pFormat,
             0.0f, // lineWidth (ignored because of NO_WRAP)
-            sc_fontSize, // lineHeight
+            m_fontSize, // lineHeight
             &pLayout
         );
         if (SUCCEEDED(hr))
@@ -1196,202 +1188,121 @@ HRESULT SuperText::CreateDeviceDependentResources(ID3D11Device1* pDevice, ID3D11
 
 HRESULT SuperText::CreateWindowSizeDependentResources(int nWidth, int nHeight)
 {
-    HRESULT hr = E_FAIL;
-    //UINT msaaQuality = 0;
-    //UINT sampleCount = 0;
-    ComPtr<ID3D11Resource> pBackBufferResource;
-    ComPtr<IDXGISurface> pBackBuffer;
+    HRESULT hr = S_OK;
 
     if (m_pDevice && m_pSwapChain)
     {
-        hr = S_OK;
+        if (SUCCEEDED(hr))
+        {
+            D3D11_BUFFER_DESC bd{};
+
+            // Create the constant buffers.
+            bd.Usage = D3D11_USAGE_DEFAULT;
+            bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            bd.CPUAccessFlags = 0;
+            bd.ByteWidth = (sizeof(ConstantBufferNeverChanges) + 15) / 16 * 16;
+            hr = m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferNeverChanges);
+
+            bd.ByteWidth = (sizeof(ConstantBufferChangeOnResize) + 15) / 16 * 16;
+            hr |= m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferChangeOnResize);
+
+            bd.ByteWidth = (sizeof(ConstantBufferChangesEveryFrame) + 15) / 16 * 16;
+            hr |= m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferChangesEveryFrame);
+        }
 
         if (SUCCEEDED(hr))
         {
-            // Create views on the RT buffers and set them on the device
-            hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBufferResource));
+            D3D11_SAMPLER_DESC sampDesc{};
+            sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+            sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+            sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+            sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+            sampDesc.MinLOD = 0;
+            sampDesc.MaxLOD = FLT_MAX;
+            hr = m_pDevice->CreateSamplerState(&sampDesc, m_samplerLinear.GetAddressOf());
         }
 
-        if (true)
+        if (SUCCEEDED(hr))
         {
-            if (SUCCEEDED(hr))
-            {
-                // Create views on the RT buffers and set them on the device
-                hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(pBackBufferResource.GetAddressOf()));
-            }
+            // Create the input layout.
+            hr = m_pDevice->CreateInputLayout(sc_PNVertexLayout, ARRAYSIZE(sc_PNVertexLayout), extrusionvsCode, sizeof(extrusionvsCode), &m_pVertexLayout);
 
-            if (SUCCEEDED(hr))
-            {
-                CD3D11_RENDER_TARGET_VIEW_DESC renderDesc;
-                renderDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-                renderDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
-                renderDesc.Texture2D.MipSlice = 0;
-
-                hr = m_pDevice->CreateRenderTargetView(pBackBufferResource.Get(), &renderDesc, m_pRenderTargetView.ReleaseAndGetAddressOf());
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                CD3D11_TEXTURE2D_DESC texDesc;
-                texDesc.ArraySize = 1;
-                texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-                texDesc.CPUAccessFlags = 0;
-                texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-                texDesc.Height = nHeight;
-                texDesc.Width = nWidth;
-                texDesc.MipLevels = 1;
-                texDesc.MiscFlags = 0;
-                texDesc.SampleDesc.Count = 1; //sampleCount;
-                texDesc.SampleDesc.Quality = 0; //msaaQuality - 1;
-                texDesc.Usage = D3D11_USAGE_DEFAULT;
-
-                hr = m_pDevice->CreateTexture2D(&texDesc, NULL, m_pDepthStencil.ReleaseAndGetAddressOf());
-
-                if (SUCCEEDED(hr))
-                {
-                    D3D11_DEPTH_STENCIL_VIEW_DESC depthViewDesc{};
-                    depthViewDesc.Format = texDesc.Format;
-                    depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-                    depthViewDesc.Texture2D.MipSlice = 0;
-                    depthViewDesc.Flags = 0;
-
-                    hr = m_pDevice->CreateDepthStencilView(m_pDepthStencil.Get(), &depthViewDesc, m_pDepthStencilView.ReleaseAndGetAddressOf());
-                }
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                ID3D11RenderTargetView* viewList[1] = {m_pRenderTargetView.Get()};
-                m_pContext->OMSetRenderTargets(1, viewList, m_pDepthStencilView.Get());
-
-                // Set a new viewport based on the new dimensions
-                D3D11_VIEWPORT viewport{};
-                viewport.Width = static_cast<FLOAT>(nWidth);
-                viewport.Height = static_cast<FLOAT>(nHeight);
-                viewport.TopLeftX = 0;
-                viewport.TopLeftY = 0;
-                viewport.MinDepth = 0;
-                viewport.MaxDepth = 1;
-                m_pContext->RSSetViewports(1, &viewport);
-
-                // Get a surface in the swap chain
-                hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(pBackBuffer.GetAddressOf()));
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                D3D11_BUFFER_DESC bd{};
-
-                // Create the constant buffers.
-                bd.Usage = D3D11_USAGE_DEFAULT;
-                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-                bd.CPUAccessFlags = 0;
-                bd.ByteWidth = (sizeof(ConstantBufferNeverChanges) + 15) / 16 * 16;
-                hr = m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferNeverChanges);
-
-                bd.ByteWidth = (sizeof(ConstantBufferChangeOnResize) + 15) / 16 * 16;
-                hr |= m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferChangeOnResize);
-
-                bd.ByteWidth = (sizeof(ConstantBufferChangesEveryFrame) + 15) / 16 * 16;
-                hr |= m_pDevice->CreateBuffer(&bd, nullptr, &m_constantBufferChangesEveryFrame);
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                D3D11_SAMPLER_DESC sampDesc{};
-                sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-                sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-                sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-                sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-                sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-                sampDesc.MinLOD = 0;
-                sampDesc.MaxLOD = FLT_MAX;
-                hr = m_pDevice->CreateSamplerState(&sampDesc, m_samplerLinear.GetAddressOf());
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                // Create the input layout.
-                hr = m_pDevice->CreateInputLayout(sc_PNVertexLayout, ARRAYSIZE(sc_PNVertexLayout), extrusionvsCode, sizeof(extrusionvsCode), &m_vertexLayout);
-
-                // Load the shaders [and textures].
-                hr |= m_pDevice->CreateVertexShader(extrusionvsCode, sizeof(extrusionvsCode), nullptr, &m_vertexShader);
-                hr |= m_pDevice->CreatePixelShader(extrusionpsCode, sizeof(extrusionpsCode), nullptr, &m_pixelShader);
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                // Set the input layout.
-                m_pContext->IASetInputLayout(m_pVertexLayout.Get());
-
-                D3D11_BUFFER_DESC bd{};
-                bd.Usage = D3D11_USAGE_DYNAMIC;
-                bd.ByteWidth = sc_vertexBufferCount * sizeof(PNVertex);
-                bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-                bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-                bd.MiscFlags = 0;
-
-                hr = m_pDevice->CreateBuffer(&bd, NULL, m_pVertexBuffer.GetAddressOf());
-            }
-
-            if (SUCCEEDED(hr))
-            {
-                // Set the vertex buffer.
-                UINT stride = sizeof(PNVertex);
-                UINT offset = 0;
-                ID3D11Buffer* pVertexBuffer = m_pVertexBuffer.Get();
-
-                m_pContext->IASetVertexBuffers(
-                    0, // StartSlot
-                    1, // NumBuffers
-                    &pVertexBuffer,
-                    &stride,
-                    &offset
-                );
-
-                // Set primitive topology.
-                m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-                // Initialize the world matrices.
-                XMStoreFloat4x4(&m_WorldMatrix, XMMatrixTranspose(XMMatrixIdentity()));
-
-                // Initialize the view matrix.
-                XMStoreFloat4x4(&m_ViewMatrix, XMMatrixTranspose(XMMatrixLookAtLH(XMLoadFloat3(&sc_eyeLocation), XMLoadFloat3(&sc_eyeAt), XMLoadFloat3(&sc_eyeUp))));
-
-                // Initialize the projection matrix.
-                XMStoreFloat4x4(&m_ProjectionMatrix, XMMatrixTranspose(XMMatrixPerspectiveFovLH(
-                        (float)XM_PI * 0.24f, // fovy
-                        nWidth / (float)nHeight, // aspect
-                        0.1f, // zn
-                        800.0f // zf
-                    ))
-                );
-                // 0-degree Z-rotation
-                static const XMFLOAT4X4 Rotation0(
-                    1.0f, 0.0f, 0.0f, 0.0f,
-                    0.0f, 1.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 1.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f, 1.0f
-                );
-
-                // Update variables that never change.
-                ConstantBufferNeverChanges constantBufferNeverChanges{};
-                constantBufferNeverChanges.View = m_ViewMatrix;
-                XMStoreFloat4(&constantBufferNeverChanges.LightPosition[0], XMVectorSet(1200.0f, -20.0f, 400.0f, 0.0f));
-                XMStoreFloat4(&constantBufferNeverChanges.LightColor[0], XMVectorSet(0.9f, 0.0f, 0.0f, 1.0f));
-                m_pContext->UpdateSubresource(m_constantBufferNeverChanges.Get(), 0, nullptr, &constantBufferNeverChanges, 0, 0);
-
-                ConstantBufferChangeOnResize changesOnResize{};
-                changesOnResize.Projection = m_ProjectionMatrix;
-                m_pContext->UpdateSubresource(m_constantBufferChangeOnResize.Get(), 0, nullptr, &changesOnResize, 0, 0);
-
-                ConstantBufferChangesEveryFrame changesEveryFrame{};
-                changesEveryFrame.World = m_WorldMatrix;
-                m_pContext->UpdateSubresource(m_constantBufferChangesEveryFrame.Get(), 0, nullptr, &changesEveryFrame, 0, 0);
-            }
+            // Load the shaders [and textures].
+            hr |= m_pDevice->CreateVertexShader(extrusionvsCode, sizeof(extrusionvsCode), nullptr, &m_vertexShader);
+            hr |= m_pDevice->CreatePixelShader(extrusionpsCode, sizeof(extrusionpsCode), nullptr, &m_pixelShader);
         }
 
-        pBackBufferResource.Reset();
+        if (SUCCEEDED(hr))
+        {
+            // Set the input layout.
+            m_pContext->IASetInputLayout(m_pVertexLayout.Get());
+
+            D3D11_BUFFER_DESC bd{};
+            bd.Usage = D3D11_USAGE_DYNAMIC;
+            bd.ByteWidth = sc_vertexBufferCount * sizeof(PNVertex);
+            bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            bd.MiscFlags = 0;
+
+            hr = m_pDevice->CreateBuffer(&bd, NULL, m_pVertexBuffer.GetAddressOf());
+        }
+
+        if (SUCCEEDED(hr))
+        {
+            // Set the vertex buffer.
+            UINT stride = sizeof(PNVertex);
+            UINT offset = 0;
+            ID3D11Buffer* pVertexBuffer = m_pVertexBuffer.Get();
+
+            m_pContext->IASetVertexBuffers(
+                0, // StartSlot
+                1, // NumBuffers
+                &pVertexBuffer,
+                &stride,
+                &offset
+            );
+
+            // Set primitive topology.
+            m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            // Initialize the world matrices.
+            XMStoreFloat4x4(&m_WorldMatrix, XMMatrixIdentity());
+
+            // Initialize the view matrix.
+            XMStoreFloat4x4(&m_ViewMatrix, XMMatrixLookAtLH(XMLoadFloat3(&sc_eyeLocation), XMLoadFloat3(&sc_eyeAt), XMLoadFloat3(&sc_eyeUp)));
+
+            // Initialize the projection matrix.
+            XMStoreFloat4x4(&m_ProjectionMatrix, XMMatrixPerspectiveFovLH(
+                    static_cast<float>(XM_PI) * 0.24f, // fovy
+                    nWidth / static_cast<float>(nHeight), // aspect
+                    0.1f, // zn
+                    800.0f // zf
+                )
+            );
+            // 0-degree Z-rotation
+            static const XMFLOAT4X4 Rotation0(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f
+            );
+
+            // Update variables that never change.
+            ConstantBufferNeverChanges constantBufferNeverChanges{};
+            XMStoreFloat4x4(&constantBufferNeverChanges.View, XMMatrixTranspose(XMLoadFloat4x4(&m_ViewMatrix)));
+            XMStoreFloat4(&constantBufferNeverChanges.LightPosition[0], XMVectorSet(1200.0f, -20.0f, 400.0f, 0.0f));
+            XMStoreFloat4(&constantBufferNeverChanges.LightColor[0], XMVectorSet(0.9f, 0.0f, 0.0f, 1.0f));
+            m_pContext->UpdateSubresource(m_constantBufferNeverChanges.Get(), 0, nullptr, &constantBufferNeverChanges, 0, 0);
+
+            ConstantBufferChangeOnResize changesOnResize{};
+            XMStoreFloat4x4(&changesOnResize.Projection, XMMatrixTranspose(XMLoadFloat4x4(&m_ProjectionMatrix)));
+            m_pContext->UpdateSubresource(m_constantBufferChangeOnResize.Get(), 0, nullptr, &changesOnResize, 0, 0);
+
+            ConstantBufferChangesEveryFrame changesEveryFrame{};
+            XMStoreFloat4x4(&changesEveryFrame.World, XMMatrixTranspose(XMLoadFloat4x4(&m_WorldMatrix)));
+            m_pContext->UpdateSubresource(m_constantBufferChangesEveryFrame.Get(), 0, nullptr, &changesEveryFrame, 0, 0);
+        }
     }
 
     return hr;
@@ -1406,9 +1317,6 @@ HRESULT SuperText::CreateWindowSizeDependentResources(int nWidth, int nHeight)
 void SuperText::DiscardDeviceResources()
 {
     m_pState.Reset();
-    m_pDepthStencil.Reset();
-    m_pDepthStencilView.Reset();
-    m_pRenderTargetView.Reset();
     m_pVertexBuffer.Reset();
     m_pVertexLayout.Reset();
 }
@@ -1421,22 +1329,31 @@ void SuperText::DiscardDeviceResources()
 //    }
 //    else if (key == '\b')
 //    {
-//        if (m_characters.size() > 2)
+//        if (m_characters.length() > 2)
 //        {
 //            m_characters.pop_back();
 //        }
 //    }
 //    else
 //    {
-//        // In the case of failure we will keep the previous characters, so we
-//        // can safely ignore the return value.
+//        // In the case of failure keep the previous characters, so can
+//        // safely ignore the return value.
 //        m_characters.push_back(key);
 //    }
 //
-//    // In the case of failure we will keep the previous text geometry, so we can
+//    // In the case of failure keep the previous text geometry, so can
 //    // safely ignore the return value.
 //    UpdateTextGeometry();
 //}
+
+HRESULT SuperText::SetTextFont(const std::wstring& str, const PCWSTR face, float size)
+{
+    m_characters = str;
+    m_fontFace = face;
+    m_fontSize = size;
+
+    return UpdateTextGeometry();
+}
 
 // This method is called when the app needs to paint the window. It uses a D2D
 // RT to draw a gradient background into the swap chain buffer. Then, it uses
@@ -1448,9 +1365,7 @@ HRESULT SuperText::OnRender()
     static float t = 0.0f;
     static ULONGLONG dwTimeStart = 0;
 
-    hr = m_pDevice ? S_OK : E_FAIL;
-
-    if (SUCCEEDED(hr) && m_pRenderTargetView)
+    if (m_pContext)
     {
         ULONGLONG dwTimeCur = GetTickCount64();
         if (dwTimeStart == 0)
@@ -1459,10 +1374,10 @@ HRESULT SuperText::OnRender()
         }
         t = (dwTimeCur - dwTimeStart) / 3000.0f;
 
-        float a = ((float)XM_PI) / 4 * sinf(2 * t);
+        float a = (static_cast<float>(XM_PI)) / 4 * std::sin(2 * t);
 
         // A silly way to get a blinking cursor, but it works!
-        bool showCursor = sinf(20 * t) < 0;
+        bool showCursor = false; //std::sin(20 * t) < 0;
 
         ID2D1Geometry* pGeometry = NULL;
 
@@ -1483,65 +1398,49 @@ HRESULT SuperText::OnRender()
 
             if (SUCCEEDED(hr))
             {
-                XMStoreFloat4x4(&m_WorldMatrix, XMMatrixTranspose(XMMatrixRotationY(a)));
+                XMStoreFloat4x4(&m_WorldMatrix, XMMatrixRotationY(a));
 
-                // Swap chain will contain the size of the back buffer.
-                DXGI_SWAP_CHAIN_DESC swapDesc;
-                hr = m_pSwapChain->GetDesc(&swapDesc);
+                // Setup the graphics pipeline.
+                m_pContext->IASetInputLayout(m_pVertexLayout.Get());
+                m_pContext->VSSetConstantBuffers(0, 1, m_constantBufferNeverChanges.GetAddressOf());
+                m_pContext->VSSetConstantBuffers(1, 1, m_constantBufferChangeOnResize.GetAddressOf());
+                m_pContext->VSSetConstantBuffers(2, 1, m_constantBufferChangesEveryFrame.GetAddressOf());
 
-                if (SUCCEEDED(hr))
+                m_pContext->PSSetConstantBuffers(0, 1, m_constantBufferNeverChanges.GetAddressOf());
+                //m_pContext->PSSetConstantBuffers(1, 1, m_constantBufferChangeOnResize.GetAddressOf());
+                //m_pContext->PSSetConstantBuffers(2, 1, m_constantBufferChangesEveryFrame.GetAddressOf());
+                m_pContext->PSSetSamplers(0, 1, m_samplerLinear.GetAddressOf());
+
+                // Update variables that change once per frame.
+                ConstantBufferChangesEveryFrame constantBufferChangesEveryFrame{};
+                XMStoreFloat4x4(&constantBufferChangesEveryFrame.World, XMMatrixTranspose(XMLoadFloat4x4(&m_WorldMatrix)));
+                m_pContext->UpdateSubresource(m_constantBufferChangesEveryFrame.Get(), 0, nullptr, &constantBufferChangesEveryFrame, 0, 0);
+
+                // Render the scene.
+                m_pContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+                m_pContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+
+                UINT verticesLeft = static_cast<UINT>(vertices.size());
+
+                UINT index = 0;
+
+                while (verticesLeft > 0)
                 {
-                    ID3D11RenderTargetView* const targets[1] = {m_pRenderTargetView.Get()};
-                    m_pContext->OMSetRenderTargets(1, targets, m_pDepthStencilView.Get());
+                    UINT verticesToCopy = std::min(verticesLeft, sc_vertexBufferCount);
 
-                    m_pContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+                    D3D11_MAPPED_SUBRESOURCE resource;
+                    hr = m_pContext->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 
-                    const float clearColor[4] = {/*0.5f, 0.5f, 0.8f*/ 0.0f, 0.0f, 0.0f, 1.0f};
-
-                    m_pContext->ClearRenderTargetView(m_pRenderTargetView.Get(), clearColor);
-
-                    // Setup the graphics pipeline.
-                    m_pContext->IASetInputLayout(m_vertexLayout.Get());
-                    m_pContext->VSSetConstantBuffers(0, 1, m_constantBufferNeverChanges.GetAddressOf());
-                    m_pContext->VSSetConstantBuffers(1, 1, m_constantBufferChangeOnResize.GetAddressOf());
-                    m_pContext->VSSetConstantBuffers(2, 1, m_constantBufferChangesEveryFrame.GetAddressOf());
-
-                    m_pContext->PSSetConstantBuffers(0, 1, m_constantBufferNeverChanges.GetAddressOf());
-                    //m_pContext->PSSetConstantBuffers(1, 1, m_constantBufferChangeOnResize.GetAddressOf());
-                    //m_pContext->PSSetConstantBuffers(2, 1, m_constantBufferChangesEveryFrame.GetAddressOf());
-                    m_pContext->PSSetSamplers(0, 1, m_samplerLinear.GetAddressOf());
-
-                    // Update variables that change once per frame.
-                    ConstantBufferChangesEveryFrame constantBufferChangesEveryFrame{};
-                    XMStoreFloat4x4(&constantBufferChangesEveryFrame.World, XMLoadFloat4x4(&m_WorldMatrix));
-                    m_pContext->UpdateSubresource(m_constantBufferChangesEveryFrame.Get(), 0, nullptr, &constantBufferChangesEveryFrame, 0, 0);
-
-                    // Render the scene.
-                    m_pContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-                    m_pContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-
-                    UINT verticesLeft = static_cast<UINT>(vertices.size());
-
-                    UINT index = 0;
-
-                    while (SUCCEEDED(hr) && verticesLeft > 0)
+                    if (SUCCEEDED(hr))
                     {
-                        UINT verticesToCopy = std::min(verticesLeft, sc_vertexBufferCount);
+                        memcpy(resource.pData, &vertices[index], verticesToCopy * sizeof(PNVertex));
 
-                        D3D11_MAPPED_SUBRESOURCE resource;
-                        hr = m_pContext->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                        m_pContext->Unmap(m_pVertexBuffer.Get(), 0);
 
-                        if (SUCCEEDED(hr))
-                        {
-                            memcpy(resource.pData, &vertices[index], verticesToCopy * sizeof(PNVertex));
+                        m_pContext->Draw(verticesToCopy, 0);
 
-                            m_pContext->Unmap(m_pVertexBuffer.Get(), 0);
-
-                            m_pContext->Draw(verticesToCopy, 0); //D3D11 ERROR: ID3D11DeviceContext::Draw: Input Assembler - Vertex Shader linkage error: Signatures between stages are incompatible. The input stage requires Semantic/Index (NORMAL,0) as input, but it is not provided by the output stage. [EXECUTION ERROR #342: DEVICE_SHADER_LINKAGE_SEMANTICNAME_NOT_FOUND]
-
-                            verticesLeft -= verticesToCopy;
-                            index += verticesToCopy;
-                        }
+                        verticesLeft -= verticesToCopy;
+                        index += verticesToCopy;
                     }
                 }
             }

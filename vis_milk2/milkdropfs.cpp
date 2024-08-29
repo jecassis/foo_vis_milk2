@@ -171,7 +171,6 @@ bool CPlugin::RenderStringToTitleTexture()
     wchar_t szTextToDraw[512];
     swprintf_s(szTextToDraw, L" %s ", m_supertext.szText); // add a space at end for italicized fonts and at start, too, because it's centered!
 
-#if 0
     if (!m_lpDDSTitle)
         return false;
 
@@ -186,11 +185,11 @@ bool CPlugin::RenderStringToTitleTexture()
     //lpDevice->GetDepthStencilSurface(&pZBuffer);
 
     // Set render target to m_lpDDSTitle.
-    {
-        lpDevice->SetTexture(0, NULL);
-        lpDevice->SetRenderTarget(m_lpDDSTitle);
-        lpDevice->SetTexture(0, NULL);
-    }
+    ID3D11DepthStencilView* origDSView = nullptr;
+    ID3D11DepthStencilView* emptyDSView = nullptr;
+    lpDevice->GetDepthView(&origDSView);
+    lpDevice->SetRenderTarget(m_lpDDSTitle, &emptyDSView);
+    lpDevice->SetTexture(0, nullptr);
 
     // Clear the texture to black.
     {
@@ -212,7 +211,6 @@ bool CPlugin::RenderStringToTitleTexture()
 
         lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(WFVERTEX));
     }
-#endif
 
     int g_title_font_sizes[] = {
         // NOTE: DO NOT EXCEED 64 FONTS HERE.
@@ -417,14 +415,13 @@ bool CPlugin::RenderStringToTitleTexture()
         ret = true;
     }
 
-#if 0
     // Change the render target back to the original setup.
     lpDevice->SetTexture(0, NULL);
-    lpDevice->SetRenderTarget(pBackBuffer.Get());
+    lpDevice->SetRenderTarget(pBackBuffer.Get(), &origDSView);
     //lpDevice->SetDepthStencilSurface(pZBuffer.Get());
-    //SafeRelease(pBackBuffer);
+    SafeRelease(pBackBuffer);
+    SafeRelease(origDSView);
     //SafeRelease(pZBuffer);
-#endif
 
     if (ret && !m_ddsTitle.IsVisible())
     {
@@ -947,7 +944,7 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetDepth(false);
         lpDevice->SetShader(0);
     }
-    // set up render state
+    // Set up render state.
     /*
     {
         DWORD texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
@@ -961,17 +958,17 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
         lpDevice->SetSamplerState(1, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
 
-        lpDevice->SetRenderState( D3DRS_SHADEMODE, D3DSHADE_GOURAUD );
-        lpDevice->SetRenderState( D3DRS_SPECULARENABLE, FALSE );
-        lpDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
-        lpDevice->SetRenderState( D3DRS_ZENABLE, FALSE );
-        lpDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-        lpDevice->SetRenderState( D3DRS_LIGHTING, FALSE );
-        lpDevice->SetRenderState( D3DRS_COLORVERTEX, TRUE );
-        lpDevice->SetRenderState( D3DRS_FILLMODE,  D3DFILL_SOLID );
-        lpDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-        lpDevice->SetRenderState( D3DRS_AMBIENT, 0xFFFFFFFF );  //?
-        lpDevice->SetRenderState( D3DRS_CLIPPING, TRUE );
+        lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+        lpDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+        lpDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+        lpDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+        lpDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+        lpDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+        lpDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE);
+        lpDevice->SetRenderState(D3DRS_FILLMODE,  D3DFILL_SOLID);
+        lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        lpDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);  //?
+        lpDevice->SetRenderState(D3DRS_CLIPPING, TRUE);
 
         // stages 0 and 1 always just use bilinear filtering.
         lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
@@ -1116,7 +1113,7 @@ void CPlugin::RenderFrame(int bRedraw)
 
     // Change the render target back to the original setup.
     lpDevice->SetTexture(0, NULL);
-    m_lpDX->RestoreTarget(); //lpDevice->SetRenderTarget( pBackBuffer );  // BUG!!
+    m_lpDX->RestoreTarget(); //lpDevice->SetRenderTarget(pBackBuffer);  // BUG!!
     //lpDevice->SetDepthStencilSurface(pZBuffer);
     SafeRelease(pBackBuffer);
     //SafeRelease(pZBuffer);
@@ -4421,7 +4418,6 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
 
 void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 {
-#if 0
     if (!m_lpDDSTitle)
         return;
 
@@ -4440,6 +4436,10 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     if (m_supertext.bIsSongTitle)
     {
+        m_superTitle->CreateWindowSizeDependentResources(GetWidth(), GetHeight());
+        m_superTitle->SetTextFont(m_supertext.szText, m_supertext.nFontFace, static_cast<float>(m_supertext.nFontSizeUsed));
+        m_superTitle->OnRender();
+#if 0
         // Positioning.
         float fSizeX = 50.0f / (float)m_supertext.nFontSizeUsed * powf(1.5f, m_supertext.fFontSize - 2.0f);
         float fSizeY = fSizeX * m_nTitleTexSizeY / (float)m_nTitleTexSizeX; //* m_nWidth/(float)m_nHeight;
@@ -4652,11 +4652,11 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         }
 
         lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
-    }
-    lpDevice->SetBlendState(false);
 #else
-    UNREFERENCED_PARAMETER(w);
-    UNREFERENCED_PARAMETER(h);
-    UNREFERENCED_PARAMETER(fProgress);
+    }
+        UNREFERENCED_PARAMETER(w);
+        UNREFERENCED_PARAMETER(h);
+        UNREFERENCED_PARAMETER(fProgress);
 #endif
+    lpDevice->SetBlendState(false);
 }

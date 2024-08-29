@@ -34,9 +34,6 @@
 #include "shell_defines.h"
 #include "deviceresources.h"
 #include "d3d11shim.h"
-#if defined(_M_IX86) || defined(_M_X64)
-#include <foo_vis_milk2/supertext.h>
-#endif
 
 #define DXC_ERR_REGWIN -2
 #define DXC_ERR_CREATEWIN -3
@@ -88,13 +85,13 @@ class DXContext final : public DX::IDeviceNotify
     void OnDeviceLost() override;
     void OnDeviceRestored() override;
 
-    ID3D11Device1* GetD3DDevice() { return m_deviceResources->GetD3DDevice(); }
-    DXGI_FORMAT GetBackBufferFormat() { return m_deviceResources->GetBackBufferFormat(); }
-    ID2D1Device* GetD2DDevice() { return m_deviceResources->GetD2DDevice(); }
-    ID2D1DeviceContext* GetD2DDeviceContext() { return m_deviceResources->GetD2DDeviceContext(); }
-    IDWriteFactory1* GetDWriteFactory() { return m_deviceResources->GetDWriteFactory(); }
-    SuperText* GetTitleText() { return m_lpTitleText.get(); }
-    DX::DeviceResources* GetDeviceResources() { return m_deviceResources.get(); }
+    ID3D11Device1* GetD3DDevice() const noexcept { return m_deviceResources->GetD3DDevice(); }
+    DXGI_FORMAT GetBackBufferFormat() const noexcept { return m_deviceResources->GetBackBufferFormat(); }
+    ID2D1Factory1* GetD2DFactory() const noexcept { return m_deviceResources->GetD2DFactory(); }
+    ID2D1Device* GetD2DDevice() const noexcept { return m_deviceResources->GetD2DDevice(); }
+    ID2D1DeviceContext* GetD2DDeviceContext() const noexcept { return m_deviceResources->GetD2DDeviceContext(); }
+    IDWriteFactory1* GetDWriteFactory() const noexcept { return m_deviceResources->GetDWriteFactory(); }
+    DX::DeviceResources* GetDeviceResources() const noexcept { return m_deviceResources.get(); }
 
     // DO NOT WRITE TO THESE FROM OUTSIDE THE CLASS
     int m_ready;
@@ -104,7 +101,6 @@ class DXContext final : public DX::IDeviceNotify
     int m_frame_delay;
     DXCONTEXT_PARAMS m_current_mode;
     std::unique_ptr<D3D11Shim> m_lpDevice;
-    std::unique_ptr<SuperText> m_lpTitleText;
 
   protected:
     HWND m_hwnd;

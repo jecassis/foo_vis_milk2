@@ -72,10 +72,6 @@ void DXContext::Internal_CleanUp()
     // Release 3D interfaces.
     if (m_lpDevice)
         m_lpDevice.reset();
-#if defined(_M_IX86) || defined(_M_X64)
-    if (m_lpTitleText)
-        m_lpTitleText.reset();
-#endif
 }
 
 BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* /* pParams */, BOOL /* bFirstInit */)
@@ -84,8 +80,6 @@ BOOL DXContext::Internal_Init(DXCONTEXT_PARAMS* /* pParams */, BOOL /* bFirstIni
     GetClientRect(m_hwnd, &r);
     m_client_width = std::max(1l, r.right - r.left);
     m_client_height = std::max(1l, r.bottom - r.top);
-
-    m_lpTitleText = std::make_unique<SuperText>();
 
     m_deviceResources->SetWindow(m_hwnd, m_client_width, m_client_height);
 
@@ -232,9 +226,6 @@ BOOL DXContext::OnWindowSwap(HWND window, int width, int height)
 // Allocate the resources that do not depend on the device.
 void DXContext::CreateDeviceIndependentResources()
 {
-    auto d2dFactory = m_deviceResources->GetD2DFactory();
-    auto dwFactory = m_deviceResources->GetDWriteFactory();
-    m_lpTitleText->CreateDeviceIndependentResources(d2dFactory, dwFactory);
 }
 
 // Allocate the resources that depend on the device.
@@ -244,24 +235,16 @@ void DXContext::CreateDeviceDependentResources()
     auto context = m_deviceResources->GetD3DDeviceContext();
     m_lpDevice = std::make_unique<D3D11Shim>(device, context);
     m_lpDevice->Initialize();
-#if defined(_M_IX86) || defined(_M_X64)
-    m_lpTitleText->CreateDeviceDependentResources(device, context);
-#endif
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
 void DXContext::CreateWindowSizeDependentResources()
 {
-    m_lpTitleText->SetSwapChain(m_deviceResources->GetSwapChain());
-    m_lpTitleText->SetDepthStencilView(m_deviceResources->GetDepthStencilView());
-    m_lpTitleText->SetRenderTargetView(m_deviceResources->GetRenderTargetView());
-    m_lpTitleText->CreateWindowSizeDependentResources(m_client_width, m_client_height);
 }
 
 void DXContext::OnDeviceLost()
 {
     m_lpDevice.reset();
-    m_lpTitleText.reset();
 }
 
 void DXContext::OnDeviceRestored()

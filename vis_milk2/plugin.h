@@ -42,6 +42,7 @@
 #include "constanttable.h"
 #ifdef _FOOBAR
 #include <foo_vis_milk2/settings.h>
+#include <foo_vis_milk2/supertext.h>
 #endif
 
 int warand();
@@ -561,6 +562,9 @@ class CPlugin : public CPluginShell
     texmgr m_texmgr; // for user sprites
 
     td_supertext m_supertext; // **contains info about current Song Title or Custom Message.**
+#ifdef _FOOBAR
+    std::unique_ptr<SuperText> m_superTitle;
+#endif
 
     ID3D11Texture2D* m_tracer_tex;
 

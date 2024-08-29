@@ -106,9 +106,9 @@ void D3D11Shim::Initialize()
     if (FAILED(m_pDevice->CreateBuffer(&bDesc, &bData, &m_pIFanBuffer)))
         return;
 
-    XMStoreFloat4x4(&m_transforms.world, XMMatrixTranspose(XMMatrixIdentity()));
-    XMStoreFloat4x4(&m_transforms.view, XMMatrixTranspose(XMMatrixIdentity()));
-    XMStoreFloat4x4(&m_transforms.proj, XMMatrixTranspose(XMMatrixIdentity()));
+    XMStoreFloat4x4(&m_transforms.world, XMMatrixIdentity());
+    XMStoreFloat4x4(&m_transforms.view, XMMatrixIdentity());
+    XMStoreFloat4x4(&m_transforms.proj, XMMatrixIdentity());
 
     bDesc.ByteWidth = sizeof(cbTransforms);
     bDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -131,7 +131,7 @@ bool D3D11Shim::CreateTexture(unsigned int uWidth, unsigned int uHeight, unsigne
     if (usage == D3D11_USAGE_STAGING)
         texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE /*| D3D11_CPU_ACCESS_READ*/;
 
-    return S_OK == m_pDevice->CreateTexture2D(&texDesc, NULL, ppTexture);
+    return (S_OK == m_pDevice->CreateTexture2D(&texDesc, NULL, ppTexture));
 }
 
 bool D3D11Shim::CreateVolumeTexture(unsigned int uWidth, unsigned int uHeight, unsigned int uDepth, unsigned int mipLevels, UINT bindFlags,
@@ -144,7 +144,7 @@ bool D3D11Shim::CreateVolumeTexture(unsigned int uWidth, unsigned int uHeight, u
     if (usage == D3D11_USAGE_STAGING)
         texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
 
-    return S_OK == m_pDevice->CreateTexture3D(&texDesc, NULL, ppTexture);
+    return (S_OK == m_pDevice->CreateTexture3D(&texDesc, NULL, ppTexture));
 }
 
 void D3D11Shim::DrawPrimitive(unsigned int primType, unsigned int iPrimCount, const void* pVData, unsigned int vertexStride)
