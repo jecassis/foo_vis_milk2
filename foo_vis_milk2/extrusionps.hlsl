@@ -1,11 +1,11 @@
 /*
- * extrusionps.hlsl - .
+ * extrusionps.hlsl - Interactive 3-D text pixel shader.
  *
  * Copyright (c) Microsoft Corporation
  * SPDX-License-Identifier: MIT
  */
 
-#include "extrusion.hlsli"
+#include "extrusion.fxh"
 
 struct ColorsOutput
 {

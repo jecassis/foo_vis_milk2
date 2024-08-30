@@ -15,7 +15,7 @@
     </Filter>
     <Filter Include="Shader Files">
       <UniqueIdentifier>{61a45dd5-f26f-401d-a1d2-6facc207117b}</UniqueIdentifier>
-      <Extensions>fx;fxh;hlsl;hlsli</Extensions>
+      <Extensions>fx;fxh;hlsl</Extensions>
     </Filter>
     <Filter Include="Configuration Files">
       <UniqueIdentifier>{da6ca001-0e30-45ef-bcb5-11669780823c}</UniqueIdentifier>
@@ -99,7 +99,7 @@
     </Manifest>
   </ItemGroup>
   <ItemGroup>
-    <None Include="extrusion.hlsli">
+    <None Include="extrusion.fxh">
       <Filter>Shader Files</Filter>
     </None>
     <None Include="packages.config">

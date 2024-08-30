@@ -1,11 +1,11 @@
 /*
- * extrusionvs.hlsl - .
+ * extrusionvs.hlsl - Interactive 3-D text vertex shader.
  *
  * Copyright (c) Microsoft Corporation
  * SPDX-License-Identifier: MIT
  */
 
-#include "extrusion.hlsli"
+#include "extrusion.fxh"
 
 PS_INPUT main(VS_INPUT input)
 {

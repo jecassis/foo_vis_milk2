@@ -1,5 +1,5 @@
 /*
- * extrusion.hlsi - .
+ * extrusion.fxh - Interactive 3-D text comman shader structures.
  *
  * Copyright (c) Microsoft Corporation
  * SPDX-License-Identifier: MIT
