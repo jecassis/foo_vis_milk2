@@ -183,7 +183,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -210,7 +210,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -236,7 +236,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -263,7 +263,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -289,7 +289,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -316,7 +316,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -342,7 +342,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -369,7 +369,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Bin\$(Platform)\$(Configuration)\;..\external\foobar2000\shared\;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;foobar2000_component_client.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vis_milk2.lib;foobar2000_SDK.lib;foobar2000_SDK_helpers.lib;PFC.lib;libPPUI.lib;shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

@@ -8,10 +8,7 @@
 #pragma once
 
 #include <winsdkver.h>
-//#define _WIN32_WINNT 0x0600 // Windows Vista
 #define _WIN32_WINNT 0x0601 // Windows 7
-//#define _WIN32_WINNT 0x0602 // Windows 8
-//#define _WIN32_WINNT 0x0603 // Windows 8.1
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0A00 // Windows 10
@@ -27,7 +24,6 @@
 #include <windows.h>
 
 #include <helpers/foobar2000-lite+atl.h>
-//#include <sdk/component.h>
 
 class foobar2000_component_globals
 {
@@ -86,6 +82,9 @@ class NOVTABLE foobar2000_api
     ~foobar2000_api() {}
 };
 
+static bool g_services_available = false, g_initialized = false;
+extern foobar2000_api* g_foobar2000_api;
+
 #ifdef _WIN32
 #define FOOBAR2000_CC __cdecl
 
@@ -121,3 +120,16 @@ class NOVTABLE foobar2000_api_impl : public foobar2000_api
     bool is_portable_mode_enabled() { return false; }
     bool is_quiet_mode_enabled() { return false; }
 };
+
+namespace core_api
+{
+bool are_services_available()
+{
+    return g_services_available;
+}
+
+bool is_main_thread()
+{
+    return (g_services_available && g_foobar2000_api) ? g_foobar2000_api->is_main_thread() : true;
+}
+}

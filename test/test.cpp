@@ -87,6 +87,12 @@ TEST_CLASS(Milk2DllTest)
     {
         Logger::WriteMessage("Smoke DLL Load Test\n");
 
+        static const GUID guid_milk2 = { 0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5} }; // {204B0345-4DF5-4B47-ADD3-989F811BD9A5}
+        static const GUID preferences_page_guid = { 0x7255e8d0, 0x3fcf, 0x4781, {0xb9, 0x3b, 0xd0, 0x6c, 0xb8, 0x8d, 0xfa, 0xfa} }; // {7255E8D0-3FCF-4781-B93B-D06CB88DFAFA}
+        static const GUID initquit_guid = { 0x113773c4, 0xb387, 0x4b48, {0x8b, 0xdf, 0xab, 0x58, 0xbc, 0x6c, 0xe5, 0x38} }; // {113773C4-B387-4b48-8BDF-AB58BC6CE538}
+        static const GUID advconfig_entry_guid = { 0x7e84602e, 0xdc49, 0x4047, {0xaa, 0xee, 0x63, 0x71, 0x8b, 0xbc, 0x5a, 0x1f} }; // {7E84602E-DC49-4047-AAEE-63718BBC5A1F}
+        static const GUID componentversion_guid = { 0x10bb3ebd, 0xddf7, 0x4975, {0xa3, 0xcc, 0x23, 0x8, 0x48, 0x29, 0x45, 0x3e} }; // {10BB3EBD-DDF7-4975-A3CC-23084829453E}
+
         static const wchar_t* class_name = L"Messages";
         WNDCLASSEX wx = {0};
         wx.cbSize = sizeof(WNDCLASSEX);
@@ -105,13 +111,12 @@ TEST_CLASS(Milk2DllTest)
         Assert::IsNotNull(component);
 
         uint32_t ver = component->get_version();
-        //service_factory_base* serv = component->get_service_list();
-        //bool present = serv->is_service_present(guid_milk2);
-        //stream_writer* ws = nullptr;
-        //stream_reader* rs = nullptr;
-        //component->get_config(ws, fb2k::noAbort);
-        //component->set_config(rs, fb2k::noAbort);
-        //component->set_library_path("path", "test");
+        service_factory_base* serv = component->get_service_list();
+        stream_writer* ws = nullptr;
+        stream_reader* rs = nullptr;
+        component->get_config(ws, fb2k::noAbort);
+        component->set_config(rs, fb2k::noAbort);
+        component->set_library_path("path", "test");
         component->services_init(true);
         bool debug = component->is_debug();
 
