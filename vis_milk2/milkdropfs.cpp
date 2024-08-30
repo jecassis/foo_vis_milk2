@@ -1035,15 +1035,7 @@ void CPlugin::RenderFrame(int bRedraw)
 
     if (m_bAutoGamma && GetFrame() == 0)
     {
-        /*if (strstr(GetDriverDescription(), "nvidia") ||
-            strstr(GetDriverDescription(), "nVidia") ||
-            strstr(GetDriverDescription(), "NVidia") ||
-            strstr(GetDriverDescription(), "NVIDIA"))
-            m_n16BitGamma = 2;
-        else if (strstr(GetDriverDescription(), "ATI RAGE MOBILITY M"))
-            m_n16BitGamma = 2;
-        else*/
-        m_n16BitGamma = 0;
+        m_n16BitGamma = 0; // skip gamma correction for 32-bit color in Direct3D 11
     }
 
     ComputeGridAlphaValues();
@@ -1853,20 +1845,22 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, texaddr);
     //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSW, texaddr);
 
-    // decay
+    // Decay.
     float fDecay = COLOR_NORM((float)(*m_pState->var_pf_decay));
 
     //if (m_pState->m_bBlending)
-    //    fDecay = fDecay*(fCosineBlend) + (1.0f-fCosineBlend)*((float)(*m_pOldState->var_pf_decay));
+    //    fDecay = fDecay * (fCosineBlend) + (1.0f - fCosineBlend) * ((float)(*m_pOldState->var_pf_decay));
 
-    /*if (m_n16BitGamma > 0 &&
-        (GetBackBufFormat()==D3DFMT_R5G6B5 || GetBackBufFormat()==D3DFMT_X1R5G5B5 || GetBackBufFormat()==D3DFMT_A1R5G5B5 || GetBackBufFormat()==D3DFMT_A4R4G4B4) &&
+    /*
+    if (m_n16BitGamma > 0 &&
+        (GetBackBufFormat() == D3DFMT_R5G6B5 || GetBackBufFormat() == D3DFMT_X1R5G5B5 || GetBackBufFormat() == D3DFMT_A1R5G5B5 || GetBackBufFormat() == D3DFMT_A4R4G4B4) &&
         fDecay < 0.9999f)
     {
-        fDecay = min(fDecay, (32.0f - m_n16BitGamma)/32.0f);
+        fDecay = std::min(fDecay, (32.0f - m_n16BitGamma) / 32.0f);
     }
 
-    D3DCOLOR cDecay = D3DCOLOR_RGBA_01(fDecay,fDecay,fDecay,1);*/
+    D3DCOLOR cDecay = D3DCOLOR_RGBA_01(fDecay, fDecay, fDecay, 1);
+    */
 
     // Hurl the triangle strips at the video card.
     int poly;

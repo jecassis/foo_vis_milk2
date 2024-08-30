@@ -83,14 +83,14 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     swprintf_s(buf, L" %2.1f", static_cast<float>(cfg_fHardCutHalflife));
     SetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf);
 
-    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 20.0f);
     if (n < 0)
         n = 0;
-    if (n > 20)
-        n = 20;
+    if (n > 40)
+        n = 40;
     ctrl = GetDlgItem(IDC_HARDCUT_LOUDNESS);
     SendMessage(ctrl, TBM_SETRANGEMIN, (WPARAM)FALSE, (LPARAM)0);
-    SendMessage(ctrl, TBM_SETRANGEMAX, (WPARAM)FALSE, (LPARAM)20);
+    SendMessage(ctrl, TBM_SETRANGEMAX, (WPARAM)FALSE, (LPARAM)40);
     SendMessage(ctrl, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)n);
 
     CheckDlgButton(IDC_CB_HARDCUTS, static_cast<UINT>(cfg_bHardCutsDisabled));
@@ -269,8 +269,8 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     // Title and artwork format.
     swprintf_s(buf, L"%hs", cfg_szTitleFormat.get().c_str());
     SetDlgItemText(IDC_TITLE_FORMAT, buf);
-    //swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
-    //SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
+    swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
+    SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
 
     return FALSE;
 }
@@ -347,11 +347,11 @@ void milk2_preferences_page::reset()
 
     swprintf_s(buf, L" %2.1f", static_cast<float>(cfg_fHardCutHalflife));
     SetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf);
-    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 20.0f);
     if (n < 0)
         n = 0;
-    if (n > 20)
-        n = 20;
+    if (n > 40)
+        n = 40;
     SendMessage(GetDlgItem(IDC_HARDCUT_LOUDNESS), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)n);
     CheckDlgButton(IDC_CB_HARDCUTS, static_cast<UINT>(cfg_bHardCutsDisabled));
 
@@ -382,8 +382,8 @@ void milk2_preferences_page::reset()
 
     swprintf_s(buf, L"%hs", cfg_szTitleFormat.get().c_str());
     SetDlgItemText(IDC_TITLE_FORMAT, buf);
-    //swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
-    //SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
+    swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
+    SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
 
     OnChanged();
 }
@@ -421,7 +421,7 @@ void milk2_preferences_page::apply()
     cfg_fHardCutHalflife = wcstof(buf, &stop);
     t = SendMessage(GetDlgItem(IDC_HARDCUT_LOUDNESS), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
     if (t != CB_ERR)
-        cfg_fHardCutLoudnessThresh = static_cast<double>(1.25f + t / 10.0f);
+        cfg_fHardCutLoudnessThresh = static_cast<double>(1.25f + t / 20.0f);
     cfg_bHardCutsDisabled = static_cast<bool>(IsDlgButtonChecked(IDC_CB_HARDCUTS));
 
     cfg_nMaxPSVersion = ReadCBValue(IDC_SHADERS);
@@ -433,8 +433,6 @@ void milk2_preferences_page::apply()
     cfg_nCanvasStretch = ReadCBValue(IDC_STRETCH2);
 
     cfg_nTexSizeX = ReadCBValue(IDC_TEXSIZECOMBO);
-
-    SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
 
     t = SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
     if (t != CB_ERR)
@@ -453,9 +451,10 @@ void milk2_preferences_page::apply()
     cfg_fTimeBetweenRandomCustomMsgs = wcstof(buf, &stop);
     cfg_bSongTitleAnims = static_cast<bool>(IsDlgButtonChecked(IDC_CB_TITLE_ANIMS));
 
-    GetDlgItemText(IDC_TITLE_FORMAT, buf, 256);
     titleformat_object::ptr script;
-    pfc::string8 pattern = pfc::utf8FromWide(buf);
+    pfc::string8 pattern;
+    GetDlgItemText(IDC_TITLE_FORMAT, buf, 256);
+    pattern = pfc::utf8FromWide(buf);
     if (static_api_ptr_t<titleformat_compiler>()->compile(script, pattern))
     {
         cfg_szTitleFormat = pfc::utf8FromWide(buf);
@@ -464,19 +463,20 @@ void milk2_preferences_page::apply()
     {
         SetDlgItemText(IDC_TITLE_FORMAT, L"<ERROR>");
     }
+    GetDlgItemText(IDC_ARTWORK_FORMAT, buf, 256);
+    pattern = pfc::utf8FromWide(buf);
+    if (static_api_ptr_t<titleformat_compiler>()->compile(script, pattern))
+    {
+        cfg_szArtworkFormat = pfc::utf8FromWide(buf);
+    }
+    else
+    {
+        SetDlgItemText(IDC_ARTWORK_FORMAT, L"<ERROR>");
+    }
 
-    //GetDlgItemText(IDC_ARTWORK_FORMAT, buf, 256);
-    //pattern = pfc::utf8FromWide(buf);
-    //if (static_api_ptr_t<titleformat_compiler>()->compile(script, pattern))
-    //{
-    //    cfg_szArtworkFormat = pfc::utf8FromWide(buf);
-    //}
-    //else
-    //{
-    //    SetDlgItemText(IDC_ARTWORK_FORMAT, L"<ERROR>");
-    //}
-
-    OnChanged(); // The dialog content has not changed but the flags have; the currently shown values now match the settings so the apply button can be disabled.
+    OnChanged(); // The dialog content has not changed but the flags have;
+                 // the currently shown values now match the settings so the
+                 // apply button can be disabled.
     ::SendMessage(g_hWindow, WM_CONFIG_CHANGE, (WPARAM)0, (LPARAM)0);
 }
 
@@ -513,6 +513,7 @@ bool milk2_preferences_page::HasChanged() const
                        IsComboDiff(IDC_MAX_IMAGES2, cfg_nMaxImages);
 
     WCHAR buf[256] = {0}, *stop;
+    pfc::string8 current;
     bool editcontrol_changes = false;
     GetDlgItemText(IDC_BETWEEN_TIME, buf, 256);
     editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenPresets);
@@ -533,11 +534,11 @@ bool milk2_preferences_page::HasChanged() const
     GetDlgItemText(IDC_RAND_MSG, buf, 256);
     editcontrol_changes = editcontrol_changes || (wcstof(buf, &stop) != cfg_fTimeBetweenRandomCustomMsgs);
     GetDlgItemText(IDC_TITLE_FORMAT, buf, 256);
-    pfc::string8 current = pfc::utf8FromWide(buf);
+    current = pfc::utf8FromWide(buf);
     editcontrol_changes = editcontrol_changes || !current.equals(cfg_szTitleFormat);
-    //GetDlgItemText(IDC_ARTWORK_FORMAT, buf, 256);
-    //current = pfc::utf8FromWide(buf);
-    //editcontrol_changes = editcontrol_changes || !current.equals(cfg_szArtworkFormat);
+    GetDlgItemText(IDC_ARTWORK_FORMAT, buf, 256);
+    current = pfc::utf8FromWide(buf);
+    editcontrol_changes = editcontrol_changes || !current.equals(cfg_szArtworkFormat);
 
     LRESULT t;
     bool slider_changes = false;
@@ -546,9 +547,9 @@ bool milk2_preferences_page::HasChanged() const
     {
         if (t < 0)
             t = 0;
-        if (t > 20)
-            t = 20;
-        int prev_slider_position = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 10.0f);
+        if (t > 40)
+            t = 40;
+        int prev_slider_position = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 20.0f);
         slider_changes = slider_changes || (static_cast<int>(t) != prev_slider_position);
     }
     t = SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_GETPOS, (WPARAM)0, (LPARAM)0);
@@ -558,7 +559,8 @@ bool milk2_preferences_page::HasChanged() const
     return checkbox_changes || combobox_changes || editcontrol_changes || slider_changes;
 }
 
-// Tells the host that state has changed to enable or disable the "Apply" button appropriately.
+// Tells the host that state has changed to enable or disable the "Apply"
+// button appropriately.
 void milk2_preferences_page::OnChanged()
 {
     m_callback->on_state_changed();

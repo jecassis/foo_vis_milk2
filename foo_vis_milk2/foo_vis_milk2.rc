@@ -5,7 +5,7 @@
 //
 #include "resource.h"
 #include "version.h"
-//#ifdef _SUPERTEXT //defined(_M_IX86) || defined(_M_X64)
+//#ifdef _SUPERTEXT
 //#include "extrusion.ri"
 //#endif
 
@@ -92,8 +92,10 @@ BEGIN
     RTEXT           "Max. frame rate:",IDC_MAXFPS_CAPTION,14,83,53,10
     COMBOBOX        IDC_FS_MAXFPS2,69,83,55,107,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Allow page tearing",IDC_CB_FSPT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,94,94,10
-    LTEXT           "Title display format:",IDC_TITLE_FORMAT_LABEL,182,2,65,10
+    LTEXT           "Title display format:",IDC_TITLE_FORMAT_LABEL,182,2,79,10
     EDITTEXT        IDC_TITLE_FORMAT,182,12,122,13,ES_AUTOHSCROLL
+    LTEXT           "Artwork display format:",IDC_ARTWORK_FORMAT_LABEL,182,28,79,10
+    EDITTEXT        IDC_ARTWORK_FORMAT,182,38,122,13,ES_AUTOHSCROLL
     GROUPBOX        "Soft Cuts (regular, periodic preset transitions/fades)",IDC_STATIC,2,107,165,70
     RTEXT           "Time between auto preset changes:",IDC_BETWEEN_TIME_LABEL,11,117,115,10
     EDITTEXT        IDC_BETWEEN_TIME,128,116,32,13,ES_CENTER | ES_AUTOHSCROLL
@@ -111,29 +113,28 @@ BEGIN
     CTEXT           "Min.",IDC_HARDCUT_LOUDNESS_MIN,88,215,14,9
     CTEXT           "Max.",IDC_HARDCUT_LOUDNESS_MAX,148,215,16,9
     CONTROL         "Disable hard cuts",IDC_CB_HARDCUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,213,72,13
-    GROUPBOX        "Brightness for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,168,28,137,58
-    CONTROL         "Brightness Slider",IDC_BRIGHT_SLIDER2,"msctls_trackbar32",WS_TABSTOP,191,38,92,13
-    CTEXT           "0\n(bright)",IDC_T3,187,52,25,16
-    CTEXT           "1",IDC_T7,213,52,8,10
-    CTEXT           "2\n(normal)",IDC_T5,222,52,28,17
-    CTEXT           "3",IDC_T4,251,52,8,10
-    CTEXT           "4\n(dark)",IDC_T6,260,52,30,17
-    CONTROL         "Guess based on the GPU",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,177,73,95,10
-    GROUPBOX        "Song Title Animations and Messages",IDC_STATIC,168,86,137,74
-    RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,171,95,103,10,WS_DISABLED
-    EDITTEXT        IDC_SONGTITLEANIM_DURATION,275,94,28,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
-    RTEXT           "Time between\nrandom song title anims.:",IDC_RAND_TITLE_LABEL,178,107,96,16,WS_DISABLED
-    EDITTEXT        IDC_RAND_TITLE,275,111,28,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
-    RTEXT           "Time between\nrandom custom messages:",IDC_RAND_MSG_LABEL,178,125,96,16,WS_DISABLED
-    EDITTEXT        IDC_RAND_MSG,275,129,28,13,ES_CENTER | ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        "Brightness for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,168,64,137,58,WS_DISABLED
+    CONTROL         "Brightness Slider",IDC_BRIGHT_SLIDER2,"msctls_trackbar32",WS_DISABLED | WS_TABSTOP,191,74,92,13
+    CTEXT           "0\n(bright)",IDC_GAMMA16_0,187,88,25,16,WS_DISABLED
+    CTEXT           "1",IDC_GAMMA16_1,213,88,8,10,WS_DISABLED
+    CTEXT           "2\n(normal)",IDC_GAMMA16_2,222,88,28,17,WS_DISABLED
+    CTEXT           "3",IDC_GAMMA16_3,251,88,8,10,WS_DISABLED
+    CTEXT           "4\n(dark)",IDC_GAMMA16_4,260,88,30,17,WS_DISABLED
+    CONTROL         "Guess based on the GPU",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,177,109,95,10
+    GROUPBOX        "Song Title Animations and Messages",IDC_STATIC,168,122,137,71
+    RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,171,131,103,10
+    EDITTEXT        IDC_SONGTITLEANIM_DURATION,275,130,28,13,ES_CENTER | ES_AUTOHSCROLL
+    RTEXT           "Time between\nrandom song title anims.:",IDC_RAND_TITLE_LABEL,178,143,96,16
+    EDITTEXT        IDC_RAND_TITLE,275,147,28,13,ES_CENTER | ES_AUTOHSCROLL
+    RTEXT           "Time between\nrandom custom messages:",IDC_RAND_MSG_LABEL,178,161,96,16
+    EDITTEXT        IDC_RAND_MSG,275,165,28,13,ES_CENTER | ES_AUTOHSCROLL
     CONTROL         "Show title anims. when song changes",IDC_CB_TITLE_ANIMS,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,172,144,131,10
-    GROUPBOX        "Image Cache",IDC_BRIGHT_SLIDER_BOX3,168,160,137,68
-    RTEXT           "Max. number of images:",IDC_MAX_IMAGES_CAPTION2,171,168,78,10
-    COMBOBOX        IDC_MAX_IMAGES2,251,167,52,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Max. video memory:",IDC_MAX_BYTES_CAPTION2,182,182,67,10
-    COMBOBOX        IDC_MAX_BYTES2,251,180,52,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Note: cache settings are only relevant if there are many textures in the ""milkdrop2\\textures\\"" folder. Otherwise, everything fits in 1 MB of VRAM.",IDC_STATIC,176,193,127,34
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,172,180,131,10
+    GROUPBOX        "Image Cache",IDC_BRIGHT_SLIDER_BOX3,168,192,137,36
+    RTEXT           "Max. number of images:",IDC_MAX_IMAGES_CAPTION2,171,202,78,10
+    COMBOBOX        IDC_MAX_IMAGES2,251,201,52,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Max. video memory:",IDC_MAX_BYTES_CAPTION2,182,215,67,10
+    COMBOBOX        IDC_MAX_BYTES2,251,214,52,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,2,225,303,34
     RTEXT           "Canvas stretch:",IDC_STRETCH_CAPTION2,3,233,51,10
     COMBOBOX        IDC_STRETCH2,56,232,99,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -228,10 +229,10 @@ END
 //                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,22,155,227,10
 //    GROUPBOX        "Brightness Control for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,8,182,180,49
 //    CONTROL         "Slider1",IDC_BRIGHT_SLIDER,"msctls_trackbar32",WS_TABSTOP,25,193,89,14
-//    CTEXT           "0\n(bright)",IDC_T1,20,207,25,17
-//    CTEXT           "2\n(normal)",IDC_T3,54,207,28,18
-//    CTEXT           "3",IDC_T4,83,207,8,10
-//    CTEXT           "4\n(dark)",IDC_T5,91,207,30,18
+//    CTEXT           "0\n(bright)",IDC_GAMMA16_0,20,207,25,17
+//    CTEXT           "2\n(normal)",IDC_GAMMA16_2,54,207,28,18
+//    CTEXT           "3",IDC_GAMMA16_3,83,207,8,10
+//    CTEXT           "4\n(dark)",IDC_GAMMA16_4,91,207,30,18
 //    CONTROL         "Guess,\nbased on the GPU",IDC_CB_AUTOGAMMA,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,129,194,54,30
 //    CONTROL         "Scan presets instantly at startup or directory change (can cause a pause)",IDC_CB_INSTASCAN,
 //                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,199,176,114,17
