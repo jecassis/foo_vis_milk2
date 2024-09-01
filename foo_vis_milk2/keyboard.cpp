@@ -17,10 +17,10 @@
 // PRESET LOADING
 //  BACKSPACE: return to previous preset
 //  SPACE: transition to next preset
-//  H: instant Hard cut (to next preset)
+//  H: instant hard cut (to next preset)
 //  R: toggle random (vs. sequential) preset traversal
 //  L: load a specific preset (invokes the 'Load' menu)
-//  + / -: rate current preset (better/worse)
+//  + / -: rate current preset (better / worse)
 //  scroll lock: lock/unlock current preset
 //      (keyboard light on means preset is locked)
 //      (prevents random switch to new preset)
@@ -28,14 +28,14 @@
 //      steals the warp shader from a different random preset,
 //      and steals the composite shader from a third random preset.
 //  D: cycle between various lock-states for the warp and
-//      composite shaders.  When one of these shaders is locked,
+//      composite shaders. When one of these shaders is locked,
 //      loading a new preset will load everything *except* the
 //      locked shaders, creating a mix between the two presets.
 //
 // PRESET EDITING AND SAVING
-//  M: show/hide the preset-editing Menu
-//  S: Save new preset (asks for the new filename)
-//  N: show per-frame variable moNitor
+//  M: show/hide the preset-editing menu
+//  S: save new preset (asks for the new filename)
+//  N: show per-frame variable monitor (see milkdrop_preset_authoring.html)
 //
 // MUSIC PLAYBACK
 //  Z / X / C / V / B: navigate playlist (prev / play / pause / stop / next)
@@ -50,12 +50,39 @@
 //  F2: show song title
 //  F3: show song length
 //  F4: show preset name
-//  F5: show frames per second
+//  F5: show frames per second (FPS)
 //  F6: show rating of current preset
 //  F7: re-read custom message file (milk_msg.ini) from disk
 //  F8: jump to new directory (for presets)
 //  F9: toggle stereo 3D on/off
-
+//
+// SPRITES AND CUSTOM MESSAGES
+//  T: launch song title animation
+//  Y: enter custom message mode
+//      ##: load message ## (where ## is a 2-digit numeric code [00-99]
+//                           of a message defined in milk_msg.ini)
+//      *: clear any digits entered
+//      DELETE: clear message (if visible)
+//      F7: re-read milk_msg.ini from disk
+//  K: enter sprite mode
+//      ##: load sprite ## (where ## is a 2-digit numeric code [00-99]
+//                          of a sprite defined in milk_img.ini)
+//      *: clear any digits entered
+//      DELETE: clear newest sprite 
+//      SHIFT + DELETE: clear oldest sprite
+//      CTRL + SHIFT + DELETE: clear all sprites
+//      F7: no effect (milk_img.ini is never cached)
+//  SHIFT + K: enter sprite kill mode
+//      ##: clear all sprites with code ##
+//      *: clear any digits entered
+//  CTRL + T: kill song title
+//  CTRL + Y: kill custom messages
+//  CTRL + K: kill all sprites
+//
+// Note that there are more keys available, but because many
+// are only relevant to people designing their own presets, 
+// they are listed in the preset authoring guide instead.
+//
 // KEY HANDLING
 //  - In all cases, handle or capture:
 //    - ZXCVBRS, zxcvbrs; case-insensitive (lowercase come through only as WM_CHAR; uppercase come in as both)
@@ -1658,7 +1685,8 @@ void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
     if (chChar == 'k' || chChar == 'K')
     {
-        g_plugin.OnAltK();
+        ShowPreferencesPage();
+        g_plugin.OnAltK(); // Leave in as easter egg
         return;
     }
     if ((chChar == 'd' || chChar == 'D') && g_plugin.GetFrame() > 0)
@@ -1677,10 +1705,6 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
             case ID_QUIT:
                 g_plugin.m_exiting = 1;
                 PostMessage(WM_CLOSE, (WPARAM)0, (LPARAM)0);
-                return;
-            case ID_GO_FS:
-                if (g_plugin.GetFrame() > 0)
-                    ToggleFullScreen();
                 return;
             //case ID_DESKTOP_MODE:
             //    if (g_plugin.GetFrame() > 0)
@@ -1723,10 +1747,11 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
                     return;
                 }
             case ID_VIS_FS:
-                //PostMessage(WM_USER + 1667, 0, 0);
+                if (g_plugin.GetFrame() > 0)
+                    ToggleFullScreen(); //PostMessage(WM_USER + 1667, 0, 0);
                 return;
             case ID_VIS_CFG:
-                ToggleHelp();
+                ShowPreferencesPage(); //ToggleHelp();
                 return;
             case ID_VIS_MENU:
                 POINT pt;

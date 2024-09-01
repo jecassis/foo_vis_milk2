@@ -39,7 +39,7 @@
 #define D3DCOLOR_RGBA_01(r, g, b, a) D3DCOLOR_RGBA(((int)(r * 255)), ((int)(g * 255)), ((int)(b * 255)), ((int)(a * 255)))
 #define FRAND ((warand() % 7381) / 7380.0f)
 
-#define VERT_CLIP 0.75f // warning: top/bottom can get clipped if you go < 0.65!
+#define VERT_CLIP 0.75f // warning: top/bottom can get clipped if less than 0.65!
 
 // This function evaluates whether the floating-point
 // control word is set to single precision/round to nearest/
@@ -423,7 +423,7 @@ bool CPlugin::RenderStringToTitleTexture()
     SafeRelease(origDSView);
     //SafeRelease(pZBuffer);
 
-    if (ret && !m_ddsTitle.IsVisible())
+    if (ret && m_supertext.fStartTime > 0.0f && !m_ddsTitle.IsVisible())
     {
         m_ddsTitle.SetVisible(true);
         m_text.RegisterElement(&m_ddsTitle);
@@ -1161,7 +1161,7 @@ void CPlugin::RenderFrame(int bRedraw)
     }
 
     // Finally, render song title animation to back buffer.
-    if (m_supertext.fStartTime >= 0 && !m_supertext.bRedrawSuperText)
+    if (m_supertext.fStartTime >= 0.0f && !m_supertext.bRedrawSuperText)
     {
         ShowSongTitleAnim(GetWidth(), GetHeight(), std::min(fProgress, 0.9999f));
         if (fProgress >= 1.0f)
@@ -2635,7 +2635,7 @@ void CPlugin::DrawWave(float* fL, float* fR)
     lpDevice->SetTexture(0, NULL);
     lpDevice->SetVertexShader(NULL, NULL);
     lpDevice->SetVertexColor(true);
-    //lpDevice->SetFVF( WFVERTEX_FORMAT );
+    //lpDevice->SetFVF(WFVERTEX_FORMAT);
 
     WFVERTEX v1[576 + 1], v2[576 + 1];
 
@@ -2648,8 +2648,8 @@ void CPlugin::DrawWave(float* fL, float* fR)
     m_lpD3DDev->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
     m_lpD3DDev->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
     m_lpD3DDev->SetRenderState(D3DRENDERSTATE_COLORVERTEX, TRUE);
-    m_lpD3DDev->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME);  // vs. SOLID
-    m_lpD3DDev->SetRenderState(D3DRENDERSTATE_AMBIENT, D3DCOLOR_RGBA_01(1,1,1,1));
+    m_lpD3DDev->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME); // vs. SOLID
+    m_lpD3DDev->SetRenderState(D3DRENDERSTATE_AMBIENT, D3DCOLOR_RGBA_01(1, 1, 1, 1));
 
     hr = m_lpD3DDev->SetTexture(0, NULL);
     if (hr != D3D_OK)
@@ -2673,12 +2673,12 @@ void CPlugin::DrawWave(float* fL, float* fR)
 
     /*if (m_pState->m_bBlending)
     {
-        cr = cr*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress)*((float)(*m_pOldState->var_pf_wave_r));
-        cg = cg*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress)*((float)(*m_pOldState->var_pf_wave_g));
-        cb = cb*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress)*((float)(*m_pOldState->var_pf_wave_b));
-        cx = cx*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress)*((float)(*m_pOldState->var_pf_wave_x));
-        cy = cy*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress)*((float)(*m_pOldState->var_pf_wave_y));
-        fWaveParam = fWaveParam*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress)*((float)(*m_pOldState->var_pf_wave_mystery));
+        cr = cr*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress) * ((float)(*m_pOldState->var_pf_wave_r));
+        cg = cg*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress) * ((float)(*m_pOldState->var_pf_wave_g));
+        cb = cb*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress) * ((float)(*m_pOldState->var_pf_wave_b));
+        cx = cx*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress) * ((float)(*m_pOldState->var_pf_wave_x));
+        cy = cy*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress) * ((float)(*m_pOldState->var_pf_wave_y));
+        fWaveParam = fWaveParam*(m_pState->m_fBlendProgress) + (1.0f-m_pState->m_fBlendProgress) * ((float)(*m_pOldState->var_pf_wave_mystery));
     }*/
 
     if (cr < 0) cr = 0;
@@ -4435,8 +4435,8 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         m_superTitle->OnRender();
 #if 0
         // Positioning.
-        float fSizeX = 50.0f / (float)m_supertext.nFontSizeUsed * powf(1.5f, m_supertext.fFontSize - 2.0f);
-        float fSizeY = fSizeX * m_nTitleTexSizeY / (float)m_nTitleTexSizeX; //* m_nWidth/(float)m_nHeight;
+        float fSizeX = 50.0f / static_cast<float>(m_supertext.nFontSizeUsed) * std::pow(1.5f, m_supertext.fFontSize - 2.0f);
+        float fSizeY = fSizeX * m_nTitleTexSizeY / static_cast<float>(m_nTitleTexSizeX); //* m_nWidth/(float)m_nHeight;
 
         if (fSizeX > 0.88f)
         {
@@ -4482,23 +4482,23 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
         // Warping.
         float ramped_progress = std::max(0.0f, 1 - fProgress * 1.5f);
-        float t2 = powf(ramped_progress, 1.8f) * 1.3f;
+        float t2 = std::pow(ramped_progress, 1.8f) * 1.3f;
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 16; x++)
             {
                 i = y * 16 + x;
-                v3[i].x += t2 * 0.070f * sinf(GetTime() * 0.31f + v3[i].x * 0.39f - v3[i].y * 1.94f);
-                v3[i].x += t2 * 0.044f * sinf(GetTime() * 0.81f - v3[i].x * 1.91f + v3[i].y * 0.27f);
-                v3[i].x += t2 * 0.061f * sinf(GetTime() * 1.31f + v3[i].x * 0.61f + v3[i].y * 0.74f);
-                v3[i].y += t2 * 0.061f * sinf(GetTime() * 0.37f + v3[i].x * 1.83f + v3[i].y * 0.69f);
-                v3[i].y += t2 * 0.070f * sinf(GetTime() * 0.67f + v3[i].x * 0.42f - v3[i].y * 1.39f);
-                v3[i].y += t2 * 0.087f * sinf(GetTime() * 1.07f + v3[i].x * 3.55f + v3[i].y * 0.89f);
+                v3[i].x += t2 * 0.070f * std::sin(GetTime() * 0.31f + v3[i].x * 0.39f - v3[i].y * 1.94f);
+                v3[i].x += t2 * 0.044f * std::sin(GetTime() * 0.81f - v3[i].x * 1.91f + v3[i].y * 0.27f);
+                v3[i].x += t2 * 0.061f * std::sin(GetTime() * 1.31f + v3[i].x * 0.61f + v3[i].y * 0.74f);
+                v3[i].y += t2 * 0.061f * std::sin(GetTime() * 0.37f + v3[i].x * 1.83f + v3[i].y * 0.69f);
+                v3[i].y += t2 * 0.070f * std::sin(GetTime() * 0.67f + v3[i].x * 0.42f - v3[i].y * 1.39f);
+                v3[i].y += t2 * 0.087f * std::sin(GetTime() * 1.07f + v3[i].x * 3.55f + v3[i].y * 0.89f);
             }
         }
 
         // Scale down over time.
-        float scale = 1.01f / (powf(fProgress, 0.21f) + 0.01f);
+        float scale = 1.01f / (std::pow(fProgress, 0.21f) + 0.01f);
         for (i = 0; i < 128; i++)
         {
             v3[i].x *= scale;
@@ -4648,7 +4648,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
 #else
     }
-        UNREFERENCED_PARAMETER(fProgress);
+    UNREFERENCED_PARAMETER(fProgress);
 #endif
     lpDevice->SetBlendState(false);
 }

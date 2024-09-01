@@ -80,6 +80,7 @@
 #else
 #include <projectm-eval/ns-eel2-shim/ns-eel.h>
 #endif
+#include <winamp/wa_ipc.h>
 #include <foo_vis_milk2/resource.h>
 
 #include <CommonStates.h>

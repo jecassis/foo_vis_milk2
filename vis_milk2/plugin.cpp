@@ -1629,7 +1629,7 @@ int CPlugin::AllocateMilkDropDX11()
         }
         else
         {
-            //sprintf(buf, "Init: title texture size is %dx%d (ideal size was %dx%d)", m_nTitleTexSizeX, m_nTitleTexSizeY, m_nTexSize, m_nTexSize/4);
+            //sprintf(buf, "Init: title texture size is %dx%d (ideal size was %dx%d)", m_nTitleTexSizeX, m_nTitleTexSizeY, m_nTexSize, m_nTexSize / 4);
             //DumpDebugMessage(buf);
             m_supertext.bRedrawSuperText = true;
         }

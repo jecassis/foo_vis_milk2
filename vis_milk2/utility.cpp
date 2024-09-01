@@ -294,9 +294,9 @@ LPVOID GetTextResource(UINT id, int no_fallback)
     return data;
 }
 
-LPWSTR GetStringW(HINSTANCE hinst, HINSTANCE owner, UINT uID, LPWSTR str, int maxlen)
+LPWSTR GetStringW(HINSTANCE localized, HINSTANCE owner, UINT uID, LPWSTR str, int maxlen)
 {
-    UNREFERENCED_PARAMETER(hinst);
+    UNREFERENCED_PARAMETER(localized);
     static WCHAR buffer[512];
 
     if (!str)
@@ -310,6 +310,14 @@ LPWSTR GetStringW(HINSTANCE hinst, HINSTANCE owner, UINT uID, LPWSTR str, int ma
         return str;
     }
     return const_cast<LPWSTR>(L"notfound");
+}
+
+INT_PTR LDialogBoxParamW(HINSTANCE localized, HINSTANCE owner, UINT uID, HWND parent, DLGPROC proc, LPARAM param)
+{
+    INT_PTR ret = DialogBoxParamW(localized, MAKEINTRESOURCEW(uID), parent, proc, param);
+    if ((ret == -1 && GetLastError() != ERROR_SUCCESS) && localized != owner)
+        ret = DialogBoxParamW(owner, MAKEINTRESOURCEW(uID), parent, proc, param);
+    return ret;
 }
 
 // clang-format off

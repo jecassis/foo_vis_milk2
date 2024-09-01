@@ -16,14 +16,6 @@
 // to prevent name collisions.
 namespace
 {
-static const GUID guid_milk2 = {
-    0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}
-}; // {204B0345-4DF5-4B47-ADD3-989F811BD9A5}
-
-static const GUID VisMilk2LangGUID = {
-    0xc5d175f1, 0xe4e4, 0x47ee, {0xb8, 0x5c, 0x4e, 0xdc, 0x6b, 0x2, 0x6a, 0x35}
-}; // {C5D175F1-E4E4-47EE-B85C-4EDC6B026A35}
-
 static bool s_fullscreen = false;
 static bool s_in_toggle = false;
 static bool s_was_topmost = false;
@@ -163,14 +155,16 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     enum milk2_ui_menu_id
     {
-        IDM_TOGGLE_FULLSCREEN = ID_GO_FS, // ID_VIS_FS
+        IDM_TOGGLE_FULLSCREEN = ID_VIS_FS,
         IDM_CURRENT_PRESET = 1,
         IDM_NEXT_PRESET = ID_VIS_NEXT,
         IDM_PREVIOUS_PRESET = ID_VIS_PREV,
         IDM_LOCK_PRESET = 2,
         IDM_SHUFFLE_PRESET = ID_VIS_RANDOM,
         IDM_ENABLE_DOWNMIX = 3,
-        IDM_SHOW_HELP = ID_SHOWHELP, // ID_VIS_CFG
+        IDM_SHOW_MENU = ID_VIS_MENU,
+        IDM_SHOW_PREFS = ID_VIS_CFG,
+        IDM_SHOW_HELP = ID_SHOWHELP,
         IDM_SHOW_PLAYLIST = ID_SHOWPLAYLIST,
         IDM_QUIT = ID_QUIT
     };
@@ -237,8 +231,11 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     // Topmost setting
     bool SetTopMost() noexcept;
 
+    // Preferences page
+    void ShowPreferencesPage();
+
     // Component paths
-    static void resolve_pwd();
+    static void ResolvePwd();
     std::wstring m_pwd;
 
     // Audio data
@@ -250,6 +247,11 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     titleformat_object::ptr m_title;
     titleformat_object::ptr m_search;
     pfc::string_formatter m_state;
+
+    // Artwork and metadata
+    std::unique_ptr<artFetchData> m_art_data;
+    std::vector<uint8_t> m_raster;
+    std::wstring m_art_file;
 
     // Playback callback methods
     void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { MILK2_CONSOLE_LOG("+ PlaybackStart"); UpdateTrack(); }
@@ -274,13 +276,16 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void SetSelectionSingle(size_t idx);
     void SetSelectionSingle(size_t idx, bool toggle, bool focus, bool single_only);
 
-    // Artwork
-    artFetchData m_art_data;
-    std::vector<uint8_t> m_raster;
-    std::wstring m_art_file;
-
-    void get_raster_data(const uint8_t* data, size_t size) noexcept;
-    void artwork_register();
-    void load_album_art(const metadb_handle_ptr& track, abort_callback& abort);
+    // Artwork callback methods
+    void RegisterForArtwork();
+    void ExtractRasterData(const uint8_t* data, size_t size) noexcept;
+    void LoadAlbumArt(const metadb_handle_ptr& track, abort_callback& abort);
 };
+
+// clang-format off
+class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element> {};
+// clang-format on
+
+// Service factory publishes the class.
+static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
 } // namespace

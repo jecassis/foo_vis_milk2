@@ -51,6 +51,7 @@ static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPre
 #pragma region Preferences Page
 BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
 {
+    PREFS_CONSOLE_LOG("OnInitDialog")
     WCHAR buf[256] = {0};
     HWND ctrl = nullptr;
     int n = 0;
@@ -272,7 +273,85 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
     SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
 
+    // clang-format off
+    const std::map<UINT16, UINT16> tips = {
+        {IDC_CB_SCROLLON3, IDS_START_WITH_PRESET_LOCK_ON_HELP},
+        {IDC_CB_NORATING2, IDS_DISABLE_PRESET_RATING_HELP},
+        {IDC_CB_NOWARN3, IDS_NOWARN_HELP},
+        {IDC_CB_PRESS_F1_MSG, IDS_HELP_ON_F1_HELP},
+        {IDC_CB_SCROLLON4, IDS_SCROLL_CTRL_HELP},
+        {IDC_CB_NOCOMPSHADER, IDS_NOCOMPSHADER_HELP},
+        {IDC_FS_MAXFPS2, IDS_MAX_FRAMERATE_HELP},
+        {IDC_CB_FSPT, IDS_PAGE_TEARING_HELP},
+        {IDC_TITLE_FORMAT, IDS_TITLE_FORMAT_HELP},
+        {IDC_ARTWORK_FORMAT, IDS_ARTWORK_FORMAT_HELP},
+        {IDC_BETWEEN_TIME, IDS_BETWEEN_TIME_HELP},
+        {IDC_BETWEEN_TIME_RANDOM, IDS_BETWEEN_TIME_RANDOM_HELP},
+        {IDC_BLEND_AUTO, IDS_BLEND_AUTO_HELP},
+        {IDC_BLEND_USER, IDS_BLEND_USER_HELP},
+        {IDC_HARDCUT_BETWEEN_TIME, IDS_HARDCUT_BETWEEN_TIME_HELP},
+        {IDC_HARDCUT_LOUDNESS, IDS_HARDCUT_LOUDNESS_HELP},
+        {IDC_CB_HARDCUTS, IDS_HARDCUTS_HELP},
+        {IDC_BRIGHT_SLIDER2, IDS_BRIGHT_SLIDER_HELP},
+        {IDC_CB_AUTOGAMMA2, IDS_CB_AUTOGAMMA_HELP},
+        {IDC_SONGTITLEANIM_DURATION, IDS_SONGTITLEANIM_DURATION_HELP},
+        {IDC_RAND_TITLE, IDS_RAND_TITLE_HELP},
+        {IDC_RAND_MSG, IDS_RAND_MSG_HELP},
+        {IDC_CB_TITLE_ANIMS, IDS_TITLE_ANIMS_HELP},
+        {IDC_IMAGE_CACHE_BOX, IDS_MAX_IMAGES_BYTES_HELP},
+        {IDC_STRETCH2, IDS_CANVAS_STRETCH_HELP},
+        {IDC_MESHSIZECOMBO, IDS_MESH_SIZE_HELP},
+        {IDC_SHADERS, IDS_PIXEL_SHADERS_HELP},
+        {IDC_TEXSIZECOMBO, IDS_CANVAS_SIZE_HELP},
+        {ID_SPRITE, IDS_SPRITE},
+        {ID_MSG, IDS_MSG},
+        {ID_FONTS, IDS_FONTS_HELP},
+    };
+    // clang-format on
+    m_tooltips.Create(get_wnd(), nullptr, nullptr, TTS_ALWAYSTIP | TTS_NOANIMATE);
+    for (const auto& tip : tips)
+    {
+        LoadString(core_api::get_my_instance(), tip.second, buf, 256);
+        m_tooltips.AddTool(CToolInfo(TTF_IDISHWND | TTF_SUBCLASS, m_hWnd, (UINT_PTR)GetDlgItem(tip.first).m_hWnd, nullptr, (LPWSTR)buf));
+    }
+    m_tooltips.SetMaxTipWidth(200);
+    SetWindowTheme(m_tooltips, m_dark ? L"DarkMode_Explorer" : nullptr, nullptr);
+
     return FALSE;
+}
+
+LRESULT milk2_preferences_page::OnNotify(int idCtrl, LPNMHDR pnmh) ///(int)wParam, (LPNMHDR)lParam)
+{
+    PREFS_CONSOLE_LOG("OnNotify ", idCtrl) //, static_cast<int>(pnmh))
+    return static_cast<LRESULT>(0);
+}
+
+void milk2_preferences_page::OnClose()
+{
+    MILK2_CONSOLE_LOG("OnClose")
+}
+
+void milk2_preferences_page::OnDestroy()
+{
+    PREFS_CONSOLE_LOG("OnDestroy")
+    //if (m_tooltips.IsWindow())
+    //    m_tooltips.DestroyWindow();
+}
+
+void milk2_preferences_page::OnButtonPushed(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    switch (nID)
+    {
+        case ID_SPRITE:
+            OpenToEdit(default_szImgIniFile, IMG_INIFILE);
+            break;
+        case ID_MSG:
+            OpenToEdit(default_szMsgIniFile, MSG_INIFILE);
+            break;
+        case ID_FONTS:
+            //WASABI_API_DIALOGBOXPARAMW(IDD_FONTDIALOG, get_wnd(), FontDialogProc, (LPARAM)this);
+            break;
+    }
 }
 
 void milk2_preferences_page::OnEditNotification(UINT, int, CWindow)
@@ -292,6 +371,7 @@ void milk2_preferences_page::OnComboChange(UINT, int, CWindow)
 
 void milk2_preferences_page::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar)
 {
+    PREFS_CONSOLE_LOG("OnHScroll")
     switch (pScrollBar.GetDlgCtrlID())
     {
         case IDC_HARDCUT_LOUDNESS:
@@ -566,34 +646,13 @@ void milk2_preferences_page::OnChanged()
     m_callback->on_state_changed();
 }
 
-class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_page>
-{
-  public:
-    const char* get_name() { return "MilkDrop"; }
-    GUID get_guid()
-    {
-        static const GUID guid = {
-            0x5feadec6, 0x37f3, 0x4ebf, {0xb3, 0xfd, 0x57, 0x11, 0xfa, 0xe3, 0xa3, 0xe8}
-        }; // {5FEADEC6-37F3-4EBF-B3FD-5711FAE3A3E8}
-        return guid;
-    }
-    GUID get_parent_guid() { return guid_visualisations; }
-    bool get_help_url(pfc::string_base& p_out)
-    {
-        p_out.reset();
-        p_out << "https://www.geisswerks.com/milkdrop/milkdrop.html";
-        //"http://help.foobar2000.org/" << core_version_info::g_get_version_string() << "/" << "preferences" << "/" << pfc::print_guid(get_guid()) << "/" << get_name();
-        return true;
-    }
-};
-
-inline void milk2_preferences_page::AddItem(HWND ctrl, wchar_t* buffer, UINT id, DWORD itemdata)
+inline void milk2_preferences_page::AddItem(HWND ctrl, LPWSTR buffer, UINT id, DWORD itemdata)
 {
     LoadString(core_api::get_my_instance(), id, buffer, 256);
     AddItem(ctrl, buffer, itemdata);
 }
 
-inline void milk2_preferences_page::AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata)
+inline void milk2_preferences_page::AddItem(HWND ctrl, LPCWSTR text, DWORD itemdata)
 {
     LRESULT nPos = SendMessage(ctrl, CB_ADDSTRING, (WPARAM)0, (LPARAM)text);
     SendMessage(ctrl, CB_SETITEMDATA, nPos, itemdata);
@@ -727,7 +786,28 @@ void milk2_preferences_page::SaveMaxFps(int screenmode) const
     }
 }
 
-static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_milk2_factory;
+void milk2_preferences_page::OpenToEdit(LPWSTR szDefault, LPCWSTR szFilename)
+{
+
+    if (szDefault[0] == L'\0')
+        milk2_config::initialize_paths();
+    wchar_t szPath[MAX_PATH], szFile[MAX_PATH];
+    wcscpy_s(szPath, szDefault);
+    wchar_t* p = wcsrchr(szPath, L'\\');
+    if (p != NULL)
+    {
+        *(p + 1) = L'\0';
+        wcscpy_s(szFile, szPath);
+        wcscat_s(szFile, szFilename);
+        INT_PTR ret = reinterpret_cast<INT_PTR>(ShellExecute(NULL, L"open", szFile, NULL, szPath, SW_SHOWNORMAL));
+        if (ret <= 32)
+        {
+            swprintf_s(szPath, L"Error Opening \"%ls\"", szFilename);
+            wchar_t* str = WASABI_API_LNGSTRINGW(IDS_ERROR_IN_SHELLEXECUTE);
+            MessageBox(str, szPath, MB_OK | MB_SETFOREGROUND | MB_TOPMOST | MB_TASKMODAL);
+        }
+    }
+}
 #pragma endregion
 
 #pragma region Configuration Settings

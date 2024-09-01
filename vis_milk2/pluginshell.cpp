@@ -1187,13 +1187,13 @@ void CPluginShell::AnalyzeNewSound(float* pWaveL, float* pWaveR)
                 );
                 OutputDebugString(buf);
 
-                // skip to next song
+                // Skip to next song.
                 PostMessage(m_hWndWinamp,WM_COMMAND,40048,0);
             }
             else if (m_frame%FRAMES_PER_SONG == 5)
             {
-                // then advance to 0-2 minutes into the song:
-                PostMessage(m_hWndWinamp,WM_USER,(20 + (warand()%65) + (rand()%65))*1000,106);
+                // Then advance to 0-2 minutes into the song.
+                PostMessage(m_hWndWinamp, WM_USER, (20 + (warand() % 65) + (rand() % 65)) * 1000, 106);
             }
             else if (m_frame%FRAMES_PER_SONG >= 10)
             {
@@ -1206,9 +1206,9 @@ void CPluginShell::AnalyzeNewSound(float* pWaveL, float* pWaveR)
     }
     */
 
-    // Multiply by long-term, empirically-determined inverse averages:
-    // (for a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
-    // the average levels were: 0.326781557	0.38087377	0.199888934
+    // Multiply by long-term, empirically-determined inverse averages.
+    // For a trial of 244 songs, 10 seconds each, somewhere in the 2nd or 3rd minute,
+    // the average levels were: 0.326781557  0.38087377  0.199888934
     for (int ch = 0; ch < 2; ch++)
     {
         m_sound.imm[ch][0] /= 0.326781557f; //0.270f;

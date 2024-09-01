@@ -62,7 +62,8 @@ void LuidToTextA(LUID* pLUID, char* str, int nStrLen);
 void NSEEL_VM_resetvars(void* ctx);
 #endif
 
-LPWSTR GetStringW(HINSTANCE hinst, HINSTANCE owner, UINT uID, LPWSTR str = NULL, int maxlen = 0);
+LPWSTR GetStringW(HINSTANCE localized, HINSTANCE owner, UINT uID, LPWSTR str = NULL, int maxlen = 0);
+INT_PTR LDialogBoxParamW(HINSTANCE localized, HINSTANCE owner, UINT uID, HWND parent, DLGPROC proc, LPARAM param);
 
 void* GetTextResource(UINT id, int no_fallback);
 

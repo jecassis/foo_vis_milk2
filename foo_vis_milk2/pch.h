@@ -38,6 +38,7 @@
 #include <wrl/client.h>
 
 #include <array>
+#include <map>
 
 #include <helpers/foobar2000-lite+atl.h>
 #include <sdk/componentversion.h>
@@ -53,6 +54,7 @@
 #include <sdk/play_callback.h>
 #include <sdk/playlist.h>
 #include <sdk/vis.h>
+#include <sdk/ui.h>
 #include <sdk/ui_element.h>
 #include <sdk/menu_helpers.h>
 #include <helpers/atl-misc.h>
@@ -61,6 +63,7 @@
 #include <helpers/DarkMode.h>
 #include <pfc/string-conv-lite.h>
 
+#include <winamp/wa_ipc.h>
 #include <vis_milk2/defines.h>
 #include <vis_milk2/md_defines.h>
 #include <vis_milk2/shell_defines.h>
@@ -72,7 +75,6 @@
 #ifdef _DEBUG
 #include <vis_milk2/utility.h>
 #endif
-#include <winamp/wa_ipc.h>
 
 #define MAX_PROPERTY_PAGES 8
 #define MAX_DISPLAY_ADAPTERS 16
@@ -84,6 +86,7 @@
 
 #ifdef _DEBUG
 #define MILK2_CONSOLE_LOG(...) FB2K_console_print(core_api::get_my_file_name(), ": ", __VA_ARGS__);
+#define PREFS_CONSOLE_LOG(...) FB2K_console_print(core_api::get_my_file_name(), "_prefs: ", __VA_ARGS__);
 #define MILK2_CONSOLE_LOG_LIMIT(...) \
     if (s_count <= s_debug_limit) \
     { \
@@ -91,6 +94,7 @@
     }
 #else
 #define MILK2_CONSOLE_LOG(...)
+#define PREFS_CONSOLE_LOG(...)
 #define MILK2_CONSOLE_LOG_LIMIT(...)
 #endif
 

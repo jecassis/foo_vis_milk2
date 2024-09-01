@@ -100,4 +100,7 @@ typedef struct
     //--- Formats
     wchar_t m_szTitleFormat[256];
     wchar_t m_szArtworkFormat[256];
+
+    //--- Artwork
+    artFetchData* m_artData;
 } plugin_config;

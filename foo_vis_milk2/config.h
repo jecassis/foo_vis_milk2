@@ -11,6 +11,18 @@
 #include "resource.h"
 #include "settings.h"
 
+static constexpr GUID guid_milk2 = {
+    0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}
+}; // {204B0345-4DF5-4B47-ADD3-989F811BD9A5}
+
+static constexpr GUID guid_milk2_preferences = {
+    0x5feadec6, 0x37f3, 0x4ebf, {0xb3, 0xfd, 0x57, 0x11, 0xfa, 0xe3, 0xa3, 0xe8}
+}; // {5FEADEC6-37F3-4EBF-B3FD-5711FAE3A3E8}
+
+//static constexpr GUID VisMilk2LangGUID = {
+//    0xc5d175f1, 0xe4e4, 0x47ee, {0xb8, 0x5c, 0x4e, 0xdc, 0x6b, 0x2, 0x6a, 0x35}
+//}; // {C5D175F1-E4E4-47EE-B85C-4EDC6B026A35}
+
 static constexpr GUID guid_cfg_bPresetLockOnAtStartup = {
     0x8a6c8c08, 0xc298, 0x4485, {0xb9, 0xb5, 0xa3, 0x1d, 0xd4, 0xed, 0xfa, 0x4b}
 }; // {8A6C8C08-C298-4485-B9B5-A31DD4EDFA4B}
@@ -207,7 +219,10 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     // clang-format off
     BEGIN_MSG_MAP_EX(milk2_preferences_page)
         MSG_WM_INITDIALOG(OnInitDialog)
+        MSG_WM_NOTIFY(OnNotify)
         MSG_WM_HSCROLL(OnHScroll)
+        MSG_WM_CLOSE(OnClose)
+        MSG_WM_DESTROY(OnDestroy)
         COMMAND_HANDLER_EX(IDC_CB_SCROLLON3, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_SCROLLON4, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_CB_NOWARN3, BN_CLICKED, OnButtonClick)
@@ -238,11 +253,19 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
         COMMAND_HANDLER_EX(IDC_RAND_MSG, EN_CHANGE, OnEditNotification)
         COMMAND_HANDLER_EX(IDC_CB_TITLE_ANIMS, BN_CLICKED, OnButtonClick)
         COMMAND_HANDLER_EX(IDC_TITLE_FORMAT, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(IDC_ARTWORK_FORMAT, EN_CHANGE, OnEditNotification)
+        COMMAND_HANDLER_EX(ID_SPRITE, BN_CLICKED, OnButtonPushed)
+        COMMAND_HANDLER_EX(ID_MSG, BN_CLICKED, OnButtonPushed)
+        COMMAND_HANDLER_EX(ID_FONTS, BN_CLICKED, OnButtonPushed)
     END_MSG_MAP()
     // clang-format on
 
   private:
     BOOL OnInitDialog(CWindow, LPARAM);
+    LRESULT OnNotify(int idCtrl, LPNMHDR pnmh);
+    void OnClose();
+    void OnDestroy();
+    void OnButtonPushed(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnEditNotification(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnButtonClick(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnComboChange(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -250,20 +273,39 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     bool HasChanged() const;
     void OnChanged();
 
-    inline void AddItem(HWND ctrl, wchar_t* buffer, UINT id, DWORD itemdata);
-    inline void AddItem(HWND ctrl, const wchar_t* text, DWORD itemdata);
+    inline void AddItem(HWND ctrl, LPWSTR buffer, UINT id, DWORD itemdata);
+    inline void AddItem(HWND ctrl, LPCWSTR text, DWORD itemdata);
     inline void SelectItemByPos(HWND ctrl, int pos);
     int SelectItemByValue(HWND ctrl, LRESULT value);
     int64_t ReadCBValue(DWORD ctrl_id) const;
     bool IsComboDiff(DWORD ctrl_id, int64_t previous) const;
-    wchar_t* FormImageCacheSizeString(const wchar_t* itemStr, const UINT sizeID);
+    wchar_t* FormImageCacheSizeString(LPCWSTR itemStr, const UINT sizeID);
     void UpdateMaxFps(int screenmode) const;
     void SaveMaxFps(int screenmode) const;
+    void OpenToEdit(LPWSTR szDefault, LPCWSTR szFilename);
 
     const preferences_page_callback::ptr m_callback;
 
+    CToolTipCtrl m_tooltips;
     fb2k::CDarkModeHooks m_dark;
 };
+
+class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_page>
+{
+  public:
+    const char* get_name() { return "MilkDrop"; }
+    GUID get_guid() { return guid_milk2_preferences; }
+    GUID get_parent_guid() { return guid_visualisations; }
+    bool get_help_url(pfc::string_base& p_out)
+    {
+        p_out.reset();
+        p_out << "https://www.geisswerks.com/milkdrop/milkdrop.html";
+        //"http://help.foobar2000.org/" << core_version_info::g_get_version_string() << "/" << "preferences" << "/" << pfc::print_guid(get_guid()) << "/" << get_name();
+        return true;
+    }
+};
+
+static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_milk2_factory;
 
 class milk2_config
 {
@@ -277,14 +319,15 @@ class milk2_config
     void parse(ui_element_config_parser& parser);
     void build(ui_element_config_builder& builder);
 
+    static void resolve_profile();
+    static void initialize_paths();
+
     // `milk2.ini`
     plugin_config settings{};
 
   private:
-    uint32_t m_sentinel = ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K');
-    uint32_t m_version = 2;
+    uint32_t m_sentinel = MAKEFOURCC('M', 'I', 'L', 'K'); //('K' << 24 | 'L' << 16 | 'I' << 8 | 'M');
+    uint32_t m_version = 3;
 
-    static void resolve_profile();
-    static void initialize_paths();
     void update_paths();
 };

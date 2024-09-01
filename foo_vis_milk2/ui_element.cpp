@@ -103,7 +103,7 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 #endif
     if (!s_milk2)
     {
-        resolve_pwd();
+        ResolvePwd();
         s_config.init();
 #ifdef TIMER_TP
         InitializeCriticalSection(&s_cs);
@@ -504,12 +504,11 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
     menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, IDM_SHOW_PREFS, TEXT("Launch Preferences"));
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
-#ifndef NO_FULLSCREEN
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
-#endif
 
     //auto submenu = std::make_unique<CMenu>(menu.GetSubMenu(0));
     //b = menu.RemoveMenu(0, MF_BYPOSITION);
@@ -538,6 +537,9 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
         case IDM_ENABLE_DOWNMIX:
             s_config.settings.m_bEnableDownmix = !s_config.settings.m_bEnableDownmix;
             UpdateChannelMode();
+            break;
+        case IDM_SHOW_PREFS:
+            ShowPreferencesPage();
             break;
         case IDM_SHOW_HELP:
             ToggleHelp();
@@ -696,13 +698,26 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     else if (lParam == IPC_FETCH_ALBUMART)
     {
-        //MILK2_CONSOLE_LOG("IPC_FETCH_ALBUMART")
-        artFetchData art_data{};
-        art_data.imgData = m_raster.data();
-        art_data.imgDataLen = static_cast<int>(m_raster.size());
-        art_data.type[0] = L'j'; art_data.type[1] = L'p'; art_data.type[2] = L'g'; art_data.type[3] = L'\0';
-        m_art_data = art_data;
-        return reinterpret_cast<LRESULT>(&m_art_data);
+        MILK2_CONSOLE_LOG("IPC_FETCH_ALBUMART")
+        if (m_art_file.empty())
+        {
+            m_art_data->imgData = m_raster.data();
+            m_art_data->imgDataLen = static_cast<int>(m_raster.size());
+            m_art_data->type[0] = L'j'; m_art_data->type[1] = L'p'; m_art_data->type[2] = L'g'; m_art_data->type[3] = L'\0';
+            m_art_data->gracenoteFileId = nullptr;
+        }
+        else
+        {
+            m_art_data->imgData = nullptr;
+            m_art_data->imgDataLen = 0;
+            m_art_data->gracenoteFileId = m_art_file.data();
+            std::wstring ext = GetExtension(m_art_file);
+            std::copy_n(ext.begin(), ext.length(), &m_art_data->type[0]);
+            std::fill_n(&m_art_data->type[0] + ext.length() + 1, 10 - ext.length(), L'\0');
+        }
+        s_config.settings.m_artData = m_art_data.get();
+
+        return reinterpret_cast<LRESULT>(m_art_data.get());
     }
 #if 0
     else if (lParam == IPC_SETVISWND)
@@ -956,7 +971,6 @@ void milk2_ui_element::SetPwd(std::wstring pwd) noexcept
 
 void milk2_ui_element::ToggleFullScreen()
 {
-#ifndef NO_FULLSCREEN
     MILK2_CONSOLE_LOG("ToggleFullScreen0 ", GetWnd())
     if (m_milk2)
     {
@@ -994,7 +1008,6 @@ void milk2_ui_element::ToggleFullScreen()
         static_api_ptr_t<ui_element_common_methods_v2>()->toggle_fullscreen(g_get_guid(), core_api::get_main_window());
         MILK2_CONSOLE_LOG("ToggleFullScreen1 ", GetWnd())
     }
-#endif
 }
 
 void milk2_ui_element::ToggleHelp()
@@ -1284,6 +1297,11 @@ bool milk2_ui_element::SetTopMost() noexcept
     return false;
 }
 
+void milk2_ui_element::ShowPreferencesPage()
+{
+    ui_control::get()->show_preferences(guid_milk2_preferences);
+}
+
 void milk2_ui_element::SetSelectionSingle(size_t idx)
 {
     SetSelectionSingle(idx, false, true, true);
@@ -1308,7 +1326,7 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
 
 // Resolves PWD, taking care of the case where the path contains non-ASCII
 // characters.
-void milk2_ui_element::resolve_pwd()
+void milk2_ui_element::ResolvePwd()
 {
     // Get PWD path through Win32 API.
     wchar_t path[MAX_PATH];
@@ -1352,7 +1370,7 @@ void milk2_ui_element::resolve_pwd()
 }
 
 // Retrieves image raster data and clears the file path.
-void milk2_ui_element::get_raster_data(const uint8_t* data, size_t size) noexcept
+void milk2_ui_element::ExtractRasterData(const uint8_t* data, size_t size) noexcept
 {
     m_art_file.clear();
     std::vector<uint8_t> empty;
@@ -1364,7 +1382,7 @@ void milk2_ui_element::get_raster_data(const uint8_t* data, size_t size) noexcep
 }
 
 // Registers with the album art notifier.
-void milk2_ui_element::artwork_register()
+void milk2_ui_element::RegisterForArtwork()
 {
 #if 0
     // Register with the album art notification manager.
@@ -1374,7 +1392,7 @@ void milk2_ui_element::artwork_register()
         AlbumArtNotificationManager->add(this);
 
     // Get the artwork data from the album art.
-    if (m_art_file.empty())
+    if (wcsnlen_s(s_config.settings.m_szArtworkFormat, 256) == 0)
     {
         auto aanm = now_playing_album_art_notify_manager_v2::get();
 
@@ -1384,7 +1402,7 @@ void milk2_ui_element::artwork_register()
 
             if (aad.is_valid())
             {
-                get_raster_data(static_cast<const uint8_t*>(aad->data()), aad->size());
+                ExtractRasterData(static_cast<const uint8_t*>(aad->data()), aad->size());
             }
         }
     }
@@ -1392,7 +1410,7 @@ void milk2_ui_element::artwork_register()
 }
 
 // Loads embedded album art.
-void milk2_ui_element::load_album_art(const metadb_handle_ptr& track, abort_callback& abort)
+void milk2_ui_element::LoadAlbumArt(const metadb_handle_ptr& track, abort_callback& abort)
 {
     static_api_ptr_t<album_art_manager_v2> aam;
 
@@ -1404,7 +1422,7 @@ void milk2_ui_element::load_album_art(const metadb_handle_ptr& track, abort_call
 
         if (aad.is_valid())
         {
-            get_raster_data(static_cast<const uint8_t*>(aad->data()), aad->size());
+            ExtractRasterData(static_cast<const uint8_t*>(aad->data()), aad->size());
         }
     }
     catch (const exception_album_art_not_found&)
@@ -1420,13 +1438,6 @@ void milk2_ui_element::load_album_art(const metadb_handle_ptr& track, abort_call
         return;
     }
 }
-
-// clang-format off
-class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element> {};
-// clang-format on
-
-// Service factory publishes the class.
-static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
 #pragma endregion
 
 #pragma region Initialize/Quit
