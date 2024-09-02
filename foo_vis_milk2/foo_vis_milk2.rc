@@ -113,9 +113,6 @@ BEGIN
     EDITTEXT        IDC_TITLE_FORMAT,182,12,122,13,ES_AUTOHSCROLL
     LTEXT           "Artwork display format:",IDC_ARTWORK_FORMAT_LABEL,183,28,79,10
     EDITTEXT        IDC_ARTWORK_FORMAT,182,38,122,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "Edit &Sprites",ID_SPRITE,195,60,82,15
-    PUSHBUTTON      "Edit Custom &Messages",ID_MSG,195,78,82,15
-    PUSHBUTTON      "Select &Fonts",ID_FONTS,195,96,82,15
     GROUPBOX        "Brightness for 16-bit Color Video Modes",IDC_BRIGHT_SLIDER_BOX,168,63,137,58,NOT WS_VISIBLE | WS_DISABLED
     CONTROL         "Brightness Slider",IDC_BRIGHT_SLIDER2,"msctls_trackbar32",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,191,73,92,13
     CTEXT           "0\n(bright)",IDC_GAMMA16_0,187,87,25,16,NOT WS_VISIBLE | WS_DISABLED
@@ -123,7 +120,10 @@ BEGIN
     CTEXT           "2\n(normal)",IDC_GAMMA16_2,222,87,28,17,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "3",IDC_GAMMA16_3,251,87,8,10,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "4\n(dark)",IDC_GAMMA16_4,260,87,30,17,NOT WS_VISIBLE | WS_DISABLED
-    CONTROL         "Guess based on the GPU",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,177,108,95,10
+    PUSHBUTTON      "Edit &Sprites",ID_SPRITE,195,57,82,15
+    PUSHBUTTON      "Edit Custom &Messages",ID_MSG,195,75,82,15
+    PUSHBUTTON      "Select &Fonts",ID_FONTS,195,93,82,15
+    CONTROL         "Guess 16-bit color brightness",IDC_CB_AUTOGAMMA2,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,177,108,110,10 //based on the GPU
     GROUPBOX        "Song Title Animations and Messages",IDC_STATIC,168,121,137,71
     RTEXT           "Duration of song title animations:",IDC_SONGTITLEANIM_DURATION_LABEL,171,131,103,10
     EDITTEXT        IDC_SONGTITLEANIM_DURATION,275,130,28,13,ES_CENTER | ES_AUTOHSCROLL
@@ -147,9 +147,6 @@ BEGIN
     COMBOBOX        IDC_SHADERS,56,245,99,87,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Canvas size:",IDC_TEXSIZECOMBO_CAPTION,163,246,39,10,WS_DISABLED
     COMBOBOX        IDC_TEXSIZECOMBO,204,245,99,87,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Edit &Sprites",ID_SPRITE,248,24,82,15
-    PUSHBUTTON      "Edit Custom &Messages",ID_MSG,248,51,82,15
-    PUSHBUTTON      "Select &Fonts",ID_FONTS,280,186,50,15
 END
 
 //IDD_PROPPAGE_1 DIALOGEX 0, 0, 320, 240
@@ -740,9 +737,9 @@ BEGIN
     IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS 
                             "This preset has mixed versions of shaders in it."
     IDS_UPGRADE_SHADERS_TO_USE_PS2 
-                            "Do you want to upgrade all shaders to use (at least) pixel shader 2?  [y/N]"
-    IDS_UPGRADE_SHADERS_TO_USE_PS3 
-                            "Do you want to upgrade all shaders to use (at least) pixel shader 3?  [y/N]"
+                            "Do you want to upgrade all shaders to use (at least) pixel shader model 2.0?  [y/N]"
+    IDS_UPGRADE_SHADERS_TO_USE_PS4 
+                            "Do you want to upgrade all shaders to use (at least) pixel shader model 4.0?  [y/N]"
     IDS_PRESET_DOES_NOT_USE_PIXEL_SHADERS 
                             "This preset does not currently use pixel shaders."
 END
@@ -802,7 +799,7 @@ BEGIN
     IDS_PS_AUTO_RECOMMENDED " Auto (recommended)"
     IDS_PS_DISABLED         " Disabled"
     IDS_PS_SHADER_MODEL_2   " Shader Model 2.0"
-    IDS_PS_SHADER_MODEL_3   " Shader Model 3.0"
+    IDS_PS_SHADER_MODEL_4   " Shader Model 4.0"
     //IDS_TX_8_BITS_PER_CHANNEL "  8 bits per channel"
     //IDS_TX_16_BITS_PER_CHANNEL " 16 bits (careful)"
     //IDS_TX_32_BITS_PER_CHANNEL " 32 bits (careful)"
@@ -840,19 +837,19 @@ BEGIN
     IDS_NEAREST_POWER_OF_2  " Nearest power of 2"
     IDS_EXACT_RECOMMENDED   " Exact (recommended)"
     //IDS_PIXEL_SHADERS       "Pixel Shaders"
-    IDS_PIXEL_SHADERS_HELP  "MilkDrop 1 did not use programmable pixel shaders - instead,\nit used the fixed-function graphics pipeline.  If your graphics chip\nis older and doesn't support pixel shaders, or doesn't support the\nideal pixel shader version (2.0) for MilkDrop 2, then this should be\nauto-detected without a problem, and MilkDrop will simply skip over\nany presets that can't run on your graphics chip.  (These presets will\nalso be hidden from view, in the preset list.)\n\nIf you'd like to force MilkDrop to try and allow higher (or lower)\nversions of pixel shaders, use this option.\n\nFinally, if you want to prevent MilkDrop from running any pixel shader 3,\npresets (because it's too slow for them), you can just set this option\nto version 2.0, and MilkDrop will avoid those presets."
+    IDS_PIXEL_SHADERS_HELP  "This setting is not relevant for DirectX 11 MilkDrop, pixel shaders are compiled with Shader Model 4.0 ('ps_4_0_level_9_1') at minimum." //MilkDrop 1 did not use programmable pixel shaders - instead, it used the fixed-function graphics pipeline. If your graphics chip is older and doesn't support pixel shaders, or doesn't support the ideal pixel shader version (2.0) for MilkDrop 2, then this should be auto-detected without a problem, and MilkDrop will simply skip over any presets that can't run on your graphics chip. (These presets will also be hidden from view, in the preset list.)\n\nIf you'd like to force MilkDrop to try and allow higher (or lower) versions of pixel shaders, use this option.\n\nFinally, if you want to prevent MilkDrop from running any pixel shader 3.0 presets (because it's too slow for them), you can just set this option to version 2.0, and MilkDrop will avoid those presets.
     //IDS_TEXFORMAT           "Texture Format"
-    IDS_TEXFORMAT_HELP      "This determines the precision of the colors that you see.\nHigher bit depths are better.  A bit depth of 8, for example,\nmeans that in the graphics hardware, the image can have 2^8, or 256,\npossible shades (each) of red, green, and blue.\n\nA bit depth of 8 looks decent, but 16 is much better.\nHOWEVER, only high-end video cards (as of 2007) usually support\nit properly.  Older cards can't do 'bilinear interpolation'\nwith 16-bit render targets, meaning that the image will get\nvery grainy and 'digital' looking, so PLEASE WATCH OUT FOR THIS.\n\n32 bits is excessive and slow, don't ever use it.\n\nNote that your monitor can only show 256 shades of each color;\nhowever, if the internal image (that is repeatedly warped and modified\nfrom frame to frame) has better color precision (~16 bits), then \nthe colors in the image will maintain their fidelity as they slowly\nerode and warp, over time."
+    IDS_TEXFORMAT_HELP      "This setting determines the precision of the colors displayed. It is not relevant for DirectX 11 MilkDrop, all textures use 32-bit color depth." //This setting determines the precision of the colors displayed. Higher bit depths are better. A bit depth of 8, for example,\nmeans that in the graphics hardware, the image can have 2^8, or 256,\npossible shades (each) of red, green, and blue.\n\nA bit depth of 8 looks decent, but 16 is much better.\nHOWEVER, only high-end video cards (as of 2007) usually support\nit properly.  Older cards can't do 'bilinear interpolation'\nwith 16-bit render targets, meaning that the image will get\nvery grainy and 'digital' looking, so PLEASE WATCH OUT FOR THIS.\n\n32 bits is excessive and slow, don't ever use it.\n\nNote that your monitor can only show 256 shades of each color;\nhowever, if the internal image (that is repeatedly warped and modified\nfrom frame to frame) has better color precision (~16 bits), then \nthe colors in the image will maintain their fidelity as they slowly\nerode and warp, over time.
     //IDS_CANVAS_SIZE         "Canvas Size"
-    IDS_CANVAS_SIZE_HELP    "This sets the size of the image that MilkDrop uses, internally,\nto drive the visuals.  The bigger the value here, the crisper\nthe image you see.  It's highly recommended that you set this\nto 'auto', which will determine the ideal image (texture) size\nautomatically.  However, if you experience visual problems (such\nas black streaks or missing chunks in the image) due to low\nvideo memory, you might want to set this to a low value (like\n256x256 or 512x512).\n\n'Auto (exact)' means the internal texture size will exactly match\nthe number of pixels on the screen - this is the ideal case.\nIf that doesn't work, try 'Auto (nearest power of 2)' - some older\nvideo cards will have better luck with this option."
+    IDS_CANVAS_SIZE_HELP    "Use this setting to modify the size of the image that MilkDrop uses, internally, to drive the visuals. The bigger the value here, the crisper the image appears." //It's highly recommended that you set this\nto 'auto', which will determine the ideal image (texture) size\nautomatically. However, if you experience visual problems (such\nas black streaks or missing chunks in the image) due to low\nvideo memory, you might want to set this to a low value (like\n256x256 or 512x512).\n\n'Auto (exact)' means the internal texture size will exactly match\nthe number of pixels on the screen - this is the ideal case.\nIf that doesn't work, try 'Auto (nearest power of 2)' - some older\nvideo cards will have better luck with this option.
 END
 
 STRINGTABLE
 BEGIN
     //IDS_CANVAS_STRETCH      "Canvas Stretch"
-    IDS_CANVAS_STRETCH_HELP "MilkDrop works with an internal texture, or canvas, to do all of\nits graphics rendering.  The speed (framerate) that MilkDrop runs\nat is inversely proportional to the number of pixels that are in\nthis canvas.  So, to render things internally at a smaller resolution,\nbut stretch them up for display, you can use this option.  It will\nmake the image look a bit softer and less crisp or detailed,\nbut - especially for older graphics hardware - things will run\nmuch faster.\n\nKeep in mind, a stretch factor of 2X, for example, means that there\nwill be half as manypixels to simulate on both the X and Y axes, \nso MilkDrop will actually run FOUR TIMES as fast.  With a stretch\nfactor of 3X, it will run 9X as fast (hypothetically).  And so on."
+    IDS_CANVAS_STRETCH_HELP "MilkDrop works with an internal texture, or canvas, to do all of its graphics rendering. The speed (framerate) that MilkDrop runs at is inversely proportional to the number of pixels that are in this canvas." //So, to render things internally at a smaller resolution, but stretch them up for display, you can use this option. It will\nmake the image look a bit softer and less crisp or detailed,\nbut - especially for older graphics hardware - things will run\nmuch faster.\n\nKeep in mind, a stretch factor of 2X, for example, means that there\nwill be half as manypixels to simulate on both the X and Y axes, \nso MilkDrop will actually run FOUR TIMES as fast. With a stretch\nfactor of 3X, it will run 9X as fast (hypothetically). And so on.
     IDS_MAX_IMAGES_BYTES_HELP 
-                            "This option is only relevant if you've put tons of new textures in your \nwinamp\\plugins\\milkdrop2\\textures directory.   If you have (say you\nset up some kind of art kiosk with thousands of large images), this\noption lets you tweak how much video RAM MilkDrop will try to use to\ncache textures.  The only point of cacheing textures is so that \nwhen loading a new preset, if the preset needs to load textures,\nif they were already loaded once and are still cached in memory, \nthe load will be much smoother.\n\nGo ahead and crank this up; MilkDrop's core internal textures will\nalways take precedence over disk textures anyway, so it's pretty safe."
+                            "Use these selections to limit how much video RAM MilkDrop will try to use to cache textures. They only become relevant when there are a large number of textures in the 'milkdrop2\\textures' directory." //Say you set up some kind of art kiosk with thousands of large images, this\noption lets you tweak how much video RAM MilkDrop will try to use to\ncache textures. The only point of cacheing textures is so that \nwhen loading a new preset, if the preset needs to load textures,\nif they were already loaded once and are still cached in memory, \nthe load will be much smoother.\n\nGo ahead and crank this up; MilkDrop's core internal textures will\nalways take precedence over disk textures anyway, so it's pretty safe.
     IDS_MENU_EDIT_WARP_SHADER "[ edit warp shader ]"
     IDS_MENU_EDIT_COMPOSITE_SHADER "[ edit composite shader ]"
     IDS_MENU_BLUR1_EDGE_DARKEN_AMOUNT "blur1: edge darken amount"
@@ -876,42 +873,42 @@ END
 STRINGTABLE
 BEGIN
     //IDS_MESH_SIZE           "Mesh Size"
-    IDS_MESH_SIZE_HELP      "MilkDrop uses a mesh of polygons to warp the image each frame.\nThis setting determines how finely subdivided that mesh is.\nA larger mesh size will mean finer resolution 'movement' in the\nimage; basically, it will look better.  Watch out, though - \nonly crank this way up if you have a fast CPU."
+    IDS_MESH_SIZE_HELP      "MilkDrop uses a mesh of polygons to warp the image each frame. This setting determines how finely subdivided that mesh is. A larger mesh size will mean finer resolution 'movement' in the image; basically, it will look better." //Watch out, though - only crank this way up if you have a fast CPU.
     //IDS_CB_ALWAYS3D         "Enable this to force all presets to be displayed in 3D mode.\n(Note that you need glasses with differently-colored lenses\n to see the effect.)"
     //IDS_DISABLE_PRESET_RATING "Disable preset rating"
     IDS_DISABLE_PRESET_RATING_HELP 
-                            "Check this to turn off the preset rating system.  Normally, when MilkDrop\ngoes to randomly select a preset, it weights them based on their ratings.\nHowever, if you want all presets to have an equal chance of being chosen,\ncheck this box."
-    IDS_NOWARN_HELP         "Check this to disable any and all warning messages that appear in the\nupper-right corner of the screen."
+                            "Check this box to turn off the preset rating system. Normally, when MilkDrop randomly selects presets, it weighs them based on their ratings. This setting will bypass the weighing so all presets to have an equal chance of being chosen."
+    IDS_NOWARN_HELP         "Check this box to disable all errors and warning messages that appear in the upper-right corner of the screen."
     //IDS_START_WITH_PRESET_LOCK_ON "Start with preset lock ON"
     IDS_START_WITH_PRESET_LOCK_ON_HELP 
-                            "Check this to make MilkDrop automatically start in 'preset lock' mode,\nmeaning that the preset will not change until the user changes it\nmanually (either by pressing SPACE, hitting H for a hard cut, or by\nselecting a new preset from the 'L'oad menu).\n\nUse the SCROLL LOCK key while MilkDrop is running to toggle the preset\nlock on or off.  When the SCROLL LOCK light is on, that means that the\npreset lock is also on, and vice versa."
-    IDS_BRIGHT_SLIDER_HELP  "The brightness slider lets you control the overall brightness\nof the image.  If the image is continually washed out to bright\npurple or white, you'll want to crank this down to (probably) zero.\nIf the image is chronically dark, crank this up.\n\nNote that the slider is not visible when the nearby 'guess'\ncheckbox is checked.  Uncheck it to manually set the brightness.\n\nAlso note that this brightness adjustment is only a concern in\n16-bit color modes.  (32-bit doesn't have this problem.)  So,\nif you're running Windows in 16-bit color, this slider will affect\nwindowed, desktop, and 'fake' fullscreen modes.  And if you've\nselected a 16-bit fullscreen display mode, it will affect that\ntoo."
-    IDS_CB_AUTOGAMMA_HELP   "Check this option to ask MilkDrop to make an educated guess\nfor the 'brightness control for 16-bit color' setting, based\non the vendor of your video card.  This usually gets it, but\nnot always.\n\nThe slider is only visible when this option is unchecked.\n\nSee the help for the slider for more information."
+                            "Check this box to make MilkDrop automatically start in 'preset lock' mode, meaning that the preset will not change until it is manually changed." //\n(either by pressing SPACE, hitting H for a hard cut, or by selecting a new preset from the 'L'oad menu).\n\nUse the SCROLL LOCK key while MilkDrop is running to toggle the preset\nlock on or off. When the SCROLL LOCK light is on, that means that the preset lock is also on, and vice versa.
+    IDS_BRIGHT_SLIDER_HELP  "Use this brightness slider to control the overall brightness of the image for 16-bit color modes." //If the image is continually washed out to bright purple or white, crank this down to (probably) zero. If the image is chronically dark, crank this up.\n\nNote that the slider is not visible when the nearby 'guess' checkbox is checked. Uncheck it to manually set the brightness.\n\nAlso note that this brightness adjustment is only a concern in 16-bit color modes; 32-bit doesn't have this problem. So, if you're running Windows in 16-bit color, this slider will affect\nwindowed, desktop, and 'fake' fullscreen modes. And if you've selected a 16-bit fullscreen display mode, it will affect that too.
+    IDS_CB_AUTOGAMMA_HELP   "Check this box to ask MilkDrop to make an educated guess for the 'brightness control for 16-bit color' setting, based on the video card vendor." //This usually gets it, but not always.\n\nThe slider is only visible when this option is unchecked.\n\nSee the help for the slider for more information.
 END
 
 STRINGTABLE
 BEGIN
-    IDS_SPRITE              "Click this button to edit milk_img.ini, the file that defines\nall of the custom sprites you can invoke for display while\nMilkDrop is running.  A sprite is an image that you can fade\nin or our, move around, and so on."
-    IDS_MSG                 "Click this button to edit milk_msg.ini, the file that you can\nconfigure to set up custom overlaid text messages that you can\ndisplay while MilkDrop is running."
+    IDS_SPRITE              "Click this button to edit 'milk_img.ini', the file that defines all of the custom sprites MilkDrop can invoke. A sprite is an image that can fade in or our, move around, and so on."
+    IDS_MSG                 "Click this button to edit 'milk_msg.ini', the file that configures custom overlaid text messages that can display while MilkDrop is running."
     IDS_SONGTITLEANIM_DURATION_HELP 
                             "The duration, in seconds, of song title animations."
-    IDS_RAND_TITLE_HELP     "The mean (average) time, in seconds, between randomly-launched\nsong title animations.  Set to a negative value to disable random\nlaunching."
-    IDS_RAND_MSG_HELP       "The mean (average) time, in seconds, between randomly-launched\ncustom messages (from milk_msg.ini).  Set to a negative value\nto disable random launching."
-    IDS_TITLE_ANIMS_HELP    "Check this to automatically launch song title animations whenever\nthe track changes."
-    IDS_BETWEEN_TIME_HELP   "The minimum amount of time that elapses between preset changes\n(excluding hard cuts, which take priority).  The old preset will\nbegin to blend or fade into a new preset after this amount of time,\nplus some random amount of time as specified below in the\n'additional random time' box.  Add these two values together to\nget the maximum amount of time that will elapse between preset\nchanges."
+    IDS_RAND_TITLE_HELP     "The mean (average) time, in seconds, between randomly-launched song title animations. Set to a negative value to disable random launching."
+    IDS_RAND_MSG_HELP       "The mean (average) time, in seconds, between randomly-launched custom messages (from 'milk_msg.ini'). Set to a negative value to disable random launching."
+    IDS_TITLE_ANIMS_HELP    "Check this box to automatically launch song title animations whenever the track changes."
+    IDS_BETWEEN_TIME_HELP   "The minimum amount of time that elapses between preset changes (excluding hard cuts, which take priority). The old preset will begin to blend or fade into a new preset after this amount of time, plus some random amount of time." //(as specified below in the 'additional random time' box). Add these two values together to get the maximum amount of time that will elapse between preset changes."
     IDS_BETWEEN_TIME_RANDOM_HELP 
-                            "The additional random maximum # of seconds between preset fades\n(aka preset changes) (aka soft cuts)."
-    IDS_BLEND_AUTO_HELP     "The duration, in seconds, of a soft cut (a normal fade from one preset\nto another) that is initiated because some amount of time has passed.\nA value less than 1 will make for a very quick transition, while a value\naround 3 or 4 will allow you to see some interesting behavior during\nthe blend."
-    IDS_BLEND_USER_HELP     "The duration, in seconds, of a soft cut (a normal fade from one preset\nto another) that is initiated by you, when you press the 'H' key (for\na Hard cut).  A value less than 1 will make for a very quick transition,\nwhile a value around 3 or 4 will allow you to see some interesting behavior\nduring the blend."
+                            "The additional random maximum number of seconds between preset fades (a.k.a., preset changes or soft cuts)."
+    IDS_BLEND_AUTO_HELP     "The duration, in seconds, of a soft cut (a normal fade from one preset to another) that is initiated because some amount of time has passed." //A value less than 1 will make for a very quick transition, while a value around 3 or 4 will allow you to see some interesting behavior during the blend.
+    IDS_BLEND_USER_HELP     "The duration, in seconds, of a soft cut (a normal fade from one preset to another) that is initiated when the 'H' key (for a hard cut) is pressed." //A value less than 1 will make for a very quick transition, while a value around 3 or 4 will allow you to see some interesting behavior during the blend.
     IDS_HARDCUT_BETWEEN_TIME_HELP 
-                            "The amount of time, in seconds, between hard cuts.  Hard cuts are\nset off by loud beats in the music, with (ideally) about this much\ntime in between them."
+                            "The amount of time, in seconds, between hard cuts. Hard cuts are set off by loud beats in the music, with (ideally) about this much time in between them."
     IDS_HARDCUT_LOUDNESS_HELP 
-                            "Use this slider to adjust the sensitivity of the beat detection\nalgorithm used to detect the beats that cause hard cuts.  A value\nclose to 'min' will cause the algorithm to be very sensitive (so\neven small beats will trigger it); a value close to 'max' will\ncause only the largest beats to trigger it."
+                            "Use this loudness slider to adjust the sensitivity of the beat detection algorithm used to detect the beats that cause hard cuts." //A value close to 'min' will cause the algorithm to be very sensitive (so even small beats will trigger it); a value close to 'max' will cause only the largest beats to trigger it."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_HARDCUTS_HELP       "Check this to disable hard cuts; a loud beat will never cause the preset to change."
+    IDS_HARDCUTS_HELP       "Check this box to disable hard cuts; a loud beat will never cause the preset to change."
     IDS_EDIT_CURRENT_PRESET "--edit current preset"
     IDS_MOTION              "--MOTION"
     IDS_DRAWING_CUSTOM_SHAPES "--drawing: custom shapes"
@@ -1330,12 +1327,12 @@ BEGIN
     IDS_UNLIMITED           " Unlimited"
     //IDS_X_FRAME_SEC         " %2d frames/sec"
     //IDS_HELP_ON_X_BUTTON    "Help for '%s' button"
-    IDS_FONTS_HELP          "Click this button to alter the fonts that are used to display text\nwhile the plug-in is running."
+    IDS_FONTS_HELP          "Click this button to alter the fonts that are used to display text while MilkDrop is running."
     //IDS_DUAL_HEAD_HELP      "Click this button for special options concerning DualHead video cards\nthat are capable of running in double-width or double-height display\nmodes.  DualHead cards that support this treat the two monitors as\none giant, double-width or double-height display.\n\nThis would usually mean that when going Fullscreen, the plug-in would be\nstretched over both monitors.  However, when you run the plug-in in\nDesktop Mode or in *Fake* Fullscreen Mode, you can get around this,\nand allow the plug-in to run on just one monitor, leaving you free\nto work on the other."
     //IDS_MULTI_SAMPLING      "Help for Multisampling"
     //IDS_MULTI_SAMPLING_HELP "This controls the level of full-scene anti-aliasing (blending)\nthat the display adapter uses.  Only newer video cards will\ntend to support this feature.  Anti-aliasing softens out the\n'jaggies' that you sometimes see at the pixel level, for example,\nat the silhouette of an object, or on a wireframe object.\n\nA level of '2X' would mean that 3D rendering/rasterization is done\ninternally *at double-resolution*, and then downsampled before final\ndisplay to the user.  A level of '3X' would mean that the rendering\nis done at triple-resolution, and so on.\n\nNote that, due to limitations of the DirectX 8 API, the use of multisampling\ngenerally requires that page tearing be allowed; the one exception is 'true'\nfullscreen mode, where you can have the best of both worlds: you can disable\npage tearing and enable multisampling at the same time."
     //IDS_MAX_FRAMERATE       "Help for Max. Frame Rate"
-    IDS_MAX_FRAMERATE_HELP  "This controls the maximum # of times the image will be updated, per second.\nFramerate is also commonly called ""FPS"", or ""frames per second.""\n\nIf the plug-in is running too quickly for your taste, you can lower the\nmaximum framerate to slow it down.  You might also want to do this if\nthe plug-in is 'hogging the CPU' and slowing down other applications.\n\nTypically, a framerate of 30 looks good; 60 looks great.  The human eye\nhas a hard time processing more than 60 fps, though.\n\nNote that if the animation is rendering below the maximum framerate here,\nyour CPU will likely be in 100%% use, leaving your computer somewhat\nunresponsive.  If this is the case, try lowering the max. framerate\nuntil it takes effect, and then your computer should become more responsive.\n\nAlso keep in mind that it's a good idea to try and set the max. framerate\nto the current refresh rate of your monitor (e.g. 60 Hz, 72 Hz, etc.)\nor an integer factor of that number; for example, at a 72 Hz monitor\nrefresh rate, good max. framerates would be 2, 3, 4, 6, 8, 9, 12, 18,\n24, 36, or 72."
+    IDS_MAX_FRAMERATE_HELP  "This selection controls the maximum number of times the image will be updated, per second." //\nFramerate is also commonly called 'FPS', or 'frames per second.'\n\nIf the plug-in is running too quickly for your taste, you can lower the maximum framerate to slow it down. You might also want to do this if the plug-in is 'hogging the CPU' and slowing down other applications.\n\nTypically, a framerate of 30 looks good; 60 looks great. The human eye has a hard time processing more than 60 frames per second, though.\n\nNote that if the animation is rendering below the maximum framerate here, your CPU will likely be in 100%% use, leaving your computer somewhat unresponsive. If this is the case, try lowering the maximum. framerate until it takes effect, and then your computer should become more responsive.\n\nAlso keep in mind that it's a good idea to try and set the maximum framerate to the current refresh rate of your monitor (e.g., 60 Hz, 72 Hz, etc.) or an integer factor of that number; for example, at a 72 Hz monitor refresh rate, good maximum framerates would be 2, 3, 4, 6, 8, 9, 12, 18, 24, 36, or 72."
     //IDS_FAKE_FULLSCREEN     "Help for 'fake' fullscreen mode"
     //IDS_FAKE_FULLSCREEN_HELP 
     //                        "When this option is enabled, the display mode is never changed by\nthe plug-in; instead, the plug-in 'fakes' fullscreen mode by simply\nthe window on top.\n\nDUALHEAD: Fake fullscreen mode can be especially handy when you have a\ndualhead display adapter that drives two monitors, but really just treats\nthem as one giant display (e.g. **the display mode is something like 2048x768\nor 1024x1536**), where regular fullscreen mode will take over both monitors,\ncreating a very large, stretched image.  HOWEVER, if you use fake\nfullscreen mode, it can (if you want) take over just one monitor, leaving\nyou free to work on the other monitor.  To choose which display to favor\n(or to span both), click the 'DualHead' button and follow the instructions\nthere.\n\nTASKBAR: Note that in fake fullscreen mode, the taskbar will still be visible\n(and usable) if the plug-in does not entirely cover all displays & all monitors.\nIf you don't like it, use 'true' fullscreen mode instead, or move the taskbar\n(...there should be a place to move it to, since the plug-in doesn't cover all\nof your displays).  However, if the plug-in does cover all displays and all\nmonitors, the taskbar should be nicely hidden."
@@ -1354,13 +1351,13 @@ BEGIN
     //                        "This lets you select which display adapter (video card & monitor) you'd like to\nrun the plug-in on, when it runs in desktop mode, replacing your windows wallpaper.\nIf you only have one video card and monitor in your system, you will only have\none choice here; but if you have multiple video cards, or a multi-head video card\n(one card that drives multiple monitors), there should be two or more choices here."
     //IDS_HELP_ON_X_CHECKBOX  "Help for '%s' checkbox"
     IDS_PAGE_TEARING_HELP 
-                            "When a new frame of animation is ready for display, the plug-in\nhas a choice of whether or not to synchronize the new frame to the\nmonitor's next vertical scan.\n\nIf there is no synchronization and the new frame is shown immediately,\nthen the update might occure in 'mid-scan', so for that 1/60th of a second,\nyou'll see the old frame toward the top of the monitor, and the new frame\ntoward the bottom, with a sharp line ('tear') somewhere in between.  This\nis especially visible when solid objects on the screen are changing or\nmoving rapidly, from frame to frame.\n\nHowever, if the plug-in waits until the vertical scan is complete to update\nthe image, then at the start of the next vertical scan, the entire image\nwill be ready and will (hopefully) be presented without any tearing.\n\nAlthough page tearing will often cause visible artifacts, it will allow\nthe plug-in to run at its maximum possible framerate.  Generally, though,\npage tearing is considered a bad thing, to be avoided when possible.\n\nNote that this synchronization (done by DirectX and your video driver)\nis usually approximate when running in windowed (or fake fullscreen) modes;\nthus, page tearing is often minimized but can't always be completely eliminated.\n\nNote that multisampling is usually only available when page tearing is\nallowed, due to limitations of the DirectX 8 API.  The one exception is\n'true' fullscreen mode; there, you can disable page tearing and still use\nmultisampling.  (But not in fake fullscreen, windowed, or desktop modes.)"
+                            "Check this box to synchronize new frame updates to the monitor's next vertical scan to prevent 'mid-scan' tearing." //When a new frame of animation is ready for display, MilkDrop has a choice of whether or not to synchronize the new frame to the monitor's next vertical scan.\n\nIf there is no synchronization and the new frame is shown immediately, then the update might occur in 'mid-scan', so for that 1/60th of a second, you'll see the old frame toward the top of the monitor, and the new frame toward the bottom, with a sharp line ('tear') somewhere in between. This is especially visible when solid objects on the screen are changing or moving rapidly, from frame to frame.\n\nHowever, if the plug-in waits until the vertical scan is complete to update the image, then at the start of the next vertical scan, the entire image will be ready and will (hopefully) be presented without any tearing.\n\nAlthough page tearing will often cause visible artifacts, it will allow the plug-in to run at its maximum possible framerate. Generally, though, page tearing is considered a bad thing, to be avoided when possible.\n\nNote that this synchronization (done by DirectX and your video driver) is usually approximate when running in windowed (or fake fullscreen) modes; thus, page tearing is often minimized but can't always be completely eliminated.\n\nNote that multisampling is usually only available when page tearing is allowed, due to limitations of the DirectX 8 API. The one exception is 'true' fullscreen mode; there, you can disable page tearing and still use multisampling. But not in fake fullscreen, windowed, or desktop modes.
     //IDS_FORCE_INTO_FS_MODE_HELP 
     //                        "Enable this to force the plug-in to start in fullscreen (or 'fake' fullscreen) mode.\n\nNote that if 'fake' fullscreen mode is enabled, the plug-in will start in 'fake' fullscreen mode."
     //IDS_FORCE_INTO_DESKTOP_MODE_HELP 
     //                        "Enable this to force the plug-in to start in desktop mode."
     //IDS_HELP_ON_F1          "Help for 'Press F1...' checkbox"
-    IDS_HELP_ON_F1_HELP     "Disable this to prevent the 'Press F1 for Help' message from appearing when the plug-in starts."
+    IDS_HELP_ON_F1_HELP     "Uncheck this box to prevent the ""Press F1 for Help"" message from appearing when MilkDrop starts."
     //IDS_CB_SKIN_HELP        "Check this box to 'skin' the plug-in's window frame when it runs\nin a window, so that it looks like the rest of the windows that\nmake up Winamp's interface.\n\nThis feature requires Winamp 2.90 or later; if the box is greyed\nout, it means you need a newer version of Winamp."
     //IDS_SAVE_CPU_CHECKBOX   "Help for 'Save CPU' checkbox"
     //IDS_SAVE_CPU_CHECKBOX_HELP 
@@ -1554,10 +1551,10 @@ BEGIN
     //IDS_KEY_MAPPINGS        "yYYyYzZ"
     IDS_X_FPS               " %3d fps"
     IDS_MILK2_DIR_WARN      "Unable to create ""milkdrop2"" directory in profile."
-    IDS_SCROLL_CTRL_HELP    "Prevent MilkDrop from controlling Scroll Lock key."
-    IDS_NOCOMPSHADER_HELP   "Skip composite shader blending to turn off the strobing on the bottom and right edges of the screen."
-    IDS_TITLE_FORMAT_HELP   "Set title format string using foobar2000 script."
-    IDS_ARTWORK_FORMAT_HELP "A fully-qualified path or a foobar2000 script that returns the file path of the artwork to display."
+    IDS_SCROLL_CTRL_HELP    "Check this box to prevent MilkDrop from controlling the Scroll Lock key state."
+    IDS_NOCOMPSHADER_HELP   "Check this box to skip composite shader blending to minimize the strobing effect on the bottom and right edges of the screen."
+    IDS_TITLE_FORMAT_HELP   "Set a song title format string using foobar2000 script."
+    IDS_ARTWORK_FORMAT_HELP "If nothing is set, then foobar2000 will use the album metadata. To override, set either a fully-qualified path or a foobar2000 script that returns the file path of the artwork to display. "
 END
 
 #endif    // English (United States) resources
