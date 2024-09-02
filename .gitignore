@@ -18,9 +18,13 @@ build/
 [Bb]in/
 [Oo]bj/
 
-# MSTest test Results
+# MSTest test results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
+# CodeCoverage results
+[Cc]ode[Cc]overage/
+*.coverage
 
 *_i.c
 *_p.c
@@ -62,15 +66,8 @@ ipch/
 # Guidance Automation Toolkit
 *.gpState
 
-# DocProject is a documentation generator add-in
-DocProject/buildhelp/
-DocProject/Help/*.HxT
-DocProject/Help/*.HxC
-DocProject/Help/*.hhc
-DocProject/Help/*.hhk
-DocProject/Help/*.hhp
-DocProject/Help/Html2
-DocProject/Help/html
+# Doxygen output
+Doxygen/
 
 # Click-Once directory
 publish/
@@ -175,7 +172,3 @@ CMakeLists.txt
 !/external/eel2/asm-nseel-arm64ec.obj
 !/external/eel2/eel2.vcxproj
 !/external/eel2/eel2.vcxproj.filters
-*.wav
-*.dds
-*.spritefont
-*.sdkmesh
