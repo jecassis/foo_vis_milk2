@@ -32,6 +32,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="coverage.runsettings">
+      <Filter>Configuration Files</Filter>
+    </None>
     <None Include="packages.config">
       <Filter>Configuration Files</Filter>
     </None>

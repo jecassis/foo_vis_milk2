@@ -270,6 +270,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     void OnButtonClick(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnComboChange(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar);
+    void AutoHideGamma16();
     bool HasChanged() const;
     void OnChanged();
 

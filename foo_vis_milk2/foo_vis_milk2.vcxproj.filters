@@ -158,5 +158,8 @@
     <Text Include="..\README.md">
       <Filter>Documentation Files</Filter>
     </Text>
+    <Text Include="..\TESTING.md">
+      <Filter>Documentation Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

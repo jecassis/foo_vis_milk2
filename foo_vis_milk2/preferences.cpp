@@ -177,6 +177,7 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
         SendMessage(ctrl, TBM_SETTIC, (WPARAM)0, (LPARAM)i);
 
     CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(cfg_bAutoGamma));
+    AutoHideGamma16();
 
     // Image cache maximum bytes.
     ctrl = GetDlgItem(IDC_MAX_BYTES2);
@@ -298,7 +299,8 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
         {IDC_RAND_TITLE, IDS_RAND_TITLE_HELP},
         {IDC_RAND_MSG, IDS_RAND_MSG_HELP},
         {IDC_CB_TITLE_ANIMS, IDS_TITLE_ANIMS_HELP},
-        {IDC_IMAGE_CACHE_BOX, IDS_MAX_IMAGES_BYTES_HELP},
+        {IDC_MAX_IMAGES2, IDS_MAX_IMAGES_BYTES_HELP},
+        {IDC_MAX_BYTES2, IDS_MAX_IMAGES_BYTES_HELP},
         {IDC_STRETCH2, IDS_CANVAS_STRETCH_HELP},
         {IDC_MESHSIZECOMBO, IDS_MESH_SIZE_HELP},
         {IDC_SHADERS, IDS_PIXEL_SHADERS_HELP},
@@ -362,6 +364,7 @@ void milk2_preferences_page::OnEditNotification(UINT, int, CWindow)
 void milk2_preferences_page::OnButtonClick(UINT, int, CWindow)
 {
     OnChanged();
+    AutoHideGamma16();
 }
 
 void milk2_preferences_page::OnComboChange(UINT, int, CWindow)
@@ -390,6 +393,18 @@ void milk2_preferences_page::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScro
                     OnChanged();
             }
     }
+}
+
+void milk2_preferences_page::AutoHideGamma16()
+{
+    bool bAutoGamma = static_cast<bool>(IsDlgButtonChecked(IDC_CB_AUTOGAMMA2));
+    ::ShowWindow(GetDlgItem(IDC_BRIGHT_SLIDER_BOX), static_cast<UINT>(!bAutoGamma));
+    ::ShowWindow(GetDlgItem(IDC_BRIGHT_SLIDER2), static_cast<UINT>(!bAutoGamma));
+    ::ShowWindow(GetDlgItem(IDC_GAMMA16_0), static_cast<UINT>(!bAutoGamma));
+    ::ShowWindow(GetDlgItem(IDC_GAMMA16_1), static_cast<UINT>(!bAutoGamma));
+    ::ShowWindow(GetDlgItem(IDC_GAMMA16_2), static_cast<UINT>(!bAutoGamma));
+    ::ShowWindow(GetDlgItem(IDC_GAMMA16_3), static_cast<UINT>(!bAutoGamma));
+    ::ShowWindow(GetDlgItem(IDC_GAMMA16_4), static_cast<UINT>(!bAutoGamma));
 }
 
 uint32_t milk2_preferences_page::get_state()
@@ -447,6 +462,7 @@ void milk2_preferences_page::reset()
 
     SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
     CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(cfg_bAutoGamma));
+    AutoHideGamma16();
 
     SelectItemByValue(GetDlgItem(IDC_MAX_BYTES2), static_cast<DWORD>(cfg_nMaxBytes));
 

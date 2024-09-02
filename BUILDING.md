@@ -13,7 +13,7 @@ A step-by-step on how to compile on Windows:
    3. Ensure you have all you need for Visual Studio by running the installer using "_Tools / Get Tools and Features..._". In the installer that comes up hit the "_More_" dropdown and select "_Import configuration_". In the file selection dialog, point it to [`.vsconfig`](.vsconfig) in the repository to install things like NuGet, ATL and a few other prerequisites.
    4. In Solution Explorer, if the "*foo_vis_milk2*" project is not bold font, right click on it and select "_Set as Starter Project_".
    5. In Solution Explorer again, right click on the "*Solution 'foo_vis_milk2'*" tree root at the top and select "_Manage NuGet Packages for Solution_". Use the tab that comes up to install DirectXTK and WTL for the various projects; they should be pre-populated but you can search if not.
-   > Note: It is possible to ignore dependencies, but you can install XAudio if you find it simpler than tinkering with the options.
+      > Note: It is possible to ignore dependencies, but installing XAudio2 might be simpler than tinkering with the options.
 2. Download the foobar2000 SDK and place it in the `external\` directory according to the file layout in the [README](README.md#repository-notes). Then use the CLI to patch it:
 
 ```powershell

@@ -37,7 +37,6 @@
 #define COLOR_NORM(x) (((int)(x * 255) & 0xFF) / 255.0f)
 #define COPY_COLOR(x, y) { x.a = y.a; x.r = y.r; x.g = y.g; x.b = y.b; }
 #define D3DCOLOR_RGBA_01(r, g, b, a) D3DCOLOR_RGBA(((int)(r * 255)), ((int)(g * 255)), ((int)(b * 255)), ((int)(a * 255)))
-#define FRAND ((warand() % 7381) / 7380.0f)
 
 #define VERT_CLIP 0.75f // warning: top/bottom can get clipped if less than 0.65!
 

@@ -22,8 +22,8 @@
 //  L: load a specific preset (invokes the 'Load' menu)
 //  + / -: rate current preset (better / worse)
 //  scroll lock: lock/unlock current preset
-//      (keyboard light on means preset is locked)
-//      (prevents random switch to new preset)
+//      (keyboard light on means preset is locked which
+//       prevents random switch to new preset)
 //  A: aggregate preset - loads a random preset,
 //      steals the warp shader from a different random preset,
 //      and steals the composite shader from a third random preset.
@@ -79,10 +79,33 @@
 //  CTRL + Y: kill custom messages
 //  CTRL + K: kill all sprites
 //
-// Note that there are more keys available, but because many
-// are only relevant to people designing their own presets, 
-// they are listed in the preset authoring guide instead.
+// The following are hotkeys for changing certain common parameters
+// on the current preset.
 //
+// MOTION
+//  i / I: zoom in / out
+//  [ / ]: push motion (`dx`) left / right
+//  { / }: push motion (`dy`) up / down
+//  < / >: rotate (`rot`) left / right
+//  o / O: shrink / grow the amplitude of the warp effect
+//
+// WAVEFORM
+//   W: cycle through waveforms
+//   j / J: scale waveform down / up
+//   e / E: make the waveform more transparent / solid
+//
+// BRIGHTNESS
+//   g / G: decrease / increase gamma (brightness) **
+//
+// VIDEO ECHO EFFECT **
+//   q / Q: scale second graphics layer down / up **
+//   F: flip second graphics layer (cycles through 4 fixed orientations) **
+//
+// ** These keys only have an effect on MilkDrop 1-era presets.
+//    In MilkDrop 2-era presets, these values are embedded in
+//    the shader, so you need to go into the composite shader
+//    and modify the code.
+
 // KEY HANDLING
 //  - In all cases, handle or capture:
 //    - ZXCVBRS, zxcvbrs; case-insensitive (lowercase come through only as WM_CHAR; uppercase come in as both)

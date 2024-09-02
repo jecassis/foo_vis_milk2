@@ -18,6 +18,10 @@ Refer to the [build pipeline](.github/workflows/build.yml) jobs for a step-by-st
 
 See [CHANGELOG](CHANGELOG.md) for additional details.
 
+See [BUILDING](BUILDING.md) for solution build instructions.
+
+See [TESTING](TESTING.md) for an outline of how to run a simple unit test and collect runtime coverage.
+
 See [LICENSES](LICENSES.md) to become thoroughly confused.
 
 ## Features
@@ -95,7 +99,7 @@ The build assumes the following directory structure:
 
 MilkDrop 2 (`vis_milk2`) is a music visualizer - a "plug-in" to the Winamp music player. The changes to the [MilkDrop 2 source code release](https://sourceforge.net/projects/milkdrop2/) from 5/13/13 (version 2.25c) include:
 
-- Porting VMS from DirectX 9 to Direct X 11.1. DirectX 11.1 is Direct3D 11.1, Direct2D 1.1, DirectWrite 1.1, and DXGI 1.2.
+- Porting VMS from DirectX 9 to Direct X 11.1. DirectX 11.1 is Direct3D 11.1, DXGI 1.6, Direct2D 1.1, and DirectWrite 1.1.
 - Porting text layout and rendering from D3DX9 and GDI to DirectWrite and Direct2D, respectively.
 - Building DLL with Visual Studio 2022 (v143) Platform Toolset.
 - Minor bug and typo fixing so that the plug-in can be used in Winamp and foobar2000 music players without crashing.
