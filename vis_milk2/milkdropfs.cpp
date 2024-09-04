@@ -176,6 +176,12 @@ bool CPlugin::RenderStringToTitleTexture()
     D3D11Shim* lpDevice = GetDevice();
     if (!lpDevice)
         return false;
+    
+    int g_title_font_sizes[] = {
+        6,   8,   10,  12,  14,  16,  20,  26,  32,  38,  44,  50,  56,  64,  72,  80,
+        88,  96,  104, 112, 120, 128, 136, 144, 160, 192, 224, 256, 288, 320, 352, 384,
+        416, 448, 480, 512
+    }; // NOTE: DO NOT EXCEED 64 FONTS
 
     // Remember the original backbuffer and zbuffer.
     Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
@@ -205,36 +211,27 @@ bool CPlugin::RenderStringToTitleTexture()
             verts[i].x = (i % 2 == 0) ? -1.0f : 1.0f;
             verts[i].y = (i / 2 == 0) ? -1.0f : 1.0f;
             verts[i].z = 0.0f;
-            verts[i].a = 1.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
+            verts[i].a = 1.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f; // diffuse color; also acts as filler to align structure to 16 bytes (good for random access/indexed prims)
         }
 
         lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(WFVERTEX));
     }
 
-    int g_title_font_sizes[] = {
-        // NOTE: DO NOT EXCEED 64 FONTS HERE.
-        6,  8,  10, 12, 14, 16,
-        20, 26, 32, 38, 44, 50, 56,
-        64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144,
-        160, 192, 224, 256, 288, 320, 352, 384, 416, 448,
-        480, 512
-    };
-
-    /*// 1. Clip title if too many characters.
-    if (m_supertext.bIsSongTitle)
+    // 1. Clip title if too many characters.
+    /*if (m_supertext.bIsSongTitle)
     {
-        // truncate song title if too long; don't clip custom messages, though!
+        // Truncate song title if too long; don't clip custom messages, though!
         int clip_chars = 32;
         int user_title_size = GetFontHeight(SONGTITLE_FONT);
 
-        #define MIN_CHARS 8         // max clip_chars *for BIG FONTS*
-        #define MAX_CHARS 64        // max clip chars *for tiny fonts*
-        float t = (user_title_size-10)/(float)(128-10);
-        t = min(1,max(0,t));
-        clip_chars = (int)(MAX_CHARS - (MAX_CHARS-MIN_CHARS)*t);
+        constexpr int MIN_CHARS = 8; // maximum clip characters *for BIG FONTS*
+        constexpr int MAX_CHARS = 64; // maximum clip chars *for tiny fonts*
+        float t = (user_title_size - 10) / static_cast<float>(128 - 10);
+        t = std::min(1.0f, std::max(0.0f, t));
+        clip_chars = static_cast<int>(MAX_CHARS - (MAX_CHARS - MIN_CHARS) * t);
 
-        if ((int)strlen(szTextToDraw) > clip_chars+3)
-            lstrcpy(&szTextToDraw[clip_chars], "...");
+        if (static_cast<int>(wcsnlen_s(szTextToDraw, 512)) > clip_chars + 3)
+            wcscpy_s(&szTextToDraw[clip_chars], 512 - clip_chars, L"...");
     }*/
 
     bool ret = false;
@@ -261,7 +258,7 @@ bool CPlugin::RenderStringToTitleTexture()
 
         // Limit the size of the font used.
         //int user_title_size = GetFontHeight(SONGTITLE_FONT);
-        //while (g_title_font_sizes[hi] > user_title_size*2 && hi>4)
+        //while (g_title_font_sizes[hi] > user_title_size * 2 && hi > 4)
         //    hi--;
 
         D2D1_RECT_F temp{};
@@ -276,12 +273,12 @@ bool CPlugin::RenderStringToTitleTexture()
                 static_cast<float>(g_title_font_sizes[mid]),
                 m_supertext.bBold ? DWRITE_FONT_WEIGHT_BLACK : DWRITE_FONT_WEIGHT_REGULAR,
                 m_supertext.bItal ? DWRITE_FONT_STYLE_ITALIC: DWRITE_FONT_STYLE_NORMAL,
-                DWRITE_TEXT_ALIGNMENT_CENTER
+                DWRITE_TEXT_ALIGNMENT_CENTER,
+                DWRITE_TRIMMING_GRANULARITY_NONE
             );
 
             if (gdi_font)
             {
-                // create new d3dx font at 'mid' size:
                 if (lo == hi - 1)
                     break; // DONE; but the 'lo'-size font is ready for use!
 
@@ -299,10 +296,11 @@ bool CPlugin::RenderStringToTitleTexture()
                 m_ddsTitle.SetTextShadow(true);
 
                 // Compute size of text if drawn with font of this size.
-                int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CALCRECT, textColor, false, backColor);
+                temp = m_ddsTitle.GetBounds(m_lpDX->GetDWriteFactory());
+                float h = temp.bottom - temp.top;
 
                 // Adjust and prepare to reiterate.
-                if (static_cast<LONG>(temp.right) >= rect.right || h > rect.bottom - rect.top)
+                if (temp.right >= rect.right || h > rect.bottom - rect.top)
                     hi = mid;
                 else
                     lo = mid;
@@ -313,7 +311,7 @@ bool CPlugin::RenderStringToTitleTexture()
 
         if (gdi_font)
         {
-            // Do actual drawing + set m_supertext.nFontSizeUsed; use 'lo' size
+            // Do actual drawing and set `m_supertext.nFontSizeUsed`; use 'lo' size.
             int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER | DT_CALCRECT, textColor, false, backColor);
             temp.left = static_cast<FLOAT>(0);
             temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
@@ -338,7 +336,7 @@ bool CPlugin::RenderStringToTitleTexture()
         Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
         wchar_t* str = m_supertext.szText;
 
-        // Create 'm_gdi_title_font_doublesize'.
+        // Create `m_gdi_title_font_doublesize`.
         int songtitle_font_size = m_fontinfo[SONGTITLE_FONT].nSize * m_nTitleTexSizeX / 256;
         if (songtitle_font_size < 6)
             songtitle_font_size = 6;
@@ -348,13 +346,12 @@ bool CPlugin::RenderStringToTitleTexture()
             static_cast<float>(songtitle_font_size),
             m_fontinfo[SONGTITLE_FONT].bBold ? DWRITE_FONT_WEIGHT_BLACK : DWRITE_FONT_WEIGHT_REGULAR,
             m_fontinfo[SONGTITLE_FONT].bItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
-            DWRITE_TEXT_ALIGNMENT_CENTER
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+            DWRITE_TRIMMING_GRANULARITY_NONE
         );
+        //if (!m_gdi_title_font_doublesize)
         //{
-        //    MessageBoxW(NULL,
-        //                wasabiApiLangString(IDS_ERROR_CREATING_DOUBLE_SIZED_GDI_TITLE_FONT),
-        //                wasabiApiLangString(IDS_MILKDROP_ERROR, title, sizeof(title)),
-        //                MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+        //    MessageBox(NULL, WASABI_API_LNGSTRINGW(IDS_ERROR_CREATING_DOUBLE_SIZED_GDI_TITLE_FONT), WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
         //    return false;
         //}
 
@@ -383,14 +380,11 @@ bool CPlugin::RenderStringToTitleTexture()
             if (static_cast<int>(temp.right - temp.left) <= m_nTitleTexSizeX)
                 break;
 
-            // 11/01/2009 DO - disabled as it was causing to users 'random' titles against
-            // what is expected so we now just work on the ellipse at the end approach which
-
-            // Manually clip the text... chop segments off the front
+            // Manually clip the text... chop segments off the front.
             /*wchar_t* p = wcsstr(str, L" - ");
             if (p)
             {
-                str = p+3;
+                str = p + 3;
                 continue;
             }*/
 
@@ -408,7 +402,6 @@ bool CPlugin::RenderStringToTitleTexture()
         temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
         temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
 
-        // NOTE: DT_END_ELLIPSIS CAUSES NOTHING TO DRAW, IF YOU USE W/D3DX9!
         m_supertext.nFontSizeUsed = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, DT_SINGLELINE | DT_CENTER /*| DT_NOPREFIX | DT_END_ELLIPSIS*/, textColor, false, backColor);
 
         ret = true;

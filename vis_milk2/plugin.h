@@ -98,7 +98,8 @@ enum
     MD2_PS_2_0 = 2,
     MD2_PS_2_X = 3,
     MD2_PS_3_0 = 4,
-    MD2_PS_4_0 = 5, // not supported by MilkDrop
+    MD2_PS_4_0 = 5,
+    MD2_PS_5_0 = 6,
 };
 
 /* typedef struct
@@ -360,9 +361,9 @@ class CPlugin : public CPluginShell
     //bool m_bAnisotropicFiltering;
     bool m_bPresetLockOnAtStartup;
     bool m_bPreventScollLockHandling;
-    int m_nMaxPSVersion_ConfigPanel; // -1 = auto, 0 = disable shaders, 2 = ps_2_0, 3 = ps_3_0
-    int m_nMaxPSVersion_DX9;         // 0 = no shader support, 2 = ps_2_0, 3 = ps_3_0
-    int m_nMaxPSVersion;             // this one will be the ~min of the other two. 0/2/3.
+    int m_nMaxPSVersion_ConfigPanel; // -1 = auto, 0 = disable shaders, 2 = ps_2_0, 3 = ps_2_x, 4 = ps_3_0, 5 = ps_4_0
+    int m_nMaxPSVersion_DX; // 0 = no shader support, 2 = ps_2_0, 3 = ps_2_x, 4 = ps_3_0, 5 = ps_4_0
+    int m_nMaxPSVersion; // the minimum of the other two
     int m_nMaxImages;
     int m_nMaxBytes;
 

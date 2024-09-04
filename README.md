@@ -41,7 +41,7 @@ See [LICENSES](LICENSES.md) to become thoroughly confused.
 ## Run Requirements and Installation
 
 - Download [foobar2000](https://www.foobar2000.org/download) and install.
-- Import `foo_vis_milk2.fbk2-component` into foobar2000 using the "_File / Preferences / Components / Install..._" menu item.
+- Import `foo_vis_milk2.fbk2-component` into foobar2000 using the "_File > Preferences > Components > Install..._" menu item.
 - Download and extract presets into this component's directory of foobar2000. This should be `<foobar2000 install folder>\profile\milkdrop2\presets`.
 - Textures can also be added to `<foobar2000 install folder>\profile\milkdrop2\textures` and referenced in their accompanying configuration file `<foobar2000 install folder>\profile\milkdrop2\milk2_img.ini`.
 - Custom messages can be entered into `<foobar2000 install folder>\profile\milkdrop2\milk2_img.ini`.

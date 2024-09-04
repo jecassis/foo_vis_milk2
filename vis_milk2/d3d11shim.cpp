@@ -495,7 +495,9 @@ char* _WideToUTF8(const wchar_t* WFilename)
 
 HRESULT D3D11Shim::CreateTextureFromFile(LPCWSTR szFileName, ID3D11Resource** texture)
 {
-    std::string strFileName(_WideToUTF8(szFileName));
+    char* u8FileName = _WideToUTF8(szFileName);
+    std::string strFileName(u8FileName);
+    delete[] u8FileName;
     if (GetExtension(strFileName) == "dds")
         return CreateDDSTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
     else

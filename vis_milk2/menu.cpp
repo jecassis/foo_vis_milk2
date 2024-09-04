@@ -228,7 +228,7 @@ void MDMenuTextOut(TextElement* element, eFontIndex font_index, wchar_t* str, DW
 {
     D2D1_COLOR_F fColor = D2D1::ColorF(color, CPlugin::GetAlpha(color));
     element->Initialize(g_plugin.m_lpDX->GetD2DDeviceContext());
-    element->SetAlignment(AlignCenter, AlignCenter);
+    element->SetAlignment(AlignNear, AlignNear);
     element->SetTextColor(fColor);
     element->SetTextOpacity(fColor.a);
     element->SetVisible(true);

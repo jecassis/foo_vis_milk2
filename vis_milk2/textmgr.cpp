@@ -45,7 +45,8 @@ TextStyle::TextStyle(std::wstring fontName,
                      float fontSize,
                      DWRITE_FONT_WEIGHT fontWeight,
                      DWRITE_FONT_STYLE fontStyle,
-                     DWRITE_TEXT_ALIGNMENT textAlignment) :
+                     DWRITE_TEXT_ALIGNMENT textAlignment,
+                     DWRITE_TRIMMING_GRANULARITY trimmingGranularity) :
     m_fontName(fontName),
     m_fontSize(fontSize),
     m_fontWeight(fontWeight),
@@ -53,7 +54,7 @@ TextStyle::TextStyle(std::wstring fontName,
     m_textAlignment(textAlignment),
     m_paragraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR),
     m_wordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP),
-    m_trimmingGranularity(DWRITE_TRIMMING_GRANULARITY_CHARACTER)
+    m_trimmingGranularity(trimmingGranularity)
 {
 }
 

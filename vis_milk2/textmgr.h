@@ -56,7 +56,8 @@ class TextStyle
               float fontSize = 24.0f,
               DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL,
               DWRITE_FONT_STYLE fontStyle = DWRITE_FONT_STYLE_NORMAL,
-              DWRITE_TEXT_ALIGNMENT textAlignment = DWRITE_TEXT_ALIGNMENT_LEADING);
+              DWRITE_TEXT_ALIGNMENT textAlignment = DWRITE_TEXT_ALIGNMENT_LEADING,
+              DWRITE_TRIMMING_GRANULARITY trimmingGranularity = DWRITE_TRIMMING_GRANULARITY_CHARACTER);
 
     void SetFontName(std::wstring fontName);
     void SetFontSize(float fontSize);

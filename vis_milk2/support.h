@@ -37,6 +37,10 @@
 
 using namespace DirectX;
 
+void PrepareFor3DDrawing(D3D11Shim* pDevice, int viewport_width, int viewport_height,
+                         float fov_in_degrees, float near_clip, float far_clip,
+                         XMVECTOR* pvEye, XMVECTOR* pvLookat, XMVECTOR* pvUp);
+void PrepareFor2DDrawing(D3D11Shim* pDevice);
 void MakeWorldMatrix(XMMATRIX* pOut, float xpos, float ypos, float zpos, float sx, float sy, float sz, float pitch, float yaw, float roll);
 void MakeProjectionMatrix(XMMATRIX* pOut,
                           const float near_plane, // Distance to near clipping plane
@@ -44,19 +48,17 @@ void MakeProjectionMatrix(XMMATRIX* pOut,
                           const float fov_horiz, // Horizontal field of view angle, in radians
                           const float fov_vert // Vertical field of view angle, in radians
 );
-void PrepareFor3DDrawing(D3D11Shim* pDevice,
-                         int viewport_width,
-                         int viewport_height,
-                         float fov_in_degrees,
-                         float near_clip,
-                         float far_clip,
-                         XMVECTOR* pvEye,
-                         XMVECTOR* pvLookat,
-                         XMVECTOR* pvUp);
-void PrepareFor2DDrawing(D3D11Shim* pDevice);
+
+void GetWinampSongTitle(HWND hWndWinamp, wchar_t* szSongTitle, size_t nSize);
+void GetWinampSongPosAsText(HWND hWndWinamp, wchar_t* szSongPos);
+void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen);
+float GetWinampSongPos(HWND hWndWinamp); // returns answer in seconds
+float GetWinampSongLen(HWND hWndWinamp); // returns answer in seconds
+
+int GetDX11TexFormatBitsPerPixel(DXGI_FORMAT fmt);
 
 // Define vertex formats.
-// Note: layout must match the vertex declarations in "plugin.cpp"!
+// Note: Layout must match the vertex declarations in "d3d11shim.cpp"!
 typedef struct _MDVERTEX
 {
     float x, y, z;          // screen position + Z-buffer depth
@@ -80,19 +82,6 @@ typedef struct _SPRITEVERTEX
     float tu, tv;     // texture coordinates for texture #0
 } SPRITEVERTEX, *LPSPRITEVERTEX;
 
-// Also prepare vertex format descriptors for each of the 3 kinds of vertices.
-// Note: D3DFVF_TEXCOORDSIZEm(n): m = the dimension, n = the index
-// AVOID D3DFVF_TEXCOORDSIZE4 - I've seen probs (blending between shader and non-shader presets) on vaio laptop w/6200!
-#define MDVERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX3 | D3DFVF_TEXCOORDSIZE2(0) | D3DFVF_TEXCOORDSIZE2(1) | D3DFVF_TEXCOORDSIZE2(2))
-#define WFVERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE)
-#define SPRITEVERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0))
-
-void GetWinampSongTitle(HWND hWndWinamp, wchar_t* szSongTitle, size_t nSize);
-void GetWinampSongPosAsText(HWND hWndWinamp, wchar_t* szSongPos);
-void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen);
-float GetWinampSongPos(HWND hWndWinamp); // returns answer in seconds
-float GetWinampSongLen(HWND hWndWinamp); // returns answer in seconds
-
 #ifdef PROFILING
 #define PROFILE_BEGIN \
     LARGE_INTEGER tx, freq, ty; \
@@ -110,7 +99,5 @@ float GetWinampSongLen(HWND hWndWinamp); // returns answer in seconds
 #define PROFILE_BEGIN
 #define PROFILE_END(s)
 #endif
-
-int GetDX11TexFormatBitsPerPixel(DXGI_FORMAT fmt);
 
 #endif

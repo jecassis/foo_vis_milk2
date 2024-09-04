@@ -12,7 +12,8 @@
 // player's layout.
 //
 // GENERAL
-//  ESC: toggle help message or fullscreen
+//  ESC: toggle interactive mode or exit fullscreen
+//  ALT + K: launch preferences page
 //
 // PRESET LOADING
 //  BACKSPACE: return to previous preset
@@ -25,12 +26,12 @@
 //      (keyboard light on means preset is locked which
 //       prevents random switch to new preset)
 //  A: aggregate preset - loads a random preset,
-//      steals the warp shader from a different random preset,
-//      and steals the composite shader from a third random preset.
+//     steals the warp shader from a different random preset,
+//     and steals the composite shader from a third random preset.
 //  D: cycle between various lock-states for the warp and
-//      composite shaders. When one of these shaders is locked,
-//      loading a new preset will load everything *except* the
-//      locked shaders, creating a mix between the two presets.
+//     composite shaders. When one of these shaders is locked,
+//     loading a new preset will load everything *except* the
+//     locked shaders, creating a mix between the two presets.
 //
 // PRESET EDITING AND SAVING
 //  M: show/hide the preset-editing menu
@@ -39,22 +40,22 @@
 //
 // MUSIC PLAYBACK
 //  Z / X / C / V / B: navigate playlist (prev / play / pause / stop / next)
-//  U / S: toggle shuffle
+//  u / U: toggle shuffle mode forward / back
 //  P: show playlist
 //  up / down arrows: volume up / down
 //  left / right arrows: rewind / forward 5 seconds
 //  SHIFT + left / right arrows: rewind / forward 30 seconds
 //
-// FUNCTION KEYS
+// STATUS INFORMATION
 //  F1: show help screen
 //  F2: show song title
 //  F3: show song length
 //  F4: show preset name
 //  F5: show frames per second (FPS)
 //  F6: show rating of current preset
-//  F7: re-read custom message file (milk_msg.ini) from disk
-//  F8: jump to new directory (for presets)
-//  F9: toggle stereo 3D on/off
+//  Y, F7: re-read custom message file (milk_msg.ini) from disk
+//  F8: jump to new presets directory
+//  F9: show shader help (in shader edit mode)
 //
 // SPRITES AND CUSTOM MESSAGES
 //  T: launch song title animation
@@ -90,7 +91,7 @@
 //  o / O: shrink / grow the amplitude of the warp effect
 //
 // WAVEFORM
-//   W: cycle through waveforms
+//   w / W: cycle through waveforms forward / back
 //   j / J: scale waveform down / up
 //   e / E: make the waveform more transparent / solid
 //
@@ -100,6 +101,10 @@
 // VIDEO ECHO EFFECT **
 //   q / Q: scale second graphics layer down / up **
 //   F: flip second graphics layer (cycles through 4 fixed orientations) **
+//
+// SHADERS
+//   !: randomize warp shader
+//   @: randomize composite shader
 //
 // ** These keys only have an effect on MilkDrop 1-era presets.
 //    In MilkDrop 2-era presets, these values are embedded in
@@ -357,8 +362,12 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         g_plugin.m_pState->m_nCompPSVersion = MD2_PS_2_X;
                         break;
                     case MD2_PS_2_X:
-                        g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_3_0;
-                        g_plugin.m_pState->m_nCompPSVersion = MD2_PS_3_0;
+                        g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_4_0;
+                        g_plugin.m_pState->m_nCompPSVersion = MD2_PS_4_0;
+                        break;
+                    case MD2_PS_4_0:
+                        g_plugin.m_pState->m_nWarpPSVersion = MD2_PS_5_0;
+                        g_plugin.m_pState->m_nCompPSVersion = MD2_PS_5_0;
                         break;
                     default:
                         assert(0);
@@ -386,8 +395,12 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_2_X);
                         break;
                     case MD2_PS_2_X:
-                        g_plugin.m_pState->m_nWarpPSVersion = std::max(g_plugin.m_pState->m_nWarpPSVersion, (int)MD2_PS_3_0);
-                        g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_3_0);
+                        g_plugin.m_pState->m_nWarpPSVersion = std::max(g_plugin.m_pState->m_nWarpPSVersion, (int)MD2_PS_4_0);
+                        g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_4_0);
+                        break;
+                    case MD2_PS_5_0:
+                        g_plugin.m_pState->m_nWarpPSVersion = std::max(g_plugin.m_pState->m_nWarpPSVersion, (int)MD2_PS_5_0);
+                        g_plugin.m_pState->m_nCompPSVersion = std::max(g_plugin.m_pState->m_nCompPSVersion, (int)MD2_PS_5_0);
                         break;
                     default:
                         assert(false);
@@ -532,7 +545,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
             case 'u': //g_plugin.m_pState->m_fWarpScale /= 1.1f; return;
             case 'U': //g_plugin.m_pState->m_fWarpScale *= 1.1f; return;
                 {
-                    const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
+                    const char* szMode = ToggleShuffle(chChar == 'u');
                     swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
                     g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
                 }
@@ -697,7 +710,6 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 return;
             case 's':
             case 'S':
-                /*
                 // Save preset.
                 if (UI_mode == UI_REGULAR)
                 {
@@ -709,20 +721,13 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     waitstring.bFilterBadChars = true;
                     waitstring.bDisplayAsCode = false;
                     waitstring.nSelAnchorPos = -1;
-                    waitstring.nMaxLen = std::min(sizeof(waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - wcsnlen_s(g_plugin.GetPresetDir(), MAX_PATH) - 6)); // 6 for the extension + null char. Set this because Win32 LoadFile, MoveFile, etc. barf if the path+filename+ext are > MAX_PATH chars.
+                    waitstring.nMaxLen = std::min(sizeof(waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - wcsnlen_s(g_plugin.GetPresetDir(), MAX_PATH) - 6)); // 6 for the extension + null character because Win32 barfs if the path+filename+ext are greater than MAX_PATH characters
                     wcscpy_s(waitstring.szText, g_plugin.m_pState->m_szDesc); // initial string is the filename, minus the extension
                     LoadString(core_api::get_my_instance(), IDS_SAVE_AS, waitstring.szPrompt, 512);
                     waitstring.szToolTip[0] = L'\0';
                     waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)); // set the starting edit position
 
                     RemoveText();
-                }
-                else
-                */
-                {
-                    const char* szMode = ToggleShuffle(chChar == 'u' || chChar == 'U');
-                    swprintf_s(buf, TEXT("Playback Order: %hs"), szMode);
-                    g_plugin.AddError(buf, 3.0f, ERR_NOTIFY, false);
                 }
                 return;
             case 'l':
@@ -920,7 +925,6 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 if (g_plugin.m_nNumericInputMode == NUMERIC_INPUT_MODE_CUST_MSG)
                     g_plugin.ReadCustomMessages(); // re-read custom messages
                 return;
-            /*
             case VK_F8:
                 {
                     UI_mode = UI_CHANGEDIR;
@@ -933,19 +937,18 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     waitstring.nMaxLen = std::min(sizeof(waitstring.szText) - 1, static_cast<size_t>(MAX_PATH - 1));
                     wcscpy_s(waitstring.szText, g_plugin.GetPresetDir());
                     {
-                        // For subtle beauty - remove the trailing '\' from the directory name (if it's not just "x:\").
+                        // For subtle beauty, remove the trailing '\' from the directory name (if it's not just "x:\").
                         size_t len = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText));
                         if (len > 3 && waitstring.szText[len - 1] == '\\')
-                            waitstring.szText[len - 1] = 0;
+                            waitstring.szText[len - 1] = L'\0';
                     }
                     WASABI_API_LNGSTRINGW_BUF(IDS_DIRECTORY_TO_JUMP_TO, waitstring.szPrompt, 512);
-                    waitstring.szToolTip[0] = 0;
+                    waitstring.szToolTip[0] = L'\0';
                     waitstring.nCursorPos = wcsnlen_s(waitstring.szText, ARRAYSIZE(waitstring.szText)); // set the starting edit position
 
                     RemoveText();
                 }
                 return;
-            */
             case VK_F9:
                 ToggleShaderHelp();
                 return;
@@ -1712,11 +1715,13 @@ void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
         g_plugin.OnAltK(); // Leave in as easter egg
         return;
     }
+#if 0
     if ((chChar == 'd' || chChar == 'D') && g_plugin.GetFrame() > 0)
     {
-        //g_plugin.ToggleDesktop();
+        g_plugin.ToggleDesktop();
         return;
     }
+#endif
 }
 
 void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)

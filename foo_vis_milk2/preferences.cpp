@@ -101,7 +101,7 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     AddItem(ctrl, buf, IDS_PS_AUTO_RECOMMENDED, unsigned(-1));
     AddItem(ctrl, buf, IDS_PS_DISABLED, MD2_PS_NONE);
     AddItem(ctrl, buf, IDS_PS_SHADER_MODEL_2, MD2_PS_2_0);
-    AddItem(ctrl, buf, IDS_PS_SHADER_MODEL_3, MD2_PS_3_0);
+    AddItem(ctrl, buf, IDS_PS_SHADER_MODEL_4, MD2_PS_4_0);
     SelectItemByPos(ctrl, 0); // as a safe default
     SelectItemByValue(ctrl, static_cast<DWORD>(cfg_nMaxPSVersion));
 

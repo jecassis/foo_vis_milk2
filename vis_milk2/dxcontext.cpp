@@ -184,7 +184,7 @@ BOOL DXContext::OnWindowSizeChanged(int width, int height)
 
     if (!m_deviceResources->WindowSizeChanged(width, height))
     {
-        m_lastErr = DXC_ERR_RESIZEFAILED;
+        m_lastErr = DX_ERR_RESIZEFAILED;
         m_ready = FALSE;
         return FALSE;
     }
@@ -211,7 +211,7 @@ BOOL DXContext::OnWindowSwap(HWND window, int width, int height)
 
     if (!m_deviceResources->WindowSwap(m_hwnd, m_client_width, m_client_height))
     {
-        m_lastErr = DXC_ERR_SWAPFAIL;
+        m_lastErr = DX_ERR_SWAPFAIL;
         m_ready = FALSE;
         return FALSE;
     }

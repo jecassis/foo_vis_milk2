@@ -525,9 +525,9 @@ void CPlugin::MilkDropPreInitialize()
     //m_bAnisotropicFiltering = true;
     m_bPresetLockOnAtStartup = false;
     m_bPreventScollLockHandling = false;
-    m_nMaxPSVersion_ConfigPanel = -1; // -1 = auto, 0 = disable shaders, 2 = ps_2_0, 3 = ps_3_0
-    m_nMaxPSVersion_DX9 = -1;         // 0 = no shader support, 2 = ps_2_0, 3 = ps_3_0
-    m_nMaxPSVersion = -1;             // this one will be the ~min of the other two.  0/2/3.
+    m_nMaxPSVersion_ConfigPanel = -1;
+    m_nMaxPSVersion_DX = -1;
+    m_nMaxPSVersion = -1;
     m_nMaxImages = 32;
     m_nMaxBytes = 16000000;
 
@@ -1126,21 +1126,23 @@ int CPlugin::AllocateMilkDropDX11()
     int nNewCanvasStretch = (m_nCanvasStretch == 0) ? 100 : m_nCanvasStretch;
 
     D3D_FEATURE_LEVEL featureLevel = GetDevice()->GetFeatureLevel();
-    if (featureLevel >= D3D_FEATURE_LEVEL_9_3)
-        m_nMaxPSVersion_DX9 = MD2_PS_3_0;
-    else if (featureLevel >= D3D_FEATURE_LEVEL_9_2)
-        m_nMaxPSVersion_DX9 = MD2_PS_2_X;
+    if (featureLevel >= D3D_FEATURE_LEVEL_11_0)
+        m_nMaxPSVersion_DX = MD2_PS_5_0;
+    if (featureLevel >= D3D_FEATURE_LEVEL_10_0)
+        m_nMaxPSVersion_DX = MD2_PS_4_0;
+    else if (featureLevel >= D3D_FEATURE_LEVEL_9_3)
+        m_nMaxPSVersion_DX = MD2_PS_2_X;
     else if (featureLevel >= D3D_FEATURE_LEVEL_9_1)
-        m_nMaxPSVersion_DX9 = MD2_PS_2_0;
+        m_nMaxPSVersion_DX = MD2_PS_2_0;
     else
-        m_nMaxPSVersion_DX9 = MD2_PS_NONE;
+        m_nMaxPSVersion_DX = MD2_PS_NONE;
 
     if (m_nMaxPSVersion_ConfigPanel == -1)
-        m_nMaxPSVersion = m_nMaxPSVersion_DX9;
+        m_nMaxPSVersion = m_nMaxPSVersion_DX;
     else
     {
         // To limit user choice by what hardware reports.
-        //m_nMaxPSVersion = std::min(m_nMaxPSVersion_DX9, m_nMaxPSVersion_ConfigPanel);
+        //m_nMaxPSVersion = std::min(m_nMaxPSVersion_DX, m_nMaxPSVersion_ConfigPanel);
 
         // To allow users to override.
         m_nMaxPSVersion = m_nMaxPSVersion_ConfigPanel;
@@ -1181,7 +1183,7 @@ int CPlugin::AllocateMilkDropDX11()
         {
             /*
             wchar_t szSM[64];
-            switch(m_nMaxPSVersion_DX9)
+            switch(m_nMaxPSVersion_DX)
             {
             case MD2_PS_2_0:
             case MD2_PS_2_X:
@@ -1189,10 +1191,10 @@ int CPlugin::AllocateMilkDropDX11()
             case MD2_PS_3_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_3, szSM, 64); break;
             case MD2_PS_4_0: WASABI_API_LNGSTRINGW_BUF(IDS_SHADER_MODEL_4, szSM, 64); break;
             default:
-                swprintf_s(szSM, WASABI_API_LNGSTRINGW(IDS_UKNOWN_CASE_X), m_nMaxPSVersion_DX9);
+                swprintf_s(szSM, WASABI_API_LNGSTRINGW(IDS_UKNOWN_CASE_X), m_nMaxPSVersion_DX);
                 break;
             }
-            if (m_nMaxPSVersion_ConfigPanel >= MD2_PS_NONE && m_nMaxPSVersion_DX9 < m_nMaxPSVersion_ConfigPanel)
+            if (m_nMaxPSVersion_ConfigPanel >= MD2_PS_NONE && m_nMaxPSVersion_DX < m_nMaxPSVersion_ConfigPanel)
                 swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_USING_X), szSM, PSVersion);
             else
                 swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_FAILED_TO_COMPILE_PIXEL_SHADERS_HARDWARE_MIS_REPORT), szSM, PSVersion);
@@ -2798,22 +2800,22 @@ bool CPlugin::RecompilePShader(const char* szShadersText, PShaderInfo* si, int s
     SafeRelease(si->ptr);
     ZeroMemory(si, sizeof(PShaderInfo));
 
-    // LOAD SHADER
-    // note: ps_1_4 required for dependent texture lookups.
+    // Load shader.
+    // Note: ps_1_4 required for dependent texture lookups.
     //       ps_2_0 required for tex2Dbias.
     char ver[32] = {0};
     strcpy_s(ver, "ps_0_0");
     switch (PSVersion)
     {
-        // Even though the PRESET doesn't use shaders, if MilkDrop is running where it CAN do shaders,
-        //   we run all the old presets through (shader) emulation.
-        // This way, during a MilkDrop session, we are always calling either `WarpedBlit()` or `WarpedBlit_NoPixelShaders()`,
-        //   and blending always works.
-        case MD2_PS_NONE: strcpy_s(ver, "ps_4_0_level_9_1"); break;
-        case MD2_PS_2_0: strcpy_s(ver, "ps_4_0_level_9_1"); break;
-        case MD2_PS_2_X: strcpy_s(ver, "ps_4_0_level_9_3"); break; // try ps_2_a first, `LoadShaderFromMemory()` will try ps_2_b if compilation fails
-        case MD2_PS_3_0: strcpy_s(ver, "ps_4_0_level_9_3"); break;
+        case MD2_PS_NONE: strcpy_s(ver, "ps_4_0_level_9_1"); break; // was ps_2_0; even though the PRESET doesn't use shaders, if MilkDrop is running where it CAN do shaders,
+                                                                    //             run all the old presets through(shader) emulation.
+                                                                    //             This way, MilkDrop is always calling either `WarpedBlit()` or `WarpedBlit_NoPixelShaders()`,
+                                                                    //             and blending always works.
+        case MD2_PS_2_0: strcpy_s(ver, "ps_4_0_level_9_1"); break; // was ps_2_a
+        case MD2_PS_2_X: strcpy_s(ver, "ps_4_0_level_9_3"); break; // was ps_3_0; try ps_2_a first, `LoadShaderFromMemory()` will try ps_2_b if compilation fails
+        case MD2_PS_3_0: strcpy_s(ver, "ps_4_0_level_9_3"); break; // was ps_3_0
         case MD2_PS_4_0: strcpy_s(ver, "ps_4_0"); break;
+        case MD2_PS_5_0: strcpy_s(ver, "ps_5_0"); break;
         default: assert(0); break;
     }
 
@@ -4189,11 +4191,11 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             break;
                         case MD2_PS_2_X:
                             MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
-                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS3), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
+                            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_UPGRADE_SHADERS_TO_USE_PS4), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
                             break;
                         case MD2_PS_3_0:
-                            assert(false);
-                            break;
+                        case MD2_PS_4_0:
+                        case MD2_PS_5_0:
                         default:
                             assert(false);
                             break;
@@ -5732,14 +5734,14 @@ retry:
             if (len < 5 || wcscmp(fd.cFileName + len - 5, L".milk") != 0)
                 bSkip = true;
 
-            // If it is .milk, make sure we know how to run its pixel shaders -
-            // otherwise we don't want to show it in the preset list!
+            // If it is ".milk," make sure to know how to run its pixel shaders -
+            // otherwise do not show it in the preset list!
             if (!bSkip)
             {
                 // If the first line of the file is not "MILKDROP_PRESET_VERSION XXX",
-                //   then it's a MilkDrop 1 era preset, so it is definitely runnable. (no shaders)
-                // Otherwise, check for the value "PSVERSION".  It will be 0, 2, or 3.
-                //   If missing, assume it is 2.
+                // then it's a MilkDrop 1-era preset, so it is definitely runnable (no shaders).
+                // Otherwise, check for the value "PSVERSION". It will be 0, 2, or 3.
+                // If missing, assume it is 2.
                 wchar_t szFullPath[MAX_PATH];
                 swprintf_s(szFullPath, L"%s%s", szPresetDir, fd.cFileName);
                 FILE* f;

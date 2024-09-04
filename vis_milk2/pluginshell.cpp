@@ -285,7 +285,7 @@ void CPluginShell::ToggleFullScreen()
     if (!m_lpDX->StartOrRestartDevice(&params))
     {
         // Note: A basic warning message box will have already been given.
-        if (m_lpDX->m_lastErr == DXC_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
+        if (m_lpDX->m_lastErr == DX_ERR_CREATEDEV_PROBABLY_OUTOFVIDEOMEMORY)
         {
             // Make specific suggestions on how to regain more video memory.
             //SuggestHowToFreeSomeMem();

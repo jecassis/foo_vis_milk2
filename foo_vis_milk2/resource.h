@@ -42,7 +42,7 @@
 #define IDS_LOCKED                      33
 #define IDS_ILLEGAL_CHARACTER           37
 #define IDS_STRING_TOO_LONG             38
-//#define IDS_DIRECTORY_TO_JUMP_TO        39
+#define IDS_DIRECTORY_TO_JUMP_TO        39
 #define IDS_ERROR_IMPORTING_BAD_FILENAME 40
 #define IDS_ERROR_IMPORTING_BAD_FILENAME_OR_NOT_OVERWRITEABLE 41
 //#define IDS_INVALID_PATH                42
@@ -50,7 +50,7 @@
 #define IDS_PRESET_ORDER_IS_NOW_X       44
 #define IDS_SEQUENTIAL                  45
 #define IDS_RANDOM                      46
-//#define IDS_SAVE_AS                     50
+#define IDS_SAVE_AS                     50
 #define IDS_AUTO                        51
 #define IDS_8X6_FAST                    52
 #define IDS_16X12_FAST                  53
@@ -418,7 +418,7 @@
 //#define IDS_ERROR_UPDATING_ICON_BITMAPS_SHGETFILEINFO_FAILED 429
 //#define IDS_UNABLE_TO_REGISTER_WINDOW_CLASS 430
 //#define IDS_DIRECTX_INIT_FAILED         431
-//#define IDS_DXC_ERR_CAPSFAIL            432
+//#define IDS_DX_ERR_CAPSFAIL            432
 //#define IDS_FS_DISPLAY_MODE_SELECTED_IS_INVALID 433
 //#define IDS_CREATEWINDOW_FAILED         434
 //#define IDS_TRYING_TO_ENTER_FS_MODE_WITH_MULTIPLE_DISPLAYS 435

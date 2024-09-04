@@ -567,7 +567,7 @@ BEGIN
             VALUE "FileDescription", APPLICATION_DESCRIPTION
             VALUE "FileVersion", APPLICATION_VERSION
             VALUE "InternalName", APPLICATION_PRODUCT_NAME
-            VALUE "LegalCopyright", "© " APPLICATION_COPYRIGHT
+            VALUE "LegalCopyright", "Â© " APPLICATION_COPYRIGHT
             VALUE "OriginalFilename", APPLICATION_FILE_NAME _APPLICATION_VERSION_EXTENSION
             VALUE "ProductName", APPLICATION_PRODUCT_NAME
             VALUE "ProductVersion", LIBRARY_VERSION
@@ -593,7 +593,7 @@ END
 STRINGTABLE
 BEGIN
     //IDS_ABOUT_STRING        "%s by %s\n%s"
-    IDS_SZ_MENU_NAV_TOOLTIP "navigation: ESC: exit, Left Arrow: back, Right Arrow: select, UP/DOWN: change sel"
+    IDS_SZ_MENU_NAV_TOOLTIP "ESC: exit, Left: back, ENTER / Right: select, Up / Down: change selection"
     IDS_UNTITLED_MENU_ITEM  "<untitled menu item>"
     IDS_UNTITLED_MENU       "<untitled menu>"
     IDS_ON                  "ON"
@@ -640,7 +640,7 @@ END
 
 //STRINGTABLE
 //BEGIN
-//    IDS_DXC_ERR_CAPSFAIL    "DirectX initialization failed (GetDeviceCaps).\n\nThis means that no valid 3D-accelerated display adapter could be found\non your computer.\nIf you know this is not the case, it is possible that your graphics\nsubsystem is temporarily unstable; please try rebooting your computer,\nand then try to run the plug-in again.  Otherwise, please install a\n3D-accelerated display adapter."
+//    IDS_DX_ERR_CAPSFAIL     "DirectX initialization failed (GetDeviceCaps).\n\nThis means that no valid 3D-accelerated display adapter could be found\non your computer.\nIf you know this is not the case, it is possible that your graphics\nsubsystem is temporarily unstable; please try rebooting your computer,\nand then try to run the plug-in again.  Otherwise, please install a\n3D-accelerated display adapter."
 //    IDS_FS_DISPLAY_MODE_SELECTED_IS_INVALID 
 //                            "The fullscreen display mode selected from the config panel\nwas invalid, for some reason.  For now, the closest match\n(to the old selection) will be used.\n\nTo fix this, please return to the config panel and select a new\nfullscreen display mode.\n\nThe plug-in will now run using the best match..."
 //    IDS_CREATEWINDOW_FAILED "CreateWindow failed"
@@ -713,7 +713,7 @@ BEGIN
     IDS_ERROR_NO_PRESET_FILE_FOUND_IN_X_MILK 
                             "ERROR: No preset files found in %s*.milk"
     IDS_LOAD_WHICH_PRESET_PLUS_COMMANDS 
-                            "Load which preset?  (Arrows/scroll; Enter/select; Ins/rename; Del/delete; Esc/close)"
+                            "Load which preset?  (UP/DOWN: scroll; ENTER: select; INS: rename; DEL: delete; ESC/LEFT: close)"
 END
 
 STRINGTABLE
@@ -733,7 +733,7 @@ BEGIN
     IDS_COMPOSITE_SHADER_LOCKED 
                             "(keep in mind... composite shader was locked.)"
     //IDS_PRESET_USES_HIGHEST_PIXEL_SHADER_VERSION 
-    //                        "This preset already uses the highest pixel shader version (%d) supported by your graphics chip."
+    //                        "This preset already uses the highest pixel shader model (%d) supported by your graphics chip."
     IDS_PRESET_HAS_MIXED_VERSIONS_OF_SHADERS 
                             "This preset has mixed versions of shaders in it."
     IDS_UPGRADE_SHADERS_TO_USE_PS2 
@@ -746,13 +746,13 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_UPGRADE_TO_USE_PS2  "Do you want to upgrade it to use pixel shader 2?  [y/N]"
+    IDS_UPGRADE_TO_USE_PS2  "Do you want to upgrade it to use pixel shader model 2.0?  [y/N]"
     IDS_WARNING_OLD_GPU_MIGHT_NOT_WORK_WITH_PRESET 
                             "  (WARNING: if you save it, other users with older graphics chips might not be able to use the preset."
-    IDS_PRESET_CURRENTLY_USES_PS2 "This preset currently uses pixel shader 2."
-    IDS_UPGRADE_TO_USE_PS3  "Do you want to upgrade it to use pixel shader 3?  [y/N]"
-    IDS_PRESET_CURRENTLY_USES_PS3 "This preset currently uses pixel shader 3."
-    IDS_UPGRADE_TO_USE_PS4  "Do you want to upgrade it to use pixel shader 4?  [y/N]"
+    IDS_PRESET_CURRENTLY_USES_PS2 "This preset currently uses pixel shader model 2.0."
+    IDS_UPGRADE_TO_USE_PS3  "Do you want to upgrade it to pixel shader model 3.0?  [y/N]"
+    IDS_PRESET_CURRENTLY_USES_PS3 "This preset currently uses pixel shader model 3.0."
+    IDS_UPGRADE_TO_USE_PS4  "Do you want to upgrade it to use pixel shader model 4.0?  [y/N]"
     IDS_WARNING_DO_NOT_FORGET_WARP_SHADER_WAS_LOCKED 
                             " WARNING: do not forget WARP shader was LOCKED! "
     IDS_WARNING_DO_NOT_FORGET_COMPOSITE_SHADER_WAS_LOCKED 
@@ -760,13 +760,13 @@ BEGIN
     IDS_PRESET_MASH_UP_TEXT1 
                             "Preset Mash-Up:          use keys 1-5 to change bin;"
     IDS_PRESET_CURRENTLY_USES_PS2X 
-                            "This preset currently uses pixel shader 2.X."
-    IDS_UPGRADE_TO_USE_PS2X "Do you want to upgrade it to use pixel shader 2.X?  [y/N]"
+                            "This preset currently uses pixel shader 2.x."
+    IDS_UPGRADE_TO_USE_PS2X "Do you want to upgrade it to use pixel shader 2.x?  [y/N]"
     IDS_PRESET_MASH_UP_TEXT2 
                             "                         up/down/a-z to browse presets for current bin;"
     IDS_PRESET_MASH_UP_TEXT3 
                             "                         h to randomize preset (or H = all bins); "
-    IDS_PRESET_MASH_UP_TEXT4 "                         esc exits."
+    IDS_PRESET_MASH_UP_TEXT4 "                         ESC exits."
     IDS_DIRECTORY_OF_X      "Directory of: %s"
 END
 
@@ -776,7 +776,7 @@ BEGIN
     IDS_LOCKED              "<locked> "
     IDS_ILLEGAL_CHARACTER   "(illegal character)"
     IDS_STRING_TOO_LONG     "(string too long)"
-    //IDS_DIRECTORY_TO_JUMP_TO "Directory to jump to:"
+    IDS_DIRECTORY_TO_JUMP_TO "Directory to jump to:"
     IDS_ERROR_IMPORTING_BAD_FILENAME 
                             "(error importing - bad filename, or file does not exist)"
     IDS_ERROR_IMPORTING_BAD_FILENAME_OR_NOT_OVERWRITEABLE 
@@ -809,7 +809,7 @@ END
 
 STRINGTABLE
 BEGIN
-    //IDS_SAVE_AS             "Save as:"
+    IDS_SAVE_AS             "Save as:"
     IDS_AUTO                " Auto"
     IDS_8X6_FAST            "   8 x 6    (fast)"
     IDS_16X12_FAST          "  16 x 12 (fast)"
@@ -920,332 +920,332 @@ BEGIN
     IDS_CUSTOM_SHAPE_X      "--custom shape %d"
     IDS_MENU_EDIT_PRESET_INIT_CODE "[ edit preset initialization code ]"
     IDS_MENU_EDIT_PRESET_INIT_CODE_TT 
-                            "read-only: zoom, rot, warp, cx, cy, dx, dy, sx, sy; decay, gamma;\n           echo_zoom, echo_scale, echo_orient;\n           ib_{size|r|g|b|a}, ob_{size|r|g|b|a}, mv_{x|y|dx|dy|l|r|g|b|a};\n           wave_{r|g|b|a|x|y|mode|mystery|usedots|thick|additive|brighten};\n           darken_center, wrap; invert, brighten, darken, solarize\n           time, fps, frame, progress; {bass|mid|treb}[_att]\nwrite:     q1-q8, monitor"
+                            "read-only: zoom, rot, warp, cx, cy, dx, dy, sx, sy, decay, gamma,\n           echo_zoom, echo_scale, echo_orient,\n           ib_{size|r|g|b|a}, ob_{size|r|g|b|a}, mv_{x|y|dx|dy|l|r|g|b|a},\n           wave_{r|g|b|a|x|y|mode|mystery|usedots|thick|additive|brighten},\n           darken_center, wrap, invert, brighten, darken, solarize,\n           time, fps, frame, progress, {bass|mid|treb}[_att]\nwrite: q1-q8, monitor"
     IDS_MENU_EDIT_PER_FRAME_EQUATIONS "[ edit per_frame equations ]"
     IDS_MENU_EDIT_PER_FRAME_EQUATIONS_TT 
-                            "read-only:  time, fps, frame, progress; {bass|mid|treb}[_att]\nread/write: zoom, rot, warp, cx, cy, dx, dy, sx, sy; q1-q8; monitor\n            mv_{x|y|dx|dy|l|r|g|b|a}, ib_{size|r|g|b|a}, ob_{size|r|g|b|a};\n            wave_{r|g|b|a|x|y|mode|mystery|usedots|thick|additive|brighten};\n            darken_center, wrap; invert, brighten, darken, solarize\n            decay, gamma, echo_zoom, echo_alpha, echo_orient"
+                            "read-only: time, fps, frame, progress, {bass|mid|treb}[_att]\nread/write: zoom, rot, warp, cx, cy, dx, dy, sx, sy, q1-q8, monitor,\n            mv_{x|y|dx|dy|l|r|g|b|a}, ib_{size|r|g|b|a}, ob_{size|r|g|b|a},\n            wave_{r|g|b|a|x|y|mode|mystery|usedots|thick|additive|brighten},\n            darken_center, wrap, invert, brighten, darken, solarize,\n            decay, gamma, echo_zoom, echo_alpha, echo_orient"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_ROTATION_AMOUNT_TT 
-                            "controls the amount of rotation.  0=none, 0.1=slightly right, -0.1=slightly clockwise, 0.1=CCW"
+                            "Controls the amount of rotation;  0=none, 0.1=slightly right, -0.1=slightly clockwise, 0.1=counter-clockwise"
     IDS_MENU_ROTATION_CENTER_OF_X " rot., center of (X)"
     IDS_MENU_ROTATION_CENTER_OF_X_TT 
-                            "controls where the center of rotation is, horizontally.  0=left, 0.5=center, 1=right"
+                            "Controls where the center of rotation is, horizontally;  0=left, 0.5=center, 1=right"
     IDS_MENU_ROTATION_CENTER_OF_Y " rot., center of (Y)"
     IDS_MENU_ROTATION_CENTER_OF_Y_TT 
-                            "controls where the center of rotation is, vertically.  0=top, 0.5=center, 1=bottom"
+                            "Controls where the center of rotation is, vertically;  0=top, 0.5=center, 1=bottom"
     IDS_MENU_TRANSLATION_X  "translation (X)"
     IDS_MENU_TRANSLATION_X_TT 
-                            "controls amount of constant horizontal motion; -0.01 = slight shift right, 0=none, 0.01 = to left"
+                            "Controls amount of constant horizontal motion;  -0.01=slight shift right, 0=none, 0.01=to left"
     IDS_MENU_TRANSLATION_Y  "translation (Y)"
     IDS_MENU_TRANSLATION_Y_TT 
-                            "controls amount of constant vertical motion; -0.01 = slight shift downward, 0=none, 0.01 = upward"
+                            "Controls amount of constant vertical motion;  -0.01=slight shift downward, 0=none, 0.01=upward"
     IDS_MENU_SCALING_X      "scaling (X)"
-    IDS_MENU_SCALING_X_TT   "controls amount of constant horizontal stretching; 0.99=shrink, 1=normal, 1.01=stretch"
+    IDS_MENU_SCALING_X_TT   "Controls amount of constant horizontal stretching;  0.99=shrink, 1=normal, 1.01=stretch"
     IDS_MENU_SCALING_Y      "scaling (Y)"
-    IDS_MENU_SCALING_Y_TT   "controls amount of constant vertical stretching; 0.99=shrink, 1=normal, 1.01=stretch"
+    IDS_MENU_SCALING_Y_TT   "Controls amount of constant vertical stretching;  0.99=shrink, 1=normal, 1.01=stretch"
     IDS_MENU_SUSTAIN_LEVEL  "sustain level"
     IDS_MENU_SUSTAIN_LEVEL_TT 
-                            "controls the eventual fade to black; 1=no fade, 0.9=strong fade; 0.98=recommended."
+                            "Controls the eventual fade to black;  1=no fade, 0.9=strong fade, 0.98=recommended"
     IDS_MENU_DARKEN_CENTER  "darken center"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_DARKEN_CENTER_TT 
-                            "when ON, help keeps the image from getting too bright by continually dimming the center point"
+                            "If ON, help keeps the image from getting too bright by continually dimming the center point"
     IDS_MENU_GAMMA_ADJUSTMENT "gamma adjustment"
     IDS_MENU_GAMMA_ADJUSTMENT_TT 
-                            "controls brightness; 1=normal, 2=double, 3=triple, etc."
+                            "Controls brightness;  1=normal, 2=double, 3=triple, ..."
     IDS_MENU_HUE_SHADER     "hue shader"
-    IDS_MENU_HUE_SHADER_TT  "adds subtle color variations to the image.  0=off, 1=fully on"
+    IDS_MENU_HUE_SHADER_TT  "Adds subtle color variations to the image;  0=off, 1=fully on"
     IDS_MENU_VIDEO_ECHO_ALPHA "video echo: alpha"
     IDS_MENU_VIDEO_ECHO_ALPHA_TT 
-                            "controls the opacity of the second graphics layer; 0=transparent (off), 0.5=half-mix, 1=opaque"
+                            "Controls the opacity of the second graphics layer;  0=transparent (off), 0.5=half-mix, 1=opaque"
     IDS_MENU_VIDEO_ECHO_ZOOM " video echo: zoom"
     IDS_MENU_VIDEO_ECHO_ZOOM_TT 
-                            "controls the size of the second graphics layer"
+                            "Controls the size of the second graphics layer"
     IDS_MENU_VIDEO_ECHO_ORIENTATION " video echo: orientation"
     IDS_MENU_VIDEO_ECHO_ORIENTATION_TT 
-                            "selects an orientation for the second graphics layer.  0=normal, 1=flip on x, 2=flip on y, 3=flip on both"
+                            "Selects an orientation for the second graphics layer;  0=normal, 1=flip on X, 2=flip on Y, 3=flip on both"
     IDS_MENU_TEXTURE_WRAP   "texture wrap"
     IDS_MENU_TEXTURE_WRAP_TT 
-                            "sets whether or not screen elements can drift off of one side and onto the other"
+                            "Controls whether or not screen elements can drift off of one side and onto the other"
     IDS_MENU_FILTER_INVERT  "filter: invert"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MENU_FILTER_INVERT_TT "inverts the colors in the image"
+    IDS_MENU_FILTER_INVERT_TT "Inverts the colors in the image"
     IDS_MENU_FILTER_BRIGHTEN "filter: brighten"
     IDS_MENU_FILTER_BRIGHTEN_TT 
-                            "brightens the darker parts of the image (nonlinear; square root filter)"
+                            "Brightens the darker parts of the image (nonlinear, square root filter)"
     IDS_MENU_FILTER_DARKEN  "filter: darken"
     IDS_MENU_FILTER_DARKEN_TT 
-                            "darkens the brighter parts of the image (nonlinear; squaring filter)"
+                            "Darkens the brighter parts of the image (nonlinear, squaring filter)"
     IDS_MENU_FILTER_SOLARIZE "filter: solarize"
-    IDS_MENU_FILTER_SOLARIZE_TT "emphasizes mid-range colors"
+    IDS_MENU_FILTER_SOLARIZE_TT "Emphasizes mid-range colors"
     IDS_MENU_ENABLED        "enabled"
-    IDS_MENU_ENABLED_TT     "enables or disables this custom waveform/spectrum"
+    IDS_MENU_ENABLED_TT     "Enables or disables this custom waveform/spectrum"
     IDS_MENU_NUMBER_OF_SAMPLES "number of samples"
     IDS_MENU_NUMBER_OF_SAMPLES_TT 
-                            "the number of samples (points) that makes up the waveform"
+                            "Sets the number of samples (points) that makes up the waveform"
     IDS_MENU_L_R_SEPARATION "L/R separation"
     IDS_MENU_L_R_SEPARATION_TT 
-                            "the offset between the left & right channels; useful for doing phase plots. Keep low (<32) when using w/spectrum."
+                            "Sets the offset between the left and right channels, useful for doing phase plots;  <32=when using with spectrum"
     IDS_MENU_SCALING        "scaling"
-    IDS_MENU_SCALING_TT     "the size of the wave (1=normal)"
-    IDS_MENU_SMOOTHING_TT   "0=the raw wave; 1=a highly damped (smoothed) wave"
+    IDS_MENU_SCALING_TT     "Sets the size of the wave;  1=normal"
+    IDS_MENU_SMOOTHING_TT   "Controls the amount of smoothing on the wave; 0=the raw wave; 1=a highly damped (smoothed) wave"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_WAVE_TYPE      "wave type"
-    IDS_MENU_WAVE_TYPE_TT   "each value represents a different way of drawing the waveform"
+    IDS_MENU_WAVE_TYPE_TT   "Controls the different ways of drawing the waveform"
     IDS_MENU_SIZE           "size"
-    IDS_MENU_SIZE_TT        "relative size of the waveform"
+    IDS_MENU_SIZE_TT        "Controls the relative size of the waveform"
     IDS_MENU_SMOOTH         "smoothing"
-    IDS_MENU_SMOOTH_TT      "controls the smoothness of the waveform; 0=natural sound data (no smoothing), 0.9=max. smoothing"
+    IDS_MENU_SMOOTH_TT      "Controls the smoothness of the waveform;  0=natural sound data (no smoothing), 0.9=maximum smoothing"
     IDS_MENU_MYSTERY_PARAMETER "mystery parameter"
     IDS_MENU_MYSTERY_PARAMETER_TT 
-                            "what this one does is a secret (actually, its effect depends on the 'wave type'"
+                            "What this one does is a secret (actually, its effect depends on the 'wave type')"
     IDS_MENU_POSITION_X     "position (X)"
-    IDS_MENU_POSITION_X_TT  "position of the waveform: 0 = far left edge of screen, 0.5 = center, 1 = far right"
+    IDS_MENU_POSITION_X_TT  "Controls the position of the waveform;  0=far left edge of screen, 0.5=center, 1=far right"
     IDS_MENU_POSITION_Y     "position (Y)"
-    IDS_MENU_POSITION_Y_TT  "position of the waveform: 0 = very bottom of screen, 0.5 = center, 1 = top"
+    IDS_MENU_POSITION_Y_TT  "Controls the position of the waveform;  0=very bottom of screen, 0.5=center, 1=top"
     IDS_MENU_COLOR_RED      "color (red)"
-    IDS_MENU_COLOR_RED_TT   "amount of red color in the wave (0..1)"
+    IDS_MENU_COLOR_RED_TT   "Controls the amount of red color in the wave;  0=none, 1=maximum"
     IDS_MENU_COLOR_GREEN    "color (green)"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MENU_COLOR_GREEN_TT "amount of green color in the wave (0..1)"
+    IDS_MENU_COLOR_GREEN_TT "Controls the amount of green color in the wave;  0=none, 1=maximum"
     IDS_MENU_COLOR_BLUE     "color (blue)"
-    IDS_MENU_COLOR_BLUE_TT  "amount of blue color in the wave (0..1)"
+    IDS_MENU_COLOR_BLUE_TT  "Controls the amount of blue color in the wave;  0=none, 1=maximum"
     IDS_MENU_OPACITY        "opacity"
-    IDS_MENU_OPACITY_TT     "opacity of the waveform; lower numbers = more transparent"
+    IDS_MENU_OPACITY_TT     "Controls the opacity of the waveform;  lower numbers=more transparent"
     IDS_MENU_USE_DOTS       "use dots"
-    IDS_MENU_USE_DOTS_TT    "if true, the waveform is drawn as dots (instead of lines)"
+    IDS_MENU_USE_DOTS_TT    "If ON, the waveform is drawn as dots (instead of lines)"
     IDS_MENU_DRAW_THICK     "draw thick"
-    IDS_MENU_DRAW_THICK_TT  "if true, the waveform's lines (or dots) are drawn with double thickness"
+    IDS_MENU_DRAW_THICK_TT  "If ON, the waveform's lines (or dots) are drawn with double thickness"
     IDS_MENU_MODULATE_OPACITY_BY_VOLUME "modulate opacity by volume"
     IDS_MENU_MODULATE_OPACITY_BY_VOLUME_TT 
-                            "if true, the waveform opacity is affected by the music's volume"
+                            "If ON, the waveform opacity is affected by the music's volume"
     IDS_MENU_MODULATION_TRANSPARENT_VOLUME "modulation: transparent volume"
     IDS_MENU_MODULATION_TRANSPARENT_VOLUME_TT 
-                            "when the relative volume hits this level, the wave becomes transparent.  1 = normal loudness, 0.5 = extremely quiet, 1.5 = extremely loud"
+                            "Controls the the relative volume level at which the wave becomes transparent;  1=normal loudness, 0.5=extremely quiet, 1.5=extremely loud"
     IDS_MENU_MODULATION_OPAQUE_VOLUME "modulation: opaque volume"
     IDS_MENU_MODULATION_OPAQUE_VOLUME_TT 
-                            "when the relative volume hits this level, the wave becomes opaque.  1 = normal loudness, 0.5 = extremely quiet, 1.5 = extremely loud"
+                            "Controls the the relative volume level at which the wave becomes opaque;  1=normal loudness, 0.5=extremely quiet, 1.5=extremely loud"
     IDS_MENU_ADDITIVE_DRAWING "additive drawing"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_ADDITIVE_DRAWING_TT 
-                            "if true, the wave is drawn additively, saturating the image at white"
+                            "If ON, the wave is drawn additively, saturating the image at white"
     IDS_MENU_COLOR_BRIGHTENING "color brightening"
     IDS_MENU_COLOR_BRIGHTENING_TT 
-                            "if true, the red, green, and blue color components will be scaled up until at least one of them reaches 1.0"
+                            "If ON, the red, green, and blue color components will be scaled up until at least one of them reaches 1.0"
     IDS_MENU_OUTER_BORDER_THICKNESS "outer border thickness"
     IDS_MENU_OUTER_BORDER_THICKNESS_TT 
-                            "thickness of the outer border drawn at the edges of the screen"
+                            "Controls the thickness of the outer border drawn at the edges of the screen"
     IDS_MENU_COLOR_RED_OUTER " color (red)"
-    IDS_MENU_COLOR_RED_OUTER_TT "amount of red color in the outer border"
+    IDS_MENU_COLOR_RED_OUTER_TT "Controls the amount of red color in the outer border;  0=none, 1=maximum"
     IDS_MENU_COLOR_GREEN_OUTER " color (green)"
-    IDS_MENU_COLOR_GREEN_OUTER_TT "amount of green color in the outer border"
+    IDS_MENU_COLOR_GREEN_OUTER_TT "Controls the amount of green color in the outer border;  0=none, 1=maximum"
     IDS_MENU_COLOR_BLUE_OUTER " color (blue)"
-    IDS_MENU_COLOR_BLUE_OUTER_TT "amount of blue color in the outer border"
+    IDS_MENU_COLOR_BLUE_OUTER_TT "Controls the amount of blue color in the outer border;  0=none, 1=maximum"
     IDS_MENU_OPACITY_OUTER  " opacity"
     IDS_MENU_OPACITY_OUTER_TT 
-                            "opacity of the outer border (0=transparent, 1=opaque)"
+                            "Controls the opacity of the outer border;  0=transparent, 1=opaque"
     IDS_MENU_INNER_BORDER_THICKNESS "inner border thickness"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_INNER_BORDER_THICKNESS_TT 
-                            "thickness of the inner border drawn at the edges of the screen"
-    IDS_MENU_COLOR_RED_INNER_TT "amount of red color in the inner border"
-    IDS_MENU_COLOR_GREEN_INNER_TT "amount of green color in the inner border"
-    IDS_MENU_COLOR_BLUE_INNER_TT "amount of blue color in the inner border"
+                            "Controls the thickness of the inner border drawn at the edges of the screen"
+    IDS_MENU_COLOR_RED_INNER_TT "Controls the amount of red color in the inner border;  0=none, 1=maximum"
+    IDS_MENU_COLOR_GREEN_INNER_TT "Controls the amount of green color in the inner border;  0=none, 1=maximum"
+    IDS_MENU_COLOR_BLUE_INNER_TT "Controls the amount of blue color in the inner border;  0=none, 1=maximum"
     IDS_MENU_OPACITY_INNER_TT 
-                            "opacity of the inner border (0=transparent, 1=opaque)"
+                            "Controls the opacity of the inner border;  0=transparent, 1=opaque"
     IDS_MENU_MOTION_VECTOR_OPACITY "motion vector opacity"
     IDS_MENU_MOTION_VECTOR_OPACITY_TT 
-                            "opacity of the motion vectors (0=transparent, 1=opaque)"
+                            "Controls the opacity of the motion vectors;  0=transparent, 1=opaque"
     IDS_MENU_NUM_MOT_VECTORS_X " num. mot. vectors (X)"
-    IDS_MENU_NUM_MOT_VECTORS_X_TT "the number of motion vectors on the x-axis"
+    IDS_MENU_NUM_MOT_VECTORS_X_TT "Controls the number of motion vectors on the X-axis"
     IDS_MENU_NUM_MOT_VECTORS_Y " num. mot. vectors (Y)"
-    IDS_MENU_NUM_MOT_VECTORS_Y_TT "the number of motion vectors on the y-axis"
+    IDS_MENU_NUM_MOT_VECTORS_Y_TT "Controls the number of motion vectors on the Y-axis"
     IDS_MENU_OFFSET_X       " offset (X)"
-    IDS_MENU_OFFSET_X_TT    "horizontal placement offset of the motion vectors"
+    IDS_MENU_OFFSET_X_TT    "Controls the horizontal placement offset of the motion vectors"
     IDS_MENU_OFFSET_Y       " offset (Y)"
-    IDS_MENU_OFFSET_Y_TT    "vertical placement offset of the motion vectors"
+    IDS_MENU_OFFSET_Y_TT    "Controls the vertical placement offset of the motion vectors"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_TRAIL_LENGTH   " trail length"
-    IDS_MENU_TRAIL_LENGTH_TT "the length of the motion vectors (1=normal)"
+    IDS_MENU_TRAIL_LENGTH_TT "Controls the length of the motion vectors;  1=normal"
     IDS_MENU_COLOR_RED_MOTION_VECTOR_TT 
-                            "amount of red color in the motion vectors"
+                            "Controls the amount of red color in the motion vectors;  0=none, 1=maximum"
     IDS_MENU_COLOR_GREEN_MOTION_VECTOR_TT 
-                            "amount of green color in the motion vectors"
+                            "Controls the amount of green color in the motion vectors;  0=none, 1=maximum"
     IDS_MENU_COLOR_BLUE_MOTION_VECTOR_TT 
-                            "amount of blue color in the motion vectors"
+                            "Controls the amount of blue color in the motion vectors;  0=none, 1=maximum"
     IDS_MENU_ZOOM_AMOUNT    "zoom amount"
-    IDS_MENU_ZOOM_AMOUNT_TT "controls inward/outward motion.  0.9=zoom out, 1.0=no zoom, 1.1=zoom in"
+    IDS_MENU_ZOOM_AMOUNT_TT "Controls inward/outward motion;  0.9=zoom out, 1.0=no zoom, 1.1=zoom in"
     IDS_MENU_ZOOM_EXPONENT  " zoom exponent"
-    IDS_MENU_ZOOM_EXPONENT_TT "controls the curvature of the zoom; 1=normal"
+    IDS_MENU_ZOOM_EXPONENT_TT "Controls the curvature of the zoom;  1=normal"
     IDS_MENU_WARP_AMOUNT    "warp amount"
-    IDS_MENU_WARP_AMOUNT_TT "controls the magnitude of the warping; 0=none, 1=normal, 2=major warping..."
+    IDS_MENU_WARP_AMOUNT_TT "Controls the magnitude of the warping;  0=none, 1=normal, 2=major warping, ..."
     IDS_MENU_WARP_SCALE     " warp scale"
-    IDS_MENU_WARP_SCALE_TT  "controls the wavelength of the warp; 1=normal, less=turbulent, more=smoother"
+    IDS_MENU_WARP_SCALE_TT  "Controls the wavelength of the warp;  1=normal, less=turbulent, more=smoother"
     IDS_MENU_WARP_SPEED     " warp speed"
-    IDS_MENU_WARP_SPEED_TT  "controls the speed of the warp; 1=normal, less=slower, more=faster"
+    IDS_MENU_WARP_SPEED_TT  "Controls the speed of the warp;  1=normal, less=slower, more=faster"
     IDS_MENU_ROTATION_AMOUNT "rotation amount"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_BLUR3_MIN_COLOR_VALUE_TT 
-                            "narrowing these to just the color range you need will greatly increase color fidelity in the blurred images.  MUST BE SUBSET OF BLUR1, BLUR2 RANGES."
+                            "Controls the minimum value of the color range of the blurred images, narrowing to what is needed will greatly increase color fidelity;  MUST BE SUBSET OF BLUR1, BLUR2 RANGES"
     IDS_MENU_BLUR3_MAX_COLOR_VALUE "blur3: max color value"
     IDS_MENU_BLUR3_MAX_COLOR_VALUE_TT 
-                            "narrowing these to just the color range you need will greatly increase color fidelity in the blurred images.  MUST BE SUBSET OF BLUR1, BLUR2 RANGES."
+                            "Controls the maximum value the color range of the blurred images, narrowing to what is needed will greatly increase color fidelity;  MUST BE SUBSET OF BLUR1, BLUR2 RANGES"
     IDS_MENU_EDIT_PER_VERTEX_EQUATIONS "[ edit per_vertex equations ]"
     IDS_MENU_EDIT_PER_VERTEX_EQUATIONS_TT 
-                            "read-only:  x, y, rad, ang; time, fps, frame, progress; {bass|mid|treb}[_att]\nread/write: dx, dy, zoom, rot, warp, cx, cy, sx, sy, q1-q8"
+                            "read-only: x, y, rad, ang, time, fps, frame, progress, {bass|mid|treb}[_att]\nread/write: dx, dy, zoom, rot, warp, cx, cy, sx, sy, q1-q8"
     IDS_MENU_EDIT_WARP_SHADER_TT 
-                            "This pixel shader drives the warping, color, etc. of the internal image each frame.\n"
+                            "This pixel shader drives the warping, color, etc... of the internal image each frame.\n"
     IDS_MENU_EDIT_COMPOSITE_SHADER_TT 
                             "This pixel shader drives the final presentation of the internal image to the screen each frame.\n"
     IDS_MENU_EDIT_UPGRADE_PRESET_PS_VERSION 
-                            "upgrade preset's pixel shader version"
+                            "upgrade preset's pixel shader model"
     IDS_MENU_EDIT_UPGRADE_PRESET_PS_VERSION_TT 
-                            "Upgrades the preset to the next-available pixel shader version."
+                            "Upgrades the preset to the next-available pixel shader model"
     IDS_MENU_EDIT_DO_A_PRESET_MASH_UP "do a preset mash-up"
     IDS_MENU_EDIT_DO_A_PRESET_MASH_UP_TT 
-                            "Mix qualities from many different presets to create a new one."
+                            "Mixes qualities from many different presets to create a new one"
     IDS_MENU_NUMBER_OF_INSTANCES "number of instances"
     IDS_MENU_NUMBER_OF_INSTANCES_TT 
-                            "the number of times (num_inst) to draw this shape.  Each instance will have a different value for 'instance' in the per-frame eqs (0,1,2...)"
+                            "Controls the number of times to draw this shape where each instance will have a different value for 'instance' in the per-frame equations;  0, 1, 2, ..."
     IDS_MENU_EDIT_INIT_CODE_SHAPE_TT 
-                            "IN: time, frame, fps, progress; q1-q8 (from preset init); x,y,rad,ang; r,g,b,a; r2,g2,b2,a2; border_{r|g|b|a}; sides, thick, additive, textured\nOUT: t1-t8; x,y,rad,ang; r,g,b,a; r2,g2,b2,a2; border_{r|g|b|a}; sides, thick, additive, textured"
+                            "in: time, frame, fps, progress, q1-q8 (from preset init), x, y, rad, ang, r, g, b, a, r2, g2, b2, a2, border_{r|g|b|a}, sides, thick, additive, textured\nout: t1-t8, x, y, rad, ang, r, g, b, a, r2, g2, b2, a2; border_{r|g|b|a}, sides, thick, additive, textured"
     IDS_MENU_EDIT_PER_FRAME_INSTANCE_CODE 
                             "[ edit per-frame(/per-instance) code ]"
     IDS_MENU_EDIT_PER_FRAME_INSTANCE_CODE_TT 
-                            "IN: instance, num_inst, time, frame, fps, progress; q1-q8 (from preset init); x,y,rad,ang; r,g,b,a; r2,g2,b2,a2; border_{r|g|b|a}; sides, thick, additive, textured\nOUT: t1-t8; x,y,rad,ang; r,g,b,a; r2,g2,b2,a2; border_{r|g|b|a}; sides, thick, additive, textured"
+                            "in: instance, num_inst, time, frame, fps, progress, q1-q8 (from preset init), x, y, rad, ang, r, g, b, a, r2, g2, b2, a2, border_{r|g|b|a}, sides, thick, additive, textured\nout: t1-t8, x, y, rad, ang, r, g, b, a, r2, g2, b2, a2, border_{r|g|b|a}, sides, thick, additive, textured"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_OPACITY_WAVE_TT 
-                            "opacity of the waveform; 0=transparent, 1=opaque"
+                            "Controls the opacity of the waveform;  0=transparent, 1=opaque"
     IDS_MENU_USE_SPECTRUM   "use spectrum"
     IDS_MENU_USE_SPECTRUM_TT 
-                            "if ON, the data in value1 and value2 will constitute a frequency spectrum (instead of waveform values)"
+                            "If ON, the data in value1 and value2 will constitute a frequency spectrum (instead of waveform values)"
     IDS_MENU_USE_DOTS_WAVE_TT 
-                            "if ON, the samples will be overdrawn 4X to make them thicker, bolder, and more visible"
+                            "If ON, the samples will be overdrawn 4x to make them thicker, bolder, and more visible"
     IDS_MENU_DRAW_THICK_WAVE_TT 
-                            "if ON, the samples will be overdrawn 4X to make them thicker, bolder, and more visible"
+                            "If ON, the samples will be overdrawn 4x to make them thicker, bolder, and more visible"
     IDS_MENU_ADDITIVE_DRAWING_WAVE_TT 
-                            "if ON, the samples will add color to sature the image toward white; otherwise, they replace what's there."
+                            "If ON, the samples will add color to saturate the image toward white; otherwise, they replace what is there"
     IDS_MENU_EXPORT_TO_FILE "--export to file"
     IDS_MENU_EXPORT_TO_FILE_TT 
-                            "export the settings for this custom waveform to a file on disk"
+                            "Exports the settings for this custom waveform to a file on disk"
     IDS_MENU_IMPORT_FROM_FILE "--import from file"
     IDS_MENU_IMPORT_FROM_FILE_TT 
-                            "import settings for a custom waveform from a file on disk"
+                            "Imports settings for a custom waveform from a file on disk"
     IDS_MENU_EDIT_INIT_CODE "[ edit initialization code ]"
     IDS_MENU_EDIT_INIT_CODE_TT 
-                            "IN: time, frame, fps, progress; samples; q1-q8 (from preset init) / OUT: t1-t8"
+                            "in: time, frame, fps, progress, samples, q1-q8 (from preset init)\nout: t1-t8"
     IDS_MENU_EDIT_PER_FRAME_CODE "[ edit per-frame code ]"
     IDS_MENU_EDIT_PER_FRAME_CODE_TT 
-                            "IN: time, frame, fps, progress; samples; q1-q8, t1-t8; r,g,b,a; {bass|mid|treb}[_att] / OUT: r,g,b,a; samples; t1-t8"
+                            "in: time, frame, fps, progress, samples, q1-q8, t1-t8, r, g, b, a, {bass|mid|treb}[_att]\nout: r, g, b, a, samples, t1-t8"
     IDS_MENU_EDIT_PER_POINT_CODE "[ edit per-point code ]"
     IDS_MENU_EDIT_PER_POINT_CODE_TT 
-                            "IN: sample [0..1]; value1 [left ch], value2 [right ch], plus all vars for per-frame code / OUT: x,y; r,g,b,a; t1-t8"
+                            "in: sample [0..1], value1 [left ch], value2 [right ch], plus all vars for per-frame code\nout: x, y, r, g, b, a, t1-t8"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MENU_ENABLED_SHAPE_TT "enables or disables this shape"
+    IDS_MENU_ENABLED_SHAPE_TT "Enables or disables this shape"
     IDS_MENU_NUMBER_OF_SIDES "number of sides"
     IDS_MENU_NUMBER_OF_SIDES_TT 
-                            "the default number of sides that make up the polygonal shape"
+                            "Controls the number of sides that make up the polygonal shape"
     IDS_MENU_DRAW_THICK_SHAPE_TT 
-                            "if ON, the border will be overdrawn 4X to make it thicker, bolder, and more visible"
+                            "If ON, the border will be overdrawn 4x to make it thicker, bolder, and more visible"
     IDS_MENU_ADDITIVE_DRAWING_SHAPE_TT 
-                            "if ON, the shape will add color to sature the image toward white; otherwise, it will replace what's there."
+                            "If ON, the shape will add color to saturate the image toward white; otherwise, it will replace what is there"
     IDS_MENU_X_POSITION     "x position"
-    IDS_MENU_X_POSITION_TT  "default x position of the shape (0..1; 0=left side, 1=right side)"
+    IDS_MENU_X_POSITION_TT  "Controls the X position of the shape;  0=left side, 1=right side"
     IDS_MENU_Y_POSITION     "y position"
-    IDS_MENU_Y_POSITION_TT  "default y position of the shape (0..1; 0=bottom, 1=top of screen)"
+    IDS_MENU_Y_POSITION_TT  "Controls the Y position of the shape;  0=bottom, 1=top of screen"
     IDS_MENU_RADIUS         "radius"
-    IDS_MENU_RADIUS_TT      "default radius of the shape (0+)"
+    IDS_MENU_RADIUS_TT      "Controls the radius of the shape;  0+"
     IDS_MENU_ANGLE          "angle"
-    IDS_MENU_ANGLE_TT       "default rotation angle of the shape (0...3.14*2)"
+    IDS_MENU_ANGLE_TT       "Controls the rotation angle of the shape;  0..2*PI"
     IDS_MENU_TEXTURED       "textured"
-    IDS_MENU_TEXTURED_TT    "if ON, the shape will be textured with the image from the previous frame"
+    IDS_MENU_TEXTURED_TT    "If ON, the shape will be textured with the image from the previous frame"
     IDS_MENU_TEXTURE_ZOOM   "texture zoom"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_TEXTURE_ZOOM_TT 
-                            "the portion of the previous frame's image to use with the shape"
+                            "Controls the portion of the previous frame's image to use with the shape"
     IDS_MENU_TEXTURE_ANGLE  "texture angle"
     IDS_MENU_TEXTURE_ANGLE_TT 
-                            "the angle at which to rotate the previous frame's image before applying it to the shape"
+                            "Controls the angle at which to rotate the previous frame's image before applying it to the shape"
     IDS_MENU_INNER_COLOR_RED "inner color (red)"
     IDS_MENU_INNER_COLOR_RED_TT 
-                            "default amount of red color toward the center of the shape (0..1)"
+                            "Controls the amount of red color toward the center of the shape;  0=none, 1=maximum"
     IDS_MENU_INNER_COLOR_GREEN "inner color (green)"
     IDS_MENU_INNER_COLOR_GREEN_TT 
-                            "default amount of green color toward the center of the shape (0..1)"
+                            "Controls the amount of green color toward the center of the shape;  0=none, 1=maximum"
     IDS_MENU_INNER_COLOR_BLUE "inner color (blue)"
     IDS_MENU_INNER_COLOR_BLUE_TT 
-                            "default amount of blue color toward the center of the shape (0..1)"
+                            "Controls the amount of blue color toward the center of the shape;  0=none, 1=maximum"
     IDS_MENU_INNER_OPACITY  "inner opacity"
     IDS_MENU_INNER_OPACITY_TT 
-                            "default opacity of the center of the shape; 0=transparent, 1=opaque"
+                            "Controls the opacity of the center of the shape;  0=transparent, 1=opaque"
     IDS_MENU_OUTER_COLOR_RED "outer color (red)"
     IDS_MENU_OUTER_COLOR_RED_TT 
-                            "default amount of red color toward the outer edge of the shape (0..1)"
+                            "Controls the amount of red color toward the outer edge of the shape;  0=none, 1=maximum"
     IDS_MENU_OUTER_COLOR_GREEN "outer color (green)"
     IDS_MENU_OUTER_COLOR_GREEN_TT 
-                            "default amount of green color toward the outer edge of the shape (0..1)"
+                            "Controls the amount of green color toward the outer edge of the shape;  0=none, 1=maximum"
     IDS_MENU_OUTER_COLOR_BLUE "outer color (blue)"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MENU_OUTER_COLOR_BLUE_TT 
-                            "default amount of blue color toward the outer edge of the shape (0..1)"
+                            "Controls the amount of blue color toward the outer edge of the shape;  0=none, 1=maximum"
     IDS_MENU_OUTER_OPACITY  "outer opacity"
     IDS_MENU_OUTER_OPACITY_TT 
-                            "default opacity of the outer edge of the shape; 0=transparent, 1=opaque"
+                            "Controls the opacity of the outer edge of the shape;  0=transparent, 1=opaque"
     IDS_MENU_BORDER_COLOR_RED "border color (red)"
     IDS_MENU_BORDER_COLOR_RED_TT 
-                            "default amount of red color in the shape's border (0..1)"
+                            "Controls the amount of red color in the shape's border;  0=none, 1=maximum"
     IDS_MENU_BORDER_COLOR_GREEN "border color (green)"
     IDS_MENU_BORDER_COLOR_GREEN_TT 
-                            "default amount of green color in the shape's border (0..1)"
+                            "Controls the amount of green color in the shape's border;  0=none, 1=maximum"
     IDS_MENU_BORDER_COLOR_BLUE "border color (blue)"
     IDS_MENU_BORDER_COLOR_BLUE_TT 
-                            "default amount of blue color in the shape's border (0..1)"
+                            "Controls the amount of blue color in the shape's border;  0=none, 1=maximum"
     IDS_MENU_BORDER_OPACITY "border opacity"
     IDS_MENU_BORDER_OPACITY_TT 
-                            "default opacity of the shape's border; 0=transparent, 1=opaque"
+                            "Controls the opacity of the shape's border;  0=transparent, 1=opaque"
     IDS_MENU_EXPORT_TO_FILE_SHAPE_TT 
-                            "export the settings for this custom shape to a file on disk"
+                            "Exports the settings for this custom shape to a file on disk"
     IDS_MENU_IMPORT_FROM_FILE_SHAPE_TT 
-                            "import settings for a custom shape from a file on disk"
+                            "Imports settings for a custom shape from a file on disk"
     IDS_ERROR_UNABLE_TO_SAVE_THE_FILE "[Error] Unable to save the file"
 END
 

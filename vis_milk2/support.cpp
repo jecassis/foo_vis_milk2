@@ -90,15 +90,14 @@ void PrepareFor3DDrawing(D3D11Shim* pDevice,   // a pointer to the D3D device
         pDevice->SetTransform(3 /*D3DTS_PROJECTION*/, &proj);
 
         XMMATRIX view = XMMatrixLookAtLH(*pvEye, *pvLookat, *pvUp);
-        //D3DXMatrixLookAtLH(&view, pvEye, pvLookat, pvUp);
         pDevice->SetTransform(2 /*D3DTS_VIEW*/, &view);
 
-        // Optimization note: "You can minimize the number of required calculations
+        // Optimization note: "Minimize the number of required calculations
         // by concatenating your world and view matrices into a world-view matrix
-        // that you set as the world matrix, and then setting the view matrix
+        // that becomes the world matrix, and then setting the view matrix
         // to the identity."
-        //D3DXMatrixMultiply(&world, &world, &view);
-        //D3DXMatrixIdentity(&view);
+        // world = XMMatrixMultiply(world, view);
+        // view = XMMatrixIdentity();
     }
 }
 
@@ -169,8 +168,8 @@ void MakeProjectionMatrix(XMMATRIX* pOut,
                           const float fov_vert    // Vertical field of view angle, in radians
 )
 {
-    float w = (float)1 / tanf(fov_horiz * 0.5f); // 1/tan(x) == cot(x)
-    float h = (float)1 / tanf(fov_vert * 0.5f);  // 1/tan(x) == cot(x)
+    float w = 1.0f / std::tan(fov_horiz * 0.5f); // cot(x) = 1 / tan(x)
+    float h = 1.0f / std::tan(fov_vert * 0.5f);  // cot(x) = 1 / tan(x)
     float Q = far_plane / (far_plane - near_plane);
 
     *pOut = XMMATRIX(w, 0.0f, 0.0f, 0.0f, 0.0f, h, 0.0f, 0.0f, 0.0f, 0.0f, Q, 1.0f, 0.0f, 0.0f, -Q * near_plane, 0.0f);
