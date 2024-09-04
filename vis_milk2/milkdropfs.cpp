@@ -36,7 +36,6 @@
 
 #define COLOR_NORM(x) (((int)(x * 255) & 0xFF) / 255.0f)
 #define COPY_COLOR(x, y) { x.a = y.a; x.r = y.r; x.g = y.g; x.b = y.b; }
-#define D3DCOLOR_RGBA_01(r, g, b, a) D3DCOLOR_RGBA(((int)(r * 255)), ((int)(g * 255)), ((int)(b * 255)), ((int)(a * 255)))
 
 #define VERT_CLIP 0.75f // warning: top/bottom can get clipped if less than 0.65!
 
@@ -934,45 +933,19 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
         lpDevice->SetRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID);
         lpDevice->SetDepth(false);
-        lpDevice->SetShader(0);
-    }
-    // Set up render state.
-    /*
-    {
-        DWORD texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
-        lpDevice->SetRenderState(D3DRS_WRAP0, 0);//D3DWRAPCOORD_0|D3DWRAPCOORD_1|D3DWRAPCOORD_2|D3DWRAPCOORD_3);
-        //lpDevice->SetRenderState(D3DRS_WRAP0, (*m_pState->var_pf_wrap) ? D3DWRAP_U|D3DWRAP_V|D3DWRAP_W : 0);
-        //lpDevice->SetRenderState(D3DRS_WRAP1, (*m_pState->var_pf_wrap) ? D3DWRAP_U|D3DWRAP_V|D3DWRAP_W : 0);
-        lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);//texaddr);
-        lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);//texaddr);
-        lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);//texaddr);
-        lpDevice->SetSamplerState(1, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
-        lpDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
-        lpDevice->SetSamplerState(1, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
+        lpDevice->SetShader(0); // note: this texture stage state setup works for 0 or 1 texture
+                                //        if a texture is set, it will be modulated with the current diffuse color
+                                //        if a texture is not set, it will just use the current diffuse color
 
+        /*
+        lpDevice->SetRenderState(D3DRS_WRAP0, 0);//D3DWRAPCOORD_0|D3DWRAPCOORD_1|D3DWRAPCOORD_2|D3DWRAPCOORD_3);
         lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
         lpDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
-        lpDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-        lpDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-        lpDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
         lpDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
         lpDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE);
-        lpDevice->SetRenderState(D3DRS_FILLMODE,  D3DFILL_SOLID);
-        lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         lpDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);  //?
         lpDevice->SetRenderState(D3DRS_CLIPPING, TRUE);
 
-        // stages 0 and 1 always just use bilinear filtering.
-        lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-        lpDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-        lpDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-        lpDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-        lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-        lpDevice->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-
-        // note: this texture stage state setup works for 0 or 1 texture.
-        // if you set a texture, it will be modulated with the current diffuse color.
-        // if you don't set a texture, it will just use the current diffuse color.
         lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
         lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
         lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
@@ -980,8 +953,9 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
         lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
         lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+        */
 
-        // NOTE: don't forget to call SetTexture and SetVertexShader before drawing!
+        // NOTE: Do not forget to call SetTexture and SetVertexShader before drawing!
         // Examples:
         //      SPRITEVERTEX verts[4]; // has texcoords
         //      lpDevice->SetTexture(0, m_sprite_tex);
@@ -991,7 +965,6 @@ void CPlugin::RenderFrame(int bRedraw)
         //      lpDevice->SetTexture(0, NULL);
         //      lpDevice->SetVertexShader(WFVERTEX_FORMAT);
     }
-    */
 
     // Render string to m_lpDDSTitle, if necessary.
     if (m_supertext.bRedrawSuperText)
@@ -1077,7 +1050,7 @@ void CPlugin::RenderFrame(int bRedraw)
         BlurPasses();
 
     // Draw audio data.
-    DrawCustomShapes(); // draw these first; better for feedback if the waves draw *over* them.
+    DrawCustomShapes(); // draw these first; better for feedback if the waves draw *over* them
     DrawCustomWaves();
     DrawWave(mdsound.fWave[0].data(), mdsound.fWave[1].data());
     DrawSprites();
@@ -1270,10 +1243,10 @@ void CPlugin::DrawMotionVectors()
                     int n = 0;
                     for (int x = 0; x < nX; x++)
                     {
-                        //float fx = (x + 0.25f)/(float)(nX + dx + 0.25f - 1.0f);
+                        //float fx = (x + 0.25f) / (float)(nX + dx + 0.25f - 1.0f);
                         float fx = (x + 0.25f) / (float)(nX + dx + 0.25f - 1.0f);
 
-                        // now move by offset
+                        // Now move by offset.
                         fx += dx2;
 
                         if (fx > 0.0001f && fx < 0.9999f)
@@ -1410,13 +1383,13 @@ void CPlugin::GetSafeBlurMinMax(CState* pState, float* blur_min, float* blur_max
     }
 }
 
-// Note: Blur is currently a little funky.  It blurs the *current* frame after warp;
-//         this way, it lines up well with the composite pass.  However, if you switch
-//         presets instantly, to one whose *warp* shader uses the blur texture,
-//         it will be outdated (just for one frame).  Oh well.
+// Note: Blur is currently a little funky. It blurs the *current* frame after warp;
+//       this way, it lines up well with the composite pass. However, if switching
+//       presets instantly, to one whose *warp* shader uses the blur texture,
+//       it will be outdated (just for one frame). Oh well.
 //       This also means that when sampling the blurred textures in the warp shader,
-//         they are one frame old.  This isn't too big a deal.  Getting them to match
-//         up for the composite pass is probably more important.
+//       they are one frame old. This isn't too big a deal. Getting them to match
+//       up for the composite pass is probably more important.
 void CPlugin::BlurPasses()
 {
 #if (NUM_BLUR_TEX > 0)
@@ -1798,7 +1771,7 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     if (!wcscmp(m_pState->m_szDesc, INVALID_PRESET_DESC))
     {
         // If no valid preset loaded, clear the target to black, and return.
-        // TODO DX11
+        // TODO: DirectX 11
         //lpDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
         return;
     }
@@ -1807,8 +1780,7 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     lpDevice->SetVertexShader(NULL, NULL);
     lpDevice->SetPixelShader(NULL, NULL);
     lpDevice->SetBlendState(false);
-    //lpDevice->SetFVF( MDVERTEX_FORMAT );
-    //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+    //lpDevice->SetFVF(MDVERTEX_FORMAT);
 
     // stages 0 and 1 always just use bilinear filtering.
     D3D11_TEXTURE_ADDRESS_MODE texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -1843,16 +1815,15 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     //if (m_pState->m_bBlending)
     //    fDecay = fDecay * (fCosineBlend) + (1.0f - fCosineBlend) * ((float)(*m_pOldState->var_pf_decay));
 
-    /*
-    if (m_n16BitGamma > 0 &&
+    // Skip gamma correction for 32-bit color in Direct3D 11.
+    /*if (m_n16BitGamma > 0 &&
         (GetBackBufFormat() == D3DFMT_R5G6B5 || GetBackBufFormat() == D3DFMT_X1R5G5B5 || GetBackBufFormat() == D3DFMT_A1R5G5B5 || GetBackBufFormat() == D3DFMT_A4R4G4B4) &&
         fDecay < 0.9999f)
     {
         fDecay = std::min(fDecay, (32.0f - m_n16BitGamma) / 32.0f);
     }
 
-    D3DCOLOR cDecay = D3DCOLOR_RGBA_01(fDecay, fDecay, fDecay, 1);
-    */
+    D3DCOLOR cDecay = D3DCOLOR_RGBA_01(fDecay, fDecay, fDecay, 1);*/
 
     // Hurl the triangle strips at the video card.
     int poly;
@@ -1883,10 +1854,9 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
         nAlphaTestValue = 1 - nAlphaTestValue;
 
     // Hurl the triangles at the video card.
-    // We're going to un-index it, so that we don't stress any crappy (AHEM intel g33)
-    // drivers out there.
-    // If we're blending, we'll skip any polygon that is all alpha-blended out.
-    // This also respects the MaxPrimCount limit of the video card.
+    // Going to un-index it, to not stress non-performant drivers.
+    // If blending, skip any polygon that is all alpha-blended out.
+    // This also respects the `MaxPrimCount` limit of the video card.
     MDVERTEX tempv[1024 * 3];
     int max_prims_per_batch = std::min(lpDevice->GetMaxPrimitiveCount(), static_cast<UINT>(ARRAYSIZE(tempv) / 3)) - 4;
     int primCount = m_nGridX * m_nGridY * 2;
@@ -1898,13 +1868,12 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
         int i = 0;
         while (prims_queued < max_prims_per_batch && src_idx < primCount * 3)
         {
-            // copy 3 verts
+            // Copy 3 vertices.
             for (int j = 0; j < 3; j++)
             {
                 tempv[i++] = m_verts[m_indices_list[src_idx++]];
-                // don't forget to flip sign on Y and factor in the decay color!:
+                // Flip sign on Y and factor in the decay color!
                 tempv[i - 1].y *= -1;
-                //tempv[i-1].Diffuse = (cDecay & 0x00FFFFFF) | (tempv[i-1].Diffuse & 0xFF000000);
                 tempv[i - 1].r = fDecay;
                 tempv[i - 1].g = fDecay;
                 tempv[i - 1].b = fDecay;
@@ -1931,19 +1900,18 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
             lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, prims_queued, tempv, sizeof(MDVERTEX));
     }
 
-    /*
-    if (!bCullTiles)
+    /*if (!bCullTiles)
     {
-        assert(!bAlphaBlend); //not handled yet
+        assert(!bAlphaBlend); // not handled yet
 
         // Draw normally - just a full triangle strip for each half-row of cells
         // (even if we are blending, it is between two pre-pixel-shader presets,
-        //  so the blend all happens exclusively in the per-vertex equations.)
-        for (int strip=0; strip<m_nGridY*2; strip++)
+        // so the blend all happens exclusively in the per-vertex equations).
+        for (int strip = 0; strip < m_nGridY * 2; strip++)
         {
-            int index = strip * (m_nGridX+2);
+            int index = strip * (m_nGridX + 2);
 
-            for (poly=0; poly<m_nGridX+2; poly++)
+            for (poly = 0; poly < m_nGridX + 2; poly++)
             {
                 int ref_vert = m_indices_strip[index];
                 m_verts_temp[poly].x = m_verts[ref_vert].x;
@@ -1951,26 +1919,26 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
                 m_verts_temp[poly].z = m_verts[ref_vert].z;
                 m_verts_temp[poly].tu = m_verts[ref_vert].tu;
                 m_verts_temp[poly].tv = m_verts[ref_vert].tv;
-                //m_verts_temp[poly].Diffuse = cDecay;      this is done just once - see jsut above
+                //m_verts_temp[poly].Diffuse = cDecay; this is done just once; see just above
                 index++;
             }
-            lpDevice->DrawPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_nGridX, (void*)m_verts_temp, sizeof(MDVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_nGridX, (void*)m_verts_temp, sizeof(MDVERTEX));
         }
     }
     else
     {
-        //   we're blending to/from a new pixel-shader enabled preset;
-        //   only draw the cells needed!  (an optimization)
+        // Blending to/from a new pixel-shader enabled preset.
+        // Only draw the cells needed! (an optimization)
         int nAlphaTestValue = 0;
         if (bFlipCulling)
-            nAlphaTestValue = 1-nAlphaTestValue;
+            nAlphaTestValue = 1 - nAlphaTestValue;
 
         int idx[2048];
         for (int y=0; y<m_nGridY; y++)
         {
-            // copy verts & flip sign on Y
-            int ref_vert = y*(m_nGridX+1);
-            for (int i=0; i<(m_nGridX+1)*2; i++)
+            // Copy vertices and flip sign on Y.
+            int ref_vert = y * (m_nGridX + 1);
+            for (int i = 0; i < (m_nGridX + 1) * 2; i++)
             {
                 m_verts_temp[i].x  =  m_verts[ref_vert].x;
                 m_verts_temp[i].y  = -m_verts[ref_vert].y;
@@ -1981,22 +1949,22 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
                 ref_vert++;
             }
 
-            // create (smart) indices
+            // Create (smart) indices.
             int count = 0;
             int nVert = 0;
             bool bWasNeeded;
-            ref_vert = (y)*(m_nGridX+1);
-            DWORD d1 = (m_verts[ref_vert           ].Diffuse >> 24);
+            ref_vert = (y) * (m_nGridX + 1);
+            DWORD d1 = (m_verts[ref_vert].Diffuse >> 24);
             DWORD d2 = (m_verts[ref_vert+m_nGridX+1].Diffuse >> 24);
             if (nAlphaTestValue)
                 bWasNeeded = (d1 < 255) || (d2 < 255);
             else
                 bWasNeeded = (d1 > 0) || (d2 > 0);
-            for (i=0; i<m_nGridX; i++)
+            for (int i = 0; i < m_nGridX; i++)
             {
                 bool bIsNeeded;
-                DWORD d1 = (m_verts[ref_vert+1           ].Diffuse >> 24);
-                DWORD d2 = (m_verts[ref_vert+1+m_nGridX+1].Diffuse >> 24);
+                DWORD d1 = (m_verts[ref_vert + 1].Diffuse >> 24);
+                DWORD d2 = (m_verts[ref_vert + 1 + m_nGridX + 1].Diffuse >> 24);
                 if (nAlphaTestValue)
                     bIsNeeded = (d1 < 255) || (d2 < 255);
                 else
@@ -2005,23 +1973,22 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
                 if (bIsNeeded || bWasNeeded)
                 {
                     idx[count++] = nVert;
-                    idx[count++] = nVert+1;
-                    idx[count++] = nVert+m_nGridX+1;
-                    idx[count++] = nVert+m_nGridX+1;
-                    idx[count++] = nVert+1;
-                    idx[count++] = nVert+m_nGridX+2;
+                    idx[count++] = nVert + 1;
+                    idx[count++] = nVert + m_nGridX + 1;
+                    idx[count++] = nVert + m_nGridX + 1;
+                    idx[count++] = nVert + 1;
+                    idx[count++] = nVert + m_nGridX + 2;
                 }
                 bWasNeeded = bIsNeeded;
 
                 nVert++;
                 ref_vert++;
             }
-            lpDevice->DrawIndexedPrimitiveUP(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, (m_nGridX+1)*2, count/3, (void*)idx, D3DFMT_INDEX32, (void*)m_verts_temp, sizeof(MDVERTEX));
+            lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, (m_nGridX + 1) * 2, count / 3, (void*)idx, D3DFMT_INDEX32, (void*)m_verts_temp, sizeof(MDVERTEX));
         }
-    }/**/
+    }*/
 
     lpDevice->SetBlendState(false);
-    //lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, bool bCullTiles, bool bFlipCulling)
@@ -3733,21 +3700,13 @@ void CPlugin::RestoreShaderParams()
         return;
 
     for (int i = 0; i < 2; i++)
-    {
         lpDevice->SetSamplerState(i, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-        //lpDevice->SetSamplerState(i, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP); //texaddr);
-        //lpDevice->SetSamplerState(i, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP); //texaddr);
-        //lpDevice->SetSamplerState(i, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP); //texaddr);
-        //lpDevice->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-        //lpDevice->SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-        //lpDevice->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-    }
 
     for (int i = 0; i < 16; i++)
         lpDevice->SetTexture(i, NULL);
 
     lpDevice->SetVertexShader(NULL, NULL);
-    //lpDevice->SetVertexDeclaration(NULL);  -directx debug runtime complains heavily about this
+    //lpDevice->SetVertexDeclaration(NULL); // DirectX debug runtime complains heavily about this
     lpDevice->SetPixelShader(NULL, NULL);
 }
 
@@ -3768,24 +3727,17 @@ void CPlugin::ApplyShaderParams(CShaderParams* p, CConstantTable* pCT, CState* p
         else
             lpDevice->SetTexture(p->m_texture_bindings[i].texptr ? p->m_texture_bindings[i].bindPoint : i, p->m_texture_bindings[i].texptr);
 
-        // also set up sampler stage, if anything is bound here...
+        // Also set up sampler stage, if anything is bound here...
         if (p->m_texcode[i] == TEX_VS || p->m_texture_bindings[i].texptr)
         {
-            bool bAniso = false;
+            bool bAniso = false; //FIXME: ANISO
             D3D11_FILTER HQFilter = bAniso ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
             D3D11_TEXTURE_ADDRESS_MODE wrap = p->m_texture_bindings[i].bWrap ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
             D3D11_FILTER filter = p->m_texture_bindings[i].bBilinear ? HQFilter : D3D11_FILTER_MIN_MAG_MIP_POINT;
             lpDevice->SetSamplerState(i, filter, wrap);
-            //lpDevice->SetSamplerState(i, D3DSAMP_ADDRESSU, wrap);
-            //lpDevice->SetSamplerState(i, D3DSAMP_ADDRESSV, wrap);
-            //lpDevice->SetSamplerState(i, D3DSAMP_ADDRESSW, wrap);
-            //lpDevice->SetSamplerState(i, D3DSAMP_MAGFILTER, filter);
-            //lpDevice->SetSamplerState(i, D3DSAMP_MINFILTER, filter);
-            //lpDevice->SetSamplerState(i, D3DSAMP_MIPFILTER, filter);
-            //lpDevice->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, bAniso ? 4 : 1); //FIXME: ANISO
         }
 
-        // finally, if it was a blur texture, note that
+        // Finally, if it was a blur texture, note that.
         if (p->m_texcode[i] >= TEX_BLUR1 && p->m_texcode[i] <= TEX_BLUR_LAST)
             m_nHighestBlurTexUsedThisFrame = std::max(m_nHighestBlurTexUsedThisFrame, ((int)p->m_texcode[i] - (int)TEX_BLUR1) + 1);
     }

@@ -104,7 +104,6 @@ void NSEEL_VM_resetvars(NSEEL_VMCTX ctx)
 
 _locale_t g_use_C_locale = 0;
 
-//extern CSoundData* pg_sound; // declared in "main.cpp"
 extern CPlugin g_plugin;
 
 // From "support.cpp".
@@ -3283,7 +3282,7 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
 //   5. Call `PrepareFor2DDrawing()`
 //   6. Draw your 2D stuff (overtop of the 3D scene).
 // If the `redraw` flag is 1, try to redraw the last frame;
-// GetTime, GetFps, and GetFrame should all return the
+// `GetTime()`, `GetFps()`, and `GetFrame()` should all return the
 // same values as they did on the last call to
 // `MilkDropRenderFrame()`. Otherwise, the `redraw` flag will
 // be zero and draw a new frame. The flag is
@@ -3293,7 +3292,7 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 {
     EnterCriticalSection(&g_cs);
 
-    // 1. Take care of timing, other paperwork, etc... for new frame.
+    // 1a. Take care of timing, other paperwork, etc... for new frame.
     if (!redraw)
     {
         //float dt = GetTime() - m_prev_time;
@@ -3314,7 +3313,7 @@ void CPlugin::MilkDropRenderFrame(int redraw)
         //    UpdatePresetList(true);//UpdatePresetRatings(); // read in a few each frame, til they're all in
     }
 
-    // 2. Check for lost or gained keyboard focus.
+    // 1b. Check for lost or gained keyboard focus.
     // (note: can't use wm_setfocus or wm_killfocus because they don't work w/embedwnd)
     /*
     if (GetFrame() == 0)
@@ -3375,7 +3374,8 @@ void CPlugin::MilkDropRenderFrame(int redraw)
     //DWORD clear_color = (m_fog_enabled) ? FOG_COLOR : 0xFF000000;
     //GetDevice()->Clear(0, 0, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, clear_color, 1.0f, 0);
 
-    // 5. Switch to 2D drawing mode. 2D coordinate system.
+    // 5. Switch to 2D drawing mode.
+    //    2D-coordinate system:
     //         +--------+ Y=-1
     //         |        |
     //         | screen |             Z=0: front of scene
@@ -3479,20 +3479,20 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 }
 
 #define MilkDropMenuOut_Box(top, line, font, str, r, flags, color, bDarkBox, boxColor) { \
+    D2D1_RECT_F r2 = r; \
     D2D1_COLOR_F fText = D2D1::ColorF(color, GetAlpha(color)); \
     D2D1_COLOR_F fBox = D2D1::ColorF(boxColor, GetAlpha(boxColor)); \
     if (!m_menuText[line].IsVisible()) m_menuText[line].Initialize(m_lpDX->GetD2DDeviceContext()); \
-    m_menuText[line].SetAlignment(AlignCenter, AlignCenter); \
+    m_menuText[line].SetAlignment(AlignNear, AlignNear); \
     m_menuText[line].SetTextColor(fText); \
     m_menuText[line].SetTextOpacity(fText.a); \
     m_menuText[line].SetContainer(r); \
     m_menuText[line].SetText(str); \
     m_menuText[line].SetTextStyle(font); \
     m_menuText[line].SetTextShadow(false); \
-    m_menuText[line].SetTextBox(fBox, r); \
-    top += m_text.DrawD2DText(font, &m_menuText[line], static_cast<wchar_t*>(str), &r, flags, color, bDarkBox, boxColor); \
-    if (!m_menuText[line].IsVisible()) m_text.RegisterElement(&m_menuText[line]); \
-    m_menuText[line].SetVisible(true); \
+    top += m_text.DrawD2DText(font, &m_menuText[line], static_cast<wchar_t*>(str), &r2, flags | DT_CALCRECT, color, bDarkBox, boxColor); \
+    m_menuText[line].SetTextBox(fBox, r2); \
+    if (!m_menuText[line].IsVisible()) { m_text.RegisterElement(&m_menuText[line]); m_menuText[line].SetVisible(true); } \
 }
 
 #define MilkDropStringOut_Box(top, element, font, str, r, flags, color, bDarkBox) { \
@@ -3699,7 +3699,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
     // 2. Render text in lower-right corner.
     {
-        // "waitstring" tooltip.
+        // "WaitString" tooltip.
         if (m_waitstring.bActive && m_bShowMenuToolTips && m_waitstring.szToolTip[0])
         {
             DrawTooltip(m_waitstring.szToolTip, xR, *lower_right_corner_y);
@@ -4233,16 +4233,13 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             }
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
-        else
-        if (m_UI_mode == UI_LOAD_DEL)
+        else if (m_UI_mode == UI_LOAD_DEL)
         {
-            D2D1_RECT_F rect{};
             h = GetFontHeight(SIMPLE_FONT);
-            rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
+            D2D1_RECT_F rect = D2D1::RectF(static_cast<FLOAT>(xL), static_cast<FLOAT>(*upper_left_corner_y), static_cast<FLOAT>(xR), static_cast<FLOAT>(*lower_left_corner_y));
             MilkDropMenuOut_Box(rect.top, 0, GetFont(SIMPLE_FONT), WASABI_API_LNGSTRINGW(IDS_ARE_YOU_SURE_YOU_WANT_TO_DELETE_PRESET), rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
             swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_PRESET_TO_DELETE), m_presets[m_nPresetListCurPos].szFilename.c_str());
-            rect.top += h;
-            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), buf, rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0x00000000);
+            MilkDropMenuOut_Box(rect.top, 1, GetFont(SIMPLE_FONT), buf, rect, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, MENU_COLOR, true, 0xFF000000);
             *upper_left_corner_y = static_cast<int>(rect.top);
         }
         else if (m_UI_mode == UI_SAVE_OVERWRITE)
@@ -4567,7 +4564,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     ClearTooltip();
                 }
 
-                D2D1_RECT_F orig_rect = rect;
+                D2D1_RECT_F rect_hold = rect;
 
                 D2D1_RECT_F box;
                 box.top = static_cast<FLOAT>(rect.top);
@@ -4579,7 +4576,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 int nFontHeight = GetFontHeight(SIMPLE_FONT);
                 for (int pass = 0; pass < 2; pass++)
                 {
-                    rect = orig_rect;
+                    rect = rect_hold;
                     for (int i = first_line; i < last_line; i++)
                     {
                         D2D1_RECT_F r2 = rect;
@@ -4630,19 +4627,18 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetText(str2);
                             m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetTextStyle(GetFont(SIMPLE_FONT));
                             m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetTextShadow(false);
-                            m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i%MAX_PRESETS_PER_PAGE], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color, false);
+                            int nHeight = m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i%MAX_PRESETS_PER_PAGE], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT, color, false);
+
+                            // Calculate dark box rectangle.
+                            box.right = std::max(box.right, box.left + r2.right - r2.left);
+                            box.bottom += static_cast<FLOAT>(std::max(nFontHeight, nHeight)); //r2.bottom - r2.top;
                         }
                         else
                         {
                             m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetContainer(r2);
                             int nHeight = m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_loadPresetItem[i%MAX_PRESETS_PER_PAGE], str2, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX, 0xFFFFFFFF, false);
-                            FLOAT fHeight = static_cast<FLOAT>(std::max(nFontHeight, nHeight));
-                            rect.top += fHeight;
+                            rect.top += static_cast<FLOAT>(std::max(nFontHeight, nHeight));
                             m_text.RegisterElement(&m_loadPresetItem[i%MAX_PRESETS_PER_PAGE]);
-
-                            // Calculate dark box rectangle.
-                            box.right = std::max(box.right, box.left + r2.right - r2.left);
-                            box.bottom += fHeight; //r2.bottom - r2.top;
                         }
                     }
                     for (int i = last_line; i < MAX_PRESETS_PER_PAGE * (m_nPresetListCurPos / lines_available + 1); i++)
@@ -4911,19 +4907,19 @@ void CPlugin::BuildMenus()
     for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
     {
         // Blending: do both; fade opacities in/out (with exaggerated weighting).
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_ENABLED), &m_pState->m_wave[i].enabled, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ENABLED_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_SAMPLES), &m_pState->m_wave[i].samples, MENUITEMTYPE_INT, MEN_TT(IDS_MENU_NUMBER_OF_SAMPLES_TT), 2, 512); // 0-512
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_L_R_SEPARATION), &m_pState->m_wave[i].sep, MENUITEMTYPE_INT, MEN_TT(IDS_MENU_L_R_SEPARATION_TT), 0, 256); // 0-512
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_ENABLED), &m_pState->m_wave[i].enabled, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ENABLED_TT));
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_SAMPLES), &m_pState->m_wave[i].samples, MENUITEMTYPE_INT, MEN_TT(IDS_MENU_NUMBER_OF_SAMPLES_TT), 2, 512); //0-512
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_L_R_SEPARATION), &m_pState->m_wave[i].sep, MENUITEMTYPE_INT, MEN_TT(IDS_MENU_L_R_SEPARATION_TT), 0, 256); //0-512
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_SCALING), &m_pState->m_wave[i].scaling, MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_SCALING_TT));
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_SMOOTH), &m_pState->m_wave[i].smoothing, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_SMOOTHING_TT), 0, 1);
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_COLOR_RED), &m_pState->m_wave[i].r, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_COLOR_RED_TT), 0, 1);
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_COLOR_GREEN), &m_pState->m_wave[i].g, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_COLOR_GREEN_TT), 0, 1);
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_COLOR_BLUE), &m_pState->m_wave[i].b, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_COLOR_BLUE_TT), 0, 1);
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_OPACITY), &m_pState->m_wave[i].a, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_OPACITY_WAVE_TT), 0, 1);
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_USE_SPECTRUM), &m_pState->m_wave[i].bSpectrum, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_USE_SPECTRUM_TT)); // 0-5 [0=wave left, 1=wave center, 2=wave right; 3=spectrum left, 4=spec center, 5=spec right]
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_USE_DOTS), &m_pState->m_wave[i].bUseDots, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_USE_DOTS_WAVE_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_DRAW_THICK), &m_pState->m_wave[i].bDrawThick, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_DRAW_THICK_WAVE_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING), &m_pState->m_wave[i].bAdditive, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ADDITIVE_DRAWING_WAVE_TT)); // bool
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_USE_SPECTRUM), &m_pState->m_wave[i].bSpectrum, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_USE_SPECTRUM_TT)); //0-5 [0=wave left, 1=wave center, 2=wave right; 3=spectrum left, 4=spec center, 5=spec right]
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_USE_DOTS), &m_pState->m_wave[i].bUseDots, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_USE_DOTS_WAVE_TT));
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_DRAW_THICK), &m_pState->m_wave[i].bDrawThick, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_DRAW_THICK_WAVE_TT));
+        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING), &m_pState->m_wave[i].bAdditive, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ADDITIVE_DRAWING_WAVE_TT));
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_EXPORT_TO_FILE), (void*)UI_EXPORT_WAVE, MENUITEMTYPE_UIMODE, MEN_TT(IDS_MENU_EXPORT_TO_FILE_TT), 0, 0, NULL, UI_EXPORT_WAVE, i);
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_IMPORT_FROM_FILE), (void*)UI_IMPORT_WAVE, MENUITEMTYPE_UIMODE, MEN_TT(IDS_MENU_IMPORT_FROM_FILE_TT), 0, 0, NULL, UI_IMPORT_WAVE, i);
         m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_EDIT_INIT_CODE), &m_pState->m_wave[i].m_szInit, MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_INIT_CODE_TT), 256, 0, &OnUserEditedWavecodeInit, sizeof(m_pState->m_wave[i].m_szInit), 0);
@@ -4934,18 +4930,18 @@ void CPlugin::BuildMenus()
     for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
     {
         // Blending: do both; fade opacities in/out (with exaggerated weighting).
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ENABLED), &m_pState->m_shape[i].enabled, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ENABLED_SHAPE_TT)); // bool
+        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ENABLED), &m_pState->m_shape[i].enabled, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ENABLED_SHAPE_TT));
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_INSTANCES), &m_pState->m_shape[i].instances, MENUITEMTYPE_INT, MEN_TT(IDS_MENU_NUMBER_OF_INSTANCES_TT), 1, 1024);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_SIDES), &m_pState->m_shape[i].sides, MENUITEMTYPE_INT, MEN_TT(IDS_MENU_NUMBER_OF_SIDES_TT), 3, 100);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_DRAW_THICK), &m_pState->m_shape[i].thickOutline, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_DRAW_THICK_SHAPE_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING), &m_pState->m_shape[i].additive, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ADDITIVE_DRAWING_SHAPE_TT)); // bool
+        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_DRAW_THICK), &m_pState->m_shape[i].thickOutline, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_DRAW_THICK_SHAPE_TT));
+        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING), &m_pState->m_shape[i].additive, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ADDITIVE_DRAWING_SHAPE_TT));
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_X_POSITION), &m_pState->m_shape[i].x, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_X_POSITION_TT), 0, 1);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_Y_POSITION), &m_pState->m_shape[i].y, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_Y_POSITION_TT), 0, 1);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_RADIUS), &m_pState->m_shape[i].rad, MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_RADIUS_TT));
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ANGLE), &m_pState->m_shape[i].ang, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_ANGLE_TT), 0, 3.1415927f * 2.0f);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURED), &m_pState->m_shape[i].textured, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_TEXTURED_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURE_ZOOM), &m_pState->m_shape[i].tex_zoom, MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_TEXTURE_ZOOM_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURE_ANGLE), &m_pState->m_shape[i].tex_ang, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_TEXTURE_ANGLE_TT), 0, 3.1415927f * 2.0f); // bool
+        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURED), &m_pState->m_shape[i].textured, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_TEXTURED_TT));
+        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURE_ZOOM), &m_pState->m_shape[i].tex_zoom, MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_TEXTURE_ZOOM_TT));
+        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURE_ANGLE), &m_pState->m_shape[i].tex_ang, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_TEXTURE_ANGLE_TT), 0, 3.1415927f * 2.0f);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_COLOR_RED), &m_pState->m_shape[i].r, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_COLOR_RED_TT), 0, 1);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_COLOR_GREEN), &m_pState->m_shape[i].g, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_COLOR_GREEN_TT), 0, 1);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_COLOR_BLUE), &m_pState->m_shape[i].b, MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_COLOR_BLUE_TT), 0, 1);
@@ -4962,7 +4958,7 @@ void CPlugin::BuildMenus()
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_IMPORT_FROM_FILE), NULL, MENUITEMTYPE_UIMODE, MEN_TT(IDS_MENU_IMPORT_FROM_FILE_SHAPE_TT), 0, 0, NULL, UI_IMPORT_SHAPE, i);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_EDIT_INIT_CODE), &m_pState->m_shape[i].m_szInit, MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_INIT_CODE_SHAPE_TT), 256, 0, &OnUserEditedShapecodeInit, sizeof(m_pState->m_shape[i].m_szInit), 0);
         m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_EDIT_PER_FRAME_INSTANCE_CODE), &m_pState->m_shape[i].m_szPerFrame, MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_PER_FRAME_INSTANCE_CODE_TT), 256, 0, &OnUserEditedShapecode, sizeof(m_pState->m_shape[i].m_szPerFrame), 0);
-        //m_menuShapecode[i].AddItem("[ edit per-point code ]",&m_pState->m_shape[i].m_szPerPoint,  MENUITEMTYPE_STRING, "IN: sample [0..1]; value1 [left ch], value2 [right ch], plus all vars for per-frame code / OUT: x,y; r,g,b,a; t1-t8", 256, 0, &OnUserEditedWavecode);
+        //m_menuShapecode[i].AddItem("[ edit per-point code ]",&m_pState->m_shape[i].m_szPerPoint,  MENUITEMTYPE_STRING, "in: sample [0..1], value1 [left ch], value2 [right ch], plus all vars for per-frame code / out: x, y, r, g, b, a, t1-t8", 256, 0, &OnUserEditedWavecode);
     }
 }
 

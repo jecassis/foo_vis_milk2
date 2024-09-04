@@ -495,8 +495,8 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             case VK_LEFT:
                 if (m_pParentMenu)
                 {
-                    g_plugin.m_pCurMenu->UndrawMenus();
                     g_plugin.m_pCurMenu = m_pParentMenu;
+                    g_plugin.m_pCurMenu->UndrawMenus();
                 }
                 else
                 {
@@ -509,8 +509,8 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             case VK_SPACE:
                 if (m_nCurSel < m_nChildMenus)
                 {
-                    g_plugin.m_pCurMenu->UndrawMenus();
                     g_plugin.m_pCurMenu = m_ppChildMenu[m_nCurSel]; // Go to sub-menu.
+                    g_plugin.m_pCurMenu->UndrawMenus();
                 }
                 else
                 {
@@ -663,8 +663,8 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     case MENUITEMTYPE_INT:
                         {
                             int* pInt = ((int*)addr);
-                            if (fMult < 1)
-                                fMult = 1;
+                            if (fMult < 1.0f)
+                                fMult = 1.0f;
                             (*pInt) += (int)((bDec) ? -fMult : fMult);
                             if (*pInt < pItem->m_fMin)
                                 *pInt = (int)pItem->m_fMin;
@@ -686,7 +686,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     case MENUITEMTYPE_LOGFLOAT:
                         {
                             float* pFloat = ((float*)addr);
-                            (*pFloat) *= (bDec) ? powf(1.0f / 1.01f, fMult) : powf(1.01f, fMult);
+                            (*pFloat) *= (bDec) ? std::pow(1.0f / 1.01f, fMult) : std::pow(1.01f, fMult);
                             if (*pFloat < pItem->m_fMin)
                                 *pFloat = pItem->m_fMin;
                             if (*pFloat > pItem->m_fMax)
@@ -698,19 +698,19 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             CBlendableFloat* pBlend = ((CBlendableFloat*)addr);
                             float fInc = (pItem->m_fMax - pItem->m_fMin) * 0.01f * fMult;
                             (*pBlend) += (bDec) ? -fInc : fInc;
-                            if (pBlend->eval(-1) < pItem->m_fMin)
+                            if (pBlend->eval(-1.0f) < pItem->m_fMin)
                                 *pBlend = pItem->m_fMin;
-                            if (pBlend->eval(-1) > pItem->m_fMax)
+                            if (pBlend->eval(-1.0f) > pItem->m_fMax)
                                 *pBlend = pItem->m_fMax;
                         }
                         break;
                     case MENUITEMTYPE_LOGBLENDABLE:
                         {
                             CBlendableFloat* pBlend = ((CBlendableFloat*)addr);
-                            (*pBlend) *= (bDec) ? powf(1.0f / 1.01f, fMult) : powf(1.01f, fMult);
-                            if (pBlend->eval(-1) < pItem->m_fMin)
+                            (*pBlend) *= (bDec) ? std::pow(1.0f / 1.01f, fMult) : std::pow(1.01f, fMult);
+                            if (pBlend->eval(-1.0f) < pItem->m_fMin)
                                 *pBlend = pItem->m_fMin;
-                            if (pBlend->eval(-1) > pItem->m_fMax)
+                            if (pBlend->eval(-1.0f) > pItem->m_fMax)
                                 *pBlend = pItem->m_fMax;
                         }
                         break;

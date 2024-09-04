@@ -101,7 +101,8 @@ void PrepareFor3DDrawing(D3D11Shim* pDevice,   // a pointer to the D3D device
     }
 }
 
-// New 2D drawing area will have x, y coords in the range <-1, -1> .. <1, 1>
+// New 2D drawing area will have x, y coordinates in the
+// range <-1, -1> .. <1, 1>.
 //         +--------+ Y=-1
 //         |        |
 //         | screen |             Z=0: front of scene
@@ -112,7 +113,7 @@ void PrepareFor3DDrawing(D3D11Shim* pDevice,   // a pointer to the D3D device
 //  1. `SetVertexShader()`
 //  2. `SetTexture()`, if needed
 // before rendering primitives!
-// Also, be sure your sprites have a z coordinate of 0.
+// Also, be sure sprites have a Z coordinate of 0.
 void PrepareFor2DDrawing(D3D11Shim* pDevice)
 {
     pDevice->SetDepth(true);

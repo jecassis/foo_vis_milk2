@@ -61,25 +61,24 @@ int GetDX11TexFormatBitsPerPixel(DXGI_FORMAT fmt);
 // Note: Layout must match the vertex declarations in "d3d11shim.cpp"!
 typedef struct _MDVERTEX
 {
-    float x, y, z;          // screen position + Z-buffer depth
-    float r, g, b, a;       // diffuse color
-    float tu, tv;           // DYNAMIC
+    float x, y, z; // screen position + Z-buffer depth
+    float r, g, b, a; // diffuse color
+    float tu, tv; // DYNAMIC: texture coordinates for texture #0
     float tu_orig, tv_orig; // STATIC
-    float rad, ang;         // STATIC
+    float rad, ang; // STATIC: texture coordinates for texture #2
 } MDVERTEX, *LPMDVERTEX;
 
 typedef struct _WFVERTEX
 {
     float x, y, z;
-    float r, g, b, a; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
+    float r, g, b, a; // diffuse color, also acts as filler to 16 bytes
 } WFVERTEX, *LPWFVERTEX;
 
 typedef struct _SPRITEVERTEX
 {
-    float x, y;       // screen position
-    float z;          // Z-buffer depth
-    float r, g, b, a; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
-    float tu, tv;     // texture coordinates for texture #0
+    float x, y, z; // screen position + Z-buffer depth
+    float r, g, b, a; // diffuse color, also acts as filler to 16 bytes
+    float tu, tv; // texture coordinates for texture #0
 } SPRITEVERTEX, *LPSPRITEVERTEX;
 
 #ifdef PROFILING

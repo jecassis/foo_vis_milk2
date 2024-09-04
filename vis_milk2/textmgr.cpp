@@ -107,15 +107,17 @@ IDWriteTextFormat* TextStyle::GetTextFormat(IDWriteFactory* dwriteFactory)
 {
     if (m_textFormat == nullptr)
     {
-        ThrowIfFailed(dwriteFactory->CreateTextFormat(m_fontName.data(), // family
-                                                      nullptr, // collection
-                                                      m_fontWeight, // weight
-                                                      m_fontStyle, // style
-                                                      DWRITE_FONT_STRETCH_NORMAL, // stretch
-                                                      m_fontSize, // size
-                                                      L"en-US", // locale
-                                                      &m_textFormat // text format object
-                                                      ));
+        ThrowIfFailed(dwriteFactory->CreateTextFormat(
+                m_fontName.data(), // family
+                nullptr, // collection
+                m_fontWeight, // weight
+                m_fontStyle, // style
+                DWRITE_FONT_STRETCH_NORMAL, // stretch
+                m_fontSize, // size
+                L"en-US", // locale
+                &m_textFormat // text format object
+            )
+        );
 
         ThrowIfFailed(m_textFormat->SetTextAlignment(m_textAlignment));
         ThrowIfFailed(m_textFormat->SetWordWrapping(m_wordWrapping));
@@ -206,7 +208,8 @@ TextElement::TextElement() :
     m_boxRect{},
     m_hasBox(false),
     m_hasShadow(false),
-    /*m_isFadingOut(false),*/ m_textExtents{},
+    /*m_isFadingOut(false),*/
+    m_textExtents{},
     m_textStyle(nullptr)
 {
 }
@@ -501,8 +504,7 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
 
     // No room for more text? Return accurate information.
     D2D1_RECT_F r2 = pElement->GetBounds(m_lpDX->GetDWriteFactory());
-    int h = static_cast<int>(ceilf(r2.bottom - r2.top));
-    return h;
+    return static_cast<int>(ceilf(r2.bottom - r2.top));
 }
 
 #define MATCH(i, j) \

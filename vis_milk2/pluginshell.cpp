@@ -38,31 +38,12 @@
 #include "api.h"
 #include <nu/AutoWide.h>
 #include <winamp/wa_ipc.h>
-#include <mmsystem.h>
-#pragma comment(lib, "winmm.lib") // for timeGetTime
 
-// STATE VALUES & VERTEX FORMATS FOR HELP SCREEN TEXTURE:
-#define TEXT_SURFACE_NOT_READY 0
-#define TEXT_SURFACE_REQUESTED 1
-#define TEXT_SURFACE_READY     2
-#define TEXT_SURFACE_ERROR     3
-
-typedef struct _HELPVERTEX
-{
-    float x, y;    // screen position
-    float z;       // Z-buffer depth
-    DWORD Diffuse; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
-    float tu, tv;  // texture coordinates for texture #0
-} HELPVERTEX, *LPHELPVERTEX;
-#define HELP_VERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
-
-typedef struct _SIMPLEVERTEX
-{
-    float x, y;    // screen position
-    float z;       // Z-buffer depth
-    DWORD Diffuse; // diffuse color. also acts as filler; aligns struct to 16 bytes (good for random access/indexed prims)
-} SIMPLEVERTEX, *LPSIMPLEVERTEX;
-#define SIMPLE_VERTEX_FORMAT (D3DFVF_XYZ | D3DFVF_DIFFUSE)
+// STATE VALUES AND VERTEX FORMATS FOR HELP SCREEN TEXTURE:
+//#define TEXT_SURFACE_NOT_READY 0
+//#define TEXT_SURFACE_REQUESTED 1
+//#define TEXT_SURFACE_READY     2
+//#define TEXT_SURFACE_ERROR     3
 
 extern wchar_t* g_szHelp;
 //extern winampVisModule mod1;
@@ -863,7 +844,6 @@ void CPluginShell::DrawAndDisplay(int redraw)
     RenderBuiltInTextMsgs();
     MilkDropRenderUI(&m_upper_left_corner_y, &m_upper_right_corner_y, &m_lower_left_corner_y, &m_lower_right_corner_y, m_left_edge, m_right_edge);
     RenderPlaylist();
-
     m_text.DrawNow();
     m_lpDX->Show();
 }
@@ -1251,20 +1231,10 @@ void CPluginShell::DrawDarkTranslucentBox(D2D1_RECT_F* pr)
 {
     m_lpDX->m_lpDevice->SetVertexShader(NULL, NULL);
     m_lpDX->m_lpDevice->SetPixelShader(NULL, NULL);
-    //m_lpDX->m_lpDevice->SetFVF(SIMPLE_VERTEX_FORMAT); // TODO DX11
+    //m_lpDX->m_lpDevice->SetFVF(SIMPLE_VERTEX_FORMAT); // TODO: DirectX11
     m_lpDX->m_lpDevice->SetTexture(0, NULL);
-
     m_lpDX->m_lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
-    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
     m_lpDX->m_lpDevice->SetShader(2);
-    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-    //m_lpDX->m_lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-    //m_lpDX->m_lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 
     // Set up a quad.
     SIMPLEVERTEX verts[4]{};
@@ -1336,7 +1306,9 @@ void CPluginShell::RenderBuiltInTextMsgs()
         else
         {
             if (m_helpManual.IsVisible())
+            {
                 m_helpManual.SetVisible(false);
+            }
         }
 
         // Render 'Press F1 for Help' message in lower-right corner.
