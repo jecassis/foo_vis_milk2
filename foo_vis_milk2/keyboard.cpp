@@ -57,6 +57,12 @@
 //  F8: jump to new presets directory
 //  F9: show shader help (in shader edit mode)
 //
+// MENU / PLAYLIST / PRESETS
+//  ESC: exit menu
+//  BACKSPACE / left arrow: return to previous menu or exit menu if top
+//  ENTER / SPACE / right arrow: select or go to sub-menu
+//  up / down arrows: change selection up / down
+//
 // SPRITES AND CUSTOM MESSAGES
 //  T: launch song title animation
 //  Y: enter custom message mode
@@ -1709,6 +1715,7 @@ void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
+    MILK2_CONSOLE_LOG("OnSysChar ", GetWnd())
     if (chChar == 'k' || chChar == 'K')
     {
         ShowPreferencesPage();
@@ -1726,6 +1733,7 @@ void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 
 void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    MILK2_CONSOLE_LOG("OnCommand ", GetWnd())
     if (g_plugin.GetScreenMode() == WINDOWED)
     {
         switch (nID)
@@ -1737,7 +1745,7 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
             //case ID_DESKTOP_MODE:
             //    if (g_plugin.GetFrame() > 0)
             //        ToggleDesktop();
-                return;
+            //    return;
             case ID_SHOWHELP:
                 ToggleHelp();
                 return;
@@ -1751,10 +1759,10 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
                 PrevPreset(g_plugin.m_fBlendTimeUser);
                 return;
             case ID_VIS_RANDOM:
-                { /*
-                    // Note: when the vis is launched, if we're using a fancy modern skin
-                    //       (with a Random button), it will send us one of these...
-                    //       if it's NOT a fancy skin, we'll never get this message (confirmed).
+                {   /*
+                    // Note: When the visualization is launched using a fancy modern skin
+                    //       (with a Random button), it will send one of these...
+                    //       If it's NOT a fancy skin, will never get this message (confirmed).
                     USHORT v = uNotifyCode; // here, v is 0 (locked) or 1 (random) or 0xFFFF (don't know / startup!)
                     if (v == 0xFFFF)
                     {

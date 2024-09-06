@@ -44,19 +44,20 @@ using namespace DirectX::PackedVector;
 // Sets up DirectX up for 3D rendering.
 // Only call it once per frame, as it is VERY slow.
 // What this function does NOT do:
-//  1. Set the current texture (SetTexture)
-//  2. Set up the texture stages for texturing (SetTextureStageState)
-//  3. Set the current vertex format (SetVertexShader)
-//  4. Set up the world matrix (SetTransform(D3DTS_WORLD, &my_world_matrix))
-void PrepareFor3DDrawing(D3D11Shim* pDevice,   // a pointer to the D3D device
-                         int viewport_width,   // the width of the client area of the window
-                         int viewport_height,  // the height of the client area of the window
-                         float fov_in_degrees, // the field of view, in degrees
-                         float near_clip,      // the distance to the near clip plane; should be > 0!
-                         float far_clip,       // the distance to the far clip plane
-                         XMVECTOR* pvEye,      // the eyepoint coordinates, in world space
-                         XMVECTOR* pvLookat,   // the point toward which the eye is looking, in world space
-                         XMVECTOR* pvUp        // a vector indicating which dir. is up; usually <0,1,0>
+//  1. Set the current texture (`SetTexture`)
+//  2. Set up the texture stages for texturing (`SetTextureStageState`)
+//  3. Set the current vertex format (`SetVertexShader`)
+//  4. Set up the world matrix (`SetTransform(256, &md_world_matrix)`)
+void PrepareFor3DDrawing(
+    D3D11Shim* pDevice,   // a pointer to the D3D device
+    int viewport_width,   // the width of the client area of the window
+    int viewport_height,  // the height of the client area of the window
+    float fov_in_degrees, // the field of view, in degrees
+    float near_clip,      // the distance to the near clip plane; should be greater than 0!
+    float far_clip,       // the distance to the far clip plane
+    XMVECTOR* pvEye,      // the eyepoint coordinates, in world space
+    XMVECTOR* pvLookat,   // the point toward which the eye is looking, in world space
+    XMVECTOR* pvUp        // a vector indicating which direction is up; usually <0,1,0>
 )
 {
     // Set up render state to some nice defaults.

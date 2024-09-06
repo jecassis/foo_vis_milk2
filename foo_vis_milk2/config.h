@@ -306,8 +306,6 @@ class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_pa
     }
 };
 
-static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_milk2_factory;
-
 class milk2_config
 {
   public:

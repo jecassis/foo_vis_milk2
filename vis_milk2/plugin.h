@@ -372,11 +372,11 @@ class CPlugin : public CPluginShell
     //ID3DXFragmentLinker* m_pFragmentLinker; // Fragment linker interface
     //LPD3DXBUFFER m_pCompiledFragments; // Buffer containing compiled fragments
     ID3DBlob* m_pShaderCompileErrors;
-    VShaderSet m_fallbackShaders_vs; // *these are the only vertex shaders used for the whole app.*
-    PShaderSet m_fallbackShaders_ps; // these are just used when the preset's pixel shaders fail to compile.
-    PShaderSet m_shaders;            // includes shader pointers and constant tables for warp & comp shaders, for cur. preset
-    PShaderSet m_OldShaders;         // includes shader pointers and constant tables for warp & comp shaders, for prev. preset
-    PShaderSet m_NewShaders;         // includes shader pointers and constant tables for warp & comp shaders, for coming preset
+    VShaderSet m_fallbackShaders_vs; // *these are the only vertex shaders used for the whole application*
+    PShaderSet m_fallbackShaders_ps; // these are just used when the preset's pixel shaders fail to compile
+    PShaderSet m_shaders;            // includes shader pointers and constant tables for warp & comp shaders, for current preset
+    PShaderSet m_OldShaders;         // includes shader pointers and constant tables for warp & comp shaders, for previous preset
+    PShaderSet m_NewShaders;         // includes shader pointers and constant tables for warp & comp shaders, for upcoming preset
     ShaderPairInfo m_BlurShaders[2];
     bool m_bWarpShaderLock;
     bool m_bCompShaderLock;
@@ -394,10 +394,10 @@ class CPlugin : public CPluginShell
     TexInfoList m_textures;
     bool m_bNeedRescanTexturesDir;
 
-    // Vertex declarations.
-    //IDirect3DVertexDeclaration9* m_pSpriteVertDecl;
-    //IDirect3DVertexDeclaration9* m_pWfVertDecl;
-    //IDirect3DVertexDeclaration9* m_pMilkDropVertDecl;
+    // Input layouts.
+    //ID3D11InputLayout* m_pMilkDropVertDecl;
+    //ID3D11InputLayout* m_pWfVertDecl;
+    //ID3D11InputLayout* m_pSpriteVertDecl;
 
     XMFLOAT4 m_rand_frame; // 4 random floats (0..1); randomized once per frame; fed to pixel shaders.
 

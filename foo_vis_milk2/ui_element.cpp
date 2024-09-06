@@ -69,7 +69,7 @@ ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
 void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
 {
     //LPVOID dataptr = const_cast<LPVOID>(p_data->get_data());
-    //if (dataptr && p_data->get_data_size() >= 4 && static_cast<DWORD*>(dataptr)[0] == ('M' << 24 | 'I' << 16 | 'L' << 8 | 'K'))
+    //if (dataptr && p_data->get_data_size() >= 4 && static_cast<DWORD*>(dataptr)[0] == ('M' | 'I' << 8 | 'L' << 16 | 'K' << 24))
     //    s_config = p_data;
     //else
     //    s_config = g_get_default_configuration();

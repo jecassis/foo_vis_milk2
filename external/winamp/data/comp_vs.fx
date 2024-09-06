@@ -1,7 +1,7 @@
 void VS(float3 vPosIn     : POSITION,
         float4 vDiffuseIn : COLOR,
-        float4 uv_in      : TEXCOORD0,  // .xy = UVs to use (unwarped), .zw = IGNORE
-        float2 rad_ang_in : TEXCOORD1,  // .x = rad, .y = ang
+        float4 uv_in      : TEXCOORD0, // .xy = UVs to use (unwarped), .zw = IGNORE
+        float2 rad_ang_in : TEXCOORD1, // .x = rad, .y = ang
     out float4 _vDiffuse  : COLOR, 
     out float2 _uv        : TEXCOORD0,
     out float2 _rad_ang   : TEXCOORD1,

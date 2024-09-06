@@ -285,7 +285,4 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 // clang-format off
 class ui_element_milk2 : public ui_element_impl_visualisation<milk2_ui_element> {};
 // clang-format on
-
-// Service factory publishes the class.
-static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
 } // namespace

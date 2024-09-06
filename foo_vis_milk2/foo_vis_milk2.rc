@@ -614,8 +614,8 @@ END
 //                            "This plug-in cannot run without music.\n\nPlease play some music, through Winamp, and then try running the plug-in again."
 //    IDS_NO_MUSIC_PLAYING    "No Music Playing"
 //    IDS_UNABLE_TO_READ_DATA_FILE_X "Unable to read the data file:\n   %s"
-//    IDS_COULD_NOT_CREATE_MY_VERTEX_DECLARATION 
-//                            "Could not create my vertex declaration"
+//    IDS_COULD_NOT_CREATE_MD_VERTEX_DECLARATION 
+//                            "Could not create MilkDrop vertex declaration"
 //    IDS_COULD_NOT_CREATE_WF_VERTEX_DECLARATION 
 //                            "Could not create WF vertex declaration"
 //    IDS_COULD_NOT_CREATE_SPRITE_VERTEX_DECLARATION 
