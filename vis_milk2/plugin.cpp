@@ -1050,10 +1050,6 @@ void CancelThread(int max_wait_time_ms)
 // created or initialized in `AllocateMilkDropNonDX11()`.
 void CPlugin::CleanUpMilkDropNonDX11()
 {
-    //sound.Finish();
-
-    // Note: DO NOT DELETE `m_gdi_titlefont_doublesize` here!
-
     DeleteCriticalSection(&g_cs);
 
     CancelThread(0);
@@ -1153,11 +1149,11 @@ int CPlugin::AllocateMilkDropDX11()
     //------------------------------------------------------------------
     if (m_nMaxPSVersion > MD2_PS_NONE)
     {
-        /* DX11: vertex declarations not required. D3D11Shim uses needed layout
-        // Create vertex declarations (since we're not using FVF anymore)
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_MyVertDecl, &m_pMyVertDecl))
+        /* DX11: vertex declarations not required. D3D11Shim uses needed layout.
+        // Create vertex declarations (since not using FVF anymore).
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_MilkDropVertDecl, &m_pMilkDropVertDecl))
         {
-            //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_MY_VERTEX_DECLARATION, buf, sizeof(buf));
+            //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_MD_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
             //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             return false;
@@ -1635,9 +1631,6 @@ int CPlugin::AllocateMilkDropDX11()
             m_supertext.bRedrawSuperText = true;
         }
     }
-#ifdef _FOOBAR
-    m_superTitle = std::make_unique<SuperText>(m_lpDX.get());
-#endif
 
     m_texmgr.Init(GetDevice());
 
@@ -2785,7 +2778,7 @@ bool CPlugin::RecompileVShader(const char* szShadersText, VShaderInfo* si, int s
     if (!LoadShaderFromMemory(szShadersText, "VS", "vs_4_0_level_9_1", &si->CT, (void**)&si->ptr, shaderType, bHardErrors && (GetScreenMode() == WINDOWED)))
         return false;
 
-    // Track down texture & float4 param bindings for this shader.
+    // Track down texture and float4 param bindings for this shader.
     // Also loads any textures that need loaded.
     si->params.CacheParams(si->CT, bHardErrors);
 
@@ -3125,32 +3118,32 @@ bool CPlugin::LoadShaderFromMemory(const char* szOrigShaderText, const char* szF
 }
 
 // Clean up all the DX11 textures, fonts, buffers, etc...
-// EVERYTHING CREATED IN ALLOCATEMDDX11() SHOULD BE CLEANED UP HERE.
-// The input parameter, 'final_cleanup', will be 0 if this is
+// EVERYTHING CREATED IN `AllocateMilkDropDX11()` SHOULD BE CLEANED UP HERE.
+// The input parameter, `final_cleanup`, will be 0 if this is
 // a routine cleanup (part of a window resize or switch between
-// fullscr/windowed modes), or 1 if this is the final cleanup
-// and the plugin is exiting.  Note that even if it is a routine
-// cleanup, *you still have to release ALL your DirectX stuff,
-// because the DirectX device is being destroyed and recreated!*
+// fullscreen/windowed modes), or 1 if this is the final cleanup
+// and the plugin is exiting. Note that even if it is a routine
+// cleanup, *still release ALL the DirectX stuff, because the
+// DirectX device is being destroyed and recreated!*
 // Also set all the pointers back to NULL;
-// this is important because if we go to reallocate the DX9
-// stuff later, and something fails, then CleanUp will get called,
-// but it will then be trying to clean up invalid pointers.)
-// The SafeRelease() and SafeDelete() macros make your code prettier;
+// this is important because if reallocating the DX11 stuff later,
+// and something fails, then CleanUp will get called,
+// but it will then be trying to clean up invalid pointers.
+// The `SafeRelease()` and `SafeDelete()` macros make the code prettier;
 // they are defined here in "utility.h" as follows:
-//       #define SafeRelease(x) if (x) { x->Release(); x=NULL; }
-//       #define SafeDelete(x)  if (x) { delete x; x=NULL; }
+//   #define SafeRelease(x) if (x) { x->Release(); x = NULL; }
+//   #define SafeDelete(x)  if (x) { delete x; x = NULL; }
 // IMPORTANT:
 // This function ISN'T only called when the plugin exits!
 // It is also called whenever the user toggles between fullscreen and
-// windowed modes, or resizes the window.  Basically, on these events,
-// the base class calls `CleanUpMilkDropDX11()` before Reset()ing the DirectX
+// windowed modes, or resizes the window. Basically, on these events,
+// the base class calls `CleanUpMilkDropDX11()` before resetting the DirectX
 // device, and then calls `AllocateMilkDropDX11()` afterwards.
-// One funky thing here: if we're switching between fullscreen and windowed,
-//  or doing any other thing that causes all this stuff to get reloaded in a second,
-//  then if we were blending 2 presets, jump fully to the new preset.
-// Otherwise the old preset wouldn't get all reloaded, and it app would crash
-//  when trying to use its stuff.
+// One funky thing here: when switching between fullscreen and windowed,
+// or doing any other thing that causes all this stuff to get reloaded in a second,
+// then if blending 2 presets, jump fully to the new preset. Otherwise,
+// the old preset wouldn't get all reloaded, and it app would crash
+// when trying to use its stuff.
 void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
 {
     if (m_nLoadingPreset != 0)
@@ -3187,9 +3180,9 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
         GetDevice()->SetTexture(1, NULL);
     }*/
 
-    //SafeRelease(m_pSpriteVertDecl);
-    //SafeRelease(m_pWfVertDecl);
     //SafeRelease(m_pMilkDropVertDecl);
+    //SafeRelease(m_pWfVertDecl);
+    //SafeRelease(m_pSpriteVertDecl);
 
     m_shaders.comp.Clear();
     m_shaders.warp.Clear();
@@ -3224,9 +3217,6 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     SafeRelease(m_lpVS[0]);
     SafeRelease(m_lpVS[1]);
     SafeRelease(m_lpDDSTitle);
-#ifdef _FOOBAR
-    m_superTitle.reset();
-#endif
 
     m_texmgr.Finish();
 
@@ -5462,7 +5452,7 @@ void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
         m_fPresetStartTime = GetTime();
         m_fNextPresetTime = -1.0f; // flags UpdateTime() to recompute this
 
-        // release stuff from m_OldShaders, then move m_shaders to m_OldShaders, then load the new shaders.
+        // Release stuff from `m_OldShaders`, then move m_shaders to `m_OldShaders`, then load the new shaders.
         SafeRelease(m_OldShaders.comp.ptr);
         SafeRelease(m_OldShaders.warp.ptr);
         SafeRelease(m_OldShaders.comp.CT);
@@ -5476,7 +5466,7 @@ void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
     }
     else
     {
-        // set ourselves up to load the preset (and esp. compile shaders) a little bit at a time
+        // Set up to load the preset (and especially compile shaders) a little bit at a time.
         SafeRelease(m_NewShaders.comp.ptr);
         SafeRelease(m_NewShaders.warp.ptr);
         ZeroMemory(&m_NewShaders, sizeof(PShaderSet));
@@ -5487,7 +5477,7 @@ void CPlugin::LoadPreset(const wchar_t* szPresetFilename, float fBlendTime)
 
         m_pNewState->Import(szPresetFilename, GetTime(), m_pOldState, ApplyFlags);
 
-        m_nLoadingPreset = 1; // this will cause LoadPresetTick() to get called over the next few frames...
+        m_nLoadingPreset = 1; // this will cause `LoadPresetTick()` to get called over the next few frames...
 
         m_fLoadingPresetBlendTime = fBlendTime;
         wcscpy_s(m_szLoadingPreset, szPresetFilename);
@@ -5531,9 +5521,9 @@ void CPlugin::LoadPresetTick()
         m_pState->StartBlendFrom(m_pOldState, GetTime(), m_fLoadingPresetBlendTime);
 
         m_fPresetStartTime = GetTime();
-        m_fNextPresetTime = -1.0f; // flags UpdateTime() to recompute this
+        m_fNextPresetTime = -1.0f; // flags `UpdateTime()` to recompute this
 
-        // release stuff from m_OldShaders, then move m_shaders to m_OldShaders, then load the new shaders.
+        // Release stuff from `m_OldShaders`, then move `m_shaders` to `m_OldShaders`, then load the new shaders.
         SafeRelease(m_OldShaders.comp.ptr);
         SafeRelease(m_OldShaders.warp.ptr);
         m_OldShaders = m_shaders;

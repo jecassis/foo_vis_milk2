@@ -23,6 +23,9 @@ static constexpr GUID guid_milk2_preferences = {
 //    0xc5d175f1, 0xe4e4, 0x47ee, {0xb8, 0x5c, 0x4e, 0xdc, 0x6b, 0x2, 0x6a, 0x35}
 //}; // {C5D175F1-E4E4-47EE-B85C-4EDC6B026A35}
 
+namespace
+{
+// Settings controlled in preferences page.
 static constexpr GUID guid_cfg_bPresetLockOnAtStartup = {
     0x8a6c8c08, 0xc298, 0x4485, {0xb9, 0xb5, 0xa3, 0x1d, 0xd4, 0xed, 0xfa, 0x4b}
 }; // {8A6C8C08-C298-4485-B9B5-A31DD4EDFA4B}
@@ -104,15 +107,6 @@ static constexpr GUID guid_cfg_nTexSizeX = {
 static constexpr GUID guid_cfg_nTexBitsPerCh = {
     0xab5a6d53, 0xb4c9, 0x41c3, {0xa5, 0x66, 0x1d, 0x83, 0x90, 0xdb, 0x1e, 0xfa}
 }; // {AB5A6D53-B4C9-41C3-A566-1D8390DB1EFA}
-static constexpr GUID guid_advconfig_branch = {
-    0xd7ab1cd7, 0x7956, 0x4497, {0x9b, 0x1d, 0x74, 0x78, 0x7e, 0xde, 0x1d, 0xbc}
-}; // {D7AB1CD7-7956-4497-9B1D-74787EDE1DBC}
-static constexpr GUID guid_cfg_bDebugOutput = {
-    0x808a73c, 0x8857, 0x4472, {0xad, 0x49, 0xdb, 0x1a, 0x48, 0x4e, 0x3f, 0x5}
-}; // {0808A73C-8857-4472-AD49-DB1A484E3F05}
-static constexpr GUID guid_cfg_szPresetDir = {
-    0xfa9e467b, 0xfe6d, 0x4d79, {0x83, 0x98, 0xcd, 0x3d, 0x8b, 0xf4, 0x7a, 0x63}
-}; // {FA9E467B-FE6D-4D79-8398-CD3D8BF47A63}
 static constexpr GUID guid_cfg_szTitleFormat = {
     0xca37e590, 0xb292, 0x43b5, {0xa2, 0x34, 0x3d, 0xba, 0x21, 0xa7, 0xa0, 0xdb}
 }; // {CA37E590-B292-43B5-A234-3DBA21A7A0DB}
@@ -122,6 +116,17 @@ static constexpr GUID guid_cfg_szArtworkFormat = {
 static constexpr GUID guid_cfg_bSkipCompShader = {
     0xa9220355, 0x1382, 0x41f3, {0xbd, 0x41, 0x7e, 0xb3, 0xe, 0x94, 0xa6, 0x42}
 }; // {A9220355-1382-41F3-BD41-7EB30E94A642}
+
+// Settings controlled in advanced preferences.
+static constexpr GUID guid_advconfig_branch = {
+    0xd7ab1cd7, 0x7956, 0x4497, {0x9b, 0x1d, 0x74, 0x78, 0x7e, 0xde, 0x1d, 0xbc}
+}; // {D7AB1CD7-7956-4497-9B1D-74787EDE1DBC}
+static constexpr GUID guid_cfg_bDebugOutput = {
+    0x808a73c, 0x8857, 0x4472, {0xad, 0x49, 0xdb, 0x1a, 0x48, 0x4e, 0x3f, 0x5}
+}; // {0808A73C-8857-4472-AD49-DB1A484E3F05}
+static constexpr GUID guid_cfg_szPresetDir = {
+    0xfa9e467b, 0xfe6d, 0x4d79, {0x83, 0x98, 0xcd, 0x3d, 0x8b, 0xf4, 0x7a, 0x63}
+}; // {FA9E467B-FE6D-4D79-8398-CD3D8BF47A63}
 
 // Defaults
 // `milk.ini` defaults
@@ -200,6 +205,7 @@ enum
     order_bDebugOutput,
     order_szPresetDir,
 };
+} // namespace
 
 class milk2_preferences_page : public preferences_page_instance, public CDialogImpl<milk2_preferences_page>
 {
@@ -208,7 +214,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
 
     enum milk2_dialog_id
     {
-        IDD = IDD_PREFS // Dialog resource ID
+        IDD = IDD_PREFS
     };
 
     uint32_t get_state();
@@ -288,6 +294,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     const preferences_page_callback::ptr m_callback;
 
     CToolTipCtrl m_tooltips;
+
     fb2k::CDarkModeHooks m_dark;
 };
 

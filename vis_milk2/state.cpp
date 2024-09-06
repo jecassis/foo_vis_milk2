@@ -204,7 +204,7 @@ CState::CState()
     //Default();
 
     // List of variables that can be used for a PER-FRAME calculation;
-    //   it is a SUBSET of the per-vertex calculation variable list.
+    // it is a SUBSET of the per-vertex calculation variable list.
     m_pf_codehandle = NULL;
     m_pp_codehandle = NULL;
     m_pf_eel = NSEEL_VM_alloc();
@@ -688,7 +688,7 @@ void CState::StartBlendFrom(CState* s_from, float fAnimTime, float fTimespan)
     CState* s_to = this;
 
     // bools, ints, and strings instantly change
-    s_to->m_fVideoEchoAlphaOld       = s_from->m_fVideoEchoAlpha.eval(-1);
+    s_to->m_fVideoEchoAlphaOld       = s_from->m_fVideoEchoAlpha.eval(-1.0f);
     s_to->m_nVideoEchoOrientationOld = s_from->m_nVideoEchoOrientation;
     s_to->m_nOldWaveMode             = s_from->m_nWaveMode;
 
@@ -740,7 +740,7 @@ void CState::StartBlendFrom(CState* s_from, float fAnimTime, float fTimespan)
     //strcpy_s(m_szSection, s_to->m_szSection);
     */
 
-    // CBlendableFloats & SuperValues blend over time
+    // CBlendableFloats and SuperValues blend over time.
     m_fGammaAdj.StartBlendFrom(&s_from->m_fGammaAdj, fAnimTime, fTimespan);
     m_fVideoEchoZoom.StartBlendFrom(&s_from->m_fVideoEchoZoom, fAnimTime, fTimespan);
     m_fVideoEchoAlpha.StartBlendFrom(&s_from->m_fVideoEchoAlpha, fAnimTime, fTimespan);
@@ -798,8 +798,8 @@ void CState::StartBlendFrom(CState* s_from, float fAnimTime, float fTimespan)
 
     // If motion vectors were transparent before, don't morph the # in X and Y - just
     // start in the right place, and fade them in.
-    bool bOldStateTransparent = (s_from->m_fMvA.eval(-1) < 0.001f);
-    bool bNewStateTransparent = (s_to->m_fMvA.eval(-1) < 0.001f);
+    bool bOldStateTransparent = (s_from->m_fMvA.eval(-1.0f) < 0.001f);
+    bool bNewStateTransparent = (s_to->m_fMvA.eval(-1.0f) < 0.001f);
     if (!bOldStateTransparent && bNewStateTransparent)
     {
         s_from->m_fMvX  = s_to->m_fMvX.eval(fAnimTime);
@@ -860,7 +860,7 @@ bool CState::Export(const wchar_t* szIniFile)
     if (err || !fOut)
         return false;
 
-    // IMPORTANT: THESE MUST BE THE FIRST TWO LINES.  Otherwise it is assumed to be a MilkDrop 1-era preset.
+    // IMPORTANT: THESE MUST BE THE FIRST TWO LINES. Otherwise it is assumed to be a MilkDrop 1-era preset.
     if (m_nMaxPSVersion > 0)
     {
         fprintf_s(fOut, "MILKDROP_PRESET_VERSION=%d\n", CUR_MILKDROP_PRESET_VERSION);
@@ -874,10 +874,10 @@ bool CState::Export(const wchar_t* szIniFile)
     fprintf_s(fOut, "[preset00]\n");
 
     fprintf_s(fOut, "%s=%.3f\n", "fRating", m_fRating);
-    fprintf_s(fOut, "%s=%.3f\n", "fGammaAdj", m_fGammaAdj.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fDecay", m_fDecay.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fVideoEchoZoom", m_fVideoEchoZoom.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fVideoEchoAlpha", m_fVideoEchoAlpha.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fGammaAdj", m_fGammaAdj.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fDecay", m_fDecay.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fVideoEchoZoom", m_fVideoEchoZoom.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fVideoEchoAlpha", m_fVideoEchoAlpha.eval(-1.0f));
     fprintf_s(fOut, "%s=%d\n", "nVideoEchoOrientation", m_nVideoEchoOrientation);
 
     fprintf_s(fOut, "%s=%d\n", "nWaveMode", m_nWaveMode);
@@ -894,58 +894,58 @@ bool CState::Export(const wchar_t* szIniFile)
     fprintf_s(fOut, "%s=%d\n", "bSolarize", m_bSolarize);
     fprintf_s(fOut, "%s=%d\n", "bInvert", m_bInvert);
 
-    fprintf_s(fOut, "%s=%.3f\n", "fWaveAlpha", m_fWaveAlpha.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fWaveScale", m_fWaveScale.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fWaveSmoothing", m_fWaveSmoothing.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fWaveParam", m_fWaveParam.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fModWaveAlphaStart", m_fModWaveAlphaStart.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fModWaveAlphaEnd", m_fModWaveAlphaEnd.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveAlpha", m_fWaveAlpha.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveScale", m_fWaveScale.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveSmoothing", m_fWaveSmoothing.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fWaveParam", m_fWaveParam.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fModWaveAlphaStart", m_fModWaveAlphaStart.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fModWaveAlphaEnd", m_fModWaveAlphaEnd.eval(-1.0f));
     fprintf_s(fOut, "%s=%.3f\n", "fWarpAnimSpeed", m_fWarpAnimSpeed);
-    fprintf_s(fOut, "%s=%.3f\n", "fWarpScale", m_fWarpScale.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "fZoomExponent", m_fZoomExponent.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "fShader", m_fShader.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "fWarpScale", m_fWarpScale.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "fZoomExponent", m_fZoomExponent.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "fShader", m_fShader.eval(-1.0f));
 
-    fprintf_s(fOut, "%s=%.5f\n", "zoom", m_fZoom.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "rot", m_fRot.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "cx", m_fRotCX.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "cy", m_fRotCY.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "dx", m_fXPush.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "dy", m_fYPush.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "warp", m_fWarpAmount.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "sx", m_fStretchX.eval(-1));
-    fprintf_s(fOut, "%s=%.5f\n", "sy", m_fStretchY.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "wave_r", m_fWaveR.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "wave_g", m_fWaveG.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "wave_b", m_fWaveB.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "wave_x", m_fWaveX.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "wave_y", m_fWaveY.eval(-1));
+    fprintf_s(fOut, "%s=%.5f\n", "zoom", m_fZoom.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "rot", m_fRot.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "cx", m_fRotCX.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "cy", m_fRotCY.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "dx", m_fXPush.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "dy", m_fYPush.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "warp", m_fWarpAmount.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "sx", m_fStretchX.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.5f\n", "sy", m_fStretchY.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_r", m_fWaveR.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_g", m_fWaveG.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_b", m_fWaveB.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_x", m_fWaveX.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "wave_y", m_fWaveY.eval(-1.0f));
 
-    fprintf_s(fOut, "%s=%.3f\n", "ob_size", m_fOuterBorderSize.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ob_r", m_fOuterBorderR.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ob_g", m_fOuterBorderG.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ob_b", m_fOuterBorderB.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ob_a", m_fOuterBorderA.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ib_size", m_fInnerBorderSize.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ib_r", m_fInnerBorderR.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ib_g", m_fInnerBorderG.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ib_b", m_fInnerBorderB.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "ib_a", m_fInnerBorderA.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "nMotionVectorsX", m_fMvX.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "nMotionVectorsY", m_fMvY.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_dx", m_fMvDX.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_dy", m_fMvDY.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_l", m_fMvL.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_r", m_fMvR.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_g", m_fMvG.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_b", m_fMvB.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "mv_a", m_fMvA.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b1n", m_fBlur1Min.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b2n", m_fBlur2Min.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b3n", m_fBlur3Min.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b1x", m_fBlur1Max.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b2x", m_fBlur2Max.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b3x", m_fBlur3Max.eval(-1));
-    fprintf_s(fOut, "%s=%.3f\n", "b1ed", m_fBlur1EdgeDarken.eval(-1));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_size", m_fOuterBorderSize.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_r", m_fOuterBorderR.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_g", m_fOuterBorderG.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_b", m_fOuterBorderB.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ob_a", m_fOuterBorderA.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_size", m_fInnerBorderSize.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_r", m_fInnerBorderR.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_g", m_fInnerBorderG.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_b", m_fInnerBorderB.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "ib_a", m_fInnerBorderA.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "nMotionVectorsX", m_fMvX.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "nMotionVectorsY", m_fMvY.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_dx", m_fMvDX.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_dy", m_fMvDY.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_l", m_fMvL.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_r", m_fMvR.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_g", m_fMvG.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_b", m_fMvB.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "mv_a", m_fMvA.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b1n", m_fBlur1Min.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b2n", m_fBlur2Min.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b3n", m_fBlur3Min.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b1x", m_fBlur1Max.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b2x", m_fBlur2Max.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b3x", m_fBlur3Max.eval(-1.0f));
+    fprintf_s(fOut, "%s=%.3f\n", "b1ed", m_fBlur1EdgeDarken.eval(-1.0f));
 
     int i = 0;
     for (i = 0; i < MAX_CUSTOM_WAVES; i++)
@@ -1095,8 +1095,8 @@ void ReadCode(FILE* f, char* pStr, const char* prefix)
     }
     pStr[char_pos++] = '\0'; // null-terminate
 
-    // Read in and compile arbitrary expressions.
     /*
+    // Read in and compile arbitrary expressions.
     int n2 = 3 + MAX_CUSTOM_WAVES * 3 + MAX_CUSTOM_SHAPES * 2;
     for (int n = 0; n < n2; n++)
     {
@@ -1267,7 +1267,7 @@ int CShape::Import(FILE* f, const wchar_t* szFile, int i)
 
 bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DWORD ApplyFlags)
 {
-    // If any `ApplyFlags` are missing, the settings will be copied from pOldState.
+    // If any `ApplyFlags` are missing, the settings will be copied from `pOldState`.
     if (!pOldState)
         ApplyFlags = STATE_ALL;
 
@@ -1282,7 +1282,7 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
         FreeVarsAndCode(false);
     }
 
-    // apply defaults for the stuff we will overwrite.
+    // Apply defaults for the stuff that will be overwritten.
     Default(ApplyFlags); //RandomizePresetVars();
 
     GetFast_CLEAR();
@@ -1337,24 +1337,24 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
     if (ApplyFlags & STATE_GENERAL)
     {
         m_fRating               = GetFastFloat("fRating", m_fRating, f);
-        m_fDecay                = GetFastFloat("fDecay", m_fDecay.eval(-1), f);
-        m_fGammaAdj             = GetFastFloat("fGammaAdj", m_fGammaAdj.eval(-1), f);
-        m_fVideoEchoZoom        = GetFastFloat("fVideoEchoZoom", m_fVideoEchoZoom.eval(-1), f);
-        m_fVideoEchoAlpha       = GetFastFloat("fVideoEchoAlpha", m_fVideoEchoAlpha.eval(-1), f);
+        m_fDecay                = GetFastFloat("fDecay", m_fDecay.eval(-1.0f), f);
+        m_fGammaAdj             = GetFastFloat("fGammaAdj", m_fGammaAdj.eval(-1.0f), f);
+        m_fVideoEchoZoom        = GetFastFloat("fVideoEchoZoom", m_fVideoEchoZoom.eval(-1.0f), f);
+        m_fVideoEchoAlpha       = GetFastFloat("fVideoEchoAlpha", m_fVideoEchoAlpha.eval(-1.0f), f);
         m_nVideoEchoOrientation = GetFastInt("nVideoEchoOrientation", m_nVideoEchoOrientation, f);
         m_bRedBlueStereo        = (GetFastInt("bRedBlueStereo", m_bRedBlueStereo, f) != 0);
         m_bBrighten             = (GetFastInt("bBrighten", m_bBrighten, f) != 0);
         m_bDarken               = (GetFastInt("bDarken", m_bDarken, f) != 0);
         m_bSolarize             = (GetFastInt("bSolarize", m_bSolarize, f) != 0);
         m_bInvert               = (GetFastInt("bInvert", m_bInvert, f) != 0);
-        m_fShader               = GetFastFloat("fShader", m_fShader.eval(-1), f);
-        m_fBlur1Min             = GetFastFloat("b1n", m_fBlur1Min.eval(-1), f);
-        m_fBlur2Min             = GetFastFloat("b2n", m_fBlur2Min.eval(-1), f);
-        m_fBlur3Min             = GetFastFloat("b3n", m_fBlur3Min.eval(-1), f);
-        m_fBlur1Max             = GetFastFloat("b1x", m_fBlur1Max.eval(-1), f);
-        m_fBlur2Max             = GetFastFloat("b2x", m_fBlur2Max.eval(-1), f);
-        m_fBlur3Max             = GetFastFloat("b3x", m_fBlur3Max.eval(-1), f);
-        m_fBlur1EdgeDarken      = GetFastFloat("b1ed", m_fBlur1EdgeDarken.eval(-1), f);
+        m_fShader               = GetFastFloat("fShader", m_fShader.eval(-1.0f), f);
+        m_fBlur1Min             = GetFastFloat("b1n", m_fBlur1Min.eval(-1.0f), f);
+        m_fBlur2Min             = GetFastFloat("b2n", m_fBlur2Min.eval(-1.0f), f);
+        m_fBlur3Min             = GetFastFloat("b3n", m_fBlur3Min.eval(-1.0f), f);
+        m_fBlur1Max             = GetFastFloat("b1x", m_fBlur1Max.eval(-1.0f), f);
+        m_fBlur2Max             = GetFastFloat("b2x", m_fBlur2Max.eval(-1.0f), f);
+        m_fBlur3Max             = GetFastFloat("b3x", m_fBlur3Max.eval(-1.0f), f);
+        m_fBlur1EdgeDarken      = GetFastFloat("b1ed", m_fBlur1EdgeDarken.eval(-1.0f), f);
     }
 
     // Wave.
@@ -1366,27 +1366,27 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
         m_bWaveThick            = (GetFastInt("bWaveThick", m_bWaveThick, f) != 0);
         m_bModWaveAlphaByVolume = (GetFastInt("bModWaveAlphaByVolume", m_bModWaveAlphaByVolume, f) != 0);
         m_bMaximizeWaveColor    = (GetFastInt("bMaximizeWaveColor", m_bMaximizeWaveColor, f) != 0);
-        m_fWaveAlpha            = GetFastFloat("fWaveAlpha", m_fWaveAlpha.eval(-1), f);
-        m_fWaveScale            = GetFastFloat("fWaveScale", m_fWaveScale.eval(-1), f);
-        m_fWaveSmoothing        = GetFastFloat("fWaveSmoothing", m_fWaveSmoothing.eval(-1), f);
-        m_fWaveParam            = GetFastFloat("fWaveParam", m_fWaveParam.eval(-1), f);
-        m_fModWaveAlphaStart    = GetFastFloat("fModWaveAlphaStart", m_fModWaveAlphaStart.eval(-1), f);
-        m_fModWaveAlphaEnd      = GetFastFloat("fModWaveAlphaEnd", m_fModWaveAlphaEnd.eval(-1), f);
-        m_fWaveR                = GetFastFloat("wave_r", m_fRot.eval(-1), f);
-        m_fWaveG                = GetFastFloat("wave_g", m_fRot.eval(-1), f);
-        m_fWaveB                = GetFastFloat("wave_b", m_fRot.eval(-1), f);
-        m_fWaveX                = GetFastFloat("wave_x", m_fRot.eval(-1), f);
-        m_fWaveY                = GetFastFloat("wave_y", m_fRot.eval(-1), f);
-        m_fMvX                  = GetFastFloat("nMotionVectorsX", m_fMvX.eval(-1), f);
-        m_fMvY                  = GetFastFloat("nMotionVectorsY", m_fMvY.eval(-1), f);
-        m_fMvDX                 = GetFastFloat("mv_dx", m_fMvDX.eval(-1), f);
-        m_fMvDY                 = GetFastFloat("mv_dy", m_fMvDY.eval(-1), f);
-        m_fMvL                  = GetFastFloat("mv_l", m_fMvL.eval(-1), f);
-        m_fMvR                  = GetFastFloat("mv_r", m_fMvR.eval(-1), f);
-        m_fMvG                  = GetFastFloat("mv_g", m_fMvG.eval(-1), f);
-        m_fMvB                  = GetFastFloat("mv_b", m_fMvB.eval(-1), f);
+        m_fWaveAlpha            = GetFastFloat("fWaveAlpha", m_fWaveAlpha.eval(-1.0f), f);
+        m_fWaveScale            = GetFastFloat("fWaveScale", m_fWaveScale.eval(-1.0f), f);
+        m_fWaveSmoothing        = GetFastFloat("fWaveSmoothing", m_fWaveSmoothing.eval(-1.0f), f);
+        m_fWaveParam            = GetFastFloat("fWaveParam", m_fWaveParam.eval(-1.0f), f);
+        m_fModWaveAlphaStart    = GetFastFloat("fModWaveAlphaStart", m_fModWaveAlphaStart.eval(-1.0f), f);
+        m_fModWaveAlphaEnd      = GetFastFloat("fModWaveAlphaEnd", m_fModWaveAlphaEnd.eval(-1.0f), f);
+        m_fWaveR                = GetFastFloat("wave_r", m_fRot.eval(-1.0f), f);
+        m_fWaveG                = GetFastFloat("wave_g", m_fRot.eval(-1.0f), f);
+        m_fWaveB                = GetFastFloat("wave_b", m_fRot.eval(-1.0f), f);
+        m_fWaveX                = GetFastFloat("wave_x", m_fRot.eval(-1.0f), f);
+        m_fWaveY                = GetFastFloat("wave_y", m_fRot.eval(-1.0f), f);
+        m_fMvX                  = GetFastFloat("nMotionVectorsX", m_fMvX.eval(-1.0f), f);
+        m_fMvY                  = GetFastFloat("nMotionVectorsY", m_fMvY.eval(-1.0f), f);
+        m_fMvDX                 = GetFastFloat("mv_dx", m_fMvDX.eval(-1.0f), f);
+        m_fMvDY                 = GetFastFloat("mv_dy", m_fMvDY.eval(-1.0f), f);
+        m_fMvL                  = GetFastFloat("mv_l", m_fMvL.eval(-1.0f), f);
+        m_fMvR                  = GetFastFloat("mv_r", m_fMvR.eval(-1.0f), f);
+        m_fMvG                  = GetFastFloat("mv_g", m_fMvG.eval(-1.0f), f);
+        m_fMvB                  = GetFastFloat("mv_b", m_fMvB.eval(-1.0f), f);
         m_fMvA                  = (GetFastInt("bMotionVectorsOn", false, f) == 0) ? 0.0f : 1.0f; // for backwards compatibility
-        m_fMvA                  = GetFastFloat("mv_a", m_fMvA.eval(-1), f);
+        m_fMvA                  = GetFastFloat("mv_a", m_fMvA.eval(-1.0f), f);
         for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
         {
             m_wave[i].Import(f, L"dummy_filename", i);
@@ -1397,33 +1397,33 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
         }
     }
 
-    // motion:
+    // Motion.
     if (ApplyFlags & STATE_MOTION)
     {
-        m_fZoom            = GetFastFloat("zoom", m_fZoom.eval(-1), f);
-        m_fRot             = GetFastFloat("rot", m_fRot.eval(-1), f);
-        m_fRotCX           = GetFastFloat("cx", m_fRotCX.eval(-1), f);
-        m_fRotCY           = GetFastFloat("cy", m_fRotCY.eval(-1), f);
-        m_fXPush           = GetFastFloat("dx", m_fXPush.eval(-1), f);
-        m_fYPush           = GetFastFloat("dy", m_fYPush.eval(-1), f);
-        m_fWarpAmount      = GetFastFloat("warp", m_fWarpAmount.eval(-1), f);
-        m_fStretchX        = GetFastFloat("sx", m_fStretchX.eval(-1), f);
-        m_fStretchY        = GetFastFloat("sy", m_fStretchY.eval(-1), f);
+        m_fZoom            = GetFastFloat("zoom", m_fZoom.eval(-1.0f), f);
+        m_fRot             = GetFastFloat("rot", m_fRot.eval(-1.0f), f);
+        m_fRotCX           = GetFastFloat("cx", m_fRotCX.eval(-1.0f), f);
+        m_fRotCY           = GetFastFloat("cy", m_fRotCY.eval(-1.0f), f);
+        m_fXPush           = GetFastFloat("dx", m_fXPush.eval(-1.0f), f);
+        m_fYPush           = GetFastFloat("dy", m_fYPush.eval(-1.0f), f);
+        m_fWarpAmount      = GetFastFloat("warp", m_fWarpAmount.eval(-1.0f), f);
+        m_fStretchX        = GetFastFloat("sx", m_fStretchX.eval(-1.0f), f);
+        m_fStretchY        = GetFastFloat("sy", m_fStretchY.eval(-1.0f), f);
         m_bTexWrap         = (GetFastInt("bTexWrap", m_bTexWrap, f) != 0);
         m_bDarkenCenter    = (GetFastInt("bDarkenCenter", m_bDarkenCenter, f) != 0);
         m_fWarpAnimSpeed   = GetFastFloat("fWarpAnimSpeed", m_fWarpAnimSpeed, f);
-        m_fWarpScale       = GetFastFloat("fWarpScale", m_fWarpScale.eval(-1), f);
-        m_fZoomExponent    = GetFastFloat("fZoomExponent", m_fZoomExponent.eval(-1), f);
-        m_fOuterBorderSize = GetFastFloat("ob_size", m_fOuterBorderSize.eval(-1), f);
-        m_fOuterBorderR    = GetFastFloat("ob_r", m_fOuterBorderR.eval(-1), f);
-        m_fOuterBorderG    = GetFastFloat("ob_g", m_fOuterBorderG.eval(-1), f);
-        m_fOuterBorderB    = GetFastFloat("ob_b", m_fOuterBorderB.eval(-1), f);
-        m_fOuterBorderA    = GetFastFloat("ob_a", m_fOuterBorderA.eval(-1), f);
-        m_fInnerBorderSize = GetFastFloat("ib_size", m_fInnerBorderSize.eval(-1), f);
-        m_fInnerBorderR    = GetFastFloat("ib_r", m_fInnerBorderR.eval(-1), f);
-        m_fInnerBorderG    = GetFastFloat("ib_g", m_fInnerBorderG.eval(-1), f);
-        m_fInnerBorderB    = GetFastFloat("ib_b", m_fInnerBorderB.eval(-1), f);
-        m_fInnerBorderA    = GetFastFloat("ib_a", m_fInnerBorderA.eval(-1), f);
+        m_fWarpScale       = GetFastFloat("fWarpScale", m_fWarpScale.eval(-1.0f), f);
+        m_fZoomExponent    = GetFastFloat("fZoomExponent", m_fZoomExponent.eval(-1.0f), f);
+        m_fOuterBorderSize = GetFastFloat("ob_size", m_fOuterBorderSize.eval(-1.0f), f);
+        m_fOuterBorderR    = GetFastFloat("ob_r", m_fOuterBorderR.eval(-1.0f), f);
+        m_fOuterBorderG    = GetFastFloat("ob_g", m_fOuterBorderG.eval(-1.0f), f);
+        m_fOuterBorderB    = GetFastFloat("ob_b", m_fOuterBorderB.eval(-1.0f), f);
+        m_fOuterBorderA    = GetFastFloat("ob_a", m_fOuterBorderA.eval(-1.0f), f);
+        m_fInnerBorderSize = GetFastFloat("ib_size", m_fInnerBorderSize.eval(-1.0f), f);
+        m_fInnerBorderR    = GetFastFloat("ib_r", m_fInnerBorderR.eval(-1.0f), f);
+        m_fInnerBorderG    = GetFastFloat("ib_g", m_fInnerBorderG.eval(-1.0f), f);
+        m_fInnerBorderB    = GetFastFloat("ib_b", m_fInnerBorderB.eval(-1.0f), f);
+        m_fInnerBorderA    = GetFastFloat("ib_a", m_fInnerBorderA.eval(-1.0f), f);
         //m_szPerFrameInit[0] = 0;
         //m_szPerFrameExpr[0] = 0;
         //m_szPerPixelExpr[0] = 0;
@@ -1438,7 +1438,7 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
         //m_szWarpShadersText[0] = 0;
         ReadCode(f, m_szWarpShadersText, "warp_");
         if (!m_szWarpShadersText[0])
-            g_plugin.GenWarpPShaderText(m_szWarpShadersText, m_fDecay.eval(-1), m_bTexWrap);
+            g_plugin.GenWarpPShaderText(m_szWarpShadersText, m_fDecay.eval(-1.0f), m_bTexWrap);
         m_nWarpPSVersion = nWarpPSVersionInFile;
     }
 
@@ -1448,7 +1448,7 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
         //m_szCompShadersText[0] = 0;
         ReadCode(f, m_szCompShadersText, "comp_");
         if (!m_szCompShadersText[0])
-            g_plugin.GenCompPShaderText(m_szCompShadersText, m_fGammaAdj.eval(-1), m_fVideoEchoAlpha.eval(-1), m_fVideoEchoZoom.eval(-1), m_nVideoEchoOrientation, m_fShader.eval(-1), m_bBrighten, m_bDarken, m_bSolarize, m_bInvert);
+            g_plugin.GenCompPShaderText(m_szCompShadersText, m_fGammaAdj.eval(-1.0f), m_fVideoEchoAlpha.eval(-1.0f), m_fVideoEchoZoom.eval(-1.0f), m_nVideoEchoOrientation, m_fShader.eval(-1.0f), m_bBrighten, m_bDarken, m_bSolarize, m_bInvert);
         m_nCompPSVersion = nCompPSVersionInFile;
     }
 
@@ -1465,12 +1465,13 @@ bool CState::Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DW
 void CState::GenDefaultWarpShader()
 {
     if (m_nWarpPSVersion > 0)
-        g_plugin.GenWarpPShaderText(m_szWarpShadersText, m_fDecay.eval(-1), m_bTexWrap);
+        g_plugin.GenWarpPShaderText(m_szWarpShadersText, m_fDecay.eval(-1.0f), m_bTexWrap);
 }
+
 void CState::GenDefaultCompShader()
 {
     if (m_nCompPSVersion > 0)
-        g_plugin.GenCompPShaderText(m_szCompShadersText, m_fGammaAdj.eval(-1), m_fVideoEchoAlpha.eval(-1), m_fVideoEchoZoom.eval(-1), m_nVideoEchoOrientation, m_fShader.eval(-1), m_bBrighten, m_bDarken, m_bSolarize, m_bInvert);
+        g_plugin.GenCompPShaderText(m_szCompShadersText, m_fGammaAdj.eval(-1.0f), m_fVideoEchoAlpha.eval(-1.0f), m_fVideoEchoZoom.eval(-1.0f), m_nVideoEchoOrientation, m_fShader.eval(-1.0f), m_bBrighten, m_bDarken, m_bSolarize, m_bInvert);
 }
 
 void CState::FreeVarsAndCode(bool bFree)
@@ -1663,7 +1664,7 @@ void CState::RecompileExpressions(int flags, int bReInit)
     // Compile new code.
 #ifndef _NO_EXPR_
     {
-        // Clear any old error msg.
+        // Clear any old error message.
         //g_plugin.m_fShowUserMessageUntilThisTime = g_plugin.GetTime();
 
         char buf[MAX_BIGSTRING_LEN * 3];

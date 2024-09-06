@@ -681,7 +681,7 @@ freely, subject to the following restrictions:
 
 ## Proprietary Notices
 
-The project targets the Microsoft Windows operating system. As such includes components from the "Microsoft Windows SDK" operating system proprietary vendor code. The following license statements apply to such inclusions.
+The project targets the Microsoft Windows operating system. As such includes components from the "Microsoft Windows SDK", the "Active Template Library", and other operating system proprietary vendor code. The following license statements apply to such inclusions.
 
 ### License Terms for "Microsoft Windows SDK"
 

@@ -220,13 +220,13 @@ void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen)
 float GetWinampSongPos(HWND hWndWinamp)
 {
     // Returns answer in seconds.
-    return (float)SendMessage(hWndWinamp, WM_USER, 0, 105) * 0.001f;
+    return static_cast<float>(SendMessage(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME)) * 0.001f;
 }
 
 float GetWinampSongLen(HWND hWndWinamp)
 {
     // Returns answer in seconds.
-    return (float)SendMessage(hWndWinamp, WM_USER, 1, 105);
+    return static_cast<float>(SendMessage(hWndWinamp, WM_USER, 1, IPC_GETOUTPUTTIME));
 }
 
 int GetDX11TexFormatBitsPerPixel(DXGI_FORMAT fmt)

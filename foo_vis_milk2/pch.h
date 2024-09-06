@@ -76,6 +76,17 @@
 #include <vis_milk2/utility.h>
 #endif
 
+#define TIMER_TP // Thread pool timer
+//#define TIMER_32 // Win32 timer
+//#define TIMER_DX // DirectX step timer
+#if ((defined(TIMER_TP) && (defined(TIMER_32) || defined(TIMER_DX))) || (defined(TIMER_32) && (defined(TIMER_TP) || defined(TIMER_DX))) || \
+     (defined(TIMER_DX) && (defined(TIMER_TP) || defined(TIMER_32))))
+#error Timer selection is not mutually exclusive.
+#endif
+#if defined(TIMER_32)
+#include <sdk/message_loop.h>
+#endif
+
 #define MAX_PROPERTY_PAGES 8
 #define MAX_DISPLAY_ADAPTERS 16
 #define MAX_MAX_FPS 144
@@ -124,6 +135,6 @@ inline void SafeReplace(T** ppD, U* pS)
 }
 
 #ifndef HINST_THISCOMPONENT
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif

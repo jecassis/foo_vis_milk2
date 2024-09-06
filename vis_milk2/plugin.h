@@ -414,7 +414,7 @@ class CPlugin : public CPluginShell
     float m_fSnapPoint;
     CState* m_pState;    // points to current CState
     CState* m_pOldState; // points to previous CState
-    CState* m_pNewState; // points to the coming CState - we're not yet blending to it b/c we're still compiling the shaders for it!
+    CState* m_pNewState; // points to upcoming CState; not yet blending to it because still compiling the shaders for it!
     int m_nLoadingPreset;
     wchar_t m_szLoadingPreset[MAX_PATH];
     float m_fLoadingPresetBlendTime;
@@ -563,9 +563,6 @@ class CPlugin : public CPluginShell
     texmgr m_texmgr; // for user sprites
 
     td_supertext m_supertext; // **contains info about current Song Title or Custom Message.**
-#ifdef _FOOBAR
-    std::unique_ptr<SuperText> m_superTitle;
-#endif
 
     ID3D11Texture2D* m_tracer_tex;
 

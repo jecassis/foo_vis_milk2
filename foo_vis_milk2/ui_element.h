@@ -9,8 +9,9 @@
 
 #include "config.h"
 #include "version.h"
+#ifdef TIMER_DX
 #include "steptimer.h"
-#define TIMER_TP
+#endif
 
 // Anonymous namespace is standard practice in foobar2000 components
 // to prevent name collisions.
@@ -30,6 +31,9 @@ CRITICAL_SECTION s_cs;
 
 #pragma region UI Element
 class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base
+#ifdef TIMER_DX
+    , public idle_handler
+#endif
 {
   public:
     DECLARE_WND_CLASS_EX(CLASSNAME, CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));
@@ -37,6 +41,8 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void initialize_window(HWND parent)
     {
 #ifdef _DEBUG
+        int debug_flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+        //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
         WCHAR szParent[19]{}, szWnd[19]{};
         swprintf_s(szParent, TEXT("0x%p"), parent);
         swprintf_s(szWnd, TEXT("0x%p"), get_wnd());
@@ -96,6 +102,10 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     void notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size);
 
+#ifdef TIMER_DX
+    bool on_idle();
+#endif
+
   protected:
     const ui_element_instance_callback_ptr m_callback;
 
@@ -144,7 +154,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     DWORD m_refresh_interval;
     double m_last_time;
 
-#ifndef TIMER_TP
+#ifdef TIMER_32
     // Win32 timer
     ULONGLONG m_last_refresh;
     enum milk2_ui_timer
@@ -175,7 +185,9 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // Visualization loop
     void Tick();
+#ifdef TIMER_DX
     void Update(DX::StepTimer const& timer);
+#endif
     HRESULT Render();
     void Clear();
     void BuildWaves();
@@ -217,8 +229,10 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     WCHAR m_szWnd[26]; // 26 = 2 ("0x") + 16 (64 / 4 -> 64-bit address in hexadecimal) + 1 ('\0') + 7 (" xfs yt")
     std::wstring m_szBuffer;
 
+#ifdef TIMER_DX
     // Rendering loop timer
     DX::StepTimer m_timer;
+#endif
 
 #ifdef TIMER_TP
     // Thread pool timer

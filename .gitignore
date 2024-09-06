@@ -138,6 +138,7 @@ CMakeLists.txt
 /external/pfc/
 /external/libppui/
 /external/directxtk*/
+/external/*Implementation*/
 /external/fx11*/
 /external/wtl*/
 /external/eel2/*

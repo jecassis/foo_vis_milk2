@@ -12,6 +12,8 @@
 
 extern HWND g_hWindow;
 
+namespace
+{
 // clang-format off
 static cfg_bool cfg_bPresetLockOnAtStartup(guid_cfg_bPresetLockOnAtStartup, default_bPresetLockOnAtStartup);
 static cfg_bool cfg_bPreventScollLockHandling(guid_cfg_bPreventScollLockHandling, default_bPreventScollLockHandling);
@@ -47,6 +49,7 @@ static advconfig_branch_factory g_advconfigBranch("MilkDrop", guid_advconfig_bra
 static advconfig_checkbox_factory cfg_bDebugOutput("Debug output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput, 0);
 static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "", advconfig_entry_string::flag_is_folder_path);
 // clang-format on
+} // namespace
 
 #pragma region Preferences Page
 BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
@@ -943,20 +946,13 @@ void milk2_config::reset()
 // non-ASCII characters.
 void milk2_config::resolve_profile()
 {
-    // Get profile directory path through Win32 API.
-    wchar_t foobar_exe_path[MAX_PATH];
-    GetModuleFileName(NULL, foobar_exe_path, MAX_PATH);
-    std::wstring profile_dir_path = foobar_exe_path;
-    size_t t = profile_dir_path.find_last_of(L"\\");
-    if (t != std::wstring::npos)
-        profile_dir_path.erase(t + 1);
-    profile_dir_path.append(L"profile\\");
-
     // Get profile directory path through foobar2000 API.
-    //std::string api_path = core_api::get_profile_path();
-    //assert(strncmp(api_path.substr(0, 7).c_str(), "file://", 7) == 0);
-    //api_path = api_path.substr(strlen("file://"));
-    //api_path.append("\\");
+#if 0
+    std::string api_path = core_api::get_profile_path();
+    assert(strncmp(api_path.substr(0, 7).c_str(), "file://", 7) == 0);
+    api_path = api_path.substr(strlen("file://"));
+    api_path.append("\\");
+#else
     pfc::string8 native_path = filesystem::g_get_native_path(core_api::get_profile_path());
     native_path.end_with_slash();
     size_t path_length = native_path.get_length();
@@ -968,14 +964,27 @@ void milk2_config::resolve_profile()
     path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(profile_path.c_str()), path_length, native_path.get_ptr(), path_length);
     //profile_path = profile_path.c_str(); // or profile_dir_path.erase(profile_dir_path.find(L'\0'));
 #endif
+#endif
+
+    swprintf_s(default_szPluginsDirPath, L"%ls", profile_path.c_str());
+
+#if 0
+    // Get profile directory path through Win32 API.
+    wchar_t foobar_exe_path[MAX_PATH];
+    GetModuleFileName(NULL, foobar_exe_path, MAX_PATH);
+    std::wstring profile_dir_path = foobar_exe_path;
+    size_t t = profile_dir_path.find_last_of(L"\\");
+    if (t != std::wstring::npos)
+        profile_dir_path.erase(t + 1);
+    profile_dir_path.append(L"profile\\");
 
     // Use Win32 string if it mismatches with the foobar2000 string.
-    swprintf_s(default_szPluginsDirPath, L"%ls", profile_path.c_str());
     if (wcscmp(default_szPluginsDirPath, profile_dir_path.c_str()))
     {
         profile_dir_path.copy(default_szPluginsDirPath, profile_dir_path.length());
         default_szPluginsDirPath[profile_dir_path.length()] = L'\0';
     }
+#endif
 }
 
 void milk2_config::initialize_paths()

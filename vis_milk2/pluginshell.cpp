@@ -1240,10 +1240,10 @@ void CPluginShell::DrawDarkTranslucentBox(D2D1_RECT_F* pr)
     SIMPLEVERTEX verts[4]{};
     for (int i = 0; i < 4; i++)
     {
-        verts[i].x = (i % 2 == 0) ? (float)(-m_lpDX->m_client_width / 2 + pr->left) : (float)(-m_lpDX->m_client_width / 2 + pr->right);
-        verts[i].y = (i / 2 == 0) ? (float)-(-m_lpDX->m_client_height / 2 + pr->bottom) : (float)-(-m_lpDX->m_client_height / 2 + pr->top);
-        verts[i].z = 0;
-        verts[i].Diffuse = 0xD0000000;
+        verts[i].x = (i % 2 == 0) ? static_cast<float>(-m_lpDX->m_client_width / 2 + pr->left) : static_cast<float>(-m_lpDX->m_client_width / 2 + pr->right);
+        verts[i].y = (i / 2 == 0) ? static_cast<float>(-(-m_lpDX->m_client_height / 2 + pr->bottom)) : static_cast<float>(-(-m_lpDX->m_client_height / 2 + pr->top));
+        verts[i].z = 0.0f;
+        verts[i].a = 0xD0 / 255.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f; // 0xD0000000
     }
 
     m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));

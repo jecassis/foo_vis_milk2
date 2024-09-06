@@ -38,9 +38,9 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
     m_in_sizemove = false;
     m_in_suspend = false;
     m_minimized = false;
-#ifdef TIMER_TP
+#if defined(TIMER_TP)
     m_tpTimer = nullptr;
-#else
+#elif defined(TIMER_32)
     m_last_time = 0.0;
 #endif
     m_refresh_interval = 33;
@@ -87,6 +87,14 @@ ui_element_config::ptr milk2_ui_element::get_configuration()
     s_config.build(builder);
     return builder.finish(g_get_guid());
 }
+
+#ifdef TIMER_DX
+bool milk2_ui_element::on_idle()
+{
+    Tick();
+    return true;
+}
+#endif
 
 void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size)
 {
@@ -1264,6 +1272,15 @@ VOID CALLBACK milk2_ui_element::TimerCallback(PTP_CALLBACK_INSTANCE Instance, PV
 }
 #endif
 
+#ifdef TIMER_DX
+bool milk2_ui_element::on_idle()
+{
+    Tick();
+    //MILK2_CONSOLE_LOG("on_idle ", GetWnd())
+    return true;
+}
+#endif
+
 // Sets and unsets foobar2000's "Always on Top" setting (if main window is
 // `TOPMOST`) so that visualization window becomes `TOPMOST` on entering
 // fullscreen.
@@ -1328,6 +1345,17 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
 // characters.
 void milk2_ui_element::ResolvePwd()
 {
+    // Get profile directory path through foobar2000 API.
+    pfc::string8 full_path = filesystem::g_get_native_path(core_api::get_my_full_path());
+    size_t t = full_path.lastIndexOf(L'\\');
+    if (t != SIZE_MAX)
+        full_path = full_path.subString(0, t + 1);
+    size_t path_length = full_path.get_length();
+    std::wstring base_path(path_length, L'\0');
+    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(base_path.c_str()), path_length, full_path.get_ptr(), path_length);
+    base_path = base_path.erase(base_path.find(L'\0'));
+
+#if 0
     // Get PWD path through Win32 API.
     wchar_t path[MAX_PATH];
     HMODULE hm = NULL;
@@ -1348,16 +1376,6 @@ void milk2_ui_element::ResolvePwd()
     if (p != std::wstring::npos)
         paths.erase(p + 1);
 
-    // Get profile directory path through foobar2000 API.
-    pfc::string8 full_path = filesystem::g_get_native_path(core_api::get_my_full_path());
-    size_t t = full_path.lastIndexOf(L'\\');
-    if (t != SIZE_MAX)
-        full_path = full_path.subString(0, t + 1);
-    size_t path_length = full_path.get_length();
-    std::wstring base_path(path_length, L'\0');
-    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(base_path.c_str()), path_length, full_path.get_ptr(), path_length);
-    base_path = base_path.erase(base_path.find(L'\0'));
-
     // Use Win32 string it mismatches with the foobar2000 string.
     if (paths != base_path)
     {
@@ -1367,6 +1385,9 @@ void milk2_ui_element::ResolvePwd()
     {
         s_pwd = base_path;
     }
+#else
+    s_pwd = base_path;
+#endif
 }
 
 // Retrieves image raster data and clears the file path.
@@ -1438,6 +1459,9 @@ void milk2_ui_element::LoadAlbumArt(const metadb_handle_ptr& track, abort_callba
         return;
     }
 }
+
+// Service factory publishes the class.
+static service_factory_single_t<ui_element_milk2> g_ui_element_milk2_factory;
 #pragma endregion
 
 #pragma region Initialize/Quit
