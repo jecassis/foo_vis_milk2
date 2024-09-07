@@ -92,14 +92,6 @@ ui_element_config::ptr milk2_ui_element::get_configuration()
     return builder.finish(g_get_guid());
 }
 
-#ifdef TIMER_DX
-bool milk2_ui_element::on_idle()
-{
-    Tick();
-    return true;
-}
-#endif
-
 void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size)
 {
     if (p_what == ui_element_notify_colors_changed || p_what == ui_element_notify_font_changed)
@@ -146,8 +138,10 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
             FB2K_console_print(core_api::get_my_file_name(), ": Exception while creating visualization stream - ", exc);
         }
 
-#ifdef TIMER_TP
+#if defined(TIMER_TP)
         m_tpTimer = CreateThreadpoolTimer(TimerCallback, this, NULL);
+#elif defined(TIMER_DX)
+        message_loop_v2::get()->add_idle_handler(this);
 #endif
     }
 
@@ -180,9 +174,11 @@ void milk2_ui_element::OnClose()
 void milk2_ui_element::OnDestroy()
 {
     MILK2_CONSOLE_LOG("OnDestroy ", GetWnd())
-#ifdef TIMER_TP
+#if defined(TIMER_TP)
     StopTimer();
     EnterCriticalSection(&s_cs);
+#elif defined(TIMER_DX)
+    message_loop_v2::get()->remove_idle_handler(this);
 #endif
     if (m_vis_stream.is_valid())
         m_vis_stream.release();
@@ -199,9 +195,9 @@ void milk2_ui_element::OnDestroy()
         s_in_toggle = false;
         s_was_topmost = false;
         s_milk2 = false;
-#ifndef TIMER_TP
+#if defined(TIMER_32)
         KillTimer(ID_REFRESH_TIMER);
-#else
+#elif defined(TIMER_TP)
         DeleteCriticalSection(&s_cs);
 #endif
         wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); // save last "Load Preset" menu directory
@@ -220,7 +216,7 @@ void milk2_ui_element::OnDestroy()
 void milk2_ui_element::OnTimer(UINT_PTR nIDEvent)
 {
     MILK2_CONSOLE_LOG_LIMIT("OnTimer ", GetWnd())
-#ifndef TIMER_TP
+#ifdef TIMER_32
     KillTimer(ID_REFRESH_TIMER);
     InvalidateRect(NULL, TRUE);
 #endif
@@ -243,13 +239,13 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
     StartTimer();
 #endif
     ValidateRect(NULL);
-#ifndef TIMER_TP
+#ifdef TIMER_32
     ULONGLONG now = GetTickCount64();
 #endif
     if (m_vis_stream.is_valid())
     {
         BuildWaves();
-#ifndef TIMER_TP
+#ifdef TIMER_32
         ULONGLONG next_refresh = m_last_refresh + m_refresh_interval;
         // (next_refresh < now) would break when GetTickCount() overflows
         if (static_cast<LONGLONG>(next_refresh - now) < 0)
@@ -259,7 +255,7 @@ void milk2_ui_element::OnPaint(CDCHandle dc)
         SetTimer(ID_REFRESH_TIMER, static_cast<UINT>(next_refresh - now));
 #endif
     }
-#ifndef TIMER_TP
+#ifdef TIMER_32
     m_last_refresh = now;
 #endif
 }
@@ -295,7 +291,7 @@ BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
             FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
         }
     }
-#ifndef TIMER_TP
+#ifdef TIMER_32
     Tick();
 #endif
 #endif
