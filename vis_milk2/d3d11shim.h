@@ -80,8 +80,8 @@ class D3D11Shim
         size_t lastDotIndex = filename.rfind('.');
         if (lastDotIndex != std::string::npos)
         {
-            std::unique_ptr<char[]> extension(new char[filename.size() - lastDotIndex]);
-            for (unsigned int i = 0; i < filename.size() - lastDotIndex; i++)
+            std::unique_ptr<char[]> extension(new char[filename.length() - lastDotIndex]);
+            for (unsigned int i = 0; i < filename.length() - lastDotIndex; i++)
             {
                 extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
             }

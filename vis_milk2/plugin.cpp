@@ -4383,7 +4383,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         swprintf_s(buf, L"%s%s", WASABI_API_LNGSTRINGW(mashNames[mash]), m_presets[idx].szFilename.c_str());
                         D2D1_RECT_F r2 = orig_rect;
                         r2.top += height;
-                        height += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[mash], buf, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), (mash == m_nMashSlot) ? PLAYLIST_COLOR_HILITE_TRACK : PLAYLIST_COLOR_NORMAL, false);
+                        height += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[mash], buf, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), (static_cast<WPARAM>(mash) == m_nMashSlot) ? PLAYLIST_COLOR_HILITE_TRACK : PLAYLIST_COLOR_NORMAL, false);
                         width = std::max(width, static_cast<int>(r2.right - r2.left));
                     }
                     if (pass == 0)

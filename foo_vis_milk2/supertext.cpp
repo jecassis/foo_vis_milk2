@@ -1000,7 +1000,7 @@ HRESULT SuperText::UpdateTextGeometry()
                     hr = pTypography->AddFontFeature(fontFeature);
                     if (SUCCEEDED(hr))
                     {
-                        DWRITE_TEXT_RANGE textRange = {0, static_cast<UINT32>(m_characters.size())};
+                        DWRITE_TEXT_RANGE textRange = {0, static_cast<UINT32>(m_characters.length())};
                         hr = pLayout->SetTypography(pTypography, textRange);
                     }
 

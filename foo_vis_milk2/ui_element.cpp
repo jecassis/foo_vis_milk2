@@ -610,8 +610,8 @@ inline std::wstring GetExtension(std::wstring& filename)
     size_t lastDotIndex = filename.rfind('.');
     if (lastDotIndex != std::string::npos)
     {
-        std::unique_ptr<wchar_t[]> extension(new wchar_t[filename.size() - lastDotIndex]);
-        for (unsigned int i = 0; i < filename.size() - lastDotIndex; i++)
+        std::unique_ptr<wchar_t[]> extension(new wchar_t[filename.length() - lastDotIndex]);
+        for (unsigned int i = 0; i < filename.length() - lastDotIndex; i++)
         {
             extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
         }
@@ -757,8 +757,8 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
             m_art_data->imgDataLen = 0;
             m_art_data->gracenoteFileId = m_art_file.data();
             std::wstring ext = GetExtension(m_art_file);
-            std::copy_n(ext.begin(), ext.length(), &m_art_data->type[0]);
-            std::fill_n(&m_art_data->type[0] + ext.length() + 1, 10 - ext.length(), L'\0');
+            std::copy_n(ext.begin(), ext.size(), &m_art_data->type[0]);
+            std::fill_n(&m_art_data->type[0] + ext.size() + 1, 10 - ext.size(), L'\0');
         }
         s_config.settings.m_artData = m_art_data.get();
 
