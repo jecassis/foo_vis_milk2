@@ -856,7 +856,9 @@ void milk2_ui_element::Tick()
         return;
 #endif
 
+#ifdef TIMER_DX
     m_timer.Tick([&]() { Update(m_timer); });
+#endif
 
     Render();
 
@@ -867,21 +869,25 @@ void milk2_ui_element::Tick()
 #endif
 }
 
+#ifdef TIMER_DX
 // Updates the world.
 void milk2_ui_element::Update(DX::StepTimer const& timer)
 {
 }
+#endif
 #pragma endregion
 
 #pragma region Frame Render
 // Draws the scene.
 HRESULT milk2_ui_element::Render()
 {
+#ifdef TIMER_DX
     // Do not try to render anything before the first `Update()`.
     if (m_timer.GetFrameCount() == 0)
     {
         return S_OK;
     }
+#endif
 
     Clear();
 
@@ -967,7 +973,9 @@ void milk2_ui_element::OnSuspending()
 
 void milk2_ui_element::OnResuming()
 {
+#ifdef TIMER_DX
     m_timer.ResetElapsedTime();
+#endif
 }
 #pragma endregion
 
