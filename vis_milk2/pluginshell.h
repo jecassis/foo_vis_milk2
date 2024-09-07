@@ -159,6 +159,7 @@ class CPluginShell
     int m_fix_slow_text;             // 0 or 1
     int m_enable_hdr;                // 0 or 1
     int m_enable_downmix;            // 0 or 1
+    int m_show_album;                // 0 or 1
     int m_skip_8_conversion;         // 0 or 1
     int m_skip_comp_shaders;         // 0 or 1
     int m_back_buffer_format;

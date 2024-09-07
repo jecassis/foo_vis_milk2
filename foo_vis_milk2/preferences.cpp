@@ -25,6 +25,7 @@ static cfg_bool cfg_allow_page_tearing_fs(guid_cfg_allow_page_tearing_fs, defaul
 static cfg_bool cfg_bSongTitleAnims(guid_cfg_bSongTitleAnims, default_bSongTitleAnims);
 static cfg_bool cfg_bAutoGamma(guid_cfg_bAutoGamma, default_bAutoGamma);
 static cfg_bool cfg_bHardCutsDisabled(guid_cfg_bHardCutsDisabled, default_bHardCutsDisabled);
+static cfg_bool cfg_bShowAlbum(guid_cfg_bShowAlbum, default_bShowAlbum);
 static cfg_int cfg_max_fps_fs(guid_cfg_max_fps_fs, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_n16BitGamma(guid_cfg_n16BitGamma, static_cast<int64_t>(default_n16BitGamma));
 static cfg_int cfg_nMaxBytes(guid_cfg_nMaxBytes, static_cast<int64_t>(default_nMaxBytes));
@@ -1138,6 +1139,7 @@ void milk2_config::reset()
 
     //--- Extras
     settings.m_bEnableDownmix = default_bEnableDownmix;
+    settings.m_bShowAlbum = default_bShowAlbum;
     settings.m_bEnableHDR = default_bEnableHDR;
     settings.m_bSkipCompShader = static_cast<uint32_t>(cfg_bSkipCompShader);
     settings.m_nBackBufferFormat = default_nBackBufferFormat;
@@ -1379,7 +1381,7 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << settings.m_nBackBufferFormat;
     builder << settings.m_nDepthBufferFormat;
     builder << settings.m_nBackBufferCount;
-    builder << settings.m_nMinFeatureLevel;
+    cfg_bShowAlbum = settings.m_bShowAlbum;
 
     cfg_szTitleFormat = pfc::utf8FromWide(settings.m_szTitleFormat);
     cfg_szArtworkFormat = pfc::utf8FromWide(settings.m_szArtworkFormat);

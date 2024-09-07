@@ -116,6 +116,9 @@ static constexpr GUID guid_cfg_szArtworkFormat = {
 static constexpr GUID guid_cfg_bSkipCompShader = {
     0xa9220355, 0x1382, 0x41f3, {0xbd, 0x41, 0x7e, 0xb3, 0xe, 0x94, 0xa6, 0x42}
 }; // {A9220355-1382-41F3-BD41-7EB30E94A642}
+static constexpr GUID guid_cfg_bShowAlbum = {
+    0x2caa50c, 0x6910, 0x42c6, {0x9a, 0xff, 0xa5, 0xa5, 0x52, 0xb5, 0xd2, 0x6b}
+}; // {02CAA50C-6910-42C6-9AFF-A5A552B5D26B}
 static constexpr GUID guid_cfg_stFontInfo = {
     0x9794db85, 0xa1cf, 0x4532, {0x9e, 0x1b, 0x56, 0xec, 0xed, 0x22, 0x24, 0x3a}
 }; // {9794DB85-A1CF-4532-9E1B-56ECED22243A}
@@ -183,6 +186,7 @@ static constexpr float default_fSongTitleAnimDuration = 1.7f;
 static constexpr float default_fTimeBetweenRandomSongTitles = -1.0f;
 static constexpr float default_fTimeBetweenRandomCustomMsgs = -1.0f;
 static constexpr bool default_bEnableDownmix = false;
+static constexpr bool default_bShowAlbum = false;
 static constexpr bool default_bEnableHDR = false;
 static constexpr int default_nBackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 static constexpr int default_nDepthBufferFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;

@@ -900,6 +900,7 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     //m_bMilkdropScrollLockState = settings->m_bMilkdropScrollLockState;
 
     m_enable_downmix = static_cast<int>(settings->m_bEnableDownmix);
+    m_show_album = static_cast<int>(settings->m_bShowAlbum);
     m_enable_hdr = static_cast<int>(settings->m_bEnableHDR);
     m_back_buffer_format = settings->m_nBackBufferFormat;
     m_depth_buffer_format = settings->m_nDepthBufferFormat;

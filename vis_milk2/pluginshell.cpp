@@ -359,6 +359,7 @@ int CPluginShell::PluginPreInitialize(HWND hWinampWnd, HINSTANCE hWinampInstance
     m_fix_slow_text = 0;
     m_enable_hdr = 0;
     m_enable_downmix = 0;
+    m_show_album = 0;
     m_back_buffer_format = DXGI_FORMAT_UNKNOWN;
     m_depth_buffer_format = DXGI_FORMAT_UNKNOWN;
     m_back_buffer_count = 2;
