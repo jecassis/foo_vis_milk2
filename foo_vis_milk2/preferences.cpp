@@ -1199,12 +1199,12 @@ void milk2_config::resolve_profile()
     pfc::string8 native_path = filesystem::g_get_native_path(core_api::get_profile_path());
     native_path.end_with_slash();
     size_t path_length = native_path.get_length();
-    std::wstring profile_path(path_length, L'\0');
+    std::wstring profile_path(path_length + 1, L'\0');
 #if 0
     pfc::stringcvt::string_os_from_utf8 os_path(native_path.get_ptr());
     profile_path = os_path.get_ptr();
 #else
-    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(profile_path.c_str()), path_length, native_path.get_ptr(), path_length);
+    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(profile_path.c_str()), profile_path.size(), native_path.get_ptr(), path_length);
     //profile_path = profile_path.c_str(); // or profile_dir_path.erase(profile_dir_path.find(L'\0'));
 #endif
 #endif

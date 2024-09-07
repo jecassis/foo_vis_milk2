@@ -1479,8 +1479,8 @@ void milk2_ui_element::ResolvePwd()
     if (t != SIZE_MAX)
         full_path = full_path.subString(0, t + 1);
     size_t path_length = full_path.get_length();
-    std::wstring base_path(path_length, L'\0');
-    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(base_path.c_str()), path_length, full_path.get_ptr(), path_length);
+    std::wstring base_path(path_length + 1, L'\0');
+    path_length = pfc::stringcvt::convert_utf8_to_wide(const_cast<wchar_t*>(base_path.c_str()), base_path.size(), full_path.get_ptr(), path_length);
     base_path = base_path.erase(base_path.find(L'\0'));
 
 #if 0
