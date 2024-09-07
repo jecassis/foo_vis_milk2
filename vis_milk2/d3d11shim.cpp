@@ -558,7 +558,7 @@ void D3D11Shim::UpdateIBuffer(unsigned int iNumIndices, const void* pIData)
     D3D11_MAPPED_SUBRESOURCE res;
     if (S_OK == m_pContext->Map(m_pIBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res))
     {
-        memcpy(res.pData, pIData, std::min(iNumIndices, MAX_VERTICES_COUNT / 6) * sizeof(uint16_t));
+        memcpy(res.pData, pIData, std::min(iNumIndices, MAX_INDICES_COUNT) * sizeof(uint16_t));
         m_pContext->Unmap(m_pIBuffer, 0);
     }
 }
