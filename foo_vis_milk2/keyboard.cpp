@@ -140,7 +140,11 @@
 #pragma region Keyboard Controls
 #define waitstring g_plugin.m_waitstring
 #define UI_mode g_plugin.m_UI_mode
+#ifdef TIMER_TP
+#define RemoveText() { EnterCriticalSection(&s_cs); g_plugin.ClearText(); LeaveCriticalSection(&s_cs); }
+#else
 #define RemoveText g_plugin.ClearText
+#endif
 
 void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {

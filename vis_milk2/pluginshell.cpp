@@ -33,6 +33,7 @@
 
 #include "defines.h"
 #include "shell_defines.h"
+#include "support.h"
 #include "utility.h"
 #define WASABI_API_ORIG_HINST GetInstance()
 #include "api.h"
@@ -1309,6 +1310,7 @@ void CPluginShell::RenderBuiltInTextMsgs()
             if (m_helpManual.IsVisible())
             {
                 m_helpManual.SetVisible(false);
+                m_text.UnregisterElement(&m_helpManual);
             }
         }
 
@@ -1354,11 +1356,11 @@ void CPluginShell::RenderPlaylist()
     if (m_show_playlist)
     {
         D2D1_RECT_F r;
-        int nSongs = static_cast<int>(SendMessage(m_hWndWinamp, WM_USER, 0, IPC_GETLISTLENGTH));
-        int now_playing = static_cast<int>(SendMessage(m_hWndWinamp, WM_USER, 0, IPC_GETLISTPOS));
+        DWORD_PTR pSongs = NULL, p_now_playing = NULL;
+        SendMessageTimeout(m_hWndWinamp, WM_USER, 0, IPC_GETLISTLENGTH, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &pSongs); int nSongs = static_cast<int>(pSongs);
+        SendMessageTimeout(m_hWndWinamp, WM_USER, 0, IPC_GETLISTPOS, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &p_now_playing); int now_playing = static_cast<int>(p_now_playing);
         DWORD dwFlags = DT_SINGLELINE; //| DT_NOPREFIX | DT_WORD_ELLIPSIS; // Note: `dwFlags` is used for both DDRAW and DX9
         int nFontHeight = GetFontHeight(PLAYLIST_FONT);
-
         if (nSongs <= 0)
         {
             m_show_playlist = false;
@@ -1382,7 +1384,7 @@ void CPluginShell::RenderPlaylist()
                 m_playlist_pos = nSongs - 1;
 
 #ifdef _FOOBAR
-            SendMessage(m_hWndWinamp, WM_USER, m_playlist_pos, IPC_SETPLAYLISTPOS);
+            SendMessageTimeout(m_hWndWinamp, WM_USER, m_playlist_pos, IPC_SETPLAYLISTPOS, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, NULL);
 #endif
 
             int cur_page = static_cast<int>(m_playlist_pos / disp_lines);
@@ -1401,7 +1403,7 @@ void CPluginShell::RenderPlaylist()
                     if (j < nSongs)
                     {
                         // Clip maximum length of song name to 240 characters, to prevent overflows.
-                        LRESULT szTitle = SendMessage(m_hWndWinamp, WM_WA_IPC, j, IPC_GETPLAYLISTTITLEW);
+                        DWORD_PTR szTitle = NULL; SendMessageTimeout(m_hWndWinamp, WM_WA_IPC, j, IPC_GETPLAYLISTTITLEW, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &szTitle);
                         wcsncpy_s(buf, reinterpret_cast<wchar_t*>(szTitle), 240);
                         swprintf_s(m_playlist[i], L"%d. %s ", j + 1, buf); // leave an extra space at end, so italicized fonts do not get clipped
                     }

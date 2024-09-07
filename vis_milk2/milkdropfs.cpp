@@ -2566,7 +2566,7 @@ void CPlugin::DrawCustomWaves()
                     }
                     ptsize = 1.0f;
                     //if (pState->m_wave[i].bUseDots)
-                    //    lpDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&ptsize) );
+                    //    lpDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&ptsize));
                 }
             }
         }

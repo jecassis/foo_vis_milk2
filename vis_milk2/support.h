@@ -81,6 +81,19 @@ typedef struct _SPRITEVERTEX
     float tu, tv; // texture coordinates for texture #0
 } SPRITEVERTEX, *LPSPRITEVERTEX;
 
+typedef struct _HELPVERTEX
+{
+    float x, y, z; // screen position + Z-buffer depth
+    float r, g, b, a; // diffuse color, also acts as filler to 16 bytes
+    float tu, tv; // texture coordinates for texture #0
+} HELPVERTEX, *LPHELPVERTEX;
+
+typedef struct _SIMPLEVERTEX
+{
+    float x, y, z; // screen position + Z-buffer depth
+    DWORD Diffuse;  // diffuse color, also acts as filler to 16 bytes
+} SIMPLEVERTEX, *LPSIMPLEVERTEX;
+
 #ifdef PROFILING
 #define PROFILE_BEGIN \
     LARGE_INTEGER tx, freq, ty; \

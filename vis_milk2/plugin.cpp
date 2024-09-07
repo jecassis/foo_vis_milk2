@@ -4641,7 +4641,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                             if (m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].IsVisible())
                             {
                                 m_loadPresetItem[i%MAX_PRESETS_PER_PAGE].SetVisible(false);
-                                m_text.UnregisterElement(&m_loadPresetItem[i]);
+                                //m_text.UnregisterElement(&m_loadPresetItem[i]);
                             }
                         }
                     }

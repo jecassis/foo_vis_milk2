@@ -831,6 +831,19 @@ LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM
                 break;
             }
     }
+
+    if (s_milk2 && m_milk2)
+    {
+#ifdef TIMER_TP
+        EnterCriticalSection(&s_cs);
+#endif
+        RECT rect{};
+        GetClientRect(&rect);
+        g_plugin.OnWindowSizeChanged(rect.right - rect.left, rect.bottom - rect.top);
+#ifdef TIMER_TP
+        LeaveCriticalSection(&s_cs);
+#endif
+    }
     SetMsgHandled(TRUE);
 
     return 0;

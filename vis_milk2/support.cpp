@@ -179,17 +179,21 @@ void MakeProjectionMatrix(XMMATRIX* pOut,
 
 void GetWinampSongTitle(HWND hWndWinamp, wchar_t* szSongTitle, size_t nSize)
 {
-    LRESULT nPos = SendMessage(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS);
-    LRESULT szStr = SendMessage(hWndWinamp, WM_WA_IPC, nPos, IPC_GETPLAYLISTTITLEW);
-    wcsncpy_s(szSongTitle, nSize, reinterpret_cast<wchar_t*>(szStr), nSize - 1);
+    szSongTitle[0] = L'\0';
+    DWORD_PTR nPos = NULL, szStr = NULL;
+    LRESULT resP = SendMessageTimeout(hWndWinamp, WM_WA_IPC, 0, IPC_GETLISTPOS, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &nPos);
+    LRESULT resT = SendMessageTimeout(hWndWinamp, WM_WA_IPC, nPos, IPC_GETPLAYLISTTITLEW, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &szStr);
+    if (resP != 0 && resT != 0)
+        wcsncpy_s(szSongTitle, nSize, reinterpret_cast<wchar_t*>(szStr), nSize - 1);
 }
 
 void GetWinampSongPosAsText(HWND hWndWinamp, wchar_t* szSongPos)
 {
     // Note: `sizeof(szSongPos[])` must be at least 64.
     szSongPos[0] = L'\0';
-    LRESULT nSongPosMS = SendMessage(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME);
-    if (nSongPosMS > 0)
+    DWORD_PTR nSongPosMS = NULL;
+    SendMessageTimeout(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &nSongPosMS);
+    if (static_cast<LRESULT>(nSongPosMS) > 0)
     {
         wchar_t tmp[16];
         float time_s = nSongPosMS * 0.001f;
@@ -207,8 +211,9 @@ void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen)
 {
     // Note: `sizeof(szSongLen[])` must be at least 64.
     szSongLen[0] = L'\0';
-    LRESULT nSongLenMS = SendMessage(hWndWinamp, WM_USER, 2, IPC_GETOUTPUTTIME);
-    if (nSongLenMS > 0)
+    DWORD_PTR nSongLenMS = NULL;
+    SendMessageTimeout(hWndWinamp, WM_USER, 2, IPC_GETOUTPUTTIME, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &nSongLenMS);
+    if (static_cast<LRESULT>(nSongLenMS) > 0)
     {
         unsigned int len_s = static_cast<unsigned int>(nSongLenMS / 1000);
         unsigned int minutes = len_s / 60;
@@ -220,13 +225,17 @@ void GetWinampSongLenAsText(HWND hWndWinamp, wchar_t* szSongLen)
 float GetWinampSongPos(HWND hWndWinamp)
 {
     // Returns answer in seconds.
-    return static_cast<float>(SendMessage(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME)) * 0.001f;
+    DWORD_PTR SongPosition = NULL;
+    SendMessageTimeout(hWndWinamp, WM_USER, 0, IPC_GETOUTPUTTIME, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &SongPosition);
+    return static_cast<float>(SongPosition) * 0.001f;
 }
 
 float GetWinampSongLen(HWND hWndWinamp)
 {
     // Returns answer in seconds.
-    return static_cast<float>(SendMessage(hWndWinamp, WM_USER, 1, IPC_GETOUTPUTTIME));
+    DWORD_PTR SongLength = NULL;
+    SendMessageTimeout(hWndWinamp, WM_USER, 1, IPC_GETOUTPUTTIME, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &SongLength);
+    return static_cast<float>(SongLength);
 }
 
 int GetDX11TexFormatBitsPerPixel(DXGI_FORMAT fmt)
