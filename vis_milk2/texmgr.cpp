@@ -557,6 +557,64 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
     return ret;
 }
 
+int texmgr::LoadTex(std::vector<uint8_t> rawdata, int iSlot, char* szInitCode, char* szCode, float time, int frame, unsigned int /* ck */)
+{
+    if (iSlot < 0)
+        return TEXMGR_ERR_BAD_INDEX;
+    if (iSlot >= NUM_TEX)
+        return TEXMGR_ERR_BAD_INDEX;
+
+    // Free old resources.
+    KillTex(iSlot);
+
+    wcscpy_s(m_tex[iSlot].szFileName, L"album");
+
+    HRESULT hr = m_lpDD->CreateTextureFromMemory(rawdata.data(), rawdata.size(), &m_tex[iSlot].pSurface, 1);
+    if (hr != S_OK)
+    {
+        switch (hr)
+        {
+            case E_OUTOFMEMORY:
+                return TEXMGR_ERR_OUTOFMEM;
+            default:
+                return TEXMGR_ERR_BADFILE;
+        }
+    }
+
+    D3D11_TEXTURE2D_DESC tex2DDesc;
+    D3D11_RESOURCE_DIMENSION type;
+    m_tex[iSlot].pSurface->GetType(&type);
+
+    if (type == D3D11_RESOURCE_DIMENSION_TEXTURE2D)
+        reinterpret_cast<ID3D11Texture2D*>(m_tex[iSlot].pSurface)->GetDesc(&tex2DDesc);
+    else
+    {
+        SafeRelease(m_tex[iSlot].pSurface);
+        return TEXMGR_ERR_BADFILE;
+    }
+
+    m_tex[iSlot].img_w = tex2DDesc.Width;
+    m_tex[iSlot].img_h = tex2DDesc.Height;
+    m_tex[iSlot].fStartTime = time;
+    m_tex[iSlot].nStartFrame = frame;
+
+    int ret = TEXMGR_ERR_SUCCESS;
+
+    // Compile and run initialization code.
+    if (!RunInitCode(iSlot, szInitCode))
+        ret |= TEXMGR_WARN_ERROR_IN_INIT_CODE;
+
+    // Compile and save per-frame code.
+    strcpy_s(m_tex[iSlot].m_szExpr, szCode);
+    FreeCode(iSlot);
+    if (!RecompileExpressions(iSlot))
+        ret |= TEXMGR_WARN_ERROR_IN_REG_CODE;
+
+    //DumpDebugMessage("texmgr: success");
+
+    return ret;
+}
+
 void texmgr::KillTex(int iSlot)
 {
     if (iSlot < 0) return;

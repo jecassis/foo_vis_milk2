@@ -2525,9 +2525,9 @@ void CPlugin::DrawCustomWaves()
                     lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, pState->m_wave[i].bAdditive ? D3D11_BLEND_ONE : D3D11_BLEND_INV_SRC_ALPHA);
 
                     float ptsize = (float)((m_nTexSizeX >= 1024) ? 2 : 1) + (pState->m_wave[i].bDrawThick ? 1 : 0);
+                    // DirectX 11 has not point size, so render quads.
                     //if (pState->m_wave[i].bUseDots)
-                    //    lpDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&ptsize) );
-                    // DX11 has not point size, so render quads.
+                    //    lpDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&ptsize));
                     if (pState->m_wave[i].bUseDots && ptsize > 1.0)
                     {
                         float dx = ptsize / (float)m_nTexSizeX;
@@ -4091,7 +4091,7 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 
             // Then, modulate by self (square it).
             lpDevice->SetBlendState(true, D3D11_BLEND_ZERO, D3D11_BLEND_DEST_COLOR);
-            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (void*)v3, sizeof(SPRITEVERTEX));
+            lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, (LPVOID)v3, sizeof(SPRITEVERTEX));
 
             // Then, another perfect invert.
             lpDevice->SetBlendState(true, D3D11_BLEND_INV_DEST_COLOR, D3D11_BLEND_ZERO);

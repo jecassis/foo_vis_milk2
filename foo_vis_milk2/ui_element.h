@@ -30,7 +30,7 @@ CRITICAL_SECTION s_cs;
 #endif
 
 #pragma region UI Element
-class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base
+class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui_element>, private play_callback_impl_base, private playlist_callback_impl_base, public now_playing_album_art_notify
 #ifdef TIMER_DX
     , public idle_handler
 #endif
@@ -172,6 +172,8 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
         IDM_LOCK_PRESET = 2,
         IDM_SHUFFLE_PRESET = ID_VIS_RANDOM,
         IDM_ENABLE_DOWNMIX = 3,
+        IDM_SHOW_TITLE = 4,
+        IDM_SHOW_ALBUM = 5,
         IDM_SHOW_MENU = ID_VIS_MENU,
         IDM_SHOW_PREFS = ID_VIS_CFG,
         IDM_SHOW_HELP = ID_SHOWHELP,
@@ -269,10 +271,11 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 
     // Playback callback methods
     void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { MILK2_CONSOLE_LOG("+ PlaybackStart"); UpdateTrack(); }
-    void on_playback_new_track(metadb_handle_ptr p_track) { MILK2_CONSOLE_LOG("+ PlaybackNew"); UpdateTrack(); }
+    void on_playback_new_track(metadb_handle_ptr p_track) { MILK2_CONSOLE_LOG("+ PlaybackNew"); UpdateTrack(p_track); }
     void on_playback_stop(play_control::t_stop_reason p_reason) { MILK2_CONSOLE_LOG("+ PlaybackStop"); UpdateTrack(); }
 
     void UpdateTrack();
+    void UpdateTrack(metadb_handle_ptr p_track);
 
     // Playlist callback methods
     void on_items_added(size_t p_playlist, size_t p_start, metadb_handle_list_cref p_data, const bit_array& p_selection) { MILK2_CONSOLE_LOG("* PlaylistItemsAdded"); UpdatePlaylist(); }
@@ -291,9 +294,15 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void SetSelectionSingle(size_t idx, bool toggle, bool focus, bool single_only);
 
     // Artwork callback methods
+    void on_album_art(album_art_data::ptr aad) { /*MILK2_CONSOLE_LOG("% AlbumArt"); if (wcsnlen_s(s_config.settings.m_szArtworkFormat, 256) == 0 && aad.is_valid()) { ExtractRasterData(static_cast<const uint8_t*>(aad->data()), aad->size()); }*/ }
+
     void RegisterForArtwork();
     void ExtractRasterData(const uint8_t* data, size_t size) noexcept;
     void LoadAlbumArt(const metadb_handle_ptr& track, abort_callback& abort);
+    void ShowAlbumArt();
+
+    // Text
+    void LaunchSongTitle();
 };
 
 // clang-format off

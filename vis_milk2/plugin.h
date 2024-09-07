@@ -633,7 +633,7 @@ class CPlugin : public CPluginShell
     void MergeSortPresets(int left, int right);
     void BuildMenus();
     void SetMenusForPresetVersion(int WarpPSVersion, int CompPSVersion);
-    bool LaunchSprite(int nSpriteNum, int nSlot);
+    bool LaunchSprite(int nSpriteNum, int nSlot, const std::wstring& filename = L"", const std::vector<uint8_t>& vec = std::vector<uint8_t>());
     void KillSprite(int iSlot);
     void DoCustomSoundAnalysis();
     void DrawMotionVectors();

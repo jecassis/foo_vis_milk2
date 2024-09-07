@@ -6705,7 +6705,7 @@ void CPlugin::LaunchSongTitleAnim()
     m_supertext.fStartTime = GetTime();
 }
 
-bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
+bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot, const std::wstring& filename, const std::vector<uint8_t>& data)
 {
     char initcode[8192], code[8192], sectionA[64];
     char szTemp[8192];
@@ -6718,29 +6718,44 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
     sprintf_s(sectionA, "img%02d", nSpriteNum);
 
     // 1. Read in image filename.
-    GetPrivateProfileString(section, L"img", L"", img, ARRAYSIZE(img) - 1, m_szImgIniFile);
-    if (img[0] == L'\0')
+    if (nSpriteNum >= 0 && nSpriteNum < 100)
     {
-        wchar_t buf[1024] = {0};
-        swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_COULD_NOT_FIND_IMG_OR_NOT_DEFINED), nSpriteNum);
-        AddError(buf, 7.0f, ERR_MISC, false);
-        return false;
-    }
+        GetPrivateProfileString(section, L"img", L"", img, ARRAYSIZE(img) - 1, m_szImgIniFile);
+        if (img[0] == L'\0')
+        {
+            wchar_t buf[1024] = {0};
+            swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_SPRITE_X_ERROR_COULD_NOT_FIND_IMG_OR_NOT_DEFINED), nSpriteNum);
+            AddError(buf, 7.0f, ERR_MISC, false);
+            return false;
+        }
 
-    if (img[1] != L':') //|| img[2] != '\\')
+        if (img[1] != L':') //|| img[2] != '\\')
+        {
+            // It's not in the form "x:\blah\picture.jpg" so prepend plugin dir path.
+            wchar_t temp[512] = {0};
+            wcscpy_s(temp, img);
+            swprintf_s(img, L"%s%s", m_szMilkdrop2Path, temp);
+        }
+    }
+    else
     {
-        // It's not in the form "x:\blah\picture.jpg" so prepend plugin dir path.
-        wchar_t temp[512] = {0};
-        wcscpy_s(temp, img);
-        swprintf_s(img, L"%s%s", m_szMilkdrop2Path, temp);
+        if (!filename.empty())
+        {
+            wcsncpy_s(img, filename.c_str(), 512);
+        }
+        else if (!data.empty())
+        {
+        }
+        else
+            return false;
     }
 
     // 2. Get color key.
-    //unsigned int ck_lo = (unsigned int)GetPrivateProfileInt(section, "colorkey_lo", 0x00000000, m_szImgIniFile);
-    //unsigned int ck_hi = (unsigned int)GetPrivateProfileInt(section, "colorkey_hi", 0x00202020, m_szImgIniFile);
+    //UINT ck_lo = GetPrivateProfileInt(section, "colorkey_lo", 0x00000000, m_szImgIniFile);
+    //UINT ck_hi = GetPrivateProfileInt(section, "colorkey_hi", 0x00202020, m_szImgIniFile);
     // FIRST try 'colorkey_lo' (for backwards compatibility) and then try 'colorkey'
-    unsigned int ck = (unsigned int)GetPrivateProfileInt(section, L"colorkey_lo", 0x00000000, m_szImgIniFile);
-    ck = (unsigned int)GetPrivateProfileInt(section, L"colorkey", ck, m_szImgIniFile);
+    UINT ck = GetPrivateProfileInt(section, L"colorkey_lo", 0x00000000, m_szImgIniFile);
+    ck = GetPrivateProfileInt(section, L"colorkey", ck, m_szImgIniFile);
 
     // 3. Read in init code and per-frame code.
     for (int n = 0; n < 2; n++)
@@ -6781,7 +6796,7 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
 
     if (nSlot == -1)
     {
-        // find first empty slot; if none, chuck the oldest sprite & take its slot.
+        // Find first empty slot; if none, chuck the oldest sprite and take its slot.
         int oldest_index = 0;
         int oldest_frame = m_texmgr.m_tex[0].nStartFrame;
         for (int x = 0; x < NUM_TEX; x++)
@@ -6805,7 +6820,17 @@ bool CPlugin::LaunchSprite(int nSpriteNum, int nSlot)
         }
     }
 
-    int ret = m_texmgr.LoadTex(img, nSlot, initcode, code, GetTime(), GetFrame(), ck);
+    int ret = -1;
+    if ((nSpriteNum >= 0 && nSpriteNum < 100) || !filename.empty())
+    {
+        ret = m_texmgr.LoadTex(img, nSlot, initcode, code, GetTime(), GetFrame(), ck);
+    }
+    else if (!data.empty())
+    {
+        ret = m_texmgr.LoadTex(data, nSlot, initcode, code, GetTime(), GetFrame(), ck);
+    }
+    else
+        return false;
     m_texmgr.m_tex[nSlot].nUserData = nSpriteNum;
 
     wchar_t buf[1024] = {0};

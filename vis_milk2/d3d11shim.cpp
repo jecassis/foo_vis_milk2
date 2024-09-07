@@ -504,6 +504,14 @@ HRESULT D3D11Shim::CreateTextureFromFile(LPCWSTR szFileName, ID3D11Resource** te
         return CreateWICTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
 }
 
+HRESULT D3D11Shim::CreateTextureFromMemory(const uint8_t* data, size_t dataSize, ID3D11Resource** texture, UINT type)
+{
+    if (type == 0)
+        return CreateDDSTextureFromMemory(m_pDevice, data, dataSize, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
+    else
+        return CreateWICTextureFromMemory(m_pDevice, data, dataSize, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
+}
+
 bool D3D11Shim::LockRect(ID3D11Resource* pResource, UINT uSubRes, D3D11_MAP mapType, D3D11_MAPPED_SUBRESOURCE* res)
 {
     HRESULT hr = m_pImmContext->Map(pResource, uSubRes, mapType, 0, res);

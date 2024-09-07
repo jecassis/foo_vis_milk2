@@ -98,6 +98,7 @@ class texmgr
 
     void Init(D3D11Shim* lpDD); // DirectDraw object
     int LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCode, float time, int frame, unsigned int ck);
+    int LoadTex(std::vector<uint8_t> rawdata, int iSlot, char* szInitCode, char* szCode, float time, int frame, unsigned int ck);
     void KillTex(int iSlot);
     void Finish();
 

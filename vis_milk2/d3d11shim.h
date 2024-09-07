@@ -58,6 +58,7 @@ class D3D11Shim
     void UnlockRect(ID3D11Resource* pResource, UINT uSubRes);
 
     HRESULT CreateTextureFromFile(LPCWSTR szFileName, ID3D11Resource** texture);
+    HRESULT CreateTextureFromMemory(const uint8_t* data, size_t dataSize, ID3D11Resource** texture, UINT type = 0);
 
     UINT GetMaxPrimitiveCount() { return MAX_VERTICES_COUNT; };
 

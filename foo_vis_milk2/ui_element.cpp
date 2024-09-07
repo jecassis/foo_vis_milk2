@@ -48,6 +48,7 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
     m_last_time = 0.0;
 #endif
     m_refresh_interval = 33;
+    m_art_data = std::make_unique<artFetchData>();
 
     m_pwd = L".\\";
     set_configuration(config);
@@ -143,6 +144,8 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 #elif defined(TIMER_DX)
         message_loop_v2::get()->add_idle_handler(this);
 #endif
+
+        RegisterForArtwork();
     }
 
     HRESULT hr = S_OK;
@@ -183,6 +186,9 @@ void milk2_ui_element::OnDestroy()
     if (m_vis_stream.is_valid())
         m_vis_stream.release();
     //DestroyMenu();
+    auto manager = now_playing_album_art_notify_manager::tryGet();
+    if (manager.is_valid())
+        manager->remove(this);
 
     if (m_milk2)
         m_milk2 = false;
@@ -518,6 +524,9 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
     menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, IDM_SHOW_TITLE, TEXT("Launch Title"));
+    menu.AppendMenu(MF_STRING | (s_config.settings.m_bShowAlbum ? MF_CHECKED : 0), IDM_SHOW_ALBUM, TEXT("Show Album Art"));
+    menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING, IDM_SHOW_PREFS, TEXT("Launch Preferences Page"));
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
@@ -561,6 +570,13 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
         case IDM_SHOW_PLAYLIST:
             TogglePlaylist();
             break;
+        case IDM_SHOW_TITLE:
+            LaunchSongTitle();
+            break;
+        case IDM_SHOW_ALBUM:
+            s_config.settings.m_bShowAlbum = !s_config.settings.m_bShowAlbum;
+            ShowAlbumArt();
+            break;
         case IDM_QUIT:
             //g_plugin.m_exiting = 1;
             //PostMessage(WM_CLOSE, static_cast<WPARAM>(0), static_cast<LPARAM>(0));
@@ -587,6 +603,21 @@ LRESULT milk2_ui_element::OnQuit(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     MILK2_CONSOLE_LOG("OnQuit ", GetWnd())
     return 0;
+}
+
+inline std::wstring GetExtension(std::wstring& filename)
+{
+    size_t lastDotIndex = filename.rfind('.');
+    if (lastDotIndex != std::string::npos)
+    {
+        std::unique_ptr<wchar_t[]> extension(new wchar_t[filename.size() - lastDotIndex]);
+        for (unsigned int i = 0; i < filename.size() - lastDotIndex; i++)
+        {
+            extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
+        }
+        return std::wstring(extension.get());
+    }
+    return L"";
 }
 
 LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1237,6 +1268,67 @@ void milk2_ui_element::UpdateTrack()
     }
 }
 
+void milk2_ui_element::UpdateTrack(metadb_handle_ptr p_track)
+{
+    UpdateTrack();
+
+    if (!p_track.is_valid())
+        return;
+
+    // Load the album art.
+    if (wcsnlen_s(s_config.settings.m_szArtworkFormat, 256) != 0)
+    {
+        titleformat_object::ptr script;
+        pfc::string8 pattern = pfc::utf8FromWide(s_config.settings.m_szArtworkFormat);
+        bool success = titleformat_compiler::get()->compile(script, pattern);
+
+        pfc::string result;
+        if (success && script.is_valid() && p_track->format_title(nullptr, result, script, nullptr))
+        {
+            m_art_file.clear();
+            std::vector<uint8_t> empty;
+            m_raster.swap(empty);
+            m_art_file = pfc::wideFromUTF8(result).c_str();
+            m_raster.clear();
+        }
+    }
+    else
+    {
+        LoadAlbumArt(p_track, fb2k::noAbort);
+        ShowAlbumArt();
+    }
+}
+
+void milk2_ui_element::ShowAlbumArt()
+{
+    // Kill all existing sprites.
+    for (int x = 0; x < NUM_TEX; x++)
+        g_plugin.KillSprite(x);
+
+    if (s_config.settings.m_bShowAlbum)
+    {
+        if (!m_art_file.empty()) // file
+        {
+            // Check if file exists.
+            pfc::string8 artFile = pfc::utf8FromWide(m_art_file.c_str());
+            if (filesystem::g_exists(artFile, fb2k::noAbort))
+            {
+                return;
+            }
+
+            g_plugin.LaunchSprite(100, -1, m_art_file);
+        }
+        else if (m_raster.size() > 0) // memory
+        {
+            g_plugin.LaunchSprite(100, -1, L"", m_raster);
+        }
+        else // nothing
+        {
+            return;
+        }
+    }
+}
+
 void milk2_ui_element::UpdatePlaylist()
 {
     auto api = playlist_manager::get();
@@ -1249,6 +1341,11 @@ void milk2_ui_element::UpdatePlaylist()
         }
     }
     g_plugin.m_playlist_top_idx = -1;
+}
+
+void milk2_ui_element::LaunchSongTitle()
+{
+    g_plugin.LaunchSongTitleAnim();
 }
 
 #ifdef TIMER_TP
