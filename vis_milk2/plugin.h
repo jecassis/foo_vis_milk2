@@ -102,14 +102,6 @@ enum
     MD2_PS_5_0 = 6,
 };
 
-/* typedef struct
-{
-    char szFace[256];
-    int nSize;
-    int bBold;
-    int bItalic;
-} td_titlefontinfo; */
-
 typedef struct
 {
     int nFont;
@@ -603,6 +595,7 @@ class CPlugin : public CPluginShell
     void SetPresetListPosition(std::wstring search);
     void FindValidPresetDir();
     wchar_t* GetPresetDir() { return m_szPresetDir; };
+    td_fontinfo* GetFontInfo() { return m_fontinfo; };
     void SavePresetAs(wchar_t* szNewFile); // overwrites the file if it was already there.
     void DeletePresetFile(wchar_t* szDelFile);
     void RenamePresetFile(wchar_t* szOldFile, wchar_t* szNewFile);

@@ -599,12 +599,12 @@ BEGIN
     IDS_ON                  "ON"
     IDS_OFF                 "OFF"
     IDS_USE_UP_DOWN_ARROW_KEYS 
-                            "(use up/down arrow keys, PGUP, PGDN to change value)"
+                            "ESC: exit, ENTER: apply, Up / Down / PGUP / PGDN / SHIFT+Up/Down: change value"
     IDS_CURRENT_VALUE_OF_X  "Current value of %s:"
     IDS_LOAD_FROM_FILE      "Load from file:  [note: preset's wave scaling, as well as q1-q8, will not be imported]"
     IDS_SAVE_TO_FILE        "Save to file:  [note: preset's wave scaling, as well as q1-q8, will not be exported]"
     IDS_ENTER_THE_NEW_STRING 
-                            "Enter the new string; hit CTRL+ENTER to apply or ESC to cancel."
+                            "Enter the new string; CTRL+ENTER: apply, ESC: cancel"
     IDS_MILKDROP_ERROR      "MILKDROP ERROR"
 END
 
@@ -930,10 +930,10 @@ STRINGTABLE
 BEGIN
     IDS_MENU_ROTATION_AMOUNT_TT 
                             "Controls the amount of rotation;  0=none, 0.1=slightly right, -0.1=slightly clockwise, 0.1=counter-clockwise"
-    IDS_MENU_ROTATION_CENTER_OF_X " rot., center of (X)"
+    IDS_MENU_ROTATION_CENTER_OF_X "rot., center of (X)"
     IDS_MENU_ROTATION_CENTER_OF_X_TT 
                             "Controls where the center of rotation is, horizontally;  0=left, 0.5=center, 1=right"
-    IDS_MENU_ROTATION_CENTER_OF_Y " rot., center of (Y)"
+    IDS_MENU_ROTATION_CENTER_OF_Y "rot., center of (Y)"
     IDS_MENU_ROTATION_CENTER_OF_Y_TT 
                             "Controls where the center of rotation is, vertically;  0=top, 0.5=center, 1=bottom"
     IDS_MENU_TRANSLATION_X  "translation (X)"
@@ -964,10 +964,10 @@ BEGIN
     IDS_MENU_VIDEO_ECHO_ALPHA "video echo: alpha"
     IDS_MENU_VIDEO_ECHO_ALPHA_TT 
                             "Controls the opacity of the second graphics layer;  0=transparent (off), 0.5=half-mix, 1=opaque"
-    IDS_MENU_VIDEO_ECHO_ZOOM " video echo: zoom"
+    IDS_MENU_VIDEO_ECHO_ZOOM "video echo: zoom"
     IDS_MENU_VIDEO_ECHO_ZOOM_TT 
                             "Controls the size of the second graphics layer"
-    IDS_MENU_VIDEO_ECHO_ORIENTATION " video echo: orientation"
+    IDS_MENU_VIDEO_ECHO_ORIENTATION "video echo: orientation"
     IDS_MENU_VIDEO_ECHO_ORIENTATION_TT 
                             "Selects an orientation for the second graphics layer;  0=normal, 1=flip on X, 2=flip on Y, 3=flip on both"
     IDS_MENU_TEXTURE_WRAP   "texture wrap"
@@ -1053,13 +1053,13 @@ BEGIN
     IDS_MENU_OUTER_BORDER_THICKNESS "outer border thickness"
     IDS_MENU_OUTER_BORDER_THICKNESS_TT 
                             "Controls the thickness of the outer border drawn at the edges of the screen"
-    IDS_MENU_COLOR_RED_OUTER " color (red)"
+    IDS_MENU_COLOR_RED_OUTER "color (red)"
     IDS_MENU_COLOR_RED_OUTER_TT "Controls the amount of red color in the outer border;  0=none, 1=maximum"
-    IDS_MENU_COLOR_GREEN_OUTER " color (green)"
+    IDS_MENU_COLOR_GREEN_OUTER "color (green)"
     IDS_MENU_COLOR_GREEN_OUTER_TT "Controls the amount of green color in the outer border;  0=none, 1=maximum"
-    IDS_MENU_COLOR_BLUE_OUTER " color (blue)"
+    IDS_MENU_COLOR_BLUE_OUTER "color (blue)"
     IDS_MENU_COLOR_BLUE_OUTER_TT "Controls the amount of blue color in the outer border;  0=none, 1=maximum"
-    IDS_MENU_OPACITY_OUTER  " opacity"
+    IDS_MENU_OPACITY_OUTER  "opacity"
     IDS_MENU_OPACITY_OUTER_TT 
                             "Controls the opacity of the outer border;  0=transparent, 1=opaque"
     IDS_MENU_INNER_BORDER_THICKNESS "inner border thickness"
@@ -1077,19 +1077,19 @@ BEGIN
     IDS_MENU_MOTION_VECTOR_OPACITY "motion vector opacity"
     IDS_MENU_MOTION_VECTOR_OPACITY_TT 
                             "Controls the opacity of the motion vectors;  0=transparent, 1=opaque"
-    IDS_MENU_NUM_MOT_VECTORS_X " num. mot. vectors (X)"
+    IDS_MENU_NUM_MOT_VECTORS_X "num. mot. vectors (X)"
     IDS_MENU_NUM_MOT_VECTORS_X_TT "Controls the number of motion vectors on the X-axis"
-    IDS_MENU_NUM_MOT_VECTORS_Y " num. mot. vectors (Y)"
+    IDS_MENU_NUM_MOT_VECTORS_Y "num. mot. vectors (Y)"
     IDS_MENU_NUM_MOT_VECTORS_Y_TT "Controls the number of motion vectors on the Y-axis"
-    IDS_MENU_OFFSET_X       " offset (X)"
+    IDS_MENU_OFFSET_X       "offset (X)"
     IDS_MENU_OFFSET_X_TT    "Controls the horizontal placement offset of the motion vectors"
-    IDS_MENU_OFFSET_Y       " offset (Y)"
+    IDS_MENU_OFFSET_Y       "offset (Y)"
     IDS_MENU_OFFSET_Y_TT    "Controls the vertical placement offset of the motion vectors"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MENU_TRAIL_LENGTH   " trail length"
+    IDS_MENU_TRAIL_LENGTH   "trail length"
     IDS_MENU_TRAIL_LENGTH_TT "Controls the length of the motion vectors;  1=normal"
     IDS_MENU_COLOR_RED_MOTION_VECTOR_TT 
                             "Controls the amount of red color in the motion vectors;  0=none, 1=maximum"
@@ -1099,13 +1099,13 @@ BEGIN
                             "Controls the amount of blue color in the motion vectors;  0=none, 1=maximum"
     IDS_MENU_ZOOM_AMOUNT    "zoom amount"
     IDS_MENU_ZOOM_AMOUNT_TT "Controls inward/outward motion;  0.9=zoom out, 1.0=no zoom, 1.1=zoom in"
-    IDS_MENU_ZOOM_EXPONENT  " zoom exponent"
+    IDS_MENU_ZOOM_EXPONENT  "zoom exponent"
     IDS_MENU_ZOOM_EXPONENT_TT "Controls the curvature of the zoom;  1=normal"
     IDS_MENU_WARP_AMOUNT    "warp amount"
     IDS_MENU_WARP_AMOUNT_TT "Controls the magnitude of the warping;  0=none, 1=normal, 2=major warping, ..."
-    IDS_MENU_WARP_SCALE     " warp scale"
+    IDS_MENU_WARP_SCALE     "warp scale"
     IDS_MENU_WARP_SCALE_TT  "Controls the wavelength of the warp;  1=normal, less=turbulent, more=smoother"
-    IDS_MENU_WARP_SPEED     " warp speed"
+    IDS_MENU_WARP_SPEED     "warp speed"
     IDS_MENU_WARP_SPEED_TT  "Controls the speed of the warp;  1=normal, less=slower, more=faster"
     IDS_MENU_ROTATION_AMOUNT "rotation amount"
 END

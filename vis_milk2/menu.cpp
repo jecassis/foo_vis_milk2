@@ -241,15 +241,16 @@ void MDMenuTextOut(TextElement* element, eFontIndex font_index, wchar_t* str, DW
         D2D1_RECT_F t = *pRect;
         element->SetContainer(t);
         pRect->top += g_plugin.m_text.DrawD2DText(g_plugin.GetFont(font_index), element, str, &t, DT_SINGLELINE | DT_END_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false);
-        pCalcRect->bottom += t.bottom - t.top;
+        pCalcRect->bottom += std::max(std::ceil(t.bottom - t.top), static_cast<FLOAT>(g_plugin.GetFontInfo()[font_index].nSize));
         //if (pCalcRect->bottom > pRect->bottom)
         //    pCalcRect->bottom = pRect->bottom;
         pCalcRect->right = std::max(pCalcRect->right, pCalcRect->left + t.right - t.left);
     }
     else
     {
-        pRect->top += g_plugin.m_text.DrawD2DText(g_plugin.GetFont(font_index), element, str, pRect, DT_SINGLELINE | DT_END_ELLIPSIS, color, true, 0xFF000000);
         element->SetContainer(*pRect);
+        int h = g_plugin.m_text.DrawD2DText(g_plugin.GetFont(font_index), element, str, pRect, DT_SINGLELINE | DT_END_ELLIPSIS, color, false);
+        pRect->top += static_cast<FLOAT>(std::max(static_cast<LONG>(h), g_plugin.GetFontInfo()[font_index].nSize));
         g_plugin.m_text.RegisterElement(element);
     }
 }
@@ -304,6 +305,7 @@ void CMilkMenu::DrawMenu(D2D1_RECT_F rect, int xR, int yB, int bCalcRect, D2D1_R
         {
             if (!pItem->m_bEnabled)
             {
+                (&(pItem->m_element[0]))->SetVisible(false);
                 pItem = pItem->m_pNext;
                 i++;
                 continue;
@@ -702,9 +704,9 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                         break;
                     case MENUITEMTYPE_BLENDABLE:
                         {
-                            CBlendableFloat* pBlend = ((CBlendableFloat*)addr);
+                            CBlendableFloat* pBlend = reinterpret_cast<CBlendableFloat*>(addr);
                             float fInc = (pItem->m_fMax - pItem->m_fMin) * 0.01f * fMult;
-                            (*pBlend) += (bDec) ? -fInc : fInc;
+                            (*pBlend) += bDec ? -fInc : fInc;
                             if (pBlend->eval(-1.0f) < pItem->m_fMin)
                                 *pBlend = pItem->m_fMin;
                             if (pBlend->eval(-1.0f) > pItem->m_fMax)
@@ -713,8 +715,8 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                         break;
                     case MENUITEMTYPE_LOGBLENDABLE:
                         {
-                            CBlendableFloat* pBlend = ((CBlendableFloat*)addr);
-                            (*pBlend) *= (bDec) ? std::pow(1.0f / 1.01f, fMult) : std::pow(1.01f, fMult);
+                            CBlendableFloat* pBlend = reinterpret_cast<CBlendableFloat*>(addr);
+                            (*pBlend) *= bDec ? std::pow(1.0f / 1.01f, fMult) : std::pow(1.01f, fMult);
                             if (pBlend->eval(-1.0f) < pItem->m_fMin)
                                 *pBlend = pItem->m_fMin;
                             if (pBlend->eval(-1.0f) > pItem->m_fMax)
@@ -728,33 +730,29 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             if (wParam == VK_UP)
                             {
                                 pItem->m_nSubSel--;
-                                if (pItem->m_nSubSel < 0) pItem->m_nSubSel = 4;
+                                if (pItem->m_nSubSel < 0)
+                                    pItem->m_nSubSel = 4;
                             }
                             else if (wParam == VK_DOWN)
                             {
                                 pItem->m_nSubSel++;
-                                if (pItem->m_nSubSel > 4) pItem->m_nSubSel = 0;
+                                if (pItem->m_nSubSel > 4)
+                                    pItem->m_nSubSel = 0;
                             }
                         }
                         else
                         {
                             switch (pItem->m_nSubSel)
                             {
-                                // also to do: make 'drawtext' draw it properly
                                 case 0:
-                                    FIXME - what are the bounds for each type? and are incs constant or log?
                                         break;
                                 case 1:
-                                    FIXME
                                         break;
                                 case 2:
-                                    FIXME
                                         break;
                                 case 3:
-                                    FIXME
                                         break;
                                 case 4:
-                                    FIXME
                                         break;
                             }
                         }

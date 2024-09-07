@@ -3514,7 +3514,6 @@ void CPlugin::DrawTooltip(wchar_t* str, int xR, int yB)
 {
     DWORD baseColor = 0xFFFFFFFF;
     D2D1_COLOR_F fgColor = D2D1::ColorF(baseColor);
-    D2D1_COLOR_F bgColor = D2D1::ColorF(0x000000, GetAlpha(0xD0000000));
 
     m_toolTip.Initialize(m_lpDX->GetD2DDeviceContext());
     m_toolTip.SetAlignment(AlignCenter, AlignCenter);
@@ -3532,13 +3531,12 @@ void CPlugin::DrawTooltip(wchar_t* str, int xR, int yB)
     r2.right = static_cast<FLOAT>(xR - TEXT_MARGIN);
     r2.left = static_cast<FLOAT>(r2.right - (r.right - r.left));
     r2.top = static_cast<FLOAT>(r2.bottom - (r.bottom - r.top));
-    D2D1_RECT_F r3 = r2;
-    r3.left -= 4.0f;
-    r3.top -= 2.0f;
-    r3.right += 2.0f;
-    r3.bottom += 2.0f;
-    DrawDarkTranslucentBox(&r3);
-    m_toolTip.SetTextBox(bgColor, r3);
+    D2D1_RECT_F box = r2;
+    box.left -= 4.0f;
+    box.top -= 2.0f;
+    box.right += 2.0f;
+    box.bottom += 2.0f;
+    DrawDarkTranslucentBox(&box);
     m_toolTip.SetContainer(r2);
     m_text.DrawD2DText(GetFont(TOOLTIP_FONT), &m_toolTip, str, &r2, 0, baseColor, false);
     m_text.RegisterElement(&m_toolTip);
@@ -4067,7 +4065,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     box.left -= PLAYLIST_INNER_MARGIN;
                     box.right += PLAYLIST_INNER_MARGIN;
                     box.bottom += PLAYLIST_INNER_MARGIN;
-                    //DrawDarkTranslucentBox(&box);
+                    DrawDarkTranslucentBox(&box);
                     *upper_left_corner_y += static_cast<int>(box.bottom - box.top + PLAYLIST_INNER_MARGIN * 3.0f);
                     swprintf_s(m_waitstring.szToolTip, WASABI_API_LNGSTRINGW(IDS_PAGE_X), page);
                 }
@@ -4648,13 +4646,11 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
                     if (pass == 1) // calculate dark box rectangle (pass 0 in DirectX 9)
                     {
-                        DWORD boxColor = 0xD0000000;
                         box.top -= PLAYLIST_INNER_MARGIN;
                         box.left -= PLAYLIST_INNER_MARGIN;
                         box.right += PLAYLIST_INNER_MARGIN;
                         box.bottom += PLAYLIST_INNER_MARGIN;
                         DrawDarkTranslucentBox(&box);
-                        m_loadPresetItem[0].SetTextBox(D2D1::ColorF(boxColor, GetAlpha(boxColor)), box);
                         *upper_left_corner_y = static_cast<int>(box.bottom + PLAYLIST_INNER_MARGIN);
                     }
                 }

@@ -1237,7 +1237,7 @@ void CPluginShell::DrawDarkTranslucentBox(D2D1_RECT_F* pr)
     m_lpDX->m_lpDevice->SetShader(2);
 
     // Set up a quad.
-    SIMPLEVERTEX verts[4]{};
+    MDVERTEX verts[4]{};
     for (int i = 0; i < 4; i++)
     {
         verts[i].x = (i % 2 == 0) ? static_cast<float>(-m_lpDX->m_client_width / 2 + pr->left) : static_cast<float>(-m_lpDX->m_client_width / 2 + pr->right);
@@ -1245,14 +1245,16 @@ void CPluginShell::DrawDarkTranslucentBox(D2D1_RECT_F* pr)
         verts[i].z = 0.0f;
         verts[i].a = 0xD0 / 255.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f; // 0xD0000000
     }
+    XMMATRIX ortho = XMMatrixOrthographicLH(static_cast<float>(m_lpDX->m_client_width), static_cast<float>(m_lpDX->m_client_height), 0.0f, 1.0f);
+    m_lpDX->m_lpDevice->SetTransform(3, &ortho);
 
-    m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(SIMPLEVERTEX));
+    m_lpDX->m_lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(MDVERTEX));
 
     // Undo unusual state changes.
     m_lpDX->m_lpDevice->SetDepth(true);
     m_lpDX->m_lpDevice->SetBlendState(false);
-    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-    //m_lpDX->m_lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+    XMMATRIX identity = XMMatrixIdentity();
+    m_lpDX->m_lpDevice->SetTransform(3, &identity);
 }
 
 void CPluginShell::RenderBuiltInTextMsgs()
@@ -1262,9 +1264,7 @@ void CPluginShell::RenderBuiltInTextMsgs()
     {
         D2D1_RECT_F r{};
         DWORD textColor = 0xFFFFFFFF;
-        DWORD backColor = 0xD0000000;
         D2D1_COLOR_F fTextColor = D2D1::ColorF(textColor, static_cast<FLOAT>(((textColor & 0xFF000000) >> 24) / 255.0f));
-        D2D1_COLOR_F fBackColor = D2D1::ColorF(backColor, static_cast<FLOAT>(((backColor & 0xFF000000) >> 24) / 255.0f));
 
         if (m_show_help)
         {
@@ -1282,14 +1282,13 @@ void CPluginShell::RenderBuiltInTextMsgs()
             m_helpManual.SetVisible(true);
 
             m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
-            m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, DT_CALCRECT, textColor, true, backColor);
+            m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, DT_CALCRECT, textColor, false);
 
             r.top += static_cast<FLOAT>(m_upper_left_corner_y);
             r.left += static_cast<FLOAT>(m_left_edge);
             r.right += static_cast<FLOAT>(m_left_edge + PLAYLIST_INNER_MARGIN * 2.0f);
             r.bottom += static_cast<FLOAT>(m_upper_left_corner_y + PLAYLIST_INNER_MARGIN * 2.0f);
             DrawDarkTranslucentBox(&r);
-            m_helpManual.SetTextBox(fBackColor, r);
 
             r.top += PLAYLIST_INNER_MARGIN;
             r.left += PLAYLIST_INNER_MARGIN;
@@ -1297,7 +1296,7 @@ void CPluginShell::RenderBuiltInTextMsgs()
             r.bottom -= PLAYLIST_INNER_MARGIN;
             m_helpManual.SetContainer(r);
             m_helpManual.SetText(AutoWide(reinterpret_cast<char*>(g_szHelp)));
-            m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, 0, textColor, true, backColor);
+            m_text.DrawD2DText(GetFont(HELPSCREEN_FONT), &m_helpManual, AutoWide(reinterpret_cast<char*>(g_szHelp)), &r, 0, textColor, false);
 
             m_text.RegisterElement(&m_helpManual);
 
@@ -1462,14 +1461,11 @@ void CPluginShell::RenderPlaylist()
             int end = std::min(nSongs, (cur_page + 1) * disp_lines);
 
             // Draw dark box around where the playlist will go.
-            DWORD dwBoxColor = 0xD0000000;
-            D2D1_COLOR_F fBoxColor = D2D1::ColorF(dwBoxColor, GetAlpha(dwBoxColor));
             r.top = static_cast<FLOAT>(m_upper_left_corner_y);
             r.left = static_cast<FLOAT>(m_left_edge);
             r.right = static_cast<FLOAT>(m_left_edge + m_playlist_width_pixels + PLAYLIST_INNER_MARGIN * 2.0f);
             r.bottom = static_cast<FLOAT>(m_upper_left_corner_y + (end - start) * nFontHeight + PLAYLIST_INNER_MARGIN * 2.0f);
             DrawDarkTranslucentBox(&r);
-            m_playlist_song[0].SetTextBox(fBoxColor, r);
 
             // Draw playlist text.
             int y = m_upper_left_corner_y + static_cast<int>(PLAYLIST_INNER_MARGIN);

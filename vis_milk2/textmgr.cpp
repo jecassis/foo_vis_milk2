@@ -444,7 +444,7 @@ int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wch
     if (flags & DT_CALCRECT)
     {
         *pRect = pElement->GetBounds(m_lpDX->GetDWriteFactory());
-        return static_cast<int>(ceilf(pRect->bottom - pRect->top));
+        return static_cast<int>(std::ceil(pRect->bottom - pRect->top));
     }
 
 #ifdef _FOOBAR
