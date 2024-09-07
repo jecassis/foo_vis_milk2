@@ -1350,8 +1350,13 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     else if (UI_mode == UI_MENU) // Case 2: menu is up and gets the keyboard input (menu navigation).
     {
         //assert(g_plugin.m_pCurMenu);
+#ifdef TIMER_TP
+        if (g_plugin.m_pCurMenu->HandleKeydown(reinterpret_cast<HWND>(&s_cs), WM_KEYDOWN, nChar, nRepCnt) == 0)
+            return;
+#else
         if (g_plugin.m_pCurMenu->HandleKeydown(get_wnd(), WM_KEYDOWN, nChar, nRepCnt) == 0)
             return;
+#endif
     }
     else // Case 3: Handle non-character keys (virtual keys) (normal case).
     {

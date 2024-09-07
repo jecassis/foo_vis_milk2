@@ -443,7 +443,14 @@ void CMilkMenu::OnWaitStringAccept(wchar_t* szNewString)
 // Returns `FALSE` if it handled the key, `TRUE` if it didn't.
 LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _FOOBAR
+#define ClearText() { EnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(hwnd)); g_plugin.ClearText(); LeaveCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(hwnd)); }
+#define UndrawMenus() { EnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(hwnd)); g_plugin.m_pCurMenu->UndrawMenus(); LeaveCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(hwnd)); }
+#else
+#define ClearText g_plugin.ClearText
+#define UndrawMenus g_plugin.m_pCurMenu->UndrawMenus
     UNREFERENCED_PARAMETER(hwnd);
+#endif
     UNREFERENCED_PARAMETER(message);
     int nRepeat = LOWORD(lParam);
 
@@ -489,19 +496,19 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 return FALSE;
             case VK_ESCAPE:
                 g_plugin.m_UI_mode = UI_REGULAR;
-                g_plugin.ClearText();
+                ClearText();
                 return FALSE;
             case VK_BACK:
             case VK_LEFT:
                 if (m_pParentMenu)
                 {
                     g_plugin.m_pCurMenu = m_pParentMenu;
-                    g_plugin.m_pCurMenu->UndrawMenus();
+                    UndrawMenus();
                 }
                 else
                 {
                     g_plugin.m_UI_mode = UI_REGULAR; // exit the menu
-                    g_plugin.ClearText();
+                    ClearText();
                 }
                 return FALSE;
             case VK_RETURN:
@@ -510,7 +517,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 if (m_nCurSel < m_nChildMenus)
                 {
                     g_plugin.m_pCurMenu = m_ppChildMenu[m_nCurSel]; // Go to sub-menu.
-                    g_plugin.m_pCurMenu->UndrawMenus();
+                    UndrawMenus();
                 }
                 else
                 {
@@ -541,7 +548,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                                 g_plugin.m_waitstring.szToolTip[0] = 0;
                                 g_plugin.m_waitstring.nCursorPos = wcslen(g_plugin.m_waitstring.szText); // set the starting edit position
                             }
-                            g_plugin.ClearText();
+                            ClearText();
                             break;
                         case MENUITEMTYPE_BOOL:
                             *((bool*)addr) = !(*((bool*)addr));
@@ -580,7 +587,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             g_plugin.m_waitstring.nCursorPos = strnlen_s(reinterpret_cast<char*>(g_plugin.m_waitstring.szText), ARRAYSIZE(g_plugin.m_waitstring.szText));
                             if (pItem->m_nLastCursorPos < g_plugin.m_waitstring.nCursorPos)
                                 g_plugin.m_waitstring.nCursorPos = pItem->m_nLastCursorPos;
-                            g_plugin.ClearText();
+                            ClearText();
                             break;
                         /*
                         case MENUITEMTYPE_OSC:
@@ -759,4 +766,6 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 return TRUE;
         }
     }
+#undef ClearText
+#undef UndrawMenus
 }
