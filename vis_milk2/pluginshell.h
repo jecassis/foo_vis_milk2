@@ -45,11 +45,11 @@
 
 typedef struct
 {
-    wchar_t szFace[256];
-    int nSize; // size requested at font creation time
-    int bBold;
-    int bItalic;
-    int bAntiAliased;
+    wchar_t szFace[96];
+    uint16_t nSize; // size requested at font creation time
+    uint16_t bBold;
+    uint16_t bItalic;
+    uint16_t bAntiAliased;
 } td_fontinfo;
 
 typedef struct

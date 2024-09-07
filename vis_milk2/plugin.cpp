@@ -912,6 +912,8 @@ bool CPlugin::PanelSettings(plugin_config* settings)
     wcscpy_s(m_szMsgIniFile, settings->m_szMsgIniFile);
     wcscpy_s(m_szImgIniFile, settings->m_szImgIniFile);
 
+    memcpy_s(m_fontinfo, sizeof(m_fontinfo), settings->m_fontinfo, sizeof(settings->m_fontinfo));
+
     return true;
 }
 #endif
@@ -977,7 +979,7 @@ void StripComments(char* str)
 // about what went wrong.
 int CPlugin::AllocateMilkDropNonDX11()
 {
-    /*
+    /*   
     if (!m_hBlackBrush)
         m_hBlackBrush = CreateSolidBrush(RGB(0,0,0));
     */

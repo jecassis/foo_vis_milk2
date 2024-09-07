@@ -45,6 +45,7 @@ static cfg_float cfg_fTimeBetweenRandomSongTitles(guid_cfg_fTimeBetweenRandomSon
 static cfg_float cfg_fTimeBetweenRandomCustomMsgs(guid_cfg_fTimeBetweenRandomCustomMsgs, static_cast<double>(default_fTimeBetweenRandomCustomMsgs));
 static cfg_string cfg_szTitleFormat(guid_cfg_szTitleFormat, default_szTitleFormat);
 static cfg_string cfg_szArtworkFormat(guid_cfg_szArtworkFormat, default_szArtworkFormat);
+static cfg_blob cfg_stFontInfo(guid_cfg_stFontInfo, default_stFontInfo, sizeof(td_fontinfo) * (NUM_BASIC_FONTS + NUM_EXTRA_FONTS));
 static advconfig_branch_factory g_advconfigBranch("MilkDrop", guid_advconfig_branch, advconfig_branch::guid_branch_vis, 0);
 static advconfig_checkbox_factory cfg_bDebugOutput("Debug output", "milk2.bDebugOutput", guid_cfg_bDebugOutput, guid_advconfig_branch, order_bDebugOutput, default_bDebugOutput, 0);
 static advconfig_string_factory cfg_szPresetDir("Preset directory", "milk2.szPresetDir", guid_cfg_szPresetDir, guid_advconfig_branch, order_szPresetDir, "", advconfig_entry_string::flag_is_folder_path);
@@ -354,7 +355,10 @@ void milk2_preferences_page::OnButtonPushed(UINT uNotifyCode, int nID, CWindow w
             OpenToEdit(default_szMsgIniFile, MSG_INIFILE);
             break;
         case ID_FONTS:
-            //WASABI_API_DIALOGBOXPARAMW(IDD_FONTDIALOG, get_wnd(), FontDialogProc, (LPARAM)this);
+            {
+                FontDlg dlg; INT_PTR ret = dlg.DoModal(get_wnd(), reinterpret_cast<LPARAM>(this));
+                //if (ret == IDOK && HasChanged()) {}
+            }
             break;
     }
 }
@@ -483,6 +487,8 @@ void milk2_preferences_page::reset()
     SetDlgItemText(IDC_TITLE_FORMAT, buf);
     swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
     SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
+
+    cfg_stFontInfo.set(default_stFontInfo, sizeof(td_fontinfo) * (NUM_BASIC_FONTS + NUM_EXTRA_FONTS));
 
     OnChanged();
 }
@@ -827,6 +833,211 @@ void milk2_preferences_page::OpenToEdit(LPWSTR szDefault, LPCWSTR szFilename)
         }
     }
 }
+
+static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_milk2_factory;
+#pragma endregion
+
+#pragma region Font Dialog
+int CALLBACK EnumFontsProc(
+    CONST LOGFONT* lplf, // logical font data
+    CONST TEXTMETRIC* lptm, // physical font data
+    DWORD dwType, // font type
+    LPARAM lpData // application-defined data
+)
+{
+    // Skip enumerating duplicate fonts.
+    if (lplf->lfFaceName[0] == L'@' || lplf->lfFaceName[0] == L'8')
+        return 1;
+
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT1), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT2), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT3), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT4), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT5), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT6), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT7), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT8), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+    SendMessage(GetDlgItem((HWND)lpData, IDC_FONT9), CB_ADDSTRING, 0, (LPARAM)(lplf->lfFaceName));
+
+    return 1;
+}
+
+#define InitFont(n, m) InitFontI(&fonts[n - 1], IDC_FONT##n, IDC_FONTSIZE##n, IDC_FONTBOLD##n, IDC_FONTITAL##n, IDC_FONTAA##n, hdlg, IDC_FONT_NAME_##n, m)
+void milk2_preferences_page::InitFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2, DWORD bold_id, DWORD ital_id, DWORD aa_id, HWND hdlg, DWORD ctrl4, wchar_t* szFontName)
+{
+    HWND namebox = ctrl4 ? ::GetDlgItem(hdlg, ctrl4) : NULL;
+    HWND fontbox = ::GetDlgItem(hdlg, ctrl1);
+    HWND sizebox = ::GetDlgItem(hdlg, ctrl2);
+    ::ShowWindow(fontbox, SW_NORMAL);
+    ::ShowWindow(sizebox, SW_NORMAL);
+    ::ShowWindow(::GetDlgItem(hdlg, bold_id), SW_NORMAL);
+    ::ShowWindow(::GetDlgItem(hdlg, ital_id), SW_NORMAL);
+    ::ShowWindow(::GetDlgItem(hdlg, aa_id), SW_NORMAL);
+    if (namebox && szFontName && szFontName[0])
+    {
+        ::ShowWindow(namebox, SW_NORMAL);
+        wchar_t buf[256];
+        swprintf_s(buf, L"%s:", szFontName);
+        ::SetWindowText(::GetDlgItem(hdlg, ctrl4), buf);
+    }
+
+    // Set selection.
+    LRESULT nPos = ::SendMessage(fontbox, CB_FINDSTRINGEXACT, -1, (LPARAM)fi->szFace);
+    if (nPos == CB_ERR)
+        nPos = 0;
+    ::SendMessage(fontbox, CB_SETCURSEL, nPos, 0);
+
+    // Font size box.
+    int nSel = 0;
+    int nMax = sizeof(g_nFontSize) / sizeof(int);
+    for (int i = 0; i < nMax; i++)
+    {
+        wchar_t buf[256];
+        int s = g_nFontSize[nMax - 1 - i];
+        swprintf_s(buf, L" %2d ", s);
+        ::SendMessage(sizebox, CB_ADDSTRING, i, (LPARAM)buf);
+        if (s == fi->nSize)
+            nSel = i;
+    }
+    ::SendMessage(sizebox, CB_SETCURSEL, nSel, 0);
+
+    // Font options box.
+    ::CheckDlgButton(hdlg, bold_id, fi->bBold);
+    ::CheckDlgButton(hdlg, ital_id, fi->bItalic);
+    ::CheckDlgButton(hdlg, aa_id, fi->bAntiAliased);
+}
+
+#define SaveFont(n) SaveFontI(&fonts[n - 1], IDC_FONT##n, IDC_FONTSIZE##n, IDC_FONTBOLD##n, IDC_FONTITAL##n, IDC_FONTAA##n, hdlg)
+void milk2_preferences_page::SaveFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2, DWORD bold_id, DWORD ital_id, DWORD aa_id, HWND hdlg)
+{
+    HWND fontbox = ::GetDlgItem(hdlg, ctrl1);
+    HWND sizebox = ::GetDlgItem(hdlg, ctrl2);
+
+    // Font face.
+    LRESULT t = ::SendMessage(fontbox, CB_GETCURSEL, 0, 0);
+    SendMessageW(fontbox, CB_GETLBTEXT, t, (LPARAM)fi->szFace);
+
+    // Font size.
+    t = ::SendMessage(sizebox, CB_GETCURSEL, 0, 0);
+    if (t != CB_ERR)
+    {
+        int nMax = sizeof(g_nFontSize) / sizeof(int);
+        fi->nSize = g_nFontSize[nMax - 1 - t];
+    }
+
+    // Font options.
+    fi->bBold = static_cast<bool>(::IsDlgButtonChecked(hdlg, bold_id)); //DlgItemIsChecked(hdlg, bold_id);
+    fi->bItalic = static_cast<bool>(::IsDlgButtonChecked(hdlg, ital_id)); //DlgItemIsChecked(hdlg, ital_id);
+    fi->bAntiAliased = static_cast<bool>(::IsDlgButtonChecked(hdlg, aa_id)); //DlgItemIsChecked(hdlg, aa_id);
+}
+
+void milk2_preferences_page::ScootControl(HWND hwnd, int ctrl_id, int dx, int dy)
+{
+    RECT r;
+    ::GetWindowRect(::GetDlgItem(hwnd, ctrl_id), &r);
+    ::ScreenToClient(hwnd, (LPPOINT)&r);
+    ::SetWindowPos(::GetDlgItem(hwnd, ctrl_id), NULL, r.left + dx, r.top + dy, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+}
+
+BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+#ifdef _DEBUG
+        OutputDebugMessage("FontDlgProc: ", hdlg, msg, wParam, lParam);
+#endif
+        case WM_INITDIALOG:
+            {
+                HDC hdc = ::GetDC(hdlg);
+                if (hdc)
+                {
+                    EnumFonts(hdc, NULL, &EnumFontsProc, (LPARAM)hdlg);
+                    ::ReleaseDC(hdlg, hdc);
+                }
+
+                td_fontinfo fonts[NUM_BASIC_FONTS + NUM_EXTRA_FONTS]{};
+                auto v = cfg_stFontInfo.get();
+                if (v.is_valid() && v->size() == sizeof(fonts))
+                    memcpy_s(fonts, sizeof(fonts), v->get_ptr(), v->size());
+
+                InitFont(1, 0);
+                InitFont(2, 0);
+                InitFont(3, 0);
+                InitFont(4, 0);
+#if (NUM_EXTRA_FONTS >= 1)
+                InitFont(5, WASABI_API_LNGSTRINGW(IDS_EXTRA_FONT_1_NAME));
+#endif
+#if (NUM_EXTRA_FONTS >= 2)
+                InitFont(6, WASABI_API_LNGSTRINGW(IDS_EXTRA_FONT_2_NAME));
+#endif
+#if (NUM_EXTRA_FONTS >= 3)
+                InitFont(7, EXTRA_FONT_3_NAME);
+#endif
+#if (NUM_EXTRA_FONTS >= 4)
+                InitFont(5, EXTRA_FONT_4_NAME);
+#endif
+#if (NUM_EXTRA_FONTS >= 5)
+                InitFont(9, EXTRA_FONT_5_NAME);
+#endif
+
+                // Finally, if not all extra fonts are in use, shrink the window size and
+                // move up any controls that were at the bottom.
+                RECT r;
+                ::GetWindowRect(hdlg, &r);
+                if (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS > 0)
+                {
+                    int scoot_factor = static_cast<int>(176.0f * (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS) / static_cast<float>(MAX_EXTRA_FONTS));
+                    ::SetWindowPos(hdlg, NULL, 0, 0, r.right - r.left, r.bottom - r.top - scoot_factor, SWP_NOMOVE | SWP_NOZORDER);
+                    ScootControl(hdlg, IDC_FONT_TEXT, 0, -scoot_factor);
+                    ScootControl(hdlg, IDOK, 0, -scoot_factor);
+                    ScootControl(hdlg, IDCANCEL, 0, -scoot_factor);
+                }
+            }
+            break;
+        case WM_COMMAND:
+            {
+                int id = LOWORD(wParam);
+                switch (id)
+                {
+                    case IDOK:
+                        {
+                            td_fontinfo fonts[NUM_BASIC_FONTS + NUM_EXTRA_FONTS]{};
+                            SaveFont(1);
+                            SaveFont(2);
+                            SaveFont(3);
+                            SaveFont(4);
+#if (NUM_EXTRA_FONTS >= 1)
+                            SaveFont(5);
+#endif
+#if (NUM_EXTRA_FONTS >= 2)
+                            SaveFont(6);
+#endif
+#if (NUM_EXTRA_FONTS >= 3)
+                            SaveFont(7);
+#endif
+#if (NUM_EXTRA_FONTS >= 4)
+                            SaveFont(5);
+#endif
+#if (NUM_EXTRA_FONTS >= 5)
+                            SaveFont(9);
+#endif
+
+                            cfg_stFontInfo.set(fonts, sizeof(fonts));
+                        }
+                        ::EndDialog(hdlg, id);
+                        break;
+                    case IDCANCEL:
+                        ::EndDialog(hdlg, id);
+                        break;
+                }
+            }
+            break;
+        case WM_DESTROY:
+            return 0;
+    }
+
+    return FALSE;
+}
 #pragma endregion
 
 #pragma region Configuration Settings
@@ -940,6 +1151,17 @@ void milk2_config::reset()
 
     //--- Paths
     update_paths();
+
+    //--- Fonts
+    update_fonts();
+}
+
+// Initializes all font dialog variables.
+void milk2_config::update_fonts()
+{
+    auto v = cfg_stFontInfo.get();
+    if (v.is_valid() && v->size() == sizeof(settings.m_fontinfo))
+        memcpy_s(settings.m_fontinfo, sizeof(settings.m_fontinfo), v->get_ptr(), v->size());
 }
 
 // Resolves profile directory, taking care of the case where the path contains

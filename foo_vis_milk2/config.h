@@ -116,6 +116,9 @@ static constexpr GUID guid_cfg_szArtworkFormat = {
 static constexpr GUID guid_cfg_bSkipCompShader = {
     0xa9220355, 0x1382, 0x41f3, {0xbd, 0x41, 0x7e, 0xb3, 0xe, 0x94, 0xa6, 0x42}
 }; // {A9220355-1382-41F3-BD41-7EB30E94A642}
+static constexpr GUID guid_cfg_stFontInfo = {
+    0x9794db85, 0xa1cf, 0x4532, {0x9e, 0x1b, 0x56, 0xec, 0xed, 0x22, 0x24, 0x3a}
+}; // {9794DB85-A1CF-4532-9E1B-56ECED22243A}
 
 // Settings controlled in advanced preferences.
 static constexpr GUID guid_advconfig_branch = {
@@ -190,6 +193,8 @@ static constexpr bool default_allow_page_tearing_fs = false;
 static constexpr const char* default_szTitleFormat = "%title%";
 static constexpr const char* default_szArtworkFormat = "";
 static constexpr bool default_bSkipCompShader = false;
+static constexpr auto _stFonts = F<NUM_BASIC_FONTS + NUM_EXTRA_FONTS>();
+static constexpr const td_fontinfo* default_stFontInfo = _stFonts.fontinfo;
 
 static WCHAR default_szPluginsDirPath[MAX_PATH];
 static WCHAR default_szConfigIniFile[MAX_PATH];
@@ -266,6 +271,9 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     END_MSG_MAP()
     // clang-format on
 
+    BOOL PluginShellFontDialogProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
+    static void ScootControl(HWND hwnd, int ctrl_id, int dx, int dy);
+
   private:
     BOOL OnInitDialog(CWindow, LPARAM);
     LRESULT OnNotify(int idCtrl, LPNMHDR pnmh);
@@ -290,6 +298,8 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     void UpdateMaxFps(int screenmode) const;
     void SaveMaxFps(int screenmode) const;
     void OpenToEdit(LPWSTR szDefault, LPCWSTR szFilename);
+    void InitFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2, DWORD bold_id, DWORD ital_id, DWORD aa_id, HWND hdlg, DWORD ctrl4, wchar_t* szFontName);
+    void SaveFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2, DWORD bold_id, DWORD ital_id, DWORD aa_id, HWND hdlg);
 
     const preferences_page_callback::ptr m_callback;
 
@@ -311,6 +321,31 @@ class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_pa
         //"http://help.foobar2000.org/" << core_version_info::g_get_version_string() << "/" << "preferences" << "/" << pfc::print_guid(get_guid()) << "/" << get_name();
         return true;
     }
+};
+
+class FontDlg : public CDialogImpl<FontDlg>
+{
+  public:
+    enum font_dialog_id
+    {
+        IDD = IDD_FONTDIALOG
+    };
+
+    static INT_PTR CALLBACK StartDialogProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        if (msg == WM_INITDIALOG && lParam > 0 && ::GetWindowLongPtr(hdlg, GWLP_USERDATA) == 0)
+            ::SetWindowLongPtr(hdlg, GWLP_USERDATA, (LONG_PTR)lParam);
+
+        milk2_preferences_page* p = reinterpret_cast<milk2_preferences_page*>(::GetWindowLongPtr(hdlg, GWLP_USERDATA));
+
+        if (p)
+            return p->PluginShellFontDialogProc(hdlg, msg, wParam, lParam);
+        else
+            return FALSE;
+    }
+
+    BEGIN_MSG_MAP(FontDlg)
+    END_MSG_MAP()
 };
 
 class milk2_config
@@ -335,5 +370,6 @@ class milk2_config
     uint32_t m_sentinel = MAKEFOURCC('M', 'I', 'L', 'K'); //('K' << 24 | 'L' << 16 | 'I' << 8 | 'M');
     uint32_t m_version = 3;
 
+    void update_fonts();
     void update_paths();
 };

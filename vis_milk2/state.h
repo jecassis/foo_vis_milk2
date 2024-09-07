@@ -88,7 +88,7 @@ class CBlendableFloat
         return val;
     };
 
-    float eval(float fTime); // call this from animation code.  if fTime < 0, it will return unblended 'val'.
+    float eval(float fTime); // call this from animation code; if fTime<0, it will return unblended 'val'
     void StartBlendFrom(CBlendableFloat* f_from, float fAnimTime, float fDuration);
 
   protected:
