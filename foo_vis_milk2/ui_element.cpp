@@ -10,6 +10,10 @@
 
 #pragma hdrstop
 
+#ifdef __AVX__
+#error `/arch:AVX`, `/arch:AVX2` or `/arch:AVX512` compiler flag set.
+#endif
+
 //#ifdef __clang__
 //#pragma clang diagnostic ignored "-Wcovered-switch-default"
 //#pragma clang diagnostic ignored "-Wswitch-enum"
@@ -109,6 +113,12 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
     HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
     SetIcon(hIcon, FALSE); //SetClassLongPtr(get_wnd(), GCLP_HICON, (LONG_PTR)hIcon);
 #endif
+
+    if (!XMVerifyCPUSupport()) {
+        FB2K_console_print(core_api::get_my_file_name(), ": CPU does not support mathematics intrinsics. Exiting.");
+        return E_FAIL;
+    }
+
     if (!s_milk2)
     {
         ResolvePwd();

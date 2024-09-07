@@ -25,7 +25,20 @@ static cfg_bool cfg_allow_page_tearing_fs(guid_cfg_allow_page_tearing_fs, defaul
 static cfg_bool cfg_bSongTitleAnims(guid_cfg_bSongTitleAnims, default_bSongTitleAnims);
 static cfg_bool cfg_bAutoGamma(guid_cfg_bAutoGamma, default_bAutoGamma);
 static cfg_bool cfg_bHardCutsDisabled(guid_cfg_bHardCutsDisabled, default_bHardCutsDisabled);
+static cfg_bool cfg_bShowFPS(guid_cfg_bShowFPS, default_bShowFPS);
+static cfg_bool cfg_bShowRating(guid_cfg_bShowRating, default_bShowRating);
+static cfg_bool cfg_bShowPresetInfo(guid_cfg_bShowPresetInfo, default_bShowPresetInfo);
+//static cfg_bool cfg_bShowDebugInfo(guid_cfg_bShowDebugInfo, default_bShowDebugInfo);
+static cfg_bool cfg_bShowSongTitle(guid_cfg_bShowSongTitle, default_bShowSongTitle);
+static cfg_bool cfg_bShowSongTime(guid_cfg_bShowSongTime, default_bShowSongTime);
+static cfg_bool cfg_bShowSongLen(guid_cfg_bShowSongLen, default_bShowSongLen);
+static cfg_bool cfg_bShowShaderHelp(guid_cfg_bShowShaderHelp, default_bShowShaderHelp);
+//static cfg_bool cfg_bTexSizeWasAutoPow2(guid_cfg_bTexSizeWasAutoPow2, default_bTexSizeWasAutoPow2);
+//static cfg_bool cfg_bTexSizeWasAutoExact(guid_cfg_bTexSizeWasAutoExact, default_bTexSizeWasAutoExact);
+static cfg_bool cfg_bPresetLockedByCode(guid_cfg_bPresetLockedByCode, default_bPresetLockedByCode);
+static cfg_bool cfg_bEnableDownmix(guid_cfg_bEnableDownmix, default_bEnableDownmix);
 static cfg_bool cfg_bShowAlbum(guid_cfg_bShowAlbum, default_bShowAlbum);
+static cfg_bool cfg_bEnableHDR(guid_cfg_bEnableHDR, default_bEnableHDR);
 static cfg_int cfg_max_fps_fs(guid_cfg_max_fps_fs, static_cast<int64_t>(default_max_fps_fs));
 static cfg_int cfg_n16BitGamma(guid_cfg_n16BitGamma, static_cast<int64_t>(default_n16BitGamma));
 static cfg_int cfg_nMaxBytes(guid_cfg_nMaxBytes, static_cast<int64_t>(default_nMaxBytes));
@@ -35,6 +48,12 @@ static cfg_int cfg_nGridX(guid_cfg_nGridX, static_cast<int64_t>(default_nGridX))
 static cfg_int cfg_nTexSizeX(guid_cfg_nTexSizeX, static_cast<int64_t>(default_nTexSizeX));
 static cfg_int cfg_nTexBitsPerCh(guid_cfg_nTexBitsPerCh, static_cast<int64_t>(default_nTexBitsPerCh));
 static cfg_int cfg_nMaxPSVersion(guid_cfg_nMaxPSVersion, static_cast<int64_t>(default_nMaxPSVersion));
+//static cfg_int cfg_nTexSizeY(guid_cfg_nTexSizeY, static_cast<int64_t>(default_nTexSizeY));
+//static cfg_int cfg_nGridY(guid_cfg_nGridY, static_cast<int64_t>(default_nGridY));
+static cfg_int cfg_nBackBufferFormat(guid_cfg_nBackBufferFormat, static_cast<int64_t>(default_nBackBufferFormat));
+static cfg_int cfg_nDepthBufferFormat(guid_cfg_nDepthBufferFormat, static_cast<int64_t>(default_nDepthBufferFormat));
+static cfg_int cfg_nBackBufferCount(guid_cfg_nBackBufferCount, static_cast<int64_t>(default_nBackBufferCount));
+static cfg_int cfg_nMinFeatureLevel(guid_cfg_nMinFeatureLevel, static_cast<int64_t>(default_nMinFeatureLevel));
 static cfg_float cfg_fTimeBetweenPresets(guid_cfg_fTimeBetweenPresets, static_cast<double>(default_fTimeBetweenPresets));
 static cfg_float cfg_fTimeBetweenPresetsRand(guid_cfg_fTimeBetweenPresetsRand, static_cast<double>(default_fTimeBetweenPresetsRand));
 static cfg_float cfg_fBlendTimeAuto(guid_cfg_fBlendTimeAuto, static_cast<double>(default_fBlendTimeAuto));
@@ -1262,6 +1281,9 @@ void milk2_config::parse(ui_element_config_parser& parser)
         parser >> version;
         switch (version)
         {
+            case 3:
+                //parser.read_raw(settings.m_fontinfo, sizeof(settings.m_fontinfo));
+                break;
             case 2:
                 parser >> settings.m_bShowFPS;
                 parser >> settings.m_bShowRating;
@@ -1302,6 +1324,8 @@ void milk2_config::build(ui_element_config_builder& builder)
     builder << m_sentinel;
     builder << m_version;
 
+    //builder.write_raw(settings.m_fontinfo, sizeof(settings.m_fontinfo));
+
     //builder << m_multisample_fs;
     //builder << m_multisample_w;
 
@@ -1327,14 +1351,14 @@ void milk2_config::build(ui_element_config_builder& builder)
     cfg_bSongTitleAnims = settings.m_bSongTitleAnims;
     cfg_bSkipCompShader = settings.m_bSkipCompShader;
 
-    builder << settings.m_bShowFPS;
-    builder << settings.m_bShowRating;
-    builder << settings.m_bShowPresetInfo;
-    //builder << settings.m_bShowDebugInfo;
-    builder << settings.m_bShowSongTitle;
-    builder << settings.m_bShowSongTime;
-    builder << settings.m_bShowSongLen;
-    builder << settings.m_bShowShaderHelp;
+    cfg_bShowFPS = settings.m_bShowFPS;
+    cfg_bShowRating = settings.m_bShowRating;
+    cfg_bShowPresetInfo = settings.m_bShowPresetInfo;
+    //cfg_bShowDebugInfo = settings.m_bShowDebugInfo;
+    cfg_bShowSongTitle = settings.m_bShowSongTitle;
+    cfg_bShowSongTime = settings.m_bShowSongTime;
+    cfg_bShowSongLen = settings.m_bShowSongLen;
+    cfg_bShowShaderHelp = settings.m_bShowShaderHelp;
 
     //builder << settings.m_bFixPinkBug;
     cfg_n16BitGamma = settings.m_n16BitGamma;
@@ -1351,12 +1375,12 @@ void milk2_config::build(ui_element_config_builder& builder)
 
     cfg_nCanvasStretch = settings.m_nCanvasStretch;
     cfg_nTexSizeX = settings.m_nTexSizeX;
-    builder << settings.m_nTexSizeY;
-    builder << settings.m_bTexSizeWasAutoPow2;
-    builder << settings.m_bTexSizeWasAutoExact;
+    //builder << settings.m_nTexSizeY;
+    //builder << settings.m_bTexSizeWasAutoPow2;
+    //builder << settings.m_bTexSizeWasAutoExact;
     cfg_nTexBitsPerCh = settings.m_nTexBitsPerCh;
     cfg_nGridX = settings.m_nGridX;
-    builder << settings.m_nGridY;
+    //builder << settings.m_nGridY;
     cfg_nMaxPSVersion = settings.m_nMaxPSVersion;
     cfg_nMaxImages = settings.m_nMaxImages;
     cfg_nMaxBytes = settings.m_nMaxBytes;
@@ -1371,17 +1395,18 @@ void milk2_config::build(ui_element_config_builder& builder)
     cfg_fTimeBetweenRandomSongTitles = settings.m_fTimeBetweenRandomSongTitles;
     cfg_fTimeBetweenRandomCustomMsgs = settings.m_fTimeBetweenRandomCustomMsgs;
 
-    builder << settings.m_bPresetLockedByCode;
+    cfg_bPresetLockedByCode = settings.m_bPresetLockedByCode;
     //builder << settings.m_bPresetLockedByUser;
     //builder << settings.m_bMilkdropScrollLockState;
     //builder << settings.m_nFpsLimit;
 
-    builder << settings.m_bEnableDownmix;
-    builder << settings.m_bEnableHDR;
-    builder << settings.m_nBackBufferFormat;
-    builder << settings.m_nDepthBufferFormat;
-    builder << settings.m_nBackBufferCount;
+    cfg_nBackBufferFormat = settings.m_nBackBufferFormat;
+    cfg_nDepthBufferFormat = settings.m_nDepthBufferFormat;
+    cfg_nBackBufferCount = settings.m_nBackBufferCount;
+    cfg_nMinFeatureLevel = settings.m_nMinFeatureLevel;
+    cfg_bEnableDownmix = settings.m_bEnableDownmix;
     cfg_bShowAlbum = settings.m_bShowAlbum;
+    cfg_bEnableHDR = settings.m_bEnableHDR;
 
     cfg_szTitleFormat = pfc::utf8FromWide(settings.m_szTitleFormat);
     cfg_szArtworkFormat = pfc::utf8FromWide(settings.m_szArtworkFormat);
