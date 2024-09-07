@@ -524,12 +524,17 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_config.settings.m_bEnableDownmix ? MF_CHECKED : 0), IDM_ENABLE_DOWNMIX, TEXT("Downmix Channels"));
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING, IDM_SHOW_TITLE, TEXT("Launch Title"));
-    menu.AppendMenu(MF_STRING | (s_config.settings.m_bShowAlbum ? MF_CHECKED : 0), IDM_SHOW_ALBUM, TEXT("Show Album Art"));
-    menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING, IDM_SHOW_PREFS, TEXT("Launch Preferences Page"));
-    menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
     menu.AppendMenu(MF_STRING | (g_plugin.m_show_playlist ? MF_CHECKED : 0), IDM_SHOW_PLAYLIST, TEXT("Show Playlist"));
+    //menu.AppendMenu(MF_STRING | (g_plugin.m_show_presets ? MF_CHECKED : 0), IDM_SHOW_PRESETS, TEXT("Show Presets"));
+    //menu.AppendMenu(MF_STRING | (g_plugin.m_show_menu ? MF_CHECKED : 0), IDM_SHOW_MENU, TEXT("Show Menu"));
+    menu.AppendMenu(MF_STRING | (s_config.settings.m_bShowAlbum && std::filesystem::exists(s_config.settings.m_szImgIniFile)
+                                     ? MF_CHECKED
+                                     : (std::filesystem::exists(s_config.settings.m_szImgIniFile) ? 0 : MF_DISABLED)), 
+                    IDM_SHOW_ALBUM, TEXT("Show Album Art"));
+    menu.AppendMenu(MF_STRING, IDM_SHOW_TITLE, TEXT("Launch Title"));
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING | (g_plugin.m_show_help ? MF_CHECKED : 0), IDM_SHOW_HELP, TEXT("Show Help"));
+    menu.AppendMenu(MF_STRING, IDM_SHOW_PREFS, TEXT("Launch Preferences Page"));
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING | (s_fullscreen ? MF_CHECKED : 0), IDM_TOGGLE_FULLSCREEN, TEXT("Fullscreen"));
 

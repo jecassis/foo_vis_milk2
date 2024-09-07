@@ -298,6 +298,11 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
     SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
 
+    // Push buttons.
+    milk2_config::initialize_paths();
+    ::EnableWindow(GetDlgItem(ID_SPRITE), static_cast<BOOL>(std::filesystem::exists(default_szImgIniFile)));
+    ::EnableWindow(GetDlgItem(ID_MSG), static_cast<BOOL>(std::filesystem::exists(default_szMsgIniFile)));
+
     // clang-format off
     const std::map<UINT16, UINT16> tips = {
         {IDC_CB_SCROLLON3, IDS_START_WITH_PRESET_LOCK_ON_HELP},
@@ -909,12 +914,12 @@ void milk2_preferences_page::InitFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2
 
     // Font size box.
     int nSel = 0;
-    int nMax = sizeof(g_nFontSize) / sizeof(int);
+    int nMax = ARRAYSIZE(g_nFontSize);
     for (int i = 0; i < nMax; i++)
     {
         wchar_t buf[256];
-        int s = g_nFontSize[nMax - 1 - i];
-        swprintf_s(buf, L" %2d ", s);
+        int s = g_nFontSize[i]; //g_nFontSize[nMax - 1 - i];
+        swprintf_s(buf, L" %-2d", s);
         ::SendMessage(sizebox, CB_ADDSTRING, i, (LPARAM)buf);
         if (s == fi->nSize)
             nSel = i;
@@ -941,8 +946,8 @@ void milk2_preferences_page::SaveFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2
     t = ::SendMessage(sizebox, CB_GETCURSEL, 0, 0);
     if (t != CB_ERR)
     {
-        int nMax = sizeof(g_nFontSize) / sizeof(int);
-        fi->nSize = g_nFontSize[nMax - 1 - t];
+        //int nMax = ARRAYSIZE(g_nFontSize);
+        fi->nSize = g_nFontSize[t]; //fi->nSize = g_nFontSize[nMax - 1 - t];
     }
 
     // Font options.

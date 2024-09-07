@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -148,6 +148,30 @@
       <Filter>Shader Files</Filter>
     </FxCompile>
     <FxCompile Include="texture0ps.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\blur_vs.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\blur1_ps.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\blur2_ps.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\comp_ps.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\comp_vs.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\include.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\warp_ps.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\external\winamp\data\warp_vs.fx">
       <Filter>Shader Files</Filter>
     </FxCompile>
   </ItemGroup>

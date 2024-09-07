@@ -38,7 +38,9 @@
 #include <wrl/client.h>
 
 #include <array>
+#include <filesystem>
 #include <map>
+#include <vector>
 
 #include <helpers/foobar2000-lite+atl.h>
 #include <sdk/componentversion.h>
