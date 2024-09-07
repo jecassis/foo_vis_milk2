@@ -1533,8 +1533,8 @@ int CPlugin::AllocateMilkDropDX11()
             }
             p->tu = u;
             p->tv = v;
-            //p->tu_orig = u;
-            //p->tv_orig = v;
+            //p->tu0 = u;
+            //p->tv0 = v;
             p->rad = rad;
             p->ang = ang;
             p->a = 1.0f;
@@ -1677,8 +1677,8 @@ int CPlugin::AllocateMilkDropDX11()
 
             m_verts[nVert].rad = m_vertinfo[nVert].rad;
             m_verts[nVert].ang = m_vertinfo[nVert].ang;
-            m_verts[nVert].tu_orig =  m_verts[nVert].x * 0.5f + 0.5f + texel_offset_x;
-            m_verts[nVert].tv_orig = -m_verts[nVert].y * 0.5f + 0.5f + texel_offset_y;
+            m_verts[nVert].tu0 =  m_verts[nVert].x * 0.5f + 0.5f + texel_offset_x;
+            m_verts[nVert].tv0 = -m_verts[nVert].y * 0.5f + 0.5f + texel_offset_y;
 
             nVert++;
         }

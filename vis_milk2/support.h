@@ -64,7 +64,7 @@ typedef struct _MDVERTEX
     float x, y, z; // screen position + Z-buffer depth
     float r, g, b, a; // diffuse color
     float tu, tv; // DYNAMIC: texture coordinates for texture #0
-    float tu_orig, tv_orig; // STATIC
+    float tu0, tv0; // STATIC: texture coordinates for texture #1
     float rad, ang; // STATIC: texture coordinates for texture #2
 } MDVERTEX, *LPMDVERTEX;
 
