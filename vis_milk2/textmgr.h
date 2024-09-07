@@ -134,9 +134,10 @@ class TextElement : public ElementBase
     void SetText(__nullterminated WCHAR* text);
     void SetText(std::wstring text);
 
+    TextStyle* GetTextStyle() { return m_textStyle; }
     void SetTextStyle(TextStyle* textStyle) { m_textStyle = textStyle; }
 
-    //void FadeOut(float fadeOutTime);
+    void FadeOut(float fadeOutTime);
 
   protected:
     virtual void CalculateSize(IDWriteFactory* dwriteFactory);
@@ -150,10 +151,11 @@ class TextElement : public ElementBase
     bool m_hasShadow;
     bool m_hasBox;
     D2D1_RECT_F m_boxRect;
-    //bool m_isFadingOut;
-    //float m_fadeStartingOpacity;
-    //float m_fadeOutTime;
-    //float m_fadeOutTimeElapsed;
+
+    bool m_isFadingOut;
+    float m_fadeStartingOpacity;
+    float m_fadeOutTime;
+    float m_fadeOutTimeElapsed;
 
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_textColorBrush;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_shadowColorBrush;
@@ -182,8 +184,8 @@ class CTextManager
 #ifndef _FOOBAR
         m_b(0), m_nMsg{0, 0}, m_next_msg_start_ptr(nullptr), m_blit_additively(0),
 #endif
-        m_lpDX(nullptr), m_dwriteFactory(nullptr), m_d2dDevice(nullptr), m_d2dContext(nullptr){};
-    ~CTextManager(){};
+        m_lpDX(nullptr), m_dwriteFactory(nullptr), m_d2dDevice(nullptr), m_d2dContext(nullptr) {};
+    ~CTextManager() {};
 
     // Note: If unable to create `lpTextSurface` full size, do not create it at all!
     // Note: OK if `lpTextSurface == NULL`; in that case, text will be drawn directly to screen (but not until end anyway).
@@ -201,8 +203,6 @@ class CTextManager
     void DrawNow();
     void ClearAll(); // automatically called at end of `DrawNow()`
 
-    void ReleaseDeviceDependentResources();
-
     void Update(/* float timeTotal, float timeDelta */);
     void Render(D2D1::Matrix3x2F orientation2D = D2D1::Matrix3x2F::Identity());
 
@@ -210,12 +210,6 @@ class CTextManager
     void UnregisterElement(ElementBase* element);
 
   protected:
-    Microsoft::WRL::ComPtr<ID2D1Factory1> m_d2dFactory;
-    ID2D1Device* m_d2dDevice;
-    ID2D1DeviceContext* m_d2dContext;
-    IDWriteFactory* m_dwriteFactory;
-    Microsoft::WRL::ComPtr<ID2D1DrawingStateBlock> m_stateBlock;
-
 #ifndef _FOOBAR
     int m_blit_additively;
     int m_nMsg[2];
@@ -223,9 +217,26 @@ class CTextManager
     wchar_t* m_next_msg_start_ptr;
     int m_b;
 #endif
-    ElementSet m_elements;
+
+  private:
+    void ReleaseDeviceDependentResources();
+    void Release()
+    {
+        m_stateBlock.Reset();
+        m_d2dContext.Reset();
+        m_d2dFactory.Reset();
+        m_d2dDevice.Reset();
+        m_dwriteFactory.Reset();
+    }
 
     DXContext* m_lpDX;
+    Microsoft::WRL::ComPtr<ID2D1Factory1> m_d2dFactory;
+    Microsoft::WRL::ComPtr<ID2D1Device> m_d2dDevice;
+    Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_d2dContext;
+    Microsoft::WRL::ComPtr<IDWriteFactory1> m_dwriteFactory;
+    Microsoft::WRL::ComPtr<ID2D1DrawingStateBlock> m_stateBlock;
+
+    ElementSet m_elements;
 };
 
 #endif

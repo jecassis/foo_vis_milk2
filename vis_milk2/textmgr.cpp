@@ -208,7 +208,7 @@ TextElement::TextElement() :
     m_boxRect{},
     m_hasBox(false),
     m_hasShadow(false),
-    /*m_isFadingOut(false),*/
+    m_isFadingOut(false),
     m_textExtents{},
     m_textStyle(nullptr)
 {
@@ -310,13 +310,13 @@ void TextElement::SetText(std::wstring text)
     }
 }
 
-//void TextElement::FadeOut(float fadeOutTime)
-//{
-//    m_fadeStartingOpacity = m_textColorBrush->GetOpacity();
-//    m_fadeOutTime = fadeOutTime;
-//    m_fadeOutTimeElapsed = 0.0f;
-//    m_isFadingOut = true;
-//}
+void TextElement::FadeOut(float fadeOutTime)
+{
+    m_fadeStartingOpacity = m_textColorBrush->GetOpacity();
+    m_fadeOutTime = fadeOutTime;
+    m_fadeOutTimeElapsed = 0.0f;
+    m_isFadingOut = true;
+}
 
 void TextElement::CalculateSize(IDWriteFactory* dwriteFactory)
 {
@@ -354,12 +354,12 @@ void TextElement::CreateTextLayout(IDWriteFactory* dwriteFactory)
 #pragma region CTextManager
 void CTextManager::ReleaseDeviceDependentResources()
 {
-    //Finish();
+    Release();
 
-    ElementSet elements = m_elements;
-    for (auto iterator = elements.begin(); iterator != elements.end(); iterator++)
+    for (auto it = m_elements.begin(); it != m_elements.end();)
     {
-        (*iterator)->ReleaseDeviceDependentResources();
+        (*it)->ReleaseDeviceDependentResources();
+        it = m_elements.erase(it);
     }
 }
 
@@ -394,18 +394,7 @@ void CTextManager::Init(DXContext* lpDX
 
 void CTextManager::Finish()
 {
-    for (auto it = m_elements.begin(); it != m_elements.end();)
-    {
-        (*it)->ReleaseDeviceDependentResources();
-        it = m_elements.erase(it);
-    }
     ReleaseDeviceDependentResources();
-
-    m_stateBlock.Reset();
-    //m_d2dContext.Reset();
-    m_d2dFactory.Reset();
-    //m_d2dDevice.Reset();
-    //m_dwriteFactory.Reset();
 }
 
 void CTextManager::ClearAll()
