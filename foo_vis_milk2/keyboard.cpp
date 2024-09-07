@@ -823,15 +823,14 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                     {
                         g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] =
                             g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
-                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] =
-                            g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()) + MASH_APPLY_DELAY_FRAMES; // causes instant apply
                     }
                     else
                     {
                         for (int mash = 0; mash < MASH_SLOTS; mash++)
                         {
                             g_plugin.m_nMashPreset[mash] = g_plugin.m_nDirs + (warand() % (g_plugin.m_nPresets - g_plugin.m_nDirs));
-                            g_plugin.m_nLastMashChangeFrame[mash] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                            g_plugin.m_nLastMashChangeFrame[mash] = static_cast<int>(g_plugin.GetFrame()) + MASH_APPLY_DELAY_FRAMES; // causes instant apply
                         }
                     }
                 }
@@ -1436,7 +1435,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 {
                     for (UINT rep = 0; rep < nRepCnt; rep++)
                         g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = std::max(g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] - 1, g_plugin.m_nDirs);
-                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()); // causes delayed apply
                 }
                 else if (UI_mode == UI_LOAD)
                 {
@@ -1457,7 +1456,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 {
                     for (UINT rep = 0; rep < nRepCnt; rep++)
                         g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = std::min(g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] + 1, g_plugin.m_nPresets - 1);
-                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()); // causes delayed apply
                 }
                 else if (UI_mode == UI_LOAD)
                 {
@@ -1484,7 +1483,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 {
                     g_plugin.m_bUserPagedUp = true;
                     if (UI_mode == UI_MASHUP)
-                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()); // causes delayed apply
                 }
                 return;
             case VK_NEXT:
@@ -1492,7 +1491,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 {
                     g_plugin.m_bUserPagedDown = true;
                     if (UI_mode == UI_MASHUP)
-                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                        g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()); // causes delayed apply
                 }
                 return;
             case VK_HOME:
@@ -1503,7 +1502,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 else if (UI_mode == UI_MASHUP)
                 {
                     g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = g_plugin.m_nDirs;
-                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()); // causes delayed apply
                 }
                 return;
             case VK_END:
@@ -1514,7 +1513,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 else if (UI_mode == UI_MASHUP)
                 {
                     g_plugin.m_nMashPreset[g_plugin.m_nMashSlot] = g_plugin.m_nPresets - 1;
-                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame(); // causes delayed apply
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()); // causes delayed apply
                 }
                 return;
             case VK_DELETE:
@@ -1604,7 +1603,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             case VK_RETURN:
                 if (UI_mode == UI_MASHUP)
                 {
-                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = g_plugin.GetFrame() + MASH_APPLY_DELAY_FRAMES; // causes instant apply
+                    g_plugin.m_nLastMashChangeFrame[g_plugin.m_nMashSlot] = static_cast<int>(g_plugin.GetFrame()) + MASH_APPLY_DELAY_FRAMES; // causes instant apply
                 }
                 else if (UI_mode == UI_LOAD)
                 {

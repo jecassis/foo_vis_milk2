@@ -925,11 +925,15 @@ void milk2_ui_element::Update(DX::StepTimer const& timer)
 // Draws the scene.
 HRESULT milk2_ui_element::Render()
 {
-#ifdef TIMER_DX
     // Do not try to render anything before the first `Update()`.
+#ifdef TIMER_DX
     if (m_timer.GetFrameCount() == 0)
     {
         return S_OK;
+    }
+#else
+    if (g_plugin.GetFrame() == 0)
+    {
     }
 #endif
 

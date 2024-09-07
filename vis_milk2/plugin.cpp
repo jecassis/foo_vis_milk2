@@ -4271,7 +4271,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         m_nMashPreset[mash] = m_nPresets - 1;
 
                     // Apply changes, if it's time.
-                    if (m_nLastMashChangeFrame[mash] + MASH_APPLY_DELAY_FRAMES + 1 == GetFrame())
+                    if (m_nLastMashChangeFrame[mash] + MASH_APPLY_DELAY_FRAMES + 1 == static_cast<int>(GetFrame()))
                     {
                         // Import just a fragment of a preset!!
                         DWORD ApplyFlags = 0;

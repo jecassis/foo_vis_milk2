@@ -53,7 +53,7 @@ CPluginShell::CPluginShell() { /* This should remain empty! */ }
 CPluginShell::~CPluginShell() { /* This should remain empty! */ }
 
 eScrMode CPluginShell::GetScreenMode() const { return m_screenmode; }
-int CPluginShell::GetFrame() const { return m_frame; }
+uint32_t CPluginShell::GetFrame() const { return m_frame; }
 float CPluginShell::GetTime() const { return m_time; }
 float CPluginShell::GetFps() const { return m_fps; }
 HWND CPluginShell::GetPluginWindow() const { if (m_lpDX) return m_lpDX->GetHwnd(); else return NULL; }
@@ -865,27 +865,26 @@ void CPluginShell::EnforceMaxFPS()
     float fps_lo = (float)max_fps;
     float fps_hi = (float)max_fps;
 
+    // Find the optimal lo/hi bounds for the fps
+    // that will result in a maximum difference,
+    // in the time for a single frame, of 0.003 seconds -
+    // the assumed granularity for Sleep(1) -
+    //
+    // Using this range of acceptable fps
+    // will allow us to do (sloppy) fps limiting
+    // using only Sleep(1), and never the
+    // second half of it: Sleep(0) in a tight loop,
+    // which sucks up the CPU (whereas Sleep(1)
+    // leaves it idle).
+    //
+    // The original equation:
+    //   1 / (max_fps * t1) = 1 / (max_fps / t1) - 0.003
+    // where:
+    //   t1 > 0
+    //   max_fps * t1 is the upper range for fps
+    //   max_fps / t1 is the lower range for fps
     if (m_save_cpu)
     {
-        // Find the optimal lo/hi bounds for the fps
-        // that will result in a maximum difference,
-        // in the time for a single frame, of 0.003 seconds -
-        // the assumed granularity for Sleep(1) -
-
-        // Using this range of acceptable fps
-        // will allow us to do (sloppy) fps limiting
-        // using only Sleep(1), and never the
-        // second half of it: Sleep(0) in a tight loop,
-        // which sucks up the CPU (whereas Sleep(1)
-        // leaves it idle).
-
-        // The original equation:
-        //   1/(max_fps*t1) = 1/(max*fps/t1) - 0.003
-        // where:
-        //   t1 > 0
-        //   max_fps*t1 is the upper range for fps
-        //   max_fps/t1 is the lower range for fps
-
         float a = 1;
         float b = -0.003f * max_fps;
         float c = -1.0f;
@@ -899,9 +898,8 @@ void CPluginShell::EnforceMaxFPS()
             {
                 fps_lo = max_fps / t1;
                 fps_hi = max_fps * t1;
-                // verify: now [1.0f/fps_lo - 1.0f/fps_hi] should equal 0.003 seconds.
-                // note: allowing tolerance to go beyond these values for
-                // fps_lo and fps_hi would gain nothing.
+                // Verify: Now [1.0f / fps_lo - 1.0f / fps_hi] should equal 0.003 seconds.
+                // Note: Allowing tolerance to go beyond these values for `fps_lo` and `fps_hi` would gain nothing.
             }
         }
     }

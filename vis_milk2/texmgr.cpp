@@ -175,7 +175,7 @@ bool texmgr::TryCreateDDrawSurface(int iSlot, int w, int h)
 }
 */
 
-int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCode, float time, int frame, unsigned int /* ck */)
+int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCode, float time, uint32_t frame, unsigned int /* ck */)
 {
     if (iSlot < 0) return TEXMGR_ERR_BAD_INDEX;
     if (iSlot >= NUM_TEX) return TEXMGR_ERR_BAD_INDEX;
@@ -538,7 +538,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
     }
 
     m_tex[iSlot].fStartTime = time;
-    m_tex[iSlot].nStartFrame = frame;
+    m_tex[iSlot].nStartFrame = static_cast<int>(frame);
 
     int ret = TEXMGR_ERR_SUCCESS;
 
@@ -557,7 +557,7 @@ int texmgr::LoadTex(wchar_t* szFilename, int iSlot, char* szInitCode, char* szCo
     return ret;
 }
 
-int texmgr::LoadTex(std::vector<uint8_t> rawdata, int iSlot, char* szInitCode, char* szCode, float time, int frame, unsigned int /* ck */)
+int texmgr::LoadTex(std::vector<uint8_t> rawdata, int iSlot, char* szInitCode, char* szCode, float time, uint32_t frame, unsigned int /* ck */)
 {
     if (iSlot < 0)
         return TEXMGR_ERR_BAD_INDEX;
@@ -596,7 +596,7 @@ int texmgr::LoadTex(std::vector<uint8_t> rawdata, int iSlot, char* szInitCode, c
     m_tex[iSlot].img_w = tex2DDesc.Width;
     m_tex[iSlot].img_h = tex2DDesc.Height;
     m_tex[iSlot].fStartTime = time;
-    m_tex[iSlot].nStartFrame = frame;
+    m_tex[iSlot].nStartFrame = static_cast<int>(frame);
 
     int ret = TEXMGR_ERR_SUCCESS;
 

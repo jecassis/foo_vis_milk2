@@ -91,7 +91,7 @@ class CPluginShell
 
     // GET METHODS
     // ------------------------------------------------------------
-    int GetFrame() const; // returns current frame number (starts at zero)
+    uint32_t GetFrame() const; // returns current frame number (starts at zero)
     float GetTime() const; // returns current animation time (in seconds) (starts at zero) (updated once per frame)
     float GetFps() const; // returns current estimate of framerate (frames per second)
     eScrMode GetScreenMode() const; // returns WINDOWED, FULLSCREEN, FAKE_FULLSCREEN, DESKTOP, or NOT_YET_KNOWN (if called before or during OverrideDefaults()).
@@ -172,8 +172,8 @@ class CPluginShell
   private:
     // GENERAL PRIVATE STUFF
     eScrMode m_screenmode; // WINDOWED, FULLSCREEN, or FAKE_FULLSCREEN (i.e. running in a full-screen-sized window)
-    int m_frame; // current frame number, starting at zero
-    float m_time; // current animation time in seconds; starts at zero.
+    uint32_t m_frame; // current frame number, starting at zero
+    float m_time; // current animation time in seconds; starts at zero
     float m_fps; // current estimate of frames per second
     HWND m_hWndWinamp; // handle to Winamp window
     HINSTANCE m_hInstance; // handle to application instance
