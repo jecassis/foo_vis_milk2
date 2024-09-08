@@ -67,14 +67,25 @@ void D3D11Shim::Initialize()
     m_states = std::make_unique<CommonStates>(m_pDevice);
 
     // Note: These must match layouts in "support.h"!
-    D3D11_INPUT_ELEMENT_DESC layout[] = {
+    D3D11_INPUT_ELEMENT_DESC MilkDropLayout[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
 
-    m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout), defaultvsCode, sizeof(defaultvsCode), &m_pInputLayout);
+    D3D11_INPUT_ELEMENT_DESC wfLayout[] = {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+
+    D3D11_INPUT_ELEMENT_DESC spriteLayout[] = {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+
+    m_pDevice->CreateInputLayout(MilkDropLayout, ARRAYSIZE(MilkDropLayout), defaultvsCode, sizeof(defaultvsCode), &m_pInputLayout);
 
     m_pDevice->CreateVertexShader(defaultvsCode, sizeof(defaultvsCode), NULL, &m_pVShader);
 
@@ -176,13 +187,7 @@ void D3D11Shim::DrawPrimitive(unsigned int primType, unsigned int iPrimCount, co
     else
     {
         m_pContext->IASetPrimitiveTopology(static_cast<D3D_PRIMITIVE_TOPOLOGY>(primType));
-        m_pContext->Draw(numVerts, 0); // D3D11 WARNING: ID3D11DeviceContext::Draw:
-            // The Pixel Shader expects a Render Target View bound to slot 0,
-            // but none is bound. This is OK, as writes of an unbound Render
-            // Target View are discarded. It is also possible the developer knows
-            // the data will not be used anyway. This is only a problem if the
-            // developer actually intended to bind a Render Target View here.
-            // [ EXECUTION WARNING: DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET]
+        m_pContext->Draw(numVerts, 0);
     }
 }
 
@@ -515,7 +520,7 @@ HRESULT D3D11Shim::CreateTextureFromMemory(const uint8_t* data, size_t dataSize,
 bool D3D11Shim::LockRect(ID3D11Resource* pResource, UINT uSubRes, D3D11_MAP mapType, D3D11_MAPPED_SUBRESOURCE* res)
 {
     HRESULT hr = m_pImmContext->Map(pResource, uSubRes, mapType, 0, res);
-    return S_OK == hr;
+    return (S_OK == hr);
 }
 
 void D3D11Shim::UnlockRect(ID3D11Resource* pResource, UINT uSubRes)

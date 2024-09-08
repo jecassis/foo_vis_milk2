@@ -982,7 +982,7 @@ int CPlugin::AllocateMilkDropNonDX11()
 {
     /*   
     if (!m_hBlackBrush)
-        m_hBlackBrush = CreateSolidBrush(RGB(0,0,0));
+        m_hBlackBrush = CreateSolidBrush(RGB(0, 0, 0));
     */
 
     g_hThread = INVALID_HANDLE_VALUE;
@@ -1020,7 +1020,7 @@ int CPlugin::AllocateMilkDropNonDX11()
     m_pOldState->Default();
     m_pNewState->Default();
 
-    //LoadRandomPreset(0.0f); -avoid this here; causes some DX9 stuff to happen.
+    //LoadRandomPreset(0.0f); // avoid this here; causes some DX9 stuff to happen
 
     return true;
 }
@@ -1152,9 +1152,9 @@ int CPlugin::AllocateMilkDropDX11()
     //------------------------------------------------------------------
     if (m_nMaxPSVersion > MD2_PS_NONE)
     {
-        /* DX11: vertex declarations not required. D3D11Shim uses needed layout.
+        /* DirectX 11: Vertex declarations not required. D3D11Shim implements needed layout.
         // Create vertex declarations (since not using FVF anymore).
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_MilkDropVertDecl, &m_pMilkDropVertDecl))
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_MilkDropLayout, &m_pMilkDropLayout))
         {
             //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_MD_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
@@ -3183,9 +3183,9 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
         GetDevice()->SetTexture(1, NULL);
     }*/
 
-    //SafeRelease(m_pMilkDropVertDecl);
-    //SafeRelease(m_pWfVertDecl);
-    //SafeRelease(m_pSpriteVertDecl);
+    //SafeRelease(m_pMilkDropLayout);
+    //SafeRelease(m_pWfLayout);
+    //SafeRelease(m_pSpriteLayout);
 
     m_shaders.comp.Clear();
     m_shaders.warp.Clear();

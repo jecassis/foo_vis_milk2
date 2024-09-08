@@ -101,11 +101,7 @@ void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p
 
 int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 {
-    MILK2_CONSOLE_LOG("OnCreate ", cs->x, ", ", cs->y, ", ", GetWnd())
-#if 0
-    HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
-    SetIcon(hIcon, FALSE); //SetClassLongPtr(get_wnd(), GCLP_HICON, (LONG_PTR)hIcon);
-#endif
+    MILK2_CONSOLE_LOG("OnCreate0 ", cs->x, ", ", cs->y, ", ", GetWnd())
 
     if (!XMVerifyCPUSupport()) {
         FB2K_console_print(core_api::get_my_file_name(), ": CPU does not support mathematics intrinsics. Exiting.");
@@ -163,7 +159,7 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
     {
         FB2K_console_print(core_api::get_my_file_name(), ": Could not initialize MilkDrop");
     }
-    MILK2_CONSOLE_LOG("OnCreate2 ", r.right, ", ", r.left, ", ", r.top, ", ", r.bottom, ", ", GetWnd())
+    MILK2_CONSOLE_LOG("OnCreate1 ", r.right, ", ", r.left, ", ", r.top, ", ", r.bottom, ", ", GetWnd())
 
     return hr;
 }

@@ -966,11 +966,11 @@ void milk2_preferences_page::ScootControl(HWND hwnd, int ctrl_id, int dx, int dy
 
 BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _DEBUG
+    OutputDebugMessage("FontDlgProc: ", hdlg, msg, wParam, lParam);
+#endif
     switch (msg)
     {
-#ifdef _DEBUG
-        OutputDebugMessage("FontDlgProc: ", hdlg, msg, wParam, lParam);
-#endif
         case WM_INITDIALOG:
             {
                 HDC hdc = ::GetDC(hdlg);

@@ -61,7 +61,7 @@ class CMilkMenuItem
     wchar_t m_szName[64];
     wchar_t m_szToolTip[1024];
     MENUITEMTYPE m_type;
-    TextElement m_element;
+    TextElement m_element[3];
     float m_fMin;                        // note: has different meanings based on the MENUITEMTYPE
     float m_fMax;                        // note: has different meanings based on the MENUITEMTYPE
     WPARAM m_wParam;

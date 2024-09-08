@@ -201,11 +201,11 @@ void CPluginShell::OnWindowSizeChanged(int width, int height)
     {
         return;
     }
-    //if (!AllocateDX11())
-    //{
-    //    m_lpDX->m_ready = false; // flag to exit
-    //    return;
-    //}
+    if (!AllocateDX11())
+    {
+        m_lpDX->m_ready = false; // flag to exit
+        return;
+    }
 }
 
 void CPluginShell::OnWindowSwap(HWND window, int width, int height)

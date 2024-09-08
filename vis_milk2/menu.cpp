@@ -330,7 +330,7 @@ void CMilkMenu::DrawMenu(D2D1_RECT_F rect, int xR, int yB, int bCalcRect, D2D1_R
 
                 if (i == m_nCurSel)
                 {
-                    MDMenuTextOut(&(pItem->m_element), SIMPLE_FONT, szItemText, MENU_HILITE_COLOR, &rect, bCalcRect, pCalcRect);
+                    MDMenuTextOut(&(pItem->m_element[0]), SIMPLE_FONT, szItemText, MENU_HILITE_COLOR, &rect, bCalcRect, pCalcRect);
 
                     if (g_plugin.m_bShowMenuToolTips && !bCalcRect)
                     {
@@ -340,7 +340,7 @@ void CMilkMenu::DrawMenu(D2D1_RECT_F rect, int xR, int yB, int bCalcRect, D2D1_R
                 }
                 else
                 {
-                    MDMenuTextOut(&(pItem->m_element), SIMPLE_FONT, szItemText, MENU_COLOR, &rect, bCalcRect, pCalcRect);
+                    MDMenuTextOut(&(pItem->m_element[0]), SIMPLE_FONT, szItemText, MENU_COLOR, &rect, bCalcRect, pCalcRect);
                 }
                 nLinesDrawn++;
             }
@@ -359,9 +359,9 @@ void CMilkMenu::DrawMenu(D2D1_RECT_F rect, int xR, int yB, int bCalcRect, D2D1_R
 
         wchar_t buf[256] = {0};
 
-        MDMenuTextOut(&(pItem->m_element), SIMPLE_FONT, WASABI_API_LNGSTRINGW(IDS_USE_UP_DOWN_ARROW_KEYS), MENU_COLOR, &rect, bCalcRect, pCalcRect);
+        MDMenuTextOut(&(pItem->m_element[0]), SIMPLE_FONT, WASABI_API_LNGSTRINGW(IDS_USE_UP_DOWN_ARROW_KEYS), MENU_COLOR, &rect, bCalcRect, pCalcRect);
         swprintf_s(buf, WASABI_API_LNGSTRINGW(IDS_CURRENT_VALUE_OF_X), pItem->m_szName);
-        MDMenuTextOut(&(pItem->m_element), SIMPLE_FONT, buf, MENU_COLOR, &rect, bCalcRect, pCalcRect);
+        MDMenuTextOut(&(pItem->m_element[1]), SIMPLE_FONT, buf, MENU_COLOR, &rect, bCalcRect, pCalcRect);
 
         switch (pItem->m_type)
         {
@@ -374,14 +374,14 @@ void CMilkMenu::DrawMenu(D2D1_RECT_F rect, int xR, int yB, int bCalcRect, D2D1_R
                 break;
             case MENUITEMTYPE_BLENDABLE:
             case MENUITEMTYPE_LOGBLENDABLE:
-                swprintf_s(buf, L" %5.3f ", (reinterpret_cast<CBlendableFloat*>(addr))->eval(-1));
+                swprintf_s(buf, L" %5.3f ", (reinterpret_cast<CBlendableFloat*>(addr))->eval(-1.0f));
                 break;
             default:
                 wcscpy_s(buf, L" ? ");
                 break;
         }
 
-        MDMenuTextOut(&(pItem->m_element), SIMPLE_FONT, buf, MENU_HILITE_COLOR, &rect, bCalcRect, pCalcRect);
+        MDMenuTextOut(&(pItem->m_element[2]), SIMPLE_FONT, buf, MENU_HILITE_COLOR, &rect, bCalcRect, pCalcRect);
 
         // Tooltip.
         if (g_plugin.m_bShowMenuToolTips && !bCalcRect)
@@ -393,7 +393,7 @@ void CMilkMenu::DrawMenu(D2D1_RECT_F rect, int xR, int yB, int bCalcRect, D2D1_R
 
 void CMilkMenu::UndrawMenus()
 {
-    for (int i = 0; i < m_nChildMenus; i++)
+    for (int i = 0; i < m_nChildMenus; ++i)
     {
         if (m_ppChildMenu[i]->IsEnabled() && m_ppChildMenu[i]->m_element.IsVisible())
         {
@@ -405,10 +405,13 @@ void CMilkMenu::UndrawMenus()
     CMilkMenuItem* pItem = m_pFirstChildItem;
     while (pItem)
     {
-        if (pItem->m_bEnabled && pItem->m_element.IsVisible())
+        for (int i = 0; i < 3; ++i)
         {
-            pItem->m_element.SetVisible(false);
-            g_plugin.m_text.UnregisterElement(&(pItem->m_element));
+            if (pItem->m_bEnabled && pItem->m_element[i].IsVisible())
+            {
+                pItem->m_element[i].SetVisible(false);
+                g_plugin.m_text.UnregisterElement(&(pItem->m_element[i]));
+            }
         }
 
         pItem = pItem->m_pNext;
@@ -504,8 +507,8 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             case VK_LEFT:
                 if (m_pParentMenu)
                 {
-                    g_plugin.m_pCurMenu = m_pParentMenu;
                     UndrawMenus();
+                    g_plugin.m_pCurMenu = m_pParentMenu;
                 }
                 else
                 {
@@ -516,10 +519,10 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             case VK_RETURN:
             case VK_RIGHT:
             case VK_SPACE:
+                UndrawMenus();
                 if (m_nCurSel < m_nChildMenus)
                 {
                     g_plugin.m_pCurMenu = m_ppChildMenu[m_nCurSel]; // Go to sub-menu.
-                    UndrawMenus();
                 }
                 else
                 {
@@ -570,7 +573,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                             {
                                 //CBlendableFloat *p = (CBlendableFloat*)(pItem->m_pVariable);
                                 //*p = 0.99f;
-                                fTemp = ((CBlendableFloat*)addr)->eval(-1); //p->eval(-1);
+                                fTemp = ((CBlendableFloat*)addr)->eval(-1.0f); //p->eval(-1);
                             }
                             pItem->m_original_value = (LPARAM)(fTemp * 10000L);
                             break;
@@ -600,7 +603,6 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     }
                 }
                 return FALSE;
-
             default:
                 // Key was not handled.
                 return TRUE;
@@ -620,6 +622,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         switch (wParam)
         {
             case VK_ESCAPE: // exit edit mode and restore original value
+                UndrawMenus();
                 switch (pItem->m_type)
                 {
                     case MENUITEMTYPE_INT:
@@ -671,7 +674,7 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                 {
                     case MENUITEMTYPE_INT:
                         {
-                            int* pInt = ((int*)addr);
+                            int* pInt = reinterpret_cast<int*>(addr);
                             if (fMult < 1.0f)
                                 fMult = 1.0f;
                             (*pInt) += (int)((bDec) ? -fMult : fMult);
@@ -683,9 +686,9 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                         break;
                     case MENUITEMTYPE_FLOAT:
                         {
-                            float* pFloat = ((float*)addr);
+                            float* pFloat = reinterpret_cast<float*>(addr);
                             float fInc = (pItem->m_fMax - pItem->m_fMin) * 0.01f * fMult;
-                            (*pFloat) += (bDec) ? -fInc : fInc;
+                            (*pFloat) += bDec ? -fInc : fInc;
                             if (*pFloat < pItem->m_fMin)
                                 *pFloat = pItem->m_fMin;
                             if (*pFloat > pItem->m_fMax)
@@ -694,8 +697,8 @@ LRESULT CMilkMenu::HandleKeydown(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                         break;
                     case MENUITEMTYPE_LOGFLOAT:
                         {
-                            float* pFloat = ((float*)addr);
-                            (*pFloat) *= (bDec) ? std::pow(1.0f / 1.01f, fMult) : std::pow(1.01f, fMult);
+                            float* pFloat = reinterpret_cast<float*>(addr);
+                            (*pFloat) *= bDec ? std::pow(1.0f / 1.01f, fMult) : std::pow(1.01f, fMult);
                             if (*pFloat < pItem->m_fMin)
                                 *pFloat = pItem->m_fMin;
                             if (*pFloat > pItem->m_fMax)

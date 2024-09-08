@@ -86,7 +86,7 @@ class ElementBase
 {
   public:
     virtual void Initialize(ID2D1DeviceContext* d2dContext) { UNREFERENCED_PARAMETER(d2dContext); }
-    virtual void Update(/* float timeTotal, float timeDelta */) {}
+    virtual void Update(float timeTotal, float timeDelta) { UNREFERENCED_PARAMETER(timeTotal); UNREFERENCED_PARAMETER(timeDelta); }
     virtual void Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteFactory)
     {
         UNREFERENCED_PARAMETER(d2dContext);
@@ -122,7 +122,7 @@ class TextElement : public ElementBase
     virtual ~TextElement() {}
 
     virtual void Initialize(ID2D1DeviceContext* d2dContext);
-    virtual void Update(/* float timeTotal, float timeDelta */);
+    virtual void Update(float timeTotal, float timeDelta);
     virtual void Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteFactory);
     virtual void ReleaseDeviceDependentResources();
 
@@ -138,6 +138,7 @@ class TextElement : public ElementBase
     void SetTextStyle(TextStyle* textStyle) { m_textStyle = textStyle; }
 
     void FadeOut(float fadeOutTime);
+    void FadeIn(float fadeOutTime);
 
   protected:
     virtual void CalculateSize(IDWriteFactory* dwriteFactory);
@@ -153,6 +154,7 @@ class TextElement : public ElementBase
     D2D1_RECT_F m_boxRect;
 
     bool m_isFadingOut;
+    bool m_isFadingIn;
     float m_fadeStartingOpacity;
     float m_fadeOutTime;
     float m_fadeOutTimeElapsed;

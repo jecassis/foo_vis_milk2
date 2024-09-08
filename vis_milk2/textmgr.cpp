@@ -221,11 +221,52 @@ void TextElement::Initialize(ID2D1DeviceContext* d2dContext)
     ThrowIfFailed(d2dContext->CreateSolidColorBrush(ColorF(ColorF::LightSlateGray), m_boxColorBrush.ReleaseAndGetAddressOf()));
 }
 
-void TextElement::Update(/* float timeTotal, float timeDelta */)
+void TextElement::Update(float timeTotal, float timeDelta)
 {
-    //if (m_isFadingOut)
-    //{
-    //    m_fadeOutTimeElapsed += timeDelta;
+    UNREFERENCED_PARAMETER(timeTotal);
+
+    if (m_isFadingOut)
+    {
+        m_fadeOutTimeElapsed += timeDelta;
+
+        float delta = std::min(1.0f, m_fadeOutTimeElapsed / m_fadeOutTime);
+        SetTextOpacity((1.0f - delta) * m_fadeStartingOpacity);
+
+        if (m_fadeOutTimeElapsed >= m_fadeOutTime)
+        {
+            m_isFadingOut = false;
+            SetVisible(false);
+        }
+    }
+    else if (m_isFadingIn)
+    {
+        m_fadeOutTimeElapsed += timeDelta;
+
+        float delta = std::min(1.0f, m_fadeOutTimeElapsed / m_fadeOutTime);
+        SetTextOpacity(delta * m_fadeStartingOpacity);
+
+        if (m_fadeOutTimeElapsed >= m_fadeOutTime)
+        {
+            m_isFadingIn = false;
+        }
+    }
+}
+
+void TextElement::Render(ID2D1RenderTarget* d2dRenderTarget, IDWriteFactory* dwriteFactory)
+{
+    D2D1_RECT_F bounds = GetBounds(dwriteFactory);
+    D2D1_POINT_2F origin = Point2F(bounds.left - m_textExtents.left, bounds.top - m_textExtents.top);
+
+    if (m_hasBox)
+    {
+        //D2D1_RECT_F r3 = bounds;
+        //r3.left -= m_boxMargin.left;
+        //r3.top -= m_boxMargin.top;
+        //r3.right += m_boxMargin.right;
+        //r3.bottom += m_boxMargin.bottom;
+        //m_boxColorBrush->SetOpacity(m_textColorBrush->GetOpacity() * 0.5f);
+        d2dRenderTarget->FillRectangle(m_boxRect, m_boxColorBrush.Get()); // draw a filled rectangle
+    }
 
     //    float delta = std::min(1.0f, m_fadeOutTimeElapsed / m_fadeOutTime);
     //    SetTextOpacity((1.0f - delta) * m_fadeStartingOpacity);
@@ -316,6 +357,14 @@ void TextElement::FadeOut(float fadeOutTime)
     m_fadeOutTime = fadeOutTime;
     m_fadeOutTimeElapsed = 0.0f;
     m_isFadingOut = true;
+}
+
+void TextElement::FadeIn(float fadeOutTime)
+{
+    m_fadeStartingOpacity = m_textColorBrush->GetOpacity();
+    m_fadeOutTime = fadeOutTime;
+    m_fadeOutTimeElapsed = 0.0f;
+    m_isFadingIn = true;
 }
 
 void TextElement::CalculateSize(IDWriteFactory* dwriteFactory)
