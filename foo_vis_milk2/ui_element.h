@@ -36,7 +36,7 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
 #endif
 {
   public:
-    DECLARE_WND_CLASS_EX(CLASSNAME, CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS, (-1));
+    DECLARE_WND_CLASS(CLASSNAME);
 
     void initialize_window(HWND parent)
     {

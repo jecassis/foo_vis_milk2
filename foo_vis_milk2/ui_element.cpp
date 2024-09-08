@@ -437,8 +437,8 @@ void milk2_ui_element::OnDpiChanged(UINT nDpiX, UINT nDpiY, PRECT pRect)
 
 void milk2_ui_element::OnGetMinMaxInfo(LPMINMAXINFO lpMMI)
 {
-    lpMMI->ptMinTrackSize.x = 320;
-    lpMMI->ptMinTrackSize.y = 200;
+    lpMMI->ptMinTrackSize.x = 150; // 320
+    lpMMI->ptMinTrackSize.y = 150; // 200
 }
 
 void milk2_ui_element::OnActivateApp(BOOL bActive, DWORD dwThreadID)

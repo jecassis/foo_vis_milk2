@@ -346,8 +346,6 @@ class CPlugin : public CPluginShell
 
     // PIXEL SHADERS
     UINT m_dwShaderFlags; // Shader compilation/linking flags
-    //ID3DXFragmentLinker* m_pFragmentLinker; // Fragment linker interface
-    //LPD3DXBUFFER m_pCompiledFragments; // Buffer containing compiled fragments
     ID3DBlob* m_pShaderCompileErrors;
     VShaderSet m_fallbackShaders_vs; // *these are the only vertex shaders used for the whole application*
     PShaderSet m_fallbackShaders_ps; // these are just used when the preset's pixel shaders fail to compile
