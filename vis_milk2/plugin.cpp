@@ -1161,14 +1161,14 @@ int CPlugin::AllocateMilkDropDX11()
             //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             return false;
         }
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_WfVertDecl, &m_pWfVertDecl))
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_wfLayout, &m_pWfLayout))
         {
             //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_WF_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
             //MessageBox(GetPluginWindow(), buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, sizeof(title)), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
             return false;
         }
-        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_SpriteVertDecl, &m_pSpriteVertDecl))
+        if (D3D_OK != GetDevice()->CreateVertexDeclaration(g_spriteLayout, &m_pSpriteLayout))
         {
             //WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_SPRITE_VERTEX_DECLARATION, buf, sizeof(buf));
             //DumpDebugMessage(buf);
@@ -1306,7 +1306,7 @@ int CPlugin::AllocateMilkDropDX11()
         }
 
         // Snap to 16x16 blocks.
-        // TODO: DX11 or use own zBuffer.
+        // TODO: DirectX 11 or use own Z-buffer.
 
         // Determine format for VS1/VS2.
         DXGI_FORMAT fmt;
@@ -1332,7 +1332,7 @@ int CPlugin::AllocateMilkDropDX11()
             {
                 bSuccess = (GetDevice()->CreateTexture(m_nTexSizeX, m_nTexSizeY, 1, vs_flags, DXGI_FORMAT_B8G8R8A8_UNORM, &m_lpVS[0]));
                 if (bSuccess)
-                    fmt = DXGI_FORMAT_B8G8R8A8_UNORM /* TODO: DX11 GetBackBufFormat() */;
+                    fmt = DXGI_FORMAT_B8G8R8A8_UNORM /* TODO: DirectX 11 `GetBackBufFormat()` */;
             }
 
             // Create VS2
@@ -1369,7 +1369,7 @@ int CPlugin::AllocateMilkDropDX11()
                         break;
                 }
             }
-        } while (!bSuccess); // && m_nTexSizeX >= 256 && (m_bTexSizeWasAutoExact || m_bTexSizeWasAutoPow2));
+        } while (!bSuccess); //&& m_nTexSizeX >= 256 && (m_bTexSizeWasAutoExact || m_bTexSizeWasAutoPow2));
 
         if (!bSuccess)
         {
@@ -1654,24 +1654,24 @@ int CPlugin::AllocateMilkDropDX11()
     }
 
     int nVert = 0;
-    float texel_offset_x = 0.5f / (float)m_nTexSizeX;
-    float texel_offset_y = 0.5f / (float)m_nTexSizeY;
+    float texel_offset_x = 0.5f / static_cast<float>(m_nTexSizeX);
+    float texel_offset_y = 0.5f / static_cast<float>(m_nTexSizeY);
     for (int y = 0; y <= m_nGridY; y++)
     {
         for (int x = 0; x <= m_nGridX; x++)
         {
             // Precompute x, y, z.
-            m_verts[nVert].x = x / (float)m_nGridX * 2.0f - 1.0f;
-            m_verts[nVert].y = y / (float)m_nGridY * 2.0f - 1.0f;
+            m_verts[nVert].x = x / static_cast<float>(m_nGridX) * 2.0f - 1.0f;
+            m_verts[nVert].y = y / static_cast<float>(m_nGridY) * 2.0f - 1.0f;
             m_verts[nVert].z = 0.0f;
 
             // Precompute rad, ang, being conscious of aspect ratio.
-            m_vertinfo[nVert].rad = sqrtf(m_verts[nVert].x * m_verts[nVert].x * m_fAspectX * m_fAspectX +
-                                          m_verts[nVert].y * m_verts[nVert].y * m_fAspectY * m_fAspectY);
+            m_vertinfo[nVert].rad = std::sqrt(m_verts[nVert].x * m_verts[nVert].x * m_fAspectX * m_fAspectX +
+                                              m_verts[nVert].y * m_verts[nVert].y * m_fAspectY * m_fAspectY);
             if (y == m_nGridY / 2 && x == m_nGridX / 2)
                 m_vertinfo[nVert].ang = 0.0f;
             else
-                m_vertinfo[nVert].ang = atan2f(m_verts[nVert].y * m_fAspectY, m_verts[nVert].x * m_fAspectX);
+                m_vertinfo[nVert].ang = std::atan2(m_verts[nVert].y * m_fAspectY, m_verts[nVert].x * m_fAspectX);
             m_vertinfo[nVert].a = 1;
             m_vertinfo[nVert].c = 0;
 
@@ -1685,8 +1685,8 @@ int CPlugin::AllocateMilkDropDX11()
     }
 
     // Generate triangle strips for the 4 quadrants.
-    // Each quadrant has m_nGridY/2 strips.
-    // Each strip has m_nGridX+2 *points* in it, or m_nGridX/2 polygons.
+    // Each quadrant has `m_nGridY/2` strips.
+    // Each strip has `m_nGridX+2` *points* in it, or `m_nGridX/2` polygons.
     int xref, yref;
     int nVert_strip = 0;
     for (int quadrant = 0; quadrant < 4; quadrant++)
@@ -1695,7 +1695,7 @@ int CPlugin::AllocateMilkDropDX11()
         {
             for (int i = 0; i < m_nGridX + 2; i++)
             {
-                // quadrants: 2 3
+                // Quadrants: 2 3
                 //            0 1
                 xref = i / 2;
                 yref = (i % 2) + slice;
@@ -1758,7 +1758,7 @@ int CPlugin::AllocateMilkDropDX11()
 
     if (!m_bInitialPresetSelected)
     {
-        UpdatePresetList(true); //...just does its initial burst!
+        UpdatePresetList(true); // ...just does its initial burst!
         LoadRandomPreset(0.0f);
         m_bInitialPresetSelected = true;
     }
@@ -1781,9 +1781,9 @@ float fCubicInterpolate(float y0, float y1, float y2, float y3, float t)
     return (a0 * t * t2 + a1 * t2 + a2 * t + a3);
 }
 
+// Performs cubic interpolation on a D3DCOLOR value.
 DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
 {
-    // performs cubic interpolation on a D3DCOLOR value.
     DWORD ret = 0;
     DWORD shift = 0;
     for (int i = 0; i < 4; i++)
@@ -1797,18 +1797,18 @@ DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
             f = 0;
         if (f > 1)
             f = 1;
-        ret |= ((DWORD)(f * 255)) << shift;
+        ret |= (static_cast<DWORD>(f * 255)) << shift;
         shift += 8;
     }
 
     return ret;
 }
 
-// size = width and height of the texture;
-// zoom_factor = how zoomed-in the texture features should be.
-//   1 = random noise
-//   2 = smoothed (interp)
-//   4/8/16... = cubic interp.
+// `size`: width and height of the texture;
+// `zoom_factor`: how zoomed-in the texture features should be.
+//   1 -> random noise
+//   2 -> smoothed (interpolate)
+//   4/8/16... -> cubic interpolate
 bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
 {
     //wchar_t buf[2048], title[64];
@@ -1820,11 +1820,11 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     ID3D11Texture2D *pNoiseTex = NULL, *pStaging = NULL;
 
     // Try twice: once with mips, once without.
-    //for (int i=0; i<2; i++)
+    //for (int i = 0; i < 2; i++)
     {
         if (!lpDevice->CreateTexture(size, size, 1, D3D11_BIND_SHADER_RESOURCE, DXGI_FORMAT_R8G8B8A8_UNORM, &pNoiseTex, 0, D3D11_USAGE_DYNAMIC))
         {
-            //if (i==1)
+            //if (i == 1)
             {
                 /*
                 WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_CREATE_NOISE_TEXTURE, buf, sizeof(buf));
@@ -1844,7 +1844,6 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
     //D3DLOCKED_RECT r;
     D3D11_MAPPED_SUBRESOURCE r;
     if (!lpDevice->LockRect(pNoiseTex, 0, D3D11_MAP_WRITE_DISCARD, &r))
-    //if (D3D_OK != pNoiseTex->LockRect(0, &r, NULL, D3DLOCK_DISCARD))
     {
         /*
         WASABI_API_LNGSTRINGW_BUF(IDS_COULD_NOT_LOCK_NOISE_TEXTURE, buf, sizeof(buf));
@@ -2417,8 +2416,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_lpBlur[1];
                 m_texcode[cd.BindPoint] = TEX_BLUR1;
-                if (!bWrapFilterSpecified)
-                { // when sampling blur textures, default is CLAMP
+                if (!bWrapFilterSpecified) // when sampling blur textures, default is CLAMP
+                {
                     m_texture_bindings[cd.BindPoint].bWrap = false;
                     m_texture_bindings[cd.BindPoint].bBilinear = true;
                 }
@@ -2429,8 +2428,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_lpBlur[3];
                 m_texcode[cd.BindPoint] = TEX_BLUR2;
-                if (!bWrapFilterSpecified)
-                { // when sampling blur textures, default is CLAMP
+                if (!bWrapFilterSpecified) // when sampling blur textures, default is CLAMP
+                {
                     m_texture_bindings[cd.BindPoint].bWrap = false;
                     m_texture_bindings[cd.BindPoint].bBilinear = true;
                 }
@@ -2441,8 +2440,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texture_bindings[cd.BindPoint].texptr = g_plugin.m_lpBlur[5];
                 m_texcode[cd.BindPoint] = TEX_BLUR3;
-                if (!bWrapFilterSpecified)
-                { // when sampling blur textures, default is CLAMP
+                if (!bWrapFilterSpecified) // when sampling blur textures, default is CLAMP
+                {
                     m_texture_bindings[cd.BindPoint].bWrap = false;
                     m_texture_bindings[cd.BindPoint].bBilinear = true;
                 }
@@ -2453,8 +2452,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texture_bindings[cd.RegisterIndex].texptr = g_plugin.m_lpBlur[7];
                 m_texcode[cd.RegisterIndex] = TEX_BLUR4;
-                if (!bWrapFilterSpecified)
-                { // when sampling blur textures, default is CLAMP
+                if (!bWrapFilterSpecified) // when sampling blur textures, default is CLAMP
+                {
                     m_texture_bindings[cd.RegisterIndex].bWrap = false;
                     m_texture_bindings[cd.RegisterIndex].bBilinear = true;
                 }
@@ -2465,8 +2464,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texture_bindings[cd.RegisterIndex].texptr = g_plugin.m_lpBlur[9];
                 m_texcode[cd.RegisterIndex] = TEX_BLUR5;
-                if (!bWrapFilterSpecified)
-                { // when sampling blur textures, default is CLAMP
+                if (!bWrapFilterSpecified) // when sampling blur textures, default is CLAMP
+                {
                     m_texture_bindings[cd.RegisterIndex].bWrap = false;
                     m_texture_bindings[cd.RegisterIndex].bBilinear = true;
                 }
@@ -2477,8 +2476,8 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
             {
                 m_texture_bindings[cd.RegisterIndex].texptr = g_plugin.m_lpBlur[11];
                 m_texcode[cd.RegisterIndex] = TEX_BLUR6;
-                if (!bWrapFilterSpecified)
-                { // when sampling blur textures, default is CLAMP
+                if (!bWrapFilterSpecified) // when sampling blur textures, default is CLAMP
+                {
                     m_texture_bindings[cd.RegisterIndex].bWrap = false;
                     m_texture_bindings[cd.RegisterIndex].bBilinear = true;
                 }
@@ -2648,7 +2647,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
         }
     }
 
-    // Pass 2: bind all the float4's."texsize_XYZ" params will be filled out via knowledge of loaded texture sizes.
+    // Pass 2: Bind all the float4's."texsize_XYZ" params will be filled out via knowledge of loaded texture sizes.
     for (size_t i = 0; i < pCT->GetVariablesCount(); i++)
     {
         ShaderVariable* var = pCT->GetVariableByIndex(i);

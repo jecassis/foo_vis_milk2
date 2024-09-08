@@ -182,7 +182,7 @@ bool CPlugin::RenderStringToTitleTexture()
         416, 448, 480, 512
     }; // NOTE: DO NOT EXCEED 64 FONTS
 
-    // Remember the original backbuffer and zbuffer.
+    // Remember the original backbuffer and Z-buffer.
     Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
     //Microsoft::WRL::ComPtr<ID3D11Texture2D> pZBuffer;
     lpDevice->GetRenderTarget(&pBackBuffer);
@@ -237,7 +237,7 @@ bool CPlugin::RenderStringToTitleTexture()
 
     // Use 2 lines; must leave room for bottom of 'g' characters and such!
     D2D1_RECT_F rect{};
-    rect.left = static_cast<FLOAT>(0);
+    rect.left = 0.0f;
     rect.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since we're actually drawing!
     rect.top = static_cast<FLOAT>(m_nTitleTexSizeY * 1 / 21); // otherwise, top of '%' could be cut off (1/21 seems safe)
     rect.bottom = static_cast<FLOAT>(m_nTitleTexSizeY * 17 / 21); // otherwise, bottom of 'g' could be cut off (18/21 seems safe, but we want some leeway)
@@ -316,6 +316,7 @@ bool CPlugin::RenderStringToTitleTexture()
             temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
             temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
             temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
+            m_ddsTitle.SetContainer(temp);
             m_supertext.nFontSizeUsed = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER, textColor, false, backColor);
 
             ret = true;
@@ -400,7 +401,7 @@ bool CPlugin::RenderStringToTitleTexture()
         temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
         temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
         temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
-
+        m_ddsTitle.SetContainer(temp);
         m_supertext.nFontSizeUsed = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, DT_SINGLELINE | DT_CENTER /*| DT_NOPREFIX | DT_END_ELLIPSIS*/, textColor, false, backColor);
 
         ret = true;
@@ -433,16 +434,16 @@ bool CPlugin::RenderStringToTitleTexture()
 void CPlugin::LoadPerFrameEvallibVars(CState* pState)
 {
     // 1. Vars that affect pixel motion (eval at time == -1).
-    *pState->var_pf_zoom        = (double)pState->m_fZoom.eval(-1); // GetTime());
-    *pState->var_pf_zoomexp     = (double)pState->m_fZoomExponent.eval(-1); // GetTime());
-    *pState->var_pf_rot         = (double)pState->m_fRot.eval(-1); //GetTime());
-    *pState->var_pf_warp        = (double)pState->m_fWarpAmount.eval(-1); //GetTime());
-    *pState->var_pf_cx          = (double)pState->m_fRotCX.eval(-1); //GetTime());
-    *pState->var_pf_cy          = (double)pState->m_fRotCY.eval(-1); //GetTime());
-    *pState->var_pf_dx          = (double)pState->m_fXPush.eval(-1); //GetTime());
-    *pState->var_pf_dy          = (double)pState->m_fYPush.eval(-1); //GetTime());
-    *pState->var_pf_sx          = (double)pState->m_fStretchX.eval(-1); //GetTime());
-    *pState->var_pf_sy          = (double)pState->m_fStretchY.eval(-1); //GetTime());
+    *pState->var_pf_zoom        = (double)pState->m_fZoom.eval(-1.0f); // GetTime());
+    *pState->var_pf_zoomexp     = (double)pState->m_fZoomExponent.eval(-1.0f); // GetTime());
+    *pState->var_pf_rot         = (double)pState->m_fRot.eval(-1.0f); //GetTime());
+    *pState->var_pf_warp        = (double)pState->m_fWarpAmount.eval(-1.0f); //GetTime());
+    *pState->var_pf_cx          = (double)pState->m_fRotCX.eval(-1.0f); //GetTime());
+    *pState->var_pf_cy          = (double)pState->m_fRotCY.eval(-1.0f); //GetTime());
+    *pState->var_pf_dx          = (double)pState->m_fXPush.eval(-1.0f); //GetTime());
+    *pState->var_pf_dy          = (double)pState->m_fYPush.eval(-1.0f); //GetTime());
+    *pState->var_pf_sx          = (double)pState->m_fStretchX.eval(-1.0f); //GetTime());
+    *pState->var_pf_sy          = (double)pState->m_fStretchY.eval(-1.0f); //GetTime());
     // Read-only.
     *pState->var_pf_time        = (double)(GetTime() - m_fStartTime);
     *pState->var_pf_fps         = (double)GetFps();
@@ -2436,16 +2437,16 @@ void CPlugin::DrawCustomWaves()
                 if ((nSamples >= 2) || (pState->m_wave[i].bUseDots && nSamples >= 1))
                 {
                     float tempdata[2][512];
-                    float mult = ((pState->m_wave[i].bSpectrum) ? 0.15f : 0.004f) * pState->m_wave[i].scaling * pState->m_fWaveScale.eval(-1);
+                    float mult = ((pState->m_wave[i].bSpectrum) ? 0.15f : 0.004f) * pState->m_wave[i].scaling * pState->m_fWaveScale.eval(-1.0f);
                     float* pdata1 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[0].data() : m_sound.fWaveform[0].data();
                     float* pdata2 = (pState->m_wave[i].bSpectrum) ? m_sound.fSpectrum[1].data() : m_sound.fWaveform[1].data();
 
                     // initialize tempdata[2][512]
                     int j0 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /*(1 - pState->m_wave[i].bSpectrum)*/ - pState->m_wave[i].sep / 2;
                     int j1 = (pState->m_wave[i].bSpectrum) ? 0 : (max_samples - nSamples) / 2 /*(1 - pState->m_wave[i].bSpectrum)*/ + pState->m_wave[i].sep / 2;
-                    float t = (pState->m_wave[i].bSpectrum) ? (max_samples - pState->m_wave[i].sep) / (float)nSamples : 1;
+                    float t = (pState->m_wave[i].bSpectrum) ? (max_samples - pState->m_wave[i].sep) / (float)nSamples : 1.0f;
                     float mix1 = powf(pState->m_wave[i].smoothing * 0.98f, 0.5f); // lower exponent -> more default smoothing
-                    float mix2 = 1 - mix1;
+                    float mix2 = 1.0f - mix1;
                     // SMOOTHING:
                     tempdata[0][0] = pdata1[j0];
                     tempdata[1][0] = pdata2[j1];
@@ -4373,9 +4374,9 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         }
 
         // FIXME
-        if (fProgress < 1.0f) //(w!=h) // regular render-to-backbuffer
+        if (fProgress < 1.0f) //(w != h) // regular render-to-backbuffer
         {
-            //float aspect = w/(float)(h*4.0f/3.0f);
+            //float aspect = w / static_cast<float>(h * 4.0f / 3.0f);
             //fSizeY *= aspect;
         }
         else // final render-to-VS0
@@ -4436,24 +4437,24 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
     else
     {
         // Positioning.
-        float fSizeX = (float)m_nTexSizeX / 1024.0f * 100.0f / (float)m_supertext.nFontSizeUsed * powf(1.033f, m_supertext.fFontSize - 50.0f);
-        float fSizeY = fSizeX * m_nTitleTexSizeY / (float)m_nTitleTexSizeX;
+        float fSizeX = static_cast<float>(m_nTexSizeX) / 1024.0f * 100.0f / static_cast<float>(m_supertext.nFontSizeUsed) * std::pow(1.033f, m_supertext.fFontSize - 50.0f);
+        float fSizeY = fSizeX * m_nTitleTexSizeY / static_cast<float>(m_nTitleTexSizeX);
 
         // FIXME
-        if (fProgress < 1.0f) //w != h) // regular render-to-backbuffer
+        if (fProgress < 1.0f) //(w != h) // regular render-to-backbuffer
         {
-            //float aspect = w/(float)(h*4.0f/3.0f);
+            //float aspect = w / static_cast<float>(h * 4.0f / 3.0f);
             //fSizeY *= aspect;
         }
         else // final render-to-VS0
         {
-            //float aspect = GetWidth()/(float)(GetHeight()*4.0f/3.0f);
+            //float aspect = GetWidth() / static_cast<float>(GetHeight() * 4.0f / 3.0f);
             //if (aspect < 1.0f)
             //{
             //    fSizeX *= aspect;
             //    fSizeY *= aspect;
             //}
-            //fSizeY *= -1;
+            //fSizeY *= -1.0f;
         }
 
         //if (fSize > 0.92f) fSize = 0.92f;
@@ -4468,20 +4469,20 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
                 v3[i].x = (v3[i].tu * 2.0f - 1.0f) * fSizeX;
                 v3[i].y = (v3[i].tv * 2.0f - 1.0f) * fSizeY;
                 if (fProgress >= 1.0f)
-                    v3[i].y += 1.0f / (float)m_nTexSizeY; //this is a pretty hacky guess @ getting it to align...
+                    v3[i].y += 1.0f / static_cast<float>(m_nTexSizeY); // this is a pretty hacky guess at getting it to align...
                 i++;
             }
         }
 
         // Apply "growth" factor and move to user-specified (x,y).
-        //if (fabsf(m_supertext.fGrowth-1.0f) > 0.001f)
+        //if (std::abs(m_supertext.fGrowth - 1.0f) > 0.001f)
         {
-            float t = (1.0f) * (1 - fProgress) + (fProgress) * (m_supertext.fGrowth);
-            float dx = (m_supertext.fX * 2 - 1);
-            float dy = (m_supertext.fY * 2 - 1);
+            float t = 1.0f * (1.0f - fProgress) + (fProgress * m_supertext.fGrowth);
+            float dx = m_supertext.fX * 2.0f - 1.0f;
+            float dy = m_supertext.fY * 2.0f - 1.0f;
             if (w != h) // regular render-to-backbuffer
             {
-                float aspect = w / (float)(h * 4.0f / 3.0f);
+                float aspect = w / static_cast<float>(h * 4.0f / 3.0f);
                 if (aspect < 1)
                     dx /= aspect;
                 else
@@ -4513,7 +4514,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
     }
 
     // Final flip on Y.
-    //for (i=0; i<128; i++)
+    //for (i = 0; i < 128; i++)
     //    v3[i].y *= -1.0f;
     for (i = 0; i < 128; i++)
         //v3[i].y /= ASPECT_Y;
@@ -4521,7 +4522,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     for (int it = 0; it < 2; it++)
     {
-        // colors
+        // Colors.
         {
             float t;
 
@@ -4549,12 +4550,12 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         switch (it)
         {
             case 0:
-                offset_x = 2.0f / (float)m_nTitleTexSizeX;
-                offset_y = 2.0f / (float)m_nTitleTexSizeY;
+                offset_x = 2.0f / static_cast<float>(m_nTitleTexSizeX);
+                offset_y = 2.0f / static_cast<float>(m_nTitleTexSizeY);
                 break;
             case 1:
-                offset_x = -4.0f / (float)m_nTitleTexSizeX;
-                offset_y = -4.0f / (float)m_nTitleTexSizeY;
+                offset_x = -4.0f / static_cast<float>(m_nTitleTexSizeX);
+                offset_y = -4.0f / static_cast<float>(m_nTitleTexSizeY);
                 break;
         }
 
@@ -4576,7 +4577,6 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
 #else
     }
-    UNREFERENCED_PARAMETER(fProgress);
-#endif
+
     lpDevice->SetBlendState(false);
 }

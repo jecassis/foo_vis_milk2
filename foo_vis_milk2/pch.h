@@ -81,6 +81,9 @@
 #define TIMER_TP // Thread pool timer
 //#define TIMER_32 // Win32 timer
 //#define TIMER_DX // DirectX step timer
+#if !defined(TIMER_TP) && !defined(TIMER_32) && !defined(TIMER_DX)
+#error Missing timer selection.
+#endif
 #if ((defined(TIMER_TP) && (defined(TIMER_32) || defined(TIMER_DX))) || (defined(TIMER_32) && (defined(TIMER_TP) || defined(TIMER_DX))) || \
      (defined(TIMER_DX) && (defined(TIMER_TP) || defined(TIMER_32))))
 #error Timer selection is not mutually exclusive.

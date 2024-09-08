@@ -1255,6 +1255,8 @@ void CPluginShell::DrawDarkTranslucentBox(D2D1_RECT_F* pr)
     m_lpDX->m_lpDevice->SetBlendState(false);
     XMMATRIX identity = XMMatrixIdentity();
     m_lpDX->m_lpDevice->SetTransform(3, &identity);
+    //m_lpDX->m_lpDevice->SetVertexShader(NULL, NULL);
+    //m_lpDX->m_lpDevice->SetPixelShader(NULL, NULL);
 }
 
 void CPluginShell::RenderBuiltInTextMsgs()
