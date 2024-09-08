@@ -1634,6 +1634,9 @@ int CPlugin::AllocateMilkDropDX11()
             m_supertext.bRedrawSuperText = true;
         }
     }
+#ifdef _SUPERTEXT
+    m_superTitle = std::make_unique<SuperText>(m_lpDX.get());
+#endif
 
     m_texmgr.Init(GetDevice());
 
@@ -1838,10 +1841,6 @@ bool CPlugin::AddNoiseTex(const wchar_t* szTexName, int size, int zoom_factor)
         //    break;
     }
 
-    //if (!lpDevice->CreateTexture(size, size, i, 0, DXGI_FORMAT_R8G8B8A8_UNORM, &pStaging, 0, D3D11_USAGE_STAGING))
-    //  return false;
-
-    //D3DLOCKED_RECT r;
     D3D11_MAPPED_SUBRESOURCE r;
     if (!lpDevice->LockRect(pNoiseTex, 0, D3D11_MAP_WRITE_DISCARD, &r))
     {
@@ -3219,6 +3218,9 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     SafeRelease(m_lpVS[0]);
     SafeRelease(m_lpVS[1]);
     SafeRelease(m_lpDDSTitle);
+#ifdef _SUPERTEXT
+    m_superTitle.reset();
+#endif
 
     m_texmgr.Finish();
 
@@ -3364,7 +3366,7 @@ void CPlugin::MilkDropRenderFrame(int redraw)
 
     // 2. Clear the background.
     //DWORD clear_color = (m_fog_enabled) ? FOG_COLOR : 0xFF000000;
-    //GetDevice()->Clear(0, 0, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, clear_color, 1.0f, 0);
+    //GetDevice()->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_color, 1.0f, 0);
 
     // 5. Switch to 2D drawing mode.
     //    2D-coordinate system:

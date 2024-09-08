@@ -214,6 +214,13 @@ TextElement::TextElement() :
 {
 }
 
+void TextElement::Initialize(ID2D1RenderTarget* d2dRenderTarget)
+{
+    ThrowIfFailed(d2dRenderTarget->CreateSolidColorBrush(ColorF(ColorF::White), m_textColorBrush.ReleaseAndGetAddressOf()));
+    ThrowIfFailed(d2dRenderTarget->CreateSolidColorBrush(ColorF(ColorF::Black), m_shadowColorBrush.ReleaseAndGetAddressOf()));
+    ThrowIfFailed(d2dRenderTarget->CreateSolidColorBrush(ColorF(ColorF::LightSlateGray), m_boxColorBrush.ReleaseAndGetAddressOf()));
+}
+
 void TextElement::Initialize(ID2D1DeviceContext* d2dContext)
 {
     ThrowIfFailed(d2dContext->CreateSolidColorBrush(ColorF(ColorF::White), m_textColorBrush.ReleaseAndGetAddressOf()));
@@ -268,15 +275,13 @@ void TextElement::Render(ID2D1RenderTarget* d2dRenderTarget, IDWriteFactory* dwr
         d2dRenderTarget->FillRectangle(m_boxRect, m_boxColorBrush.Get()); // draw a filled rectangle
     }
 
-    //    float delta = std::min(1.0f, m_fadeOutTimeElapsed / m_fadeOutTime);
-    //    SetTextOpacity((1.0f - delta) * m_fadeStartingOpacity);
+    if (m_hasShadow)
+    {
+        m_shadowColorBrush->SetOpacity(m_textColorBrush->GetOpacity() * 0.5f);
+        d2dRenderTarget->DrawTextLayout(Point2F(origin.x + 1.0f, origin.y + 1.0f), m_textLayout.Get(), m_shadowColorBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
+    }
 
-    //    if (m_fadeOutTimeElapsed >= m_fadeOutTime)
-    //    {
-    //        m_isFadingOut = false;
-    //        SetVisible(false);
-    //    }
-    //}
+    d2dRenderTarget->DrawTextLayout(origin, m_textLayout.Get(), m_textColorBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
 }
 
 void TextElement::Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteFactory)
@@ -388,7 +393,7 @@ void TextElement::CreateTextLayout(IDWriteFactory* dwriteFactory)
 {
     if ((m_textLayout == nullptr) || m_textStyle->HasTextFormatChanged())
     {
-        m_textLayout = nullptr;
+        //m_textLayout = nullptr;
 
         ThrowIfFailed(dwriteFactory->CreateTextLayout(m_text.data(),
                                                       static_cast<UINT32>(m_text.size()),

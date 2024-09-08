@@ -416,9 +416,6 @@ void DeviceResources::SetWindow(HWND window, int width, int height) noexcept
     m_outputSize.left = m_outputSize.top = 0;
     m_outputSize.right = static_cast<long>(width);
     m_outputSize.bottom = static_cast<long>(height);
-
-    //m_d2dContext->SetDpi(m_dpiX, m_dpiY);
-    //CreateWindowSizeDependentResources();
 }
 
 void DeviceResources::SetDpi()

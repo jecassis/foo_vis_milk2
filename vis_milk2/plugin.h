@@ -278,21 +278,6 @@ typedef struct
     VShaderInfo comp;
 } VShaderSet;
 
-/*
-typedef struct
-{
-    void* ptr; // to IDirect3DPixelShader9 or IDirect3DVertexShader9
-    LPD3DXCONSTANTTABLE CT;
-    CShaderParams params;
-} ShaderInfo;
-
-typedef struct
-{
-    ShaderInfo warp;
-    ShaderInfo comp;
-} ShaderSet;
-*/
-
 typedef struct
 {
     std::wstring szFilename; // without path
@@ -473,8 +458,6 @@ class CPlugin : public CPluginShell
     td_mdsounddata mdsound;
 
     // Displaying text to user.
-    //int m_nTextHeightPixels; // this is for the menu/detail font; NOT the "fancy font"
-    //int m_nTextHeightPixels_Fancy;
     bool m_bShowFPS;
     bool m_bShowRating;
     bool m_bShowPresetInfo;
@@ -490,11 +473,6 @@ class CPlugin : public CPluginShell
     ErrorMsgList m_errors;
     void AddError(wchar_t* szMsg, float fDuration, ErrorCategory category = ERR_ALL, bool bBold = true);
     void ClearErrors(int category = ERR_ALL);
-
-    //HFONT m_hfont[3]; // 0=fancy font (for song titles, preset name)
-                        // 1=legible font (the main font)
-                        // 2=tooltip font (for tooltips in the menu system)
-    //HFONT m_htitlefont[NUM_TITLE_FONTS]; // ~25 different sizes
 
     // Stuff for the menu system.
     CMilkMenu* m_pCurMenu; // should always be valid!
@@ -520,7 +498,7 @@ class CPlugin : public CPluginShell
     ID3D11Texture2D* m_lpVS[2];
 #define NUM_BLUR_TEX 6
 #if (NUM_BLUR_TEX > 0)
-    ID3D11Texture2D* m_lpBlur[NUM_BLUR_TEX]; // each is successively 1/2 size of prev.
+    ID3D11Texture2D* m_lpBlur[NUM_BLUR_TEX]; // each is successively 1/2 size of previous one
     int m_nBlurTexW[NUM_BLUR_TEX];
     int m_nBlurTexH[NUM_BLUR_TEX];
 #endif
@@ -534,8 +512,8 @@ class CPlugin : public CPluginShell
     int* m_indices_list;
 
     // Final composite grid.
-#define FCGSX 32 // final composite gridsize - number verts - should be EVEN.
-#define FCGSY 24 // final composite gridsize - number verts - should be EVEN.
+#define FCGSX 32 // final composite grid size - number vertices - should be EVEN.
+#define FCGSY 24 // final composite grid size - number vertices - should be EVEN.
                  // number of grid *cells* is two less,
                  // since we have redundant verts along the center line in X and Y (...for clean 'ang' interp)
     MDVERTEX m_comp_verts[FCGSX * FCGSY];
@@ -555,6 +533,9 @@ class CPlugin : public CPluginShell
     texmgr m_texmgr; // for user sprites
 
     td_supertext m_supertext; // **contains info about current Song Title or Custom Message.**
+#ifdef _SUPERTEXT
+    std::unique_ptr<SuperText> m_superTitle;
+#endif
 
     ID3D11Texture2D* m_tracer_tex;
 

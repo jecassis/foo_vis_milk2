@@ -85,13 +85,11 @@ class TextStyle
 class ElementBase
 {
   public:
+    virtual void Initialize(ID2D1RenderTarget* d2dRenderTarget) { UNREFERENCED_PARAMETER(d2dRenderTarget); }
     virtual void Initialize(ID2D1DeviceContext* d2dContext) { UNREFERENCED_PARAMETER(d2dContext); }
     virtual void Update(float timeTotal, float timeDelta) { UNREFERENCED_PARAMETER(timeTotal); UNREFERENCED_PARAMETER(timeDelta); }
-    virtual void Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteFactory)
-    {
-        UNREFERENCED_PARAMETER(d2dContext);
-        UNREFERENCED_PARAMETER(dwriteFactory);
-    }
+    virtual void Render(ID2D1RenderTarget* d2dRenderTarget, IDWriteFactory* dwriteFactory) { UNREFERENCED_PARAMETER(d2dRenderTarget); UNREFERENCED_PARAMETER(dwriteFactory); }
+    virtual void Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteFactory) { UNREFERENCED_PARAMETER(d2dContext); UNREFERENCED_PARAMETER(dwriteFactory); }
     virtual void ReleaseDeviceDependentResources() {}
 
     void SetAlignment(AlignType horizontal, AlignType vertical);
@@ -121,8 +119,10 @@ class TextElement : public ElementBase
     TextElement();
     virtual ~TextElement() {}
 
+    virtual void Initialize(ID2D1RenderTarget* d2dRenderTarget);
     virtual void Initialize(ID2D1DeviceContext* d2dContext);
     virtual void Update(float timeTotal, float timeDelta);
+    virtual void Render(ID2D1RenderTarget* d2dRenderTarget, IDWriteFactory* dwriteFactory);
     virtual void Render(ID2D1DeviceContext* d2dContext, IDWriteFactory* dwriteFactory);
     virtual void ReleaseDeviceDependentResources();
 

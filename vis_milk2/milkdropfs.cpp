@@ -183,17 +183,27 @@ bool CPlugin::RenderStringToTitleTexture()
     }; // NOTE: DO NOT EXCEED 64 FONTS
 
     // Remember the original backbuffer and Z-buffer.
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
-    //Microsoft::WRL::ComPtr<ID3D11Texture2D> pZBuffer;
-    lpDevice->GetRenderTarget(&pBackBuffer);
-    //lpDevice->GetDepthStencilSurface(&pZBuffer);
+    //Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
+    //Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pZBuffer;
+    //lpDevice->GetRenderTarget(&pBackBuffer);
+    //lpDevice->GetDepthView(&pZBuffer);
 
     // Set render target to m_lpDDSTitle.
-    ID3D11DepthStencilView* origDSView = nullptr;
-    ID3D11DepthStencilView* emptyDSView = nullptr;
-    lpDevice->GetDepthView(&origDSView);
-    lpDevice->SetRenderTarget(m_lpDDSTitle, &emptyDSView);
-    lpDevice->SetTexture(0, nullptr);
+    Microsoft::WRL::ComPtr<IDXGISurface> pDxgiSurface;
+    Microsoft::WRL::ComPtr<ID2D1RenderTarget> pRenderTarget;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSView;
+    HRESULT hr = m_lpDDSTitle->QueryInterface(pDxgiSurface.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+    {
+        return false;
+    }
+    D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED), 96.0f, 96.0f);
+    hr = m_lpDX->GetD2DFactory()->CreateDxgiSurfaceRenderTarget(pDxgiSurface.Get(), &props, pRenderTarget.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+    {
+        return false;
+    }
+    lpDevice->SetRenderTarget(m_lpDDSTitle, &pDSView);
 
     // Clear the texture to black.
     {
@@ -204,16 +214,16 @@ bool CPlugin::RenderStringToTitleTexture()
         lpDevice->SetBlendState(false);
 
         // Set up a quad.
-        WFVERTEX verts[4];
+        MDVERTEX verts[4];
         for (int i = 0; i < 4; i++)
         {
             verts[i].x = (i % 2 == 0) ? -1.0f : 1.0f;
             verts[i].y = (i / 2 == 0) ? -1.0f : 1.0f;
             verts[i].z = 0.0f;
-            verts[i].a = 1.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f; // diffuse color; also acts as filler to align structure to 16 bytes (good for random access/indexed prims)
+            verts[i].a = 1.0f; verts[i].r = 0.0f; verts[i].g = 0.0f; verts[i].b = 0.0f;
         }
 
-        lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(WFVERTEX));
+        lpDevice->DrawPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 2, verts, sizeof(MDVERTEX));
     }
 
     // 1. Clip title if too many characters.
@@ -243,9 +253,7 @@ bool CPlugin::RenderStringToTitleTexture()
     rect.bottom = static_cast<FLOAT>(m_nTitleTexSizeY * 17 / 21); // otherwise, bottom of 'g' could be cut off (18/21 seems safe, but we want some leeway)
 
     DWORD textColor = 0xFFFFFFFF;
-    DWORD backColor = 0xD0000000;
     D2D1_COLOR_F fTextColor = D2D1::ColorF(textColor, static_cast<FLOAT>(((textColor & 0xFF000000) >> 24) / 255.0f));
-    D2D1_COLOR_F fBackColor = D2D1::ColorF(backColor, static_cast<FLOAT>(((backColor & 0xFF000000) >> 24) / 255.0f));
 
     if (!m_supertext.bIsSongTitle)
     {
@@ -284,7 +292,7 @@ bool CPlugin::RenderStringToTitleTexture()
                 temp = rect;
                 if (!m_ddsTitle.IsVisible())
                 {
-                    m_ddsTitle.Initialize(m_lpDX->GetD2DDeviceContext());
+                    m_ddsTitle.Initialize(pRenderTarget.Get() /*m_lpDX->GetD2DDeviceContext()*/);
                 }
                 m_ddsTitle.SetAlignment(AlignCenter, AlignCenter);
                 m_ddsTitle.SetTextColor(fTextColor);
@@ -311,13 +319,17 @@ bool CPlugin::RenderStringToTitleTexture()
         if (gdi_font)
         {
             // Do actual drawing and set `m_supertext.nFontSizeUsed`; use 'lo' size.
-            int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER | DT_CALCRECT, textColor, false, backColor);
+            int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER | DT_CALCRECT, textColor, false);
             temp.left = static_cast<FLOAT>(0);
             temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
             temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
             temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
             m_ddsTitle.SetContainer(temp);
-            m_supertext.nFontSizeUsed = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER, textColor, false, backColor);
+            pRenderTarget->BeginDraw();
+            m_ddsTitle.Render(pRenderTarget.Get(), m_lpDX->GetDWriteFactory());
+            hr = pRenderTarget->EndDraw();
+            m_supertext.nFontSizeUsed = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER, textColor, false);
+            m_ddsTitle.ReleaseDeviceDependentResources();
 
             ret = true;
         }
@@ -367,7 +379,7 @@ bool CPlugin::RenderStringToTitleTexture()
             temp = rect;
             if (!m_ddsTitle.IsVisible())
             {
-                m_ddsTitle.Initialize(m_lpDX->GetD2DDeviceContext());
+                m_ddsTitle.Initialize(pRenderTarget.Get() /*m_lpDX->GetD2DDeviceContext()*/);
             }
             m_ddsTitle.SetAlignment(AlignCenter, AlignCenter);
             m_ddsTitle.SetTextColor(fTextColor);
@@ -376,7 +388,7 @@ bool CPlugin::RenderStringToTitleTexture()
             m_ddsTitle.SetText(str);
             m_ddsTitle.SetTextStyle(m_gdi_title_font_doublesize.get());
             m_ddsTitle.SetTextShadow(true);
-            h = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, /*DT_NOPREFIX | DT_END_ELLIPSIS*/ DT_SINGLELINE | DT_CALCRECT, textColor, false, backColor);
+            h = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, /*DT_NOPREFIX | DT_END_ELLIPSIS*/ DT_SINGLELINE | DT_CALCRECT, textColor, false);
             if (static_cast<int>(temp.right - temp.left) <= m_nTitleTexSizeX)
                 break;
 
@@ -402,24 +414,29 @@ bool CPlugin::RenderStringToTitleTexture()
         temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
         temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
         m_ddsTitle.SetContainer(temp);
-        m_supertext.nFontSizeUsed = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, DT_SINGLELINE | DT_CENTER /*| DT_NOPREFIX | DT_END_ELLIPSIS*/, textColor, false, backColor);
+        pRenderTarget->BeginDraw();
+        m_ddsTitle.Render(pRenderTarget.Get(), m_lpDX->GetDWriteFactory());
+        hr = pRenderTarget->EndDraw();
+        m_supertext.nFontSizeUsed = m_text.DrawD2DText(m_gdi_title_font_doublesize.get(), &m_ddsTitle, str, &temp, DT_SINGLELINE | DT_CENTER /*| DT_NOPREFIX | DT_END_ELLIPSIS*/, textColor, false);
+        m_ddsTitle.ReleaseDeviceDependentResources();
 
         ret = true;
     }
 
     // Change the render target back to the original setup.
-    lpDevice->SetTexture(0, NULL);
-    lpDevice->SetRenderTarget(pBackBuffer.Get(), &origDSView);
+    //lpDevice->SetTexture(0, NULL);
+    //lpDevice->SetRenderTarget(pBackBuffer.Get(), &origDSView);
     //lpDevice->SetDepthStencilSurface(pZBuffer.Get());
-    SafeRelease(pBackBuffer);
-    SafeRelease(origDSView);
+    //SafeRelease(pBackBuffer);
     //SafeRelease(pZBuffer);
 
+#ifdef _SUPERTEXT
     if (ret && m_supertext.fStartTime > 0.0f && !m_ddsTitle.IsVisible())
     {
         m_ddsTitle.SetVisible(true);
         m_text.RegisterElement(&m_ddsTitle);
     }
+#endif
 
     return ret;
 }
@@ -931,7 +948,8 @@ void CPlugin::RenderFrame(int bRedraw)
     {
         //D3D11_TEXTURE_ADDRESS_MODE texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
         D3D11_TEXTURE_ADDRESS_MODE texaddr = D3D11_TEXTURE_ADDRESS_WRAP;
-        lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
+        lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr); // stage 0 always uses bilinear filtering
+        lpDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr); // stage 1 always uses bilinear filtering
         lpDevice->SetRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID);
         lpDevice->SetDepth(false);
         lpDevice->SetShader(0); // note: this texture stage state setup works for 0 or 1 texture
@@ -950,9 +968,9 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
         lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
         lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-        lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
         lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
         lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+        lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
         lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
         */
 
@@ -1062,10 +1080,12 @@ void CPlugin::RenderFrame(int bRedraw)
     if (m_supertext.fStartTime >= 0.0f && fProgress >= 1.0f && !m_supertext.bRedrawSuperText)
     {
         ShowSongTitleAnim(m_nTexSizeX, m_nTexSizeY, 1.0f);
+#ifdef _SUPERTEXT
         if (m_ddsTitle.IsVisible())
         {
             m_ddsTitle.SetVisible(false);
             m_text.UnregisterElement(&m_ddsTitle);
+#endif
         }
     }
 
@@ -1407,7 +1427,7 @@ void CPlugin::BlurPasses()
 
     //lpDevice->SetFVF(MDVERTEX_FORMAT);
     lpDevice->SetVertexShader(m_BlurShaders[0].vs.ptr, m_BlurShaders[0].vs.CT);
-    //lpDevice->SetVertexDeclaration(m_pMilkDropVertDecl);
+    //lpDevice->CreateInputLayout(m_pMilkDropLayout);
     lpDevice->SetBlendState(false);
     lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
     //lpDevice->SetSamplerState(0, D3DSAMP_MAXANISOTROPY, 1);
@@ -1471,7 +1491,7 @@ void CPlugin::BlurPasses()
         // Hook up correct render target.
         lpDevice->SetRenderTarget(m_lpBlur[i], &emptyDSView);
 
-        // Hook up correct source texture; assume there is only one, at stage 0. /????
+        // Hook up correct source texture; assume there is only one, at stage 0.
         lpDevice->SetTexture(0, (i == 0) ? m_lpVS[0] : m_lpBlur[i - 1]);
 
         // Set constants.
@@ -1778,9 +1798,6 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     // Stages 0 and 1 always just use bilinear filtering.
     D3D11_TEXTURE_ADDRESS_MODE texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
     lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
-    //lpDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    //lpDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-    //lpDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
     //lpDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
     //lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
     //lpDevice->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
@@ -1792,15 +1809,10 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
     //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
     //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
     //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
+    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
     //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-
-    //DWORD texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
-    //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, texaddr);
-    //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, texaddr);
-    //lpDevice->SetSamplerState(0, D3DSAMP_ADDRESSW, texaddr);
 
     // Decay.
     float fDecay = COLOR_NORM(static_cast<float>(*m_pState->var_pf_decay));
@@ -2041,7 +2053,7 @@ void CPlugin::WarpedBlit_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
         PShaderInfo* si = (pass == 0) ? &m_OldShaders.warp : &m_shaders.warp;
         CState* state = (pass == 0) ? m_pOldState : m_pState;
 
-        //lpDevice->SetVertexDeclaration(m_pMyVertDecl);
+        //lpDevice->CreateInputLayout(m_pMilkDropLayout);
         lpDevice->SetVertexShader(m_fallbackShaders_vs.warp.ptr, m_fallbackShaders_vs.warp.CT);
 
         ApplyShaderParams(&(si->params), si->CT, state);
@@ -2526,7 +2538,7 @@ void CPlugin::DrawCustomWaves()
                     lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, pState->m_wave[i].bAdditive ? D3D11_BLEND_ONE : D3D11_BLEND_INV_SRC_ALPHA);
 
                     float ptsize = (float)((m_nTexSizeX >= 1024) ? 2 : 1) + (pState->m_wave[i].bDrawThick ? 1 : 0);
-                    // DirectX 11 has not point size, so render quads.
+                    // TODO: DirectX 11 has not point size, so render quads.
                     //if (pState->m_wave[i].bUseDots)
                     //    lpDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&ptsize));
                     if (pState->m_wave[i].bUseDots && ptsize > 1.0)
@@ -3694,8 +3706,8 @@ void CPlugin::RestoreShaderParams()
     for (int i = 0; i < 16; i++)
         lpDevice->SetTexture(i, NULL);
 
+    //lpDevice->CreateInputLayout(NULL); // DirectX debug runtime complains heavily about this
     lpDevice->SetVertexShader(NULL, NULL);
-    //lpDevice->SetVertexDeclaration(NULL); // DirectX debug runtime complains heavily about this
     lpDevice->SetPixelShader(NULL, NULL);
 }
 
@@ -4080,9 +4092,6 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
         if (*m_pState->var_pf_brighten /*&& (GetCaps()->SrcBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
         {
             // Square root filter.
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
-
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
 
@@ -4102,9 +4111,6 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
         if (*m_pState->var_pf_darken /*&& (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_DESTCOLOR)*/)
         {
             // Squaring filter.
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
-
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
 
@@ -4117,9 +4123,6 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 
         if (*m_pState->var_pf_solarize /*&& (GetCaps()->SrcBlendCaps & D3DPBLENDCAPS_DESTCOLOR) && (GetCaps()->DestBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
         {
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
-
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
 
@@ -4132,9 +4135,6 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 
         if (*m_pState->var_pf_invert /*&& (GetCaps()->SrcBlendCaps & D3DPBLENDCAPS_INVDESTCOLOR)*/)
         {
-            //lpDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
-            //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
-
             lpDevice->SetTexture(0, NULL);
             lpDevice->SetVertexColor(true);
 
@@ -4287,7 +4287,7 @@ void CPlugin::ShowToUser_Shaders(int nPass, bool bAlphaBlend, bool bFlipAlpha, b
         PShaderInfo* si = (pass == 0) ? &m_OldShaders.comp : &m_shaders.comp;
         CState* state = (pass == 0) ? m_pOldState : m_pState;
 
-        //lpDevice->SetVertexDeclaration(m_pMyVertDecl);
+        //lpDevice->CreateInputLayout(m_pMilkDropLayout);
         lpDevice->SetVertexShader(m_fallbackShaders_vs.comp.ptr, m_fallbackShaders_vs.comp.CT);
 
         ApplyShaderParams(&(si->params), si->CT, state);
@@ -4350,22 +4350,23 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     lpDevice->SetTexture(0, m_lpDDSTitle);
     lpDevice->SetVertexShader(NULL, NULL);
+    //lpDevice->SetShader(0);
     //lpDevice->SetFVF(SPRITEVERTEX_FORMAT);
 
     lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
 
-    SPRITEVERTEX v3[128];
-    ZeroMemory(v3, sizeof(SPRITEVERTEX) * 128);
+    SPRITEVERTEX v3[128]{};
 
     if (m_supertext.bIsSongTitle)
     {
+#ifdef _SUPERTEXT
         m_superTitle->CreateWindowSizeDependentResources(w, h);
         m_superTitle->SetTextFont(m_supertext.szText, m_supertext.nFontFace, static_cast<float>(m_supertext.nFontSizeUsed));
         m_superTitle->OnRender();
-#if 0
+#else
         // Positioning.
         float fSizeX = 50.0f / static_cast<float>(m_supertext.nFontSizeUsed) * std::pow(1.5f, m_supertext.fFontSize - 2.0f);
-        float fSizeY = fSizeX * m_nTitleTexSizeY / static_cast<float>(m_nTitleTexSizeX); //* m_nWidth/(float)m_nHeight;
+        float fSizeY = fSizeX * m_nTitleTexSizeY / static_cast<float>(m_nTitleTexSizeX); //* m_nWidth / static_cast<float>(m_nHeight);
 
         if (fSizeX > 0.88f)
         {
@@ -4381,7 +4382,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         }
         else // final render-to-VS0
         {
-            //float aspect = GetWidth()/(float)(GetHeight()*4.0f/3.0f);
+            //float aspect = GetWidth() / static_cast<float>(GetHeight() * 4.0f / 3.0f);
             //if (aspect < 1.0f)
             //{
             //    fSizeX *= aspect;
@@ -4404,7 +4405,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
                 v3[i].x = (v3[i].tu * 2.0f - 1.0f) * fSizeX;
                 v3[i].y = (v3[i].tv * 2.0f - 1.0f) * fSizeY;
                 if (fProgress >= 1.0f)
-                    v3[i].y += 1.0f / (float)m_nTexSizeY; // this is a pretty hacky guess at getting it to align...
+                    v3[i].y += 1.0f / static_cast<float>(m_nTexSizeY); // this is a pretty hacky guess at getting it to align...
                 i++;
             }
         }
@@ -4433,6 +4434,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
             v3[i].x *= scale;
             v3[i].y *= scale;
         }
+#endif
     }
     else
     {
