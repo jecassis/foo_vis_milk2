@@ -13,7 +13,7 @@
     .EXAMPLE
         PS> .\tools\build-fb2k_component.ps1 -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
     .EXAMPLE
-        PS> .\tools\build-fb2k_component.ps1 -RunBuild -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TimeZone '-0800' -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -Build -Clean -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TimeZone '-0800' -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
     .INPUTS
         None.
     .OUTPUTS
@@ -25,8 +25,10 @@
 [CmdletBinding()]
 param
 (
-    [parameter(HelpMessage = 'Run MSBuild')]
-    [switch] $RunBuild,
+    [parameter(HelpMessage = 'Run Build Target using MSBuild')]
+    [switch] $Build,
+    [parameter(HelpMessage = 'Run Clean Target using MSBuild (before Build target)')]
+    [switch] $Clean,
     [parameter(HelpMessage = 'Build Configuration')]
     [string] $Configuration = 'Release',
     [parameter(HelpMessage = 'Build Platforms')]
@@ -54,13 +56,14 @@ $ErrorActionPreference = 'Stop'
 
 # Note: The working directory is the solution directory.
 
-if (($RunBuild -or $VerbosePreference) -and -not (Test-Path Env:VCToolsInstallDir))
+if (($Build -or $VerbosePreference) -and -not (Test-Path Env:VCToolsInstallDir))
 {
     Write-Host "FATAL: Run in Developer PowerShell."
     exit 1
 }
 
-function Format-Xml {
+function Format-Xml
+{
     [CmdletBinding()]
     Param ([Parameter(ValueFromPipeline = $true, Mandatory = $true)] [string] $xml)
     $xd = New-Object -TypeName System.Xml.XmlDocument
@@ -113,7 +116,12 @@ $null = New-Item -Path `
 # Build DLL and copy build output.
 foreach ($platform in $Platforms)
 {
-    if ($RunBuild)
+    if ($Clean)
+    {
+        Write-Host 'INFO: Running' ${platform}.Replace('x86', 'Win32') $Configuration 'clean up...'
+        msbuild.exe $SolutionPath -m:"${cores}" -t:Clean -p:"Configuration=${Configuration};Platform=${platform}" #--% -verbosity:diagnostic
+    }
+    if ($Build)
     {
         Write-Host 'INFO: Running' ${platform}.Replace('x86', 'Win32') $Configuration 'build...'
         msbuild.exe $SolutionPath -m:"${cores}" -t:Build -p:"Configuration=${Configuration};Platform=${platform};TimeZone=${TimeZone}" #--% -verbosity:diagnostic

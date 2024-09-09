@@ -12,89 +12,89 @@
 // player's layout.
 //
 // GENERAL
-//  ESC: toggle interactive mode or exit fullscreen
-//  ALT + K: launch preferences page
+//   ESC: toggle interactive mode or exit fullscreen
+//   ALT + K: launch preferences page
 //
 // PRESET LOADING
-//  BACKSPACE: return to previous preset
-//  SPACE: transition to next preset
-//  H: instant hard cut (to next preset)
-//  R: toggle random (vs. sequential) preset traversal
-//  L: load a specific preset (invokes the 'Load' menu)
-//  + / -: rate current preset (better / worse)
-//  scroll lock: lock/unlock current preset
-//      (keyboard light on means preset is locked which
-//       prevents random switch to new preset)
-//  A: aggregate preset - loads a random preset,
-//     steals the warp shader from a different random preset,
-//     and steals the composite shader from a third random preset.
-//  D: cycle between various lock-states for the warp and
-//     composite shaders. When one of these shaders is locked,
-//     loading a new preset will load everything *except* the
-//     locked shaders, creating a mix between the two presets.
+//   BACKSPACE: return to previous preset
+//   SPACE: transition to next preset
+//   H: instant hard cut (to next preset)
+//   R: toggle random (vs. sequential) preset traversal
+//   L: load a specific preset (invokes the 'Load' menu)
+//   + / -: rate current preset (better / worse)
+//   scroll lock: lock/unlock current preset
+//       (keyboard light on means preset is locked which
+//        prevents random switch to new preset)
+//   A: aggregate preset - loads a random preset,
+//      steals the warp shader from a different random preset,
+//      and steals the composite shader from a third random preset.
+//   D: cycle between various lock-states for the warp and
+//      composite shaders. When one of these shaders is locked,
+//      loading a new preset will load everything *except* the
+//      locked shaders, creating a mix between the two presets.
 //
 // PRESET EDITING AND SAVING
-//  M: show/hide the preset-editing menu
-//  S: save new preset (asks for the new filename)
-//  N: show per-frame variable monitor (see milkdrop_preset_authoring.html)
+//   M: show/hide the preset-editing menu
+//   S: save new preset (asks for the new filename)
+//   N: show per-frame variable monitor (see milkdrop_preset_authoring.html)
 //
 // MUSIC PLAYBACK
-//  Z / X / C / V / B: navigate playlist (prev / play / pause / stop / next)
-//  u / U: toggle shuffle mode forward / back
-//  P: show playlist
-//  up / down arrows: volume up / down
-//  left / right arrows: rewind / forward 5 seconds
-//  SHIFT + left / right arrows: rewind / forward 30 seconds
+//   Z / X / C / V / B: navigate playlist (prev / play / pause / stop / next)
+//   u / U: toggle shuffle mode forward / back
+//   P: show playlist
+//   up / down arrow: volume up / down
+//   left / right arrow: rewind / forward 5 seconds
+//   SHIFT + left / right arrow: rewind / forward 30 seconds
 //
 // STATUS INFORMATION
-//  F1: show help screen
-//  F2: show song title
-//  F3: show song length
-//  F4: show preset name
-//  F5: show frames per second (FPS)
-//  F6: show rating of current preset
-//  Y, F7: re-read custom message file (milk_msg.ini) from disk
-//  F8: jump to new presets directory
-//  F9: show shader help (in shader edit mode)
+//   F1: show help screen
+//   F2: show song title
+//   F3: show song length
+//   F4: show preset name
+//   F5: show frames per second (FPS)
+//   F6: show rating of current preset
+//   Y, F7: re-read custom message file (milk_msg.ini) from disk
+//   F8: jump to new presets directory
+//   F9: show shader help (in shader edit mode)
 //
 // MENU / PLAYLIST / PRESETS
-//  ESC: exit menu
-//  BACKSPACE / left arrow: return to previous menu or exit menu if top
-//  ENTER / SPACE / right arrow: select or go to sub-menu
-//  up / down arrows: change selection up / down
+//   ESC: exit menu
+//   BACKSPACE / left arrow: return to previous menu or exit menu if top
+//   ENTER / SPACE / right arrow: select or go to sub-menu
+//   up / down arrow: change selection up / down
 //
 // SPRITES AND CUSTOM MESSAGES
-//  T: launch song title animation
-//  Y: enter custom message mode
-//      ##: load message ## (where ## is a 2-digit numeric code [00-99]
-//                           of a message defined in milk_msg.ini)
-//      *: clear any digits entered
-//      DELETE: clear message (if visible)
-//      F7: re-read milk_msg.ini from disk
-//  K: enter sprite mode
-//      ##: load sprite ## (where ## is a 2-digit numeric code [00-99]
-//                          of a sprite defined in milk_img.ini)
-//      *: clear any digits entered
-//      DELETE: clear newest sprite 
-//      SHIFT + DELETE: clear oldest sprite
-//      CTRL + SHIFT + DELETE: clear all sprites
-//      F7: no effect (milk_img.ini is never cached)
-//  SHIFT + K: enter sprite kill mode
-//      ##: clear all sprites with code ##
-//      *: clear any digits entered
-//  CTRL + T: kill song title
-//  CTRL + Y: kill custom messages
-//  CTRL + K: kill all sprites
+//   T: launch song title animation
+//   Y: enter custom message mode
+//       ##: load message ## (where ## is a 2-digit numeric code [00-99]
+//                            of a message defined in milk_msg.ini)
+//       *: clear any digits entered
+//       DELETE: clear message (if visible)
+//       F7: re-read milk_msg.ini from disk
+//   K: enter sprite mode
+//       ##: load sprite ## (where ## is a 2-digit numeric code [00-99]
+//                           of a sprite defined in milk_img.ini)
+//       *: clear any digits entered
+//       DELETE: clear newest sprite 
+//       SHIFT + DELETE: clear oldest sprite
+//       CTRL + SHIFT + DELETE: clear all sprites
+//       F7: no effect (milk_img.ini is never cached)
+//   SHIFT + K: enter sprite kill mode
+//       ##: clear all sprites with code ##
+//       *: clear any digits entered
+//   CTRL + T: kill song title
+//   CTRL + Y: kill custom messages
+//   CTRL + K: kill all sprites
 //
 // The following are hotkeys for changing certain common parameters
 // on the current preset.
 //
 // MOTION
-//  i / I: zoom in / out
-//  [ / ]: push motion (`dx`) left / right
-//  { / }: push motion (`dy`) up / down
-//  < / >: rotate (`rot`) left / right
-//  o / O: shrink / grow the amplitude of the warp effect
+//   i / I: zoom in / out
+//   [ / ]: push motion (`dx`) left / right
+//   { / }: push motion (`dy`) up / down
+//   < / >: rotate (`rot`) left / right
+//   o / O: shrink / grow the amplitude of the warp effect
 //
 // WAVEFORM
 //   w / W: cycle through waveforms forward / back
@@ -104,7 +104,7 @@
 // BRIGHTNESS
 //   g / G: decrease / increase gamma (brightness) **
 //
-// VIDEO ECHO EFFECT **
+// VIDEO ECHO EFFECT
 //   q / Q: scale second graphics layer down / up **
 //   F: flip second graphics layer (cycles through 4 fixed orientations) **
 //

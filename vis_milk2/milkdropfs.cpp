@@ -1085,8 +1085,8 @@ void CPlugin::RenderFrame(int bRedraw)
         {
             m_ddsTitle.SetVisible(false);
             m_text.UnregisterElement(&m_ddsTitle);
-#endif
         }
+#endif
     }
 
     // Change the render target back to the original setup.
@@ -4357,13 +4357,13 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     SPRITEVERTEX v3[128]{};
 
+#ifdef _SUPERTEXT
+    m_superTitle->CreateWindowSizeDependentResources(w, h);
+    m_superTitle->SetTextFont(m_supertext.szText, m_supertext.nFontFace, static_cast<float>(m_supertext.nFontSizeUsed));
+    m_superTitle->OnRender();
+#else
     if (m_supertext.bIsSongTitle)
     {
-#ifdef _SUPERTEXT
-        m_superTitle->CreateWindowSizeDependentResources(w, h);
-        m_superTitle->SetTextFont(m_supertext.szText, m_supertext.nFontFace, static_cast<float>(m_supertext.nFontSizeUsed));
-        m_superTitle->OnRender();
-#else
         // Positioning.
         float fSizeX = 50.0f / static_cast<float>(m_supertext.nFontSizeUsed) * std::pow(1.5f, m_supertext.fFontSize - 2.0f);
         float fSizeY = fSizeX * m_nTitleTexSizeY / static_cast<float>(m_nTitleTexSizeX); //* m_nWidth / static_cast<float>(m_nHeight);
@@ -4434,7 +4434,6 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
             v3[i].x *= scale;
             v3[i].y *= scale;
         }
-#endif
     }
     else
     {
@@ -4577,8 +4576,8 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         }
 
         lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
-#else
     }
+#endif
 
     lpDevice->SetBlendState(false);
 }

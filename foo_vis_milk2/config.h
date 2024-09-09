@@ -10,6 +10,7 @@
 
 #include "resource.h"
 #include "settings.h"
+#include "version.h"
 
 static constexpr GUID guid_milk2 = {
     0x204b0345, 0x4df5, 0x4b47, {0xad, 0xd3, 0x98, 0x9f, 0x81, 0x1b, 0xd9, 0xa5}
@@ -197,7 +198,7 @@ static constexpr GUID guid_cfg_bEnableHDR = {
 }; // {7B10342F-826F-4E24-80EF-61469430BA7C}
 
 // Defaults
-// `milk.ini` defaults
+// `milk2.ini` defaults
 //constexpr int default_nFpsLimit = -1;
 static constexpr bool default_bEnableRating = true;
 static constexpr bool default_bHardCutsDisabled = true;
@@ -389,7 +390,7 @@ class preferences_page_milk2 : public preferences_page_impl<milk2_preferences_pa
     bool get_help_url(pfc::string_base& p_out)
     {
         p_out.reset();
-        p_out << "https://www.geisswerks.com/milkdrop/milkdrop.html";
+        p_out << APPLICATION_DOCUMENTATION_URL;
         //"http://help.foobar2000.org/" << core_version_info::g_get_version_string() << "/" << "preferences" << "/" << pfc::print_guid(get_guid()) << "/" << get_name();
         return true;
     }

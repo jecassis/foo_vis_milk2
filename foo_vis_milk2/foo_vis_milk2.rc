@@ -1554,7 +1554,7 @@ BEGIN
     IDS_SCROLL_CTRL_HELP    "Check this box to prevent MilkDrop from controlling the Scroll Lock key state."
     IDS_NOCOMPSHADER_HELP   "Check this box to skip composite shader blending to minimize the strobing effect on the bottom and right edges of the screen."
     IDS_TITLE_FORMAT_HELP   "Set a song title format string using foobar2000 script."
-    IDS_ARTWORK_FORMAT_HELP "If nothing is set, then foobar2000 will use the album metadata. To override, set either a fully-qualified path or a foobar2000 script that returns the file path of the artwork to display. "
+    IDS_ARTWORK_FORMAT_HELP "If nothing is set, then foobar2000 will use the album metadata. To override, set either a fully-qualified path or a foobar2000 script that returns the file path of the artwork to display."
 END
 
 #endif    // English (United States) resources

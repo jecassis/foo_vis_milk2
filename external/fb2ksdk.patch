@@ -1,5 +1,5 @@
 diff --git a/foobar2000/component_client/foobar2000_component_client.vcxproj b/foobar2000/component_client/foobar2000_component_client.vcxproj
-index 339e7ff..f6f86b2 100644
+index 339e7ff..2c504b2 100644
 --- a/foobar2000/component_client/foobar2000_component_client.vcxproj
 +++ b/foobar2000/component_client/foobar2000_component_client.vcxproj
 @@ -37,58 +37,49 @@
@@ -100,7 +100,8 @@ index 339e7ff..f6f86b2 100644
 -      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -112,7 +113,8 @@ index 339e7ff..f6f86b2 100644
 -      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -124,7 +126,8 @@ index 339e7ff..f6f86b2 100644
 -      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -136,7 +139,8 @@ index 339e7ff..f6f86b2 100644
 -      <AdditionalIncludeDirectories>..;../..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -153,7 +157,8 @@ index 339e7ff..f6f86b2 100644
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -170,7 +175,8 @@ index 339e7ff..f6f86b2 100644
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -187,7 +193,8 @@ index 339e7ff..f6f86b2 100644
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -204,7 +211,8 @@ index 339e7ff..f6f86b2 100644
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -232,7 +240,7 @@ index 65e6b36..07bddf2 100644
  	parse_list(list);
  	list.free_all();
 diff --git a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
-index 26a97da..8ce3f8a 100644
+index 26a97da..d04ba1c 100644
 --- a/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
 +++ b/foobar2000/helpers/foobar2000_sdk_helpers.vcxproj
 @@ -37,63 +37,56 @@
@@ -358,7 +366,8 @@ index 26a97da..8ce3f8a 100644
 -      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -376,7 +385,8 @@ index 26a97da..8ce3f8a 100644
 -      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -394,7 +404,8 @@ index 26a97da..8ce3f8a 100644
 -      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -412,7 +423,8 @@ index 26a97da..8ce3f8a 100644
 -      <PreprocessorDefinitions>NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -426,7 +438,8 @@ index 26a97da..8ce3f8a 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -440,7 +453,8 @@ index 26a97da..8ce3f8a 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -454,7 +468,8 @@ index 26a97da..8ce3f8a 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -468,7 +483,8 @@ index 26a97da..8ce3f8a 100644
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -479,7 +495,7 @@ index 26a97da..8ce3f8a 100644
    <ImportGroup Label="ExtensionTargets" />
 +  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
 +    <PropertyGroup>
-+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
++      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. The missing file is {0}.</ErrorText>
 +    </PropertyGroup>
 +    <Error Condition="!Exists('..\..\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\wtl.10.0.10320\build\native\wtl.targets'))" />
 +  </Target>
@@ -550,7 +566,7 @@ index 9845c1f..9ec9a94 100644
  #endif //_FOOBAR2000_H_
  
 diff --git a/foobar2000/sdk/foobar2000_SDK.vcxproj b/foobar2000/sdk/foobar2000_SDK.vcxproj
-index 56b3983..a4c8c2a 100644
+index 56b3983..450b3ba 100644
 --- a/foobar2000/sdk/foobar2000_SDK.vcxproj
 +++ b/foobar2000/sdk/foobar2000_SDK.vcxproj
 @@ -36,59 +36,51 @@
@@ -666,7 +682,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -678,7 +695,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -690,7 +708,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -702,7 +721,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -720,7 +740,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -738,7 +759,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -756,7 +778,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -774,7 +797,8 @@ index 56b3983..a4c8c2a 100644
 -      <AdditionalIncludeDirectories>..;..\..</AdditionalIncludeDirectories>
 +      <AdditionalIncludeDirectories>..\;..\..\</AdditionalIncludeDirectories>
        <ConformanceMode>true</ConformanceMode>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
      <ResourceCompile>
@@ -843,10 +867,54 @@ index 3cafb58..ce2218e 100644
  
  //! \since 1.6
 diff --git a/foobar2000/shared/shared.vcxproj b/foobar2000/shared/shared.vcxproj
-index 72a5887..a1a92de 100644
+index 72a5887..dcda0d1 100644
 --- a/foobar2000/shared/shared.vcxproj
 +++ b/foobar2000/shared/shared.vcxproj
-@@ -37,21 +37,19 @@
+@@ -1,14 +1,6 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+ <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+-    <ProjectConfiguration Include="Debug|ARM64">
+-      <Configuration>Debug</Configuration>
+-      <Platform>ARM64</Platform>
+-    </ProjectConfiguration>
+-    <ProjectConfiguration Include="Debug|ARM64EC">
+-      <Configuration>Debug</Configuration>
+-      <Platform>ARM64EC</Platform>
+-    </ProjectConfiguration>
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
+       <Platform>Win32</Platform>
+@@ -17,12 +9,12 @@
+       <Configuration>Debug</Configuration>
+       <Platform>x64</Platform>
+     </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release|ARM64">
+-      <Configuration>Release</Configuration>
++    <ProjectConfiguration Include="Debug|ARM64">
++      <Configuration>Debug</Configuration>
+       <Platform>ARM64</Platform>
+     </ProjectConfiguration>
+-    <ProjectConfiguration Include="Release|ARM64EC">
+-      <Configuration>Release</Configuration>
++    <ProjectConfiguration Include="Debug|ARM64EC">
++      <Configuration>Debug</Configuration>
+       <Platform>ARM64EC</Platform>
+     </ProjectConfiguration>
+     <ProjectConfiguration Include="Release|Win32">
+@@ -33,96 +25,113 @@
+       <Configuration>Release</Configuration>
+       <Platform>x64</Platform>
+     </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|ARM64">
++      <Configuration>Release</Configuration>
++      <Platform>ARM64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|ARM64EC">
++      <Configuration>Release</Configuration>
++      <Platform>ARM64EC</Platform>
++    </ProjectConfiguration>
+   </ItemGroup>
    <PropertyGroup Label="Globals">
      <ProjectGuid>{054C606B-17BF-4540-AC4E-A9A7243628B8}</ProjectGuid>
      <RootNamespace>shared</RootNamespace>
@@ -854,38 +922,100 @@ index 72a5887..a1a92de 100644
 -    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
      <CharacterSet>Unicode</CharacterSet>
-     <WholeProgramOptimization>true</WholeProgramOptimization>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
 -    <PlatformToolset>v142</PlatformToolset>
 +    <PlatformToolset>v143</PlatformToolset>
    </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
      <CharacterSet>Unicode</CharacterSet>
-     <WholeProgramOptimization>true</WholeProgramOptimization>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
 -    <PlatformToolset>v142</PlatformToolset>
 +    <PlatformToolset>v143</PlatformToolset>
    </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
-@@ -68,12 +66,12 @@
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
+     <PlatformToolset>v143</PlatformToolset>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
+     <PlatformToolset>v143</PlatformToolset>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
      <CharacterSet>Unicode</CharacterSet>
 -    <PlatformToolset>v142</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
 +    <PlatformToolset>v143</PlatformToolset>
    </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
      <CharacterSet>Unicode</CharacterSet>
 -    <PlatformToolset>v142</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
 +    <PlatformToolset>v143</PlatformToolset>
    </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
-@@ -114,15 +112,26 @@
+     <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
+     <PlatformToolset>v143</PlatformToolset>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="Configuration">
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
+     <PlatformToolset>v143</PlatformToolset>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+   </ImportGroup>
+-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="PropertySheets">
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
    </ImportGroup>
    <PropertyGroup Label="UserMacros" />
    <PropertyGroup>
@@ -893,20 +1023,20 @@ index 72a5887..a1a92de 100644
 -    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
 -    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
-+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
@@ -959,7 +1089,7 @@ index 72a5887..a1a92de 100644
  </Project>
 \ No newline at end of file
 diff --git a/libppui/libPPUI.vcxproj b/libppui/libPPUI.vcxproj
-index 0c0024d..cca9b40 100644
+index 0c0024d..289edb0 100644
 --- a/libppui/libPPUI.vcxproj
 +++ b/libppui/libPPUI.vcxproj
 @@ -39,26 +39,26 @@
@@ -1054,7 +1184,7 @@ index 0c0024d..cca9b40 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
      <ClCompile>
-@@ -154,7 +171,7 @@
+@@ -154,15 +171,15 @@
        <WarningLevel>Level3</WarningLevel>
        <Optimization>Disabled</Optimization>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -1063,9 +1193,10 @@ index 0c0024d..cca9b40 100644
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <TreatSpecificWarningsAsErrors>4715</TreatSpecificWarningsAsErrors>
-@@ -162,7 +179,7 @@
+       <BufferSecurityCheck>false</BufferSecurityCheck>
        <FloatingPointModel>Fast</FloatingPointModel>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 -      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -1077,8 +1208,9 @@ index 0c0024d..cca9b40 100644
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
 -      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
 +      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
 -      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -1091,8 +1223,9 @@ index 0c0024d..cca9b40 100644
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
 -      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
 +      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 -      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -1104,8 +1237,9 @@ index 0c0024d..cca9b40 100644
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
 -      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
 +      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-       <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
@@ -1124,7 +1258,8 @@ index 0c0024d..cca9b40 100644
        <OmitFramePointers>true</OmitFramePointers>
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
@@ -1138,7 +1273,8 @@ index 0c0024d..cca9b40 100644
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
 +      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
@@ -1152,7 +1288,8 @@ index 0c0024d..cca9b40 100644
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
 +      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
@@ -1166,7 +1303,8 @@ index 0c0024d..cca9b40 100644
 -      <AdditionalOptions>/d2notypeopt %(AdditionalOptions)</AdditionalOptions>
 +      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
        <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <LanguageStandard>stdcpp17</LanguageStandard>
+-      <LanguageStandard>stdcpp17</LanguageStandard>
++      <LanguageStandard>stdcpp20</LanguageStandard>
        <ConformanceMode>true</ConformanceMode>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
      </ClCompile>
@@ -1184,7 +1322,7 @@ index 0c0024d..cca9b40 100644
    <ImportGroup Label="ExtensionTargets" />
 +  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
 +    <PropertyGroup>
-+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
++      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. The missing file is {0}.</ErrorText>
 +    </PropertyGroup>
 +    <Error Condition="!Exists('..\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\wtl.10.0.10320\build\native\wtl.targets'))" />
 +  </Target>

@@ -4,9 +4,9 @@
 
 In order to complete the port from Winamp some functionality has been removed, lost, or modified:
 
-- Some text, image and texture rendering [modified].
-- Title and custom messages [modified, still uses INI files].
-- Customization through INI file [removed, moved to foobar2000 preferences].
+- Processes single-precision floating-point audio samples instead of 8-bit [modified].
+- Title and custom messages and textures [modified, still use INI files].
+- Customization saved in INI file [removed, moved to foobar2000 preferences].
 - Older presets may not fully work [changed EEL and upgraded Shader Model to 4.0].
 - Desktop mode [removed].
 - Fake fullscreen mode and dual header functionality [removed].

@@ -12,8 +12,8 @@
 #define APPLICATION_INFORMATION_URLS \
     APPLICATION_FILE_NAME " releases and documentation can be found here:\n" \
     " * " APPLICATION_RELEASE_URL "\n" \
-    " * " APPLICATION_DISCUSSION_URL "\n" \
-    " * " APPLICATION_DOCUMENTATION_URL "\n\n"
+    " * " APPLICATION_DOCUMENTATION_URL "\n" \
+    " * " APPLICATION_DISCUSSION_URL "\n\n"
 
 #define APPLICATION_SOURCE_URLS \
     APPLICATION_FILE_NAME " is released under the Mozilla Public License (MPL) version 2.0. Component source code can be obtained from:\n" \
