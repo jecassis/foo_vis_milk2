@@ -95,15 +95,28 @@ int CPluginShell::AllocateFonts()
         );
     }
 
+#if 0
     // Get actual font heights.
-    //for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
-    //{
-    //    RECT r;
-    //    SetRect(&r, 0, 0, 1024, 1024);
-    //    int h = m_dwrite_font[i]->DrawTextW(NULL, L"M", -1, &r, DT_CALCRECT, 0xFFFFFFFF);
-    //    if (h > 0)
-    //        m_fontinfo[i].nSize = h;
-    //}
+    for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
+    {
+        D2D1_RECT_F r{0.0f, 0.0f, static_cast<FLOAT>(1024), static_cast<FLOAT>(1024)};
+        DWORD textColor = 0xFFFFFFFF;
+        D2D1_COLOR_F fTextColor = D2D1::ColorF(textColor, static_cast<FLOAT>(((textColor & 0xFF000000) >> 24) / 255.0f));
+        TextElement m_d2d_font;
+        m_d2d_font.Initialize(m_lpDX->GetD2DDeviceContext());
+        m_d2d_font.SetAlignment(AlignNear, AlignNear);
+        m_d2d_font.SetTextColor(fTextColor);
+        m_d2d_font.SetTextOpacity(fTextColor.a);
+        m_d2d_font.SetTextShadow(false);
+        m_d2d_font.SetText(L"Mg");
+        m_d2d_font.SetContainer(r);
+        m_d2d_font.SetTextStyle(m_dwrite_font[i].get());
+        r = m_d2d_font.GetBounds(m_lpDX->GetDWriteFactory());
+        int h = static_cast<int>(std::ceil(r.bottom - r.top));
+        if (h > 0)
+            m_fontinfo[i].nSize = h;
+    }
+#endif
 
     return true;
 }

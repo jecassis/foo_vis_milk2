@@ -611,6 +611,8 @@ void CPlugin::MilkDropPreInitialize()
     m_bShowSongLen = false;
     m_fShowRatingUntilThisTime = -1.0f;
     //ClearErrors();
+    m_szSongTitle[0] = L'\0';
+    m_szSongTitlePrev[0] = L'\0';
 
     m_lpVS[0] = NULL;
     m_lpVS[1] = NULL;
@@ -3307,20 +3309,20 @@ void CPlugin::MilkDropRenderFrame(int redraw)
         //    UpdatePresetList(true);//UpdatePresetRatings(); // read in a few each frame, til they're all in
     }
 
-    // 1b. Check for lost or gained keyboard focus.
-    // (note: can't use wm_setfocus or wm_killfocus because they don't work w/embedwnd)
     /*
+    // 1b. Check for lost or gained keyboard focus.
+    //     Note: Cannot use `WM_SETFOCUS` or `WM_KILLFOCUS` because they do
+    //     not work in embedded window.
     if (GetFrame() == 0)
     {
-        // NOTE: we skip this if we've already gotten a WM_COMMAND/ID_VIS_RANDOM message
+        // NOTE: Skip this if already gotten a WM_COMMAND/ID_VIS_RANDOM message
         //       from the skin - if that happened, we're running windowed with a fancy
         //       skin with a 'rand' button.
-
         SetScrollLock(m_bPresetLockOnAtStartup, m_bPreventScollLockHandling);
 
         // Make sure the 'random' button on the skin shows the right thing.
-        // NEVERMIND - if it's a fancy skin, it'll send us WM_COMMAND/ID_VIS_RANDOM
-        //   and we'll match the skin's Random button state.
+        // NEVERMIND - If it's a fancy skin, it'll send WM_COMMAND/ID_VIS_RANDOM
+        //             and to match the skin's "Random" button state.
         //SendMessage(GetWinampWindow(),WM_WA_IPC,m_bMilkdropScrollLockState, IPC_CB_VISRANDOM);
     }
     else
@@ -3363,6 +3365,17 @@ void CPlugin::MilkDropRenderFrame(int redraw)
         }
     }
     */
+
+    if (!redraw)
+    {
+        GetWinampSongTitle(GetWinampWindow(), m_szSongTitle, ARRAYSIZE(m_szSongTitle));
+        if (wcscmp(m_szSongTitle, m_szSongTitlePrev) != 0)
+        {
+            wcscpy_s(m_szSongTitlePrev, m_szSongTitle);
+            if (m_bSongTitleAnims)
+                LaunchSongTitleAnim();
+        }
+    }
 
     // 2. Clear the background.
     //DWORD clear_color = (m_fog_enabled) ? FOG_COLOR : 0xFF000000;
@@ -6682,7 +6695,7 @@ void CPlugin::LaunchCustomMessage(int nMsgNum)
 
 void CPlugin::LaunchSongTitleAnim()
 {
-    GetWinampSongTitle(GetWinampWindow(), m_supertext.szText, ARRAYSIZE(m_supertext.szText));
+    wcscpy_s(m_supertext.szText, m_szSongTitle);
     if (wcscmp(m_supertext.szText, L"Stopped.") == 0 || wcscmp(m_supertext.szText, L"Opening...") == 0 || wcscmp(m_supertext.szText, L"") == 0)
         return;
     m_supertext.bRedrawSuperText = true;

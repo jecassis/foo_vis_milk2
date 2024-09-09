@@ -472,6 +472,9 @@ class CPlugin : public CPluginShell
     void AddError(wchar_t* szMsg, float fDuration, ErrorCategory category = ERR_ALL, bool bBold = true);
     void ClearErrors(int category = ERR_ALL);
 
+    wchar_t m_szSongTitle[256];
+    wchar_t m_szSongTitlePrev[256];
+
     // Stuff for the menu system.
     CMilkMenu* m_pCurMenu; // should always be valid!
     CMilkMenu m_menuPreset;
