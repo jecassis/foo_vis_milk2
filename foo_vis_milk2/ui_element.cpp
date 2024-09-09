@@ -99,6 +99,19 @@ void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p
         Invalidate();
 }
 
+HWND GetRealParent(HWND hWnd)
+{
+    HWND hWndOwner;
+
+    // To obtain a window's owner window, instead of using `GetParent()`,
+    // use `GetWindow()` with the `GW_OWNER` flag.
+    if (NULL != (hWndOwner = GetWindow(hWnd, GW_OWNER)))
+        return hWndOwner;
+
+    // Obtain the parent window and not the owner.
+    return GetAncestor(hWnd, GA_PARENT);
+}
+
 int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 {
     MILK2_CONSOLE_LOG("OnCreate0 ", cs->x, ", ", cs->y, ", ", GetWnd())
@@ -204,6 +217,11 @@ void milk2_ui_element::OnDestroy()
 #endif
         wcscpy_s(s_config.settings.m_szPresetDir, g_plugin.GetPresetDir()); // save last "Load Preset" menu directory
         g_plugin.PluginQuit();
+
+        HWND parent = GetRealParent(get_wnd());
+        ::SetClassLongPtr(parent, GCLP_HICON, NULL);
+        ::SetClassLongPtr(parent, GCLP_HICONSM, NULL);
+
         //PostQuitMessage(0);
     }
     else
@@ -874,6 +892,12 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
     {
         if (FALSE == g_plugin.PluginInitialize(width, height))
             return false;
+
+        HICON hIcon = ::LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
+        HWND parent = GetRealParent(get_wnd());
+        ::SetClassLongPtr(parent, GCLP_HICON, (LONG_PTR)hIcon);
+        ::SetClassLongPtr(parent, GCLP_HICONSM, (LONG_PTR)hIcon);
+
         s_milk2 = true;
     }
     else

@@ -969,10 +969,52 @@ BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPAR
 #ifdef _DEBUG
     OutputDebugMessage("FontDlgProc: ", hdlg, msg, wParam, lParam);
 #endif
+
     switch (msg)
     {
         case WM_INITDIALOG:
             {
+                // Set the icon.
+                HICON hIcon = ::LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
+                ::SendMessage(hdlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+                ::SendMessage(hdlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+
+                // Get the owner window and dialog box rectangles.
+                HWND hwndOwner;
+                RECT rc, rcDlg, rcOwner;
+                if ((hwndOwner = ::GetParent(hdlg)) == NULL)
+                {
+                    hwndOwner = GetDesktopWindow();
+                }
+
+                ::GetWindowRect(hwndOwner, &rcOwner);
+                ::GetWindowRect(hdlg, &rcDlg);
+                CopyRect(&rc, &rcOwner);
+
+                // Offset the owner and dialog box rectangles so that right and bottom
+                // values represent the width and height, and then offset the owner again
+                // to discard space taken up by the dialog box.
+                OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+                OffsetRect(&rc, -rc.left, -rc.top);
+                OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+
+                // The new position is the sum of half the remaining space and the owner's
+                // original position. Ignores size arguments.
+                ::SetWindowPos(hdlg, HWND_TOP, rcOwner.left + (rc.right / 2), rcOwner.top + (rc.bottom / 2), 0, 0, SWP_NOSIZE);
+
+                // Finally, if not all extra fonts are in use, shrink the window size and
+                // move up any controls that were at the bottom.
+                RECT r;
+                ::GetWindowRect(hdlg, &r);
+                if (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS > 0)
+                {
+                    int scoot_factor = static_cast<int>(176.0f * (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS) / static_cast<float>(MAX_EXTRA_FONTS));
+                    ::SetWindowPos(hdlg, NULL, 0, 0, r.right - r.left, r.bottom - r.top - scoot_factor, SWP_NOMOVE | SWP_NOZORDER);
+                    ScootControl(hdlg, IDC_FONT_TEXT, 0, -scoot_factor);
+                    ScootControl(hdlg, IDOK, 0, -scoot_factor);
+                    ScootControl(hdlg, IDCANCEL, 0, -scoot_factor);
+                }
+
                 HDC hdc = ::GetDC(hdlg);
                 if (hdc)
                 {
@@ -1004,19 +1046,6 @@ BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPAR
 #if (NUM_EXTRA_FONTS >= 5)
                 InitFont(9, EXTRA_FONT_5_NAME);
 #endif
-
-                // Finally, if not all extra fonts are in use, shrink the window size and
-                // move up any controls that were at the bottom.
-                RECT r;
-                ::GetWindowRect(hdlg, &r);
-                if (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS > 0)
-                {
-                    int scoot_factor = static_cast<int>(176.0f * (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS) / static_cast<float>(MAX_EXTRA_FONTS));
-                    ::SetWindowPos(hdlg, NULL, 0, 0, r.right - r.left, r.bottom - r.top - scoot_factor, SWP_NOMOVE | SWP_NOZORDER);
-                    ScootControl(hdlg, IDC_FONT_TEXT, 0, -scoot_factor);
-                    ScootControl(hdlg, IDOK, 0, -scoot_factor);
-                    ScootControl(hdlg, IDCANCEL, 0, -scoot_factor);
-                }
             }
             break;
         case WM_COMMAND:
@@ -1046,7 +1075,6 @@ BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPAR
 #if (NUM_EXTRA_FONTS >= 5)
                             SaveFont(9);
 #endif
-
                             cfg_stFontInfo.set(fonts, sizeof(fonts));
                         }
                         ::EndDialog(hdlg, id);
