@@ -305,38 +305,38 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
 
     // clang-format off
     const std::map<UINT16, UINT16> tips = {
-        {IDC_CB_SCROLLON3, IDS_START_WITH_PRESET_LOCK_ON_HELP},
-        {IDC_CB_NORATING2, IDS_DISABLE_PRESET_RATING_HELP},
-        {IDC_CB_NOWARN3, IDS_NOWARN_HELP},
-        {IDC_CB_PRESS_F1_MSG, IDS_HELP_ON_F1_HELP},
-        {IDC_CB_SCROLLON4, IDS_SCROLL_CTRL_HELP},
-        {IDC_CB_NOCOMPSHADER, IDS_NOCOMPSHADER_HELP},
-        {IDC_FS_MAXFPS2, IDS_MAX_FRAMERATE_HELP},
-        {IDC_CB_FSPT, IDS_PAGE_TEARING_HELP},
-        {IDC_TITLE_FORMAT, IDS_TITLE_FORMAT_HELP},
-        {IDC_ARTWORK_FORMAT, IDS_ARTWORK_FORMAT_HELP},
-        {IDC_BETWEEN_TIME, IDS_BETWEEN_TIME_HELP},
-        {IDC_BETWEEN_TIME_RANDOM, IDS_BETWEEN_TIME_RANDOM_HELP},
-        {IDC_BLEND_AUTO, IDS_BLEND_AUTO_HELP},
-        {IDC_BLEND_USER, IDS_BLEND_USER_HELP},
-        {IDC_HARDCUT_BETWEEN_TIME, IDS_HARDCUT_BETWEEN_TIME_HELP},
-        {IDC_HARDCUT_LOUDNESS, IDS_HARDCUT_LOUDNESS_HELP},
-        {IDC_CB_HARDCUTS, IDS_HARDCUTS_HELP},
-        {IDC_BRIGHT_SLIDER2, IDS_BRIGHT_SLIDER_HELP},
-        {IDC_CB_AUTOGAMMA2, IDS_CB_AUTOGAMMA_HELP},
-        {IDC_SONGTITLEANIM_DURATION, IDS_SONGTITLEANIM_DURATION_HELP},
-        {IDC_RAND_TITLE, IDS_RAND_TITLE_HELP},
-        {IDC_RAND_MSG, IDS_RAND_MSG_HELP},
-        {IDC_CB_TITLE_ANIMS, IDS_TITLE_ANIMS_HELP},
-        {IDC_MAX_IMAGES2, IDS_MAX_IMAGES_BYTES_HELP},
-        {IDC_MAX_BYTES2, IDS_MAX_IMAGES_BYTES_HELP},
-        {IDC_STRETCH2, IDS_CANVAS_STRETCH_HELP},
-        {IDC_MESHSIZECOMBO, IDS_MESH_SIZE_HELP},
-        {IDC_SHADERS, IDS_PIXEL_SHADERS_HELP},
-        {IDC_TEXSIZECOMBO, IDS_CANVAS_SIZE_HELP},
-        {ID_SPRITE, IDS_SPRITE},
-        {ID_MSG, IDS_MSG},
-        {ID_FONTS, IDS_FONTS_HELP},
+        {(UINT16)IDC_CB_SCROLLON3, (UINT16)IDS_START_WITH_PRESET_LOCK_ON_HELP},
+        {(UINT16)IDC_CB_NORATING2, (UINT16)IDS_DISABLE_PRESET_RATING_HELP},
+        {(UINT16)IDC_CB_NOWARN3, (UINT16)IDS_NOWARN_HELP},
+        {(UINT16)IDC_CB_PRESS_F1_MSG, (UINT16)IDS_HELP_ON_F1_HELP},
+        {(UINT16)IDC_CB_SCROLLON4, (UINT16)IDS_SCROLL_CTRL_HELP},
+        {(UINT16)IDC_CB_NOCOMPSHADER, (UINT16)IDS_NOCOMPSHADER_HELP},
+        {(UINT16)IDC_FS_MAXFPS2, (UINT16)IDS_MAX_FRAMERATE_HELP},
+        {(UINT16)IDC_CB_FSPT, (UINT16)IDS_PAGE_TEARING_HELP},
+        {(UINT16)IDC_TITLE_FORMAT, (UINT16)IDS_TITLE_FORMAT_HELP},
+        {(UINT16)IDC_ARTWORK_FORMAT, (UINT16)IDS_ARTWORK_FORMAT_HELP},
+        {(UINT16)IDC_BETWEEN_TIME, (UINT16)IDS_BETWEEN_TIME_HELP},
+        {(UINT16)IDC_BETWEEN_TIME_RANDOM, (UINT16)IDS_BETWEEN_TIME_RANDOM_HELP},
+        {(UINT16)IDC_BLEND_AUTO, (UINT16)IDS_BLEND_AUTO_HELP},
+        {(UINT16)IDC_BLEND_USER, (UINT16)IDS_BLEND_USER_HELP},
+        {(UINT16)IDC_HARDCUT_BETWEEN_TIME, (UINT16)IDS_HARDCUT_BETWEEN_TIME_HELP},
+        {(UINT16)IDC_HARDCUT_LOUDNESS, (UINT16)IDS_HARDCUT_LOUDNESS_HELP},
+        {(UINT16)IDC_CB_HARDCUTS, (UINT16)IDS_HARDCUTS_HELP},
+        {(UINT16)IDC_BRIGHT_SLIDER2, (UINT16)IDS_BRIGHT_SLIDER_HELP},
+        {(UINT16)IDC_CB_AUTOGAMMA2, (UINT16)IDS_CB_AUTOGAMMA_HELP},
+        {(UINT16)IDC_SONGTITLEANIM_DURATION, (UINT16)IDS_SONGTITLEANIM_DURATION_HELP},
+        {(UINT16)IDC_RAND_TITLE, (UINT16)IDS_RAND_TITLE_HELP},
+        {(UINT16)IDC_RAND_MSG, (UINT16)IDS_RAND_MSG_HELP},
+        {(UINT16)IDC_CB_TITLE_ANIMS, (UINT16)IDS_TITLE_ANIMS_HELP},
+        {(UINT16)IDC_MAX_IMAGES2, (UINT16)IDS_MAX_IMAGES_BYTES_HELP},
+        {(UINT16)IDC_MAX_BYTES2, (UINT16)IDS_MAX_IMAGES_BYTES_HELP},
+        {(UINT16)IDC_STRETCH2, (UINT16)IDS_CANVAS_STRETCH_HELP},
+        {(UINT16)IDC_MESHSIZECOMBO, (UINT16)IDS_MESH_SIZE_HELP},
+        {(UINT16)IDC_SHADERS, (UINT16)IDS_PIXEL_SHADERS_HELP},
+        {(UINT16)IDC_TEXSIZECOMBO, (UINT16)IDS_CANVAS_SIZE_HELP},
+        {(UINT16)ID_SPRITE, (UINT16)IDS_SPRITE},
+        {(UINT16)ID_MSG, (UINT16)IDS_MSG},
+        {(UINT16)ID_FONTS, (UINT16)IDS_FONTS_HELP},
     };
     // clang-format on
     m_tooltips.Create(get_wnd(), nullptr, nullptr, TTS_ALWAYSTIP | TTS_NOANIMATE);
@@ -351,8 +351,13 @@ BOOL milk2_preferences_page::OnInitDialog(CWindow, LPARAM)
     return FALSE;
 }
 
-LRESULT milk2_preferences_page::OnNotify(int idCtrl, LPNMHDR pnmh) ///(int)wParam, (LPNMHDR)lParam)
+LRESULT milk2_preferences_page::OnNotify(int idCtrl, LPNMHDR pnmh)
 {
+#ifndef _DEBUG
+    UNREFERENCED_PARAMETER(idCtrl);
+#endif
+    UNREFERENCED_PARAMETER(pnmh);
+
     PREFS_CONSOLE_LOG("OnNotify ", idCtrl) //, static_cast<int>(pnmh))
     return static_cast<LRESULT>(0);
 }
@@ -371,6 +376,9 @@ void milk2_preferences_page::OnDestroy()
 
 void milk2_preferences_page::OnButtonPushed(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    UNREFERENCED_PARAMETER(uNotifyCode);
+    UNREFERENCED_PARAMETER(wndCtl);
+
     switch (nID)
     {
         case ID_SPRITE:
@@ -382,30 +390,44 @@ void milk2_preferences_page::OnButtonPushed(UINT uNotifyCode, int nID, CWindow w
         case ID_FONTS:
             {
                 FontDlg dlg; INT_PTR ret = dlg.DoModal(get_wnd(), reinterpret_cast<LPARAM>(this));
-                //if (ret == IDOK && HasChanged()) {}
+                if (ret == IDOK/* && HasChanged()*/) {}
             }
             break;
     }
 }
 
-void milk2_preferences_page::OnEditNotification(UINT, int, CWindow)
+void milk2_preferences_page::OnEditNotification(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    UNREFERENCED_PARAMETER(uNotifyCode);
+    UNREFERENCED_PARAMETER(nID);
+    UNREFERENCED_PARAMETER(wndCtl);
+
     OnChanged();
 }
 
-void milk2_preferences_page::OnButtonClick(UINT, int, CWindow)
+void milk2_preferences_page::OnButtonClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    UNREFERENCED_PARAMETER(uNotifyCode);
+    UNREFERENCED_PARAMETER(nID);
+    UNREFERENCED_PARAMETER(wndCtl);
+
     OnChanged();
     AutoHideGamma16();
 }
 
-void milk2_preferences_page::OnComboChange(UINT, int, CWindow)
+void milk2_preferences_page::OnComboChange(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    UNREFERENCED_PARAMETER(uNotifyCode);
+    UNREFERENCED_PARAMETER(nID);
+    UNREFERENCED_PARAMETER(wndCtl);
+
     OnChanged();
 }
 
 void milk2_preferences_page::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar)
 {
+    UNREFERENCED_PARAMETER(nPos);
+
     PREFS_CONSOLE_LOG("OnHScroll")
     switch (pScrollBar.GetDlgCtrlID())
     {
@@ -521,7 +543,6 @@ void milk2_preferences_page::reset()
 void milk2_preferences_page::apply()
 {
     WCHAR buf[256], *stop;
-    HWND ctrl = nullptr;
     LRESULT t = 0;
 
     cfg_bPresetLockOnAtStartup = static_cast<bool>(IsDlgButtonChecked(IDC_CB_SCROLLON3));
@@ -870,6 +891,9 @@ int CALLBACK EnumFontsProc(
     LPARAM lpData // application-defined data
 )
 {
+    UNREFERENCED_PARAMETER(lptm);
+    UNREFERENCED_PARAMETER(dwType);
+
     // Skip enumerating duplicate fonts.
     if (lplf->lfFaceName[0] == L'@' || lplf->lfFaceName[0] == L'8')
         return 1;
@@ -907,7 +931,7 @@ void milk2_preferences_page::InitFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2
     }
 
     // Set selection.
-    LRESULT nPos = ::SendMessage(fontbox, CB_FINDSTRINGEXACT, -1, (LPARAM)fi->szFace);
+    LRESULT nPos = ::SendMessage(fontbox, CB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)fi->szFace);
     if (nPos == CB_ERR)
         nPos = 0;
     ::SendMessage(fontbox, CB_SETCURSEL, nPos, 0);
@@ -968,6 +992,8 @@ BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPAR
 {
 #ifdef _DEBUG
     OutputDebugMessage("FontDlgProc: ", hdlg, msg, wParam, lParam);
+#else
+    UNREFERENCED_PARAMETER(lParam);
 #endif
 
     switch (msg)
@@ -1006,7 +1032,7 @@ BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPAR
                 // move up any controls that were at the bottom.
                 RECT r;
                 ::GetWindowRect(hdlg, &r);
-                if (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS > 0)
+                if constexpr (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS > 0)
                 {
                     int scoot_factor = static_cast<int>(176.0f * (MAX_EXTRA_FONTS - NUM_EXTRA_FONTS) / static_cast<float>(MAX_EXTRA_FONTS));
                     ::SetWindowPos(hdlg, NULL, 0, 0, r.right - r.left, r.bottom - r.top - scoot_factor, SWP_NOMOVE | SWP_NOZORDER);

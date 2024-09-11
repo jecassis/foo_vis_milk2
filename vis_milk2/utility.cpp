@@ -320,6 +320,47 @@ INT_PTR LDialogBoxParamW(HINSTANCE localized, HINSTANCE owner, UINT uID, HWND pa
     return ret;
 }
 
+std::string GetExtension(const std::string& filename)
+{
+    size_t lastDotIndex = filename.rfind('.');
+    if (lastDotIndex != std::string::npos)
+    {
+        std::unique_ptr<char[]> extension(new char[filename.length() - lastDotIndex]);
+        for (unsigned int i = 0; i < filename.length() - lastDotIndex; i++)
+        {
+            extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
+        }
+        return std::string(extension.get());
+    }
+    return "";
+}
+
+std::wstring GetExtension(const std::wstring& filename)
+{
+    size_t lastDotIndex = filename.rfind(L'.');
+    if (lastDotIndex != std::string::npos)
+    {
+        std::unique_ptr<wchar_t[]> extension(new wchar_t[filename.length() - lastDotIndex]);
+        for (unsigned int i = 0; i < filename.length() - lastDotIndex; i++)
+        {
+            extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
+        }
+        return std::wstring(extension.get());
+    }
+    return L"";
+}
+
+// char* u8Name = _WideToUTF8(szName);
+// ...
+// delete[] u8Name;
+char* _WideToUTF8(const wchar_t* WFilename)
+{
+    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
+    char* utf8Name = new char[SizeNeeded];
+    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
+    return utf8Name;
+}
+
 // clang-format off
 #ifdef _DEBUG
 void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam)

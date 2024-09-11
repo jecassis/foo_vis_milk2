@@ -490,20 +490,12 @@ void D3D11Shim::CopyResource(ID3D11Resource* pDstResource, ID3D11Resource* pSrcR
     m_pImmContext->CopyResource(pDstResource, pSrcResource);
 }
 
-char* _WideToUTF8(const wchar_t* WFilename)
-{
-    int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
-    char* utf8Name = new char[SizeNeeded];
-    WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
-    return utf8Name;
-}
-
 HRESULT D3D11Shim::CreateTextureFromFile(LPCWSTR szFileName, ID3D11Resource** texture)
 {
-    char* u8FileName = _WideToUTF8(szFileName);
-    std::string strFileName(u8FileName);
-    delete[] u8FileName;
-    if (GetExtension(strFileName) == "dds")
+    //char* u8FileName = _WideToUTF8(szFileName);
+    std::wstring strFileName(szFileName);
+    //delete[] u8FileName;
+    if (GetExtension(strFileName) == L"dds")
         return CreateDDSTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`
     else
         return CreateWICTextureFromFile(m_pDevice, szFileName, texture, reinterpret_cast<ID3D11ShaderResourceView**>(NULL)); // or `ThrowIfFailed()`

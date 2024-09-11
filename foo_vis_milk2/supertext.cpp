@@ -1361,7 +1361,7 @@ HRESULT SuperText::SetTextFont(const std::wstring& str, const PCWSTR face, float
 // mapped onto a simple planar 3D model and displayed using D3D.
 HRESULT SuperText::OnRender()
 {
-    HRESULT hr;
+    HRESULT hr = E_FAIL;
     static float t = 0.0f;
     static ULONGLONG dwTimeStart = 0;
 

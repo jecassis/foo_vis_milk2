@@ -75,20 +75,6 @@ class D3D11Shim
     int NumVertsFromType(unsigned int primType, int iPrimCount);
     void UpdateVBuffer(unsigned int iNumVerts, const void* pVData, unsigned int vertexStride);
     void UpdateIBuffer(unsigned int iNumIndices, const void* pIData);
-    inline std::string GetExtension(std::string& filename)
-    {
-        size_t lastDotIndex = filename.rfind('.');
-        if (lastDotIndex != std::string::npos)
-        {
-            std::unique_ptr<char[]> extension(new char[filename.length() - lastDotIndex]);
-            for (unsigned int i = 0; i < filename.length() - lastDotIndex; i++)
-            {
-                extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
-            }
-            return std::string(extension.get());
-        }
-        return "";
-    }
 
     cbTransforms m_transforms;
     ID3D11Device* m_pDevice;

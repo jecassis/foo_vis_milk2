@@ -67,6 +67,10 @@ INT_PTR LDialogBoxParamW(HINSTANCE localized, HINSTANCE owner, UINT uID, HWND pa
 
 void* GetTextResource(UINT id, int no_fallback);
 
+std::string GetExtension(const std::string& filename);
+std::wstring GetExtension(const std::wstring& filename);
+char* _WideToUTF8(const wchar_t* WFilename);
+
 #ifdef _DEBUG
 void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam);
 #endif

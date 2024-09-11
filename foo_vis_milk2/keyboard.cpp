@@ -148,8 +148,10 @@
 
 void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
+    UNREFERENCED_PARAMETER(nFlags);
+
     MILK2_CONSOLE_LOG("OnChar ", GetWnd())
-    wchar_t buf[256] = {0};
+    wchar_t buf[256]{};
     USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // get the highest-order bit
     bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0;
 
@@ -163,7 +165,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 {
                     size_t pos = api->activeplaylist_get_focus_item();
                     if (pos == pfc::infinite_size)
-                        pos = -1;
+                        pos = MAXSIZE_T;
                     g_plugin.m_playlist_pos = static_cast<LRESULT>(pos);
                 }
                 return;
@@ -199,12 +201,12 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                             state = "";
                         m_szBuffer = pfc::wideFromUTF8(state);
 
-                        TCHAR buf[32];
-                        wcsncpy_s(buf, m_szBuffer.c_str(), 31);
-                        buf[31] = L'\0';
+                        WCHAR buff[32];
+                        wcsncpy_s(buff, m_szBuffer.c_str(), 31);
+                        buff[31] = L'\0';
 
                         // Remove song number and period from beginning.
-                        PTCHAR p = buf;
+                        PWCHAR p = buff;
                         while (*p >= '0' && *p <= '9')
                             ++p;
                         if (*p == '.' && *(p + 1) == ' ')
@@ -213,14 +215,14 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                             int pos = 0;
                             while (*p != L'\0')
                             {
-                                buf[pos++] = *p;
+                                buff[pos++] = *p;
                                 p++;
                             }
-                            buf[pos++] = L'\0';
+                            buff[pos++] = L'\0';
                         }
 
-                        TCHAR chChar2 = (chChar >= 'A' && chChar <= 'Z') ? (chChar + 'a' - 'A') : (chChar + 'A' - 'a');
-                        if (unsigned(buf[0]) == chChar || unsigned(buf[0]) == chChar2)
+                        WCHAR chChar2 = (chChar >= 'A' && chChar <= 'Z') ? (chChar + 'a' - 'A') : (chChar + 'A' - 'a');
+                        if (unsigned(buff[0]) == chChar || unsigned(buff[0]) == chChar2)
                         {
                             found = true;
                             break;
@@ -260,8 +262,8 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 //m_fShowUserMessageUntilThisTime = GetTime(); // if there was an error message already, clear it
                 if (waitstring.bDisplayAsCode)
                 {
-                    char buf[16] = {0};
-                    sprintf_s(buf, "%c", static_cast<char>(chChar));
+                    char buff[16]{};
+                    sprintf_s(buff, "%c", static_cast<char>(chChar));
 
                     if (waitstring.nSelAnchorPos != -1)
                         g_plugin.WaitString_NukeSelection();
@@ -273,13 +275,13 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         {
                             if (waitstring.nCursorPos == len)
                             {
-                                strcat_s(reinterpret_cast<char*>(waitstring.szText), sizeof(waitstring.szText), buf);
+                                strcat_s(reinterpret_cast<char*>(waitstring.szText), sizeof(waitstring.szText), buff);
                                 len++;
                             }
                             else
                             {
                                 char* ptr = reinterpret_cast<char*>(waitstring.szText);
-                                *(ptr + waitstring.nCursorPos) = buf[0];
+                                *(ptr + waitstring.nCursorPos) = buff[0];
                             }
                             waitstring.nCursorPos++;
                         }
@@ -292,7 +294,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         {
                             for (size_t i = len + 1; i-- > waitstring.nCursorPos;)
                                 *(ptr + i + 1) = *(ptr + i);
-                            *(ptr + waitstring.nCursorPos) = buf[0];
+                            *(ptr + waitstring.nCursorPos) = buff[0];
                             waitstring.nCursorPos++;
                             len++;
                         }
@@ -300,8 +302,8 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                 }
                 else
                 {
-                    wchar_t buf[16] = {0};
-                    swprintf_s(buf, L"%c", static_cast<wchar_t>(chChar));
+                    wchar_t buff[16]{};
+                    swprintf_s(buff, L"%c", static_cast<wchar_t>(chChar));
 
                     if (waitstring.nSelAnchorPos != -1)
                         g_plugin.WaitString_NukeSelection();
@@ -313,11 +315,11 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         {
                             if (waitstring.nCursorPos == len)
                             {
-                                wcscat_s(waitstring.szText, buf);
+                                wcscat_s(waitstring.szText, buff);
                                 len++;
                             }
                             else
-                                waitstring.szText[waitstring.nCursorPos] = buf[0];
+                                waitstring.szText[waitstring.nCursorPos] = buff[0];
                             waitstring.nCursorPos++;
                         }
                     }
@@ -328,7 +330,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         {
                             for (size_t i = len + 1; i-- > waitstring.nCursorPos;)
                                 waitstring.szText[i + 1] = waitstring.szText[i];
-                            waitstring.szText[waitstring.nCursorPos] = buf[0];
+                            waitstring.szText[waitstring.nCursorPos] = buff[0];
                             waitstring.nCursorPos++;
                             len++;
                         }
@@ -847,6 +849,9 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 
 void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    UNREFERENCED_PARAMETER(nRepCnt);
+    UNREFERENCED_PARAMETER(nFlags);
+
     MILK2_CONSOLE_LOG("OnKeyDown ", GetWnd())
     USHORT mask = 1 << (sizeof(SHORT) * 8 - 1); // get the highest-order bit
     bool bShiftHeldDown = (GetKeyState(VK_SHIFT) & mask) != 0; // or "< 0" without masking
@@ -1708,6 +1713,9 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    UNREFERENCED_PARAMETER(nRepCnt);
+    UNREFERENCED_PARAMETER(nFlags);
+
     MILK2_CONSOLE_LOG("OnSysKeyDown ", GetWnd())
     // Bit 29: The context code. The value is 1 if the ALT key is down while the
     //         key is pressed; it is 0 if the WM_SYSKEYDOWN message is posted to
@@ -1723,6 +1731,9 @@ void milk2_ui_element::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 {
+    UNREFERENCED_PARAMETER(nRepCnt);
+    UNREFERENCED_PARAMETER(nFlags);
+
     MILK2_CONSOLE_LOG("OnSysChar ", GetWnd())
     if (chChar == 'k' || chChar == 'K')
     {
@@ -1741,6 +1752,9 @@ void milk2_ui_element::OnSysChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
 
 void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    UNREFERENCED_PARAMETER(uNotifyCode);
+    UNREFERENCED_PARAMETER(wndCtl);
+
     MILK2_CONSOLE_LOG("OnCommand ", GetWnd())
     if (g_plugin.GetScreenMode() == WINDOWED)
     {
@@ -1808,6 +1822,8 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 UINT milk2_ui_element::OnGetDlgCode(LPMSG lpMsg)
 {
+    UNREFERENCED_PARAMETER(lpMsg);
+
     MILK2_CONSOLE_LOG("OnGetDlgCode ", GetWnd())
     //if (lpMsg && lpMsg->message == WM_KEYDOWN)
     //{
@@ -1826,6 +1842,8 @@ UINT milk2_ui_element::OnGetDlgCode(LPMSG lpMsg)
 
 void milk2_ui_element::OnSetFocus(CWindow wndOld)
 {
+    UNREFERENCED_PARAMETER(wndOld);
+
     MILK2_CONSOLE_LOG("OnSetFocus ", GetWnd())
     //g_plugin.m_bOrigScrollLockState = GetKeyState(VK_SCROLL) & 1;
     //SetScrollLock(g_plugin.m_bMilkdropScrollLockState);
@@ -1833,6 +1851,8 @@ void milk2_ui_element::OnSetFocus(CWindow wndOld)
 
 void milk2_ui_element::OnKillFocus(CWindow wndFocus)
 {
+    UNREFERENCED_PARAMETER(wndFocus);
+
     MILK2_CONSOLE_LOG("OnKillFocus ", GetWnd())
     //g_plugin.m_bMilkdropScrollLockState = GetKeyState(VK_SCROLL) & 1;
     //SetScrollLock(g_plugin.m_bOrigScrollLockState);

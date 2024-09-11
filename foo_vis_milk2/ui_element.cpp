@@ -95,6 +95,10 @@ ui_element_config::ptr milk2_ui_element::get_configuration()
 
 void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p_param2, size_t p_param2size)
 {
+    UNREFERENCED_PARAMETER(p_param1);
+    UNREFERENCED_PARAMETER(p_param2);
+    UNREFERENCED_PARAMETER(p_param2size);
+
     if (p_what == ui_element_notify_colors_changed || p_what == ui_element_notify_font_changed)
         Invalidate();
 }
@@ -114,6 +118,10 @@ HWND GetRealParent(HWND hWnd)
 
 int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 {
+#ifndef _DEBUG
+    UNREFERENCED_PARAMETER(cs);
+#endif
+
     MILK2_CONSOLE_LOG("OnCreate0 ", cs->x, ", ", cs->y, ", ", GetWnd())
 
     if (!XMVerifyCPUSupport()) {
@@ -235,6 +243,8 @@ void milk2_ui_element::OnDestroy()
 
 void milk2_ui_element::OnTimer(UINT_PTR nIDEvent)
 {
+    UNREFERENCED_PARAMETER(nIDEvent);
+
     MILK2_CONSOLE_LOG_LIMIT("OnTimer ", GetWnd())
 #ifdef TIMER_32
     KillTimer(ID_REFRESH_TIMER);
@@ -295,7 +305,6 @@ BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
 #else
     if (!m_milk2 && !s_fullscreen && s_milk2)
     {
-        HRESULT hr = S_OK;
         int w, h;
         GetDefaultSize(w, h);
 
@@ -324,6 +333,8 @@ BOOL milk2_ui_element::OnEraseBkgnd(CDCHandle dc)
 
 void milk2_ui_element::OnMove(CPoint ptPos)
 {
+    UNREFERENCED_PARAMETER(ptPos);
+
     MILK2_CONSOLE_LOG("OnMove ", GetWnd())
     if (m_milk2)
     {
@@ -409,10 +420,12 @@ void milk2_ui_element::OnExitSizeMove()
 // To avoid a 1-pixel-thick border of noise.
 LRESULT milk2_ui_element::OnNcCalcSize(BOOL bCalcValidRects, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
+
     MILK2_CONSOLE_LOG("OnNcCalcSize ", GetWnd())
     if (bCalcValidRects == TRUE)
     {
-        auto& params = *reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
+        //auto& params = *reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
         //adjust_fullscreen_client_rect(get_wnd(), params.rgrc[0]);
         return 0;
     }
@@ -421,10 +434,11 @@ LRESULT milk2_ui_element::OnNcCalcSize(BOOL bCalcValidRects, LPARAM lParam)
 
 BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
 {
-    typedef struct
-    {
-        wchar_t error[1024];
-    } ErrorCopy;
+    UNREFERENCED_PARAMETER(wnd);
+    //typedef struct
+    //{
+    //    wchar_t error[1024];
+    //} ErrorCopy;
 
     MILK2_CONSOLE_LOG("OnCopyData ", GetWnd())
     switch (pcds->dwData)
@@ -442,6 +456,9 @@ BOOL milk2_ui_element::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pcds)
 
 void milk2_ui_element::OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen)
 {
+    UNREFERENCED_PARAMETER(uBitsPerPixel);
+    UNREFERENCED_PARAMETER(sizeScreen);
+
     MILK2_CONSOLE_LOG("OnDisplayChange ", GetWnd())
     if (m_milk2)
     {
@@ -451,6 +468,9 @@ void milk2_ui_element::OnDisplayChange(UINT uBitsPerPixel, CSize sizeScreen)
 
 void milk2_ui_element::OnDpiChanged(UINT nDpiX, UINT nDpiY, PRECT pRect)
 {
+    UNREFERENCED_PARAMETER(nDpiX);
+    UNREFERENCED_PARAMETER(nDpiY);
+    UNREFERENCED_PARAMETER(pRect);
 }
 
 void milk2_ui_element::OnGetMinMaxInfo(LPMINMAXINFO lpMMI)
@@ -461,6 +481,8 @@ void milk2_ui_element::OnGetMinMaxInfo(LPMINMAXINFO lpMMI)
 
 void milk2_ui_element::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 {
+    UNREFERENCED_PARAMETER(dwThreadID);
+
     MILK2_CONSOLE_LOG("OnActivateApp ", GetWnd())
     if (m_milk2)
     {
@@ -477,6 +499,8 @@ void milk2_ui_element::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 
 BOOL milk2_ui_element::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
 {
+    UNREFERENCED_PARAMETER(dwData);
+
     MILK2_CONSOLE_LOG("OnPowerBroadcast ", GetWnd())
     switch (dwPowerEvent)
     {
@@ -502,6 +526,9 @@ BOOL milk2_ui_element::OnPowerBroadcast(DWORD dwPowerEvent, DWORD_PTR dwData)
 
 void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
+    UNREFERENCED_PARAMETER(nFlags);
+    UNREFERENCED_PARAMETER(point);
+
     MILK2_CONSOLE_LOG("OnLButtonDblClk ", GetWnd())
     ToggleFullScreen();
 }
@@ -512,6 +539,8 @@ void milk2_ui_element::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
 {
+    UNREFERENCED_PARAMETER(wnd);
+
     MILK2_CONSOLE_LOG("OnContextMenu ", point.x, ", ", point.y, ", ", GetWnd())
     if (m_callback->is_edit_mode_enabled())
     {
@@ -607,6 +636,8 @@ void milk2_ui_element::OnContextMenu(CWindow wnd, CPoint point)
 
 LRESULT milk2_ui_element::OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
+
     MILK2_CONSOLE_LOG("OnImeNotify ", GetWnd())
     if (uMsg != WM_IME_NOTIFY)
         return 1;
@@ -620,23 +651,12 @@ LRESULT milk2_ui_element::OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT milk2_ui_element::OnQuit(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(uMsg);
+    UNREFERENCED_PARAMETER(wParam);
+    UNREFERENCED_PARAMETER(lParam);
+
     MILK2_CONSOLE_LOG("OnQuit ", GetWnd())
     return 0;
-}
-
-inline std::wstring GetExtension(std::wstring& filename)
-{
-    size_t lastDotIndex = filename.rfind('.');
-    if (lastDotIndex != std::string::npos)
-    {
-        std::unique_ptr<wchar_t[]> extension(new wchar_t[filename.length() - lastDotIndex]);
-        for (unsigned int i = 0; i < filename.length() - lastDotIndex; i++)
-        {
-            extension[i] = static_cast<char>(tolower(*(filename.c_str() + lastDotIndex + 1 + i)));
-        }
-        return std::wstring(extension.get());
-    }
-    return L"";
 }
 
 LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -832,6 +852,8 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 LRESULT milk2_ui_element::OnConfigurationChange(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
+
     MILK2_CONSOLE_LOG("OnConfigurationChange ", GetWnd())
     if (uMsg != WM_CONFIG_CHANGE)
         return 1;
@@ -1015,7 +1037,7 @@ void milk2_ui_element::BuildWaves()
         return;
     }
     auto count = chunk.get_sample_count();
-    auto sample_rate = chunk.get_srate();
+    //auto sample_rate = chunk.get_srate();
     auto channels = chunk.get_channel_count();
     audio_sample* audio_data = chunk.get_data();
 
@@ -1489,7 +1511,11 @@ void milk2_ui_element::SetSelectionSingle(size_t idx, bool toggle, bool focus, b
     mask.set(idx, toggle ? !api->activeplaylist_is_item_selected(idx) : true);
 
     if (single_only || toggle || !api->activeplaylist_is_item_selected(idx))
-        api->activeplaylist_set_selection(single_only ? (pfc::bit_array&)pfc::bit_array_true() : (pfc::bit_array&)pfc::bit_array_one(idx), mask);
+    {
+        pfc::bit_array_true baT;
+        pfc::bit_array_one baO(idx);
+        api->activeplaylist_set_selection(single_only ? (pfc::bit_array&)baT : (pfc::bit_array&)baO, mask);
+    }
     if (focus && idx_focus != idx)
         api->activeplaylist_set_focus_item(idx);
 }

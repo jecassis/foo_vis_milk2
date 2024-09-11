@@ -42,6 +42,10 @@
 #include <map>
 #include <vector>
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100 4127 4189 4245)
+#endif
 #include <helpers/foobar2000-lite+atl.h>
 #include <sdk/componentversion.h>
 #include <sdk/coreversion.h>
@@ -64,6 +68,9 @@
 #include <helpers/BumpableElem.h>
 #include <helpers/DarkMode.h>
 #include <pfc/string-conv-lite.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <winamp/wa_ipc.h>
 #include <vis_milk2/defines.h>
@@ -74,9 +81,7 @@
 #include <vis_milk2/pluginshell.h>
 #include <vis_milk2/plugin.h>
 #include <vis_milk2/dxcontext.h>
-#ifdef _DEBUG
 #include <vis_milk2/utility.h>
-#endif
 
 #define TIMER_TP // Thread pool timer
 //#define TIMER_32 // Win32 timer
