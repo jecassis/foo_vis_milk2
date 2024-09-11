@@ -66,6 +66,14 @@ void PrepareFor3DDrawing(
         pDevice->SetRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID);
         pDevice->SetBlendState(false);
         pDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+        pDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+        /*
+        pDevice->SetRenderState(D3DRS_CLIPPING, TRUE);
+        pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+        pDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE);
+        pDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+        pDevice->SetRenderState(D3DRS_RANGEFOGENABLE, FALSE);
+        */
     }
 
     // Set up view and projection matrices (but not the world matrix!).
@@ -119,6 +127,14 @@ void PrepareFor2DDrawing(D3D11Shim* pDevice)
 {
     pDevice->SetDepth(true);
     pDevice->SetRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID);
+    /*
+    pDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
+    pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
+    pDevice->SetRenderState(D3DRS_CLIPPING, TRUE); 
+    pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+    pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+    pDevice->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
+    */
     pDevice->SetTexture(0, NULL);
     pDevice->SetTexture(1, NULL);
     pDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);

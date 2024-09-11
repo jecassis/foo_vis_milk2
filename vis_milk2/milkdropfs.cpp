@@ -946,8 +946,7 @@ void CPlugin::RenderFrame(int bRedraw)
     //lpDevice->GetDepthStencilSurface(&pZBuffer);
     // Set up render state DX11
     {
-        //D3D11_TEXTURE_ADDRESS_MODE texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
-        D3D11_TEXTURE_ADDRESS_MODE texaddr = D3D11_TEXTURE_ADDRESS_WRAP;
+        D3D11_TEXTURE_ADDRESS_MODE texaddr = D3D11_TEXTURE_ADDRESS_WRAP; //(*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
         lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr); // stage 0 always uses bilinear filtering
         lpDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr); // stage 1 always uses bilinear filtering
         lpDevice->SetRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID);
@@ -964,14 +963,6 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE);
         lpDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);  //?
         lpDevice->SetRenderState(D3DRS_CLIPPING, TRUE);
-
-        lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-        lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-        lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-        lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-        lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-        lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-        lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
         */
 
         // NOTE: Do not forget to call SetTexture and SetVertexShader before drawing!
@@ -1798,21 +1789,12 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     // Stages 0 and 1 always just use bilinear filtering.
     D3D11_TEXTURE_ADDRESS_MODE texaddr = (*m_pState->var_pf_wrap > m_fSnapPoint) ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
     lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
-    //lpDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    //lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-    //lpDevice->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+    lpDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
 
     // note: this texture stage state setup works for 0 or 1 texture.
     // if you set a texture, it will be modulated with the current diffuse color.
     // if you don't set a texture, it will just use the current diffuse color.
     lpDevice->SetShader(0);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
-    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
     // Decay.
     float fDecay = COLOR_NORM(static_cast<float>(*m_pState->var_pf_decay));
@@ -3323,13 +3305,6 @@ void CPlugin::DrawUserSprites()
 
     // Reset these to the standard safe mode.
     lpDevice->SetShader(0);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
-    //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
     //lpDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
     //lpDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
@@ -3603,14 +3578,6 @@ void CPlugin::DrawUserSprites()
                     lpDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
                     */
                     lpDevice->SetShader(3);
-                    //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-                    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-                    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-                    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-                    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-                    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-                    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
-                    //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
                     // Also, smoothly blend this in-between texels.
                     lpDevice->SetBlendState(true, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA);
@@ -3657,9 +3624,6 @@ void CPlugin::DrawUserSprites()
             }
 
             lpDevice->SetShader(0);
-            //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-            //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-            //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
         }
     }
 
@@ -3667,13 +3631,6 @@ void CPlugin::DrawUserSprites()
 
     // Reset these to the standard safe mode.
     lpDevice->SetShader(0);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 }
 
 // (screen space = -1..1 on both axes; corresponds to UV space)
@@ -3855,28 +3812,19 @@ void CPlugin::ShowToUser_NoShaders() //int bRedraw, int nPassOverride)
 
     // Stages 0 and 1 always just use bilinear filtering.
     lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-    //lpDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    //lpDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-    //lpDevice->SetSamplerState(1, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+    lpDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 
     // Note: This texture stage state setup works for 0 or 1 texture.
     //       If a texture is set, it will be modulated with the current diffuse color.
     //       If a texture is not set, it will just use the current diffuse color.
     lpDevice->SetShader(0);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-    //lpDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-    //lpDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
     float fZoom = 1.0f;
     SPRITEVERTEX v3[4];
     ZeroMemory(v3, sizeof(SPRITEVERTEX) * 4);
 
-    // extend the poly we draw by 1 pixel around the viewable image area,
-    // in case the video card wraps u/v coords with a +0.5-texel offset
+    // Extend the polygon drawn by 1 pixel around the viewable image area,
+    // in case the video card wraps u/v coordinates with a +0.5-texel offset
     // (otherwise, a 1-pixel-wide line of the image would wrap at the top and left edges).
     float fOnePlusInvWidth = 1.0f + 1.0f / static_cast<float>(std::max(1, GetWidth()));
     float fOnePlusInvHeight = 1.0f + 1.0f / static_cast<float>(std::max(1, GetHeight()));
