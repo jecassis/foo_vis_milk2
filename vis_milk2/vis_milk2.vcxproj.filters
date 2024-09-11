@@ -150,34 +150,34 @@
     <FxCompile Include="texture0ps.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="..\external\winamp\data\blur_vs.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\blur1_ps.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\blur2_ps.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\comp_ps.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\comp_vs.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\include.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\warp_ps.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\external\winamp\data\warp_vs.fx">
-      <Filter>Shader Files</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
       <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\blur_vs.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\blur1_ps.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\blur2_ps.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\comp_ps.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\comp_vs.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\include.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\warp_ps.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\external\winamp\data\warp_vs.fx">
+      <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
 </Project>

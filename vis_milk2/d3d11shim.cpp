@@ -21,11 +21,11 @@ using namespace DirectX;
 
 namespace
 {
-#include "defaultvs.inc"
-#include "diffuseps.inc"
-#include "texture0ps.inc"
-#include "colorps.inc"
-#include "texture1ps.inc"
+#include <defaultvs.inc>
+#include <diffuseps.inc>
+#include <texture0ps.inc>
+#include <colorps.inc>
+#include <texture1ps.inc>
 }
 
 D3D11Shim::D3D11Shim(ID3D11Device* pDevice, ID3D11DeviceContext* pContext) :
