@@ -36,7 +36,7 @@ class AutoChar
   public:
     explicit AutoChar(const wchar_t* filename)
     {
-        out[0] = 0;
+        out[0] = '\0';
 
         if (!filename)
             return;

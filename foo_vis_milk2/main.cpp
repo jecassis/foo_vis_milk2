@@ -24,7 +24,6 @@
     " * https://www.cockos.com/EEL2/ (zlib License)\n" \
     " * https://github.com/projectM-visualizer/projectm-eval (MIT License)\n" \
     " * https://github.com/microsoft/DirectXTK (MIT License)\n" \
-    " * https://wtl.sourceforge.io/ (Microsoft Public License)\n" \
     " * https://learn.microsoft.com/en-us/cpp/atl/atl-com-desktop-components (Proprietary License)\n" \
     " * https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ (Proprietary License)"
 

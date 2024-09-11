@@ -359,7 +359,7 @@ LRESULT milk2_preferences_page::OnNotify(int idCtrl, LPNMHDR pnmh) ///(int)wPara
 
 void milk2_preferences_page::OnClose()
 {
-    MILK2_CONSOLE_LOG("OnClose")
+    PREFS_CONSOLE_LOG("OnClose")
 }
 
 void milk2_preferences_page::OnDestroy()

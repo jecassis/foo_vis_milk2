@@ -44,9 +44,9 @@ using namespace DirectX::PackedVector;
 // Sets up DirectX up for 3D rendering.
 // Only call it once per frame, as it is VERY slow.
 // What this function does NOT do:
-//  1. Set the current texture (`SetTexture`)
-//  2. Set up the texture stages for texturing (`SetTextureStageState`)
-//  3. Set the current vertex format (`SetVertexShader`)
+//  1. Set the current texture (`SetTexture()`)
+//  2. Set up the texture stages for texturing (`SetTextureStageState()`)
+//  3. Set the current vertex format (`SetVertexShader()`)
 //  4. Set up the world matrix (`SetTransform(256, &md_world_matrix)`)
 void PrepareFor3DDrawing(
     D3D11Shim* pDevice,   // a pointer to the D3D device
