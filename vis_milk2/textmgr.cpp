@@ -465,14 +465,12 @@ void CTextManager::ClearAll()
 #endif
 }
 
+#ifndef _FOOBAR
 void CTextManager::DrawBox(D2D1_RECT_F* pRect, DWORD boxColor)
 {
     if (!pRect)
         return;
 
-#ifdef _FOOBAR
-    UNREFERENCED_PARAMETER(boxColor);
-#else
     if ((m_nMsg[m_b] < MAX_MSGS) && (static_cast<DWORD>(m_next_msg_start_ptr - g_szMsgPool[m_b]) + 1 < MAX_MSG_CHARS))
     {
         *m_next_msg_start_ptr = 0;
@@ -486,8 +484,8 @@ void CTextManager::DrawBox(D2D1_RECT_F* pRect, DWORD boxColor)
         m_nMsg[m_b]++;
         m_next_msg_start_ptr += 1;
     }
-#endif
 }
+#endif
 
 // Returns height of the text in logical units.
 int CTextManager::DrawD2DText(TextStyle* pFont, TextElement* pElement, const wchar_t* szText, D2D1_RECT_F* pRect, DWORD flags, DWORD color, bool bBox, DWORD boxColor)

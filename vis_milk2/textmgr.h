@@ -190,7 +190,7 @@ class CTextManager
     ~CTextManager() {};
 
     // Note: If unable to create `lpTextSurface` full size, do not create it at all!
-    // Note: OK if `lpTextSurface == NULL`; in that case, text will be drawn directly to screen (but not until end anyway).
+    //       OK if `lpTextSurface == NULL`; in that case, text will be drawn directly to screen (but not until end anyway).
     void Init(DXContext* lpDX
 #ifndef _FOOBAR
               , ID3D11Texture2D* lpTextSurface, int bAdditive
@@ -200,8 +200,10 @@ class CTextManager
 
     // Note: `pFont` must persist until `DrawNow()` is called!
     int DrawD2DText(TextStyle* pFont, TextElement* pElement, const wchar_t* szText, D2D1_RECT_F* pRect, DWORD flags, DWORD color, bool bBox, DWORD boxColor = 0xFF000000); // actually queues the text!
+#ifndef _FOOBAR
     void DrawBox(D2D1_RECT_F* pRect, DWORD boxColor);
     void DrawDarkBox(D2D1_RECT_F* pRect) { DrawBox(pRect, 0xFF000000); }
+#endif
     void DrawNow();
     void ClearAll(); // automatically called at end of `DrawNow()`
 
