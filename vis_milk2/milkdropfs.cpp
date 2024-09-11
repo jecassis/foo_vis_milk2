@@ -951,9 +951,9 @@ void CPlugin::RenderFrame(int bRedraw)
         lpDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr); // stage 1 always uses bilinear filtering
         lpDevice->SetRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID);
         lpDevice->SetDepth(false);
-        lpDevice->SetShader(0); // note: this texture stage state setup works for 0 or 1 texture
-                                //        if a texture is set, it will be modulated with the current diffuse color
-                                //        if a texture is not set, it will just use the current diffuse color
+        lpDevice->SetShader(0); // Note: This texture stage state setup works for 0 or 1 texture.
+                                //       If a texture is set, it will be modulated with the current diffuse color.
+                                //       If a texture is not set, it will just use the current diffuse color.
 
         /*
         lpDevice->SetRenderState(D3DRS_WRAP0, 0);//D3DWRAPCOORD_0|D3DWRAPCOORD_1|D3DWRAPCOORD_2|D3DWRAPCOORD_3);
@@ -1791,9 +1791,9 @@ void CPlugin::WarpedBlit_NoShaders(int /* nPass */, bool bAlphaBlend, bool bFlip
     lpDevice->SetSamplerState(0, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
     lpDevice->SetSamplerState(1, D3D11_FILTER_MIN_MAG_MIP_LINEAR, texaddr);
 
-    // note: this texture stage state setup works for 0 or 1 texture.
-    // if you set a texture, it will be modulated with the current diffuse color.
-    // if you don't set a texture, it will just use the current diffuse color.
+    // Note: This texture stage state setup works for 0 or 1 texture.
+    //       If a texture is set, it will be modulated with the current diffuse color.
+    //       If a texture is not set, it will just use the current diffuse color.
     lpDevice->SetShader(0);
 
     // Decay.
@@ -4303,7 +4303,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
 
     lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
 
-    SPRITEVERTEX v3[128]{};
+    MDVERTEX v3[128]{};
 
 #ifdef _SUPERTEXT
     m_superTitle->CreateWindowSizeDependentResources(w, h);
@@ -4523,7 +4523,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
             lpDevice->SetBlendState(true, D3D11_BLEND_ONE, D3D11_BLEND_ONE);
         }
 
-        lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(SPRITEVERTEX));
+        lpDevice->DrawIndexedPrimitive(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 128, 15 * 7 * 6 / 3, indices, v3, sizeof(MDVERTEX));
     }
 #endif
 

@@ -97,9 +97,8 @@ void D3D11Shim::Initialize()
     CD3D11_BUFFER_DESC bDesc(sizeof(MDVERTEX) * MAX_VERTICES_COUNT, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
     m_pDevice->CreateBuffer(&bDesc, NULL, &m_pVBuffer);
 
-    bDesc.ByteWidth = sizeof(uint16_t) * MAX_VERTICES_COUNT / 6;
+    bDesc.ByteWidth = sizeof(uint16_t) * MAX_INDICES_COUNT;
     bDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
     m_pDevice->CreateBuffer(&bDesc, NULL, &m_pIBuffer);
 
     std::vector<uint16_t> indices;
@@ -396,10 +395,7 @@ void D3D11Shim::SetTexture(unsigned int iSlot, ID3D11Resource* pResource)
             CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc1(reinterpret_cast<ID3D11Texture3D*>(pResource));
             srvDesc = srvDesc1;
         }
-        m_pDevice->CreateShaderResourceView(pResource, &srvDesc, &views[0]); // D3D11 CORRUPTION: ID3D11Device::CreateShaderResourceView:
-            // First parameter does not match device. [ MISCELLANEOUS CORRUPTION #13: CORRUPTED_PARAMETER1]
-            // Exception thrown at 0xADDRESS (KernelBase.dll) in foobar2000.exe: 0x00INSTR (parameters : 0x00000000, 0x00ADDR2, 0x00ADDR3).
-            // Unhandled exception at 0xADDRESS (KernelBase.dll) in foobar2000.exe: 0xC000041D: An unhandled exception was encountered during a user callback.
+        m_pDevice->CreateShaderResourceView(pResource, &srvDesc, &views[0]);
     }
 
     m_pContext->PSSetShaderResources(iSlot, 1, views);

@@ -15,9 +15,8 @@
 #include "constanttable.h"
 
 #define MAX_NUM_SHADERS (4)
-#define BATCH_SIZE (2048U)
 #define MAX_VERTICES_COUNT (3072U)
-#define MAX_INDICES_COUNT (BATCH_SIZE * 3)
+#define MAX_INDICES_COUNT (MAX_VERTICES_COUNT * 3)
 #define D3D_PRIMITIVE_TOPOLOGY_TRIANGLEFAN D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP + 1 // D3DPT_TRIANGLEFAN (0x6): Triangle fans are not supported in Direct3D 10 or later.
 
 class D3D11Shim
