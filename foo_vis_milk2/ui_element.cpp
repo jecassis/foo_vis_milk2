@@ -63,7 +63,7 @@ ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
         ui_element_config_builder builder;
         milk2_config config;
         config.init();
-        config.build(builder, true);
+        config.build(builder, false);
         return builder.finish(g_get_guid());
     }
     catch (exception_io& exc)
