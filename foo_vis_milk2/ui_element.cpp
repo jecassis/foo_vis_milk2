@@ -56,12 +56,14 @@ milk2_ui_element::milk2_ui_element(ui_element_config::ptr config, ui_element_ins
 
 ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
 {
+    MILK2_CONSOLE_LOG("g_get_default_configuration")
+
     try
     {
         ui_element_config_builder builder;
         milk2_config config;
         config.init();
-        config.build(builder);
+        config.build(builder, true);
         return builder.finish(g_get_guid());
     }
     catch (exception_io& exc)
@@ -73,6 +75,8 @@ ui_element_config::ptr milk2_ui_element::g_get_default_configuration()
 
 void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
 {
+    MILK2_CONSOLE_LOG("set_configuration")
+
     //LPVOID dataptr = const_cast<LPVOID>(p_data->get_data());
     //if (dataptr && p_data->get_data_size() >= 4 && static_cast<DWORD*>(dataptr)[0] == ('M' | 'I' << 8 | 'L' << 16 | 'K' << 24))
     //    s_config = p_data;
@@ -88,8 +92,10 @@ void milk2_ui_element::set_configuration(ui_element_config::ptr p_data)
 
 ui_element_config::ptr milk2_ui_element::get_configuration()
 {
+    MILK2_CONSOLE_LOG("get_configuration")
+
     ui_element_config_builder builder;
-    s_config.build(builder);
+    s_config.build(builder, !s_in_toggle);
     return builder.finish(g_get_guid());
 }
 
@@ -99,6 +105,7 @@ void milk2_ui_element::notify(const GUID& p_what, size_t p_param1, const void* p
     UNREFERENCED_PARAMETER(p_param2);
     UNREFERENCED_PARAMETER(p_param2size);
 
+    MILK2_CONSOLE_LOG("notify")
     if (p_what == ui_element_notify_colors_changed || p_what == ui_element_notify_font_changed)
         Invalidate();
 }
