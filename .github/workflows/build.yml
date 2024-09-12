@@ -55,12 +55,12 @@ jobs:
           Rename-Item -Path "$(Get-Location)\external\foobar2000\SDK" -NewName sdk
           Rename-Item -Path "$(Get-Location)\external\foobar2000\foobar2000_component_client" -NewName component_client
           Set-Location -Path "$(Get-Location)\external"
-          git init
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add foobar2000\ libppui\ pfc\
-          git commit -m 'Initial commit'
-          git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
+          git.exe init
+          git.exe config user.name "GitHub Actions"
+          git.exe config user.email "actions@github.com"
+          git.exe add foobar2000\ libppui\ pfc\
+          git.exe commit -m 'Initial commit'
+          git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
           Remove-Item -Path "$(Get-Location)\.git" -Recurse -Force
       - name: Clone projectm-eval repository
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
       - name: Patch projectm-eval repository
         run: |
           Set-Location -Path "$(Get-Location)\external\projectm-eval"
-          git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
+          git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
       - name: Cache NuGet packages (DirectXTK and WTL)
         uses: actions/cache@v4
         id: nuget
@@ -82,7 +82,7 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
       - name: Restore NuGet packages (DirectXTK and WTL)
         if: ${{ steps.nuget.outputs.cache-hit != 'true' }}
-        run: nuget restore foo_vis_milk2.sln
+        run: nuget.exe restore foo_vis_milk2.sln
       - name: Prepare build
         id: prepare
         run: |
