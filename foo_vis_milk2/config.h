@@ -282,7 +282,7 @@ enum
 class milk2_preferences_page : public preferences_page_instance, public CDialogImpl<milk2_preferences_page>
 {
   public:
-    milk2_preferences_page(preferences_page_callback::ptr callback) : m_callback(callback), m_bMsgHandled(TRUE) {}
+    milk2_preferences_page(preferences_page_callback::ptr callback) : m_callback(callback), m_bMsgHandled(TRUE), m_resetpage(false) {}
 
     enum milk2_dialog_id
     {
@@ -375,6 +375,7 @@ class milk2_preferences_page : public preferences_page_instance, public CDialogI
     void SaveFontI(td_fontinfo* fi, DWORD ctrl1, DWORD ctrl2, DWORD bold_id, DWORD ital_id, DWORD aa_id, HWND hdlg);
 
     const preferences_page_callback::ptr m_callback;
+    bool m_resetpage;
 
     CToolTipCtrl m_tooltips;
 

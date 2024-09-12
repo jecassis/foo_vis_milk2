@@ -475,67 +475,67 @@ void milk2_preferences_page::reset()
     WCHAR buf[256] = {0};
     int n = 0;
 
-    CheckDlgButton(IDC_CB_SCROLLON3, static_cast<UINT>(cfg_bPresetLockOnAtStartup));
-    CheckDlgButton(IDC_CB_SCROLLON4, static_cast<UINT>(cfg_bPreventScollLockHandling));
-    CheckDlgButton(IDC_CB_NOWARN3, static_cast<UINT>(cfg_bWarningsDisabled));
-    CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!cfg_bEnableRating));
-    CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(cfg_bShowPressF1ForHelp));
-    CheckDlgButton(IDC_CB_NOCOMPSHADER, static_cast<UINT>(cfg_bSkipCompShader));
+    CheckDlgButton(IDC_CB_SCROLLON3, static_cast<UINT>(default_bPresetLockOnAtStartup));
+    CheckDlgButton(IDC_CB_SCROLLON4, static_cast<UINT>(default_bPreventScollLockHandling));
+    CheckDlgButton(IDC_CB_NOWARN3, static_cast<UINT>(default_bWarningsDisabled2));
+    CheckDlgButton(IDC_CB_NORATING2, static_cast<UINT>(!default_bEnableRating));
+    CheckDlgButton(IDC_CB_PRESS_F1_MSG, static_cast<UINT>(default_bShowPressF1ForHelp));
+    CheckDlgButton(IDC_CB_NOCOMPSHADER, static_cast<UINT>(default_bSkipCompShader));
 
-    CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(cfg_allow_page_tearing_fs));
+    CheckDlgButton(IDC_CB_FSPT, static_cast<UINT>(default_allow_page_tearing_fs));
     UpdateMaxFps(FULLSCREEN);
 
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresets));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fTimeBetweenPresets));
     SetDlgItemText(IDC_BETWEEN_TIME, buf);
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenPresetsRand));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fTimeBetweenPresetsRand));
     SetDlgItemText(IDC_BETWEEN_TIME_RANDOM, buf);
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fBlendTimeAuto));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fBlendTimeAuto));
     SetDlgItemText(IDC_BLEND_AUTO, buf);
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fBlendTimeUser));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fBlendTimeUser));
     SetDlgItemText(IDC_BLEND_USER, buf);
 
-    swprintf_s(buf, L" %2.1f", static_cast<float>(cfg_fHardCutHalflife));
+    swprintf_s(buf, L" %2.1f", static_cast<float>(default_fHardCutHalflife));
     SetDlgItemText(IDC_HARDCUT_BETWEEN_TIME, buf);
-    n = static_cast<int>((static_cast<float>(cfg_fHardCutLoudnessThresh) - 1.25f) * 20.0f);
+    n = static_cast<int>((static_cast<float>(default_fHardCutLoudnessThresh) - 1.25f) * 20.0f);
     if (n < 0)
         n = 0;
     if (n > 40)
         n = 40;
     SendMessage(GetDlgItem(IDC_HARDCUT_LOUDNESS), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)n);
-    CheckDlgButton(IDC_CB_HARDCUTS, static_cast<UINT>(cfg_bHardCutsDisabled));
+    CheckDlgButton(IDC_CB_HARDCUTS, static_cast<UINT>(default_bHardCutsDisabled));
 
-    SelectItemByValue(GetDlgItem(IDC_SHADERS), static_cast<DWORD>(cfg_nMaxPSVersion));
+    SelectItemByValue(GetDlgItem(IDC_SHADERS), static_cast<DWORD>(default_nMaxPSVersion));
 
-    //SelectItemByValue(GetDlgItem(IDC_TEXFORMAT), static_cast<DWORD>(cfg_nTexBitsPerCh));
+    //SelectItemByValue(GetDlgItem(IDC_TEXFORMAT), static_cast<DWORD>(default_nTexBitsPerCh));
 
-    SelectItemByValue(GetDlgItem(IDC_MESHSIZECOMBO), static_cast<DWORD>(cfg_nGridX));
+    SelectItemByValue(GetDlgItem(IDC_MESHSIZECOMBO), static_cast<DWORD>(default_nGridX));
 
-    SelectItemByValue(GetDlgItem(IDC_STRETCH2), static_cast<DWORD>(cfg_nCanvasStretch));
+    SelectItemByValue(GetDlgItem(IDC_STRETCH2), static_cast<DWORD>(default_nCanvasStretch));
 
-    SelectItemByValue(GetDlgItem(IDC_TEXSIZECOMBO), static_cast<LRESULT>(cfg_nTexSizeX));
+    SelectItemByValue(GetDlgItem(IDC_TEXSIZECOMBO), static_cast<LRESULT>(default_nTexSizeX));
 
-    SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)cfg_n16BitGamma);
-    CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(cfg_bAutoGamma));
+    SendMessage(GetDlgItem(IDC_BRIGHT_SLIDER2), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)default_n16BitGamma);
+    CheckDlgButton(IDC_CB_AUTOGAMMA2, static_cast<UINT>(default_bAutoGamma));
     AutoHideGamma16();
 
-    SelectItemByValue(GetDlgItem(IDC_MAX_BYTES2), static_cast<DWORD>(cfg_nMaxBytes));
+    SelectItemByValue(GetDlgItem(IDC_MAX_BYTES2), static_cast<DWORD>(default_nMaxBytes));
 
-    SelectItemByValue(GetDlgItem(IDC_MAX_IMAGES2), static_cast<DWORD>(cfg_nMaxImages));
+    SelectItemByValue(GetDlgItem(IDC_MAX_IMAGES2), static_cast<DWORD>(default_nMaxImages));
 
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fSongTitleAnimDuration));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fSongTitleAnimDuration));
     SetDlgItemText(IDC_SONGTITLEANIM_DURATION, buf);
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomSongTitles));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fTimeBetweenRandomSongTitles));
     SetDlgItemText(IDC_RAND_TITLE, buf);
-    swprintf_s(buf, L"%2.1f", static_cast<float>(cfg_fTimeBetweenRandomCustomMsgs));
+    swprintf_s(buf, L"%2.1f", static_cast<float>(default_fTimeBetweenRandomCustomMsgs));
     SetDlgItemText(IDC_RAND_MSG, buf);
-    CheckDlgButton(IDC_CB_TITLE_ANIMS, static_cast<UINT>(cfg_bSongTitleAnims));
+    CheckDlgButton(IDC_CB_TITLE_ANIMS, static_cast<UINT>(default_bSongTitleAnims));
 
-    swprintf_s(buf, L"%hs", cfg_szTitleFormat.get().c_str());
+    swprintf_s(buf, L"%hs", default_szTitleFormat);
     SetDlgItemText(IDC_TITLE_FORMAT, buf);
-    swprintf_s(buf, L"%hs", cfg_szArtworkFormat.get().c_str());
+    swprintf_s(buf, L"%hs", default_szArtworkFormat);
     SetDlgItemText(IDC_ARTWORK_FORMAT, buf);
 
-    cfg_stFontInfo.set(default_stFontInfo, sizeof(td_fontinfo) * (NUM_BASIC_FONTS + NUM_EXTRA_FONTS));
+    m_resetpage = true; // fonts
 
     OnChanged();
 }
@@ -623,6 +623,12 @@ void milk2_preferences_page::apply()
     else
     {
         SetDlgItemText(IDC_ARTWORK_FORMAT, L"<ERROR>");
+    }
+
+    if (m_resetpage)
+    {
+        cfg_stFontInfo.set(default_stFontInfo, sizeof(td_fontinfo) * (NUM_BASIC_FONTS + NUM_EXTRA_FONTS));
+        m_resetpage = false;
     }
 
     OnChanged(); // The dialog content has not changed but the flags have;
