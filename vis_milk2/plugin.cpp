@@ -4708,8 +4708,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     if (!it->printed)
                     {
                         _snwprintf_s(msg.error, 1024, L"%s ", it->msg.c_str());
-                        SendMessage(GetWinampWindow(), WM_COPYDATA, (WPARAM)(HWND)GetWinampWindow(), (LPARAM)(LPVOID)&cds);
-                        it->printed = true;
+                        if (SendMessageTimeout(GetWinampWindow(), WM_COPYDATA, (WPARAM)(HWND)GetWinampWindow(), (LPARAM)(LPVOID)&cds, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, NULL) != 0)
+                            it->printed = true;
                     }
 #endif
                     ++it;
