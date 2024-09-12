@@ -743,7 +743,9 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         pfc::string_formatter state;
         metadb_handle_list list;
         api->activeplaylist_get_all_items(list);
-        if (wParam == -1 || !(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, IPC_GETPLAYLISTTITLEW ? m_script : m_title, NULL))
+        if (list.size() == 0)
+            state = ""; // no playlist
+        else if (wParam == -1 || !(list.get_item(static_cast<size_t>(wParam)))->format_title(NULL, state, IPC_GETPLAYLISTTITLEW ? m_script : m_title, NULL))
             if (m_playback_control->is_playing())
                 state = "Opening...";
             else

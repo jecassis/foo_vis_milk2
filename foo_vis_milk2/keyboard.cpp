@@ -197,7 +197,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
                         pfc::string_formatter state;
                         metadb_handle_list list;
                         api->activeplaylist_get_all_items(list);
-                        if (!(list.get_item(static_cast<size_t>(g_plugin.m_playlist_pos)))->format_title(NULL, state, m_search, NULL))
+                        if (list.size() == 0 || !(list.get_item(static_cast<size_t>(g_plugin.m_playlist_pos)))->format_title(NULL, state, m_search, NULL))
                             state = "";
                         m_szBuffer = pfc::wideFromUTF8(state);
 
