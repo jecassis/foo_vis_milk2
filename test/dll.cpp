@@ -1,5 +1,5 @@
 /*
- * test.cpp - Tests for foobar2000 component's exported interface.
+ * dll.cpp - Tests for foobar2000 component's exported interface.
  *
  * Copyright (c) 2023-2024 Jimmy Cassis
  * SPDX-License-Identifier: MPL-2.0
