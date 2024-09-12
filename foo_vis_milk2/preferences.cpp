@@ -1169,14 +1169,14 @@ void milk2_config::reset()
     //settings.m_bShowMenuToolTips;
     settings.m_bSongTitleAnims = cfg_bSongTitleAnims;
 
-    settings.m_bShowFPS = default_bShowFPS;
-    settings.m_bShowRating = default_bShowRating;
-    settings.m_bShowPresetInfo = default_bShowPresetInfo;
-    //settings.m_bShowDebugInfo = default_bShowDebugInfo;
-    settings.m_bShowSongTitle = default_bShowSongTitle;
-    settings.m_bShowSongTime = default_bShowSongTime;
-    settings.m_bShowSongLen = default_bShowSongLen;
-    settings.m_bShowShaderHelp = default_bShowShaderHelp;
+    settings.m_bShowFPS = cfg_bShowFPS;
+    settings.m_bShowRating = cfg_bShowRating;
+    settings.m_bShowPresetInfo = cfg_bShowPresetInfo;
+    //settings.m_bShowDebugInfo = cfg_bShowDebugInfo;
+    settings.m_bShowSongTitle = cfg_bShowSongTitle;
+    settings.m_bShowSongTime = cfg_bShowSongTime;
+    settings.m_bShowSongLen = cfg_bShowSongLen;
+    settings.m_bShowShaderHelp = cfg_bShowShaderHelp;
 
     //settings.m_bFixPinkBug = default_bFixPinkBug;
     settings.m_n16BitGamma = static_cast<uint32_t>(cfg_n16BitGamma);
