@@ -123,7 +123,6 @@ int milk2_ui_element::OnCreate(LPCREATESTRUCT cs)
 #endif
 
     MILK2_CONSOLE_LOG("OnCreate0 ", cs->x, ", ", cs->y, ", ", GetWnd())
-
     if (!XMVerifyCPUSupport()) {
         FB2K_console_print(core_api::get_my_file_name(), ": CPU does not support mathematics intrinsics. Exiting.");
         return E_FAIL;

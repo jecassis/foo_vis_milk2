@@ -464,7 +464,7 @@ void milk2_ui_element::OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
     }
     else if (UI_mode == UI_MASHUP && chChar >= '1' && chChar <= ('0' + MASH_SLOTS))
     {
-        g_plugin.m_nMashSlot = chChar - '1';
+        g_plugin.m_nMashSlot = (WPARAM)chChar - '1';
     }
     else // UI_REGULAR (mostly): normal handling of a simple keys (non-virtual keys)
     {
@@ -1277,7 +1277,7 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                         wcscpy_s(szNewDir, waitstring.szText);
 
                         size_t len = wcsnlen_s(szNewDir, 512);
-                        if (len > 0 && szNewDir[len - 1] != L'\\')
+                        if (len > 0 && len < 511 && szNewDir[len - 1] != L'\\')
                             wcscat_s(szNewDir, L"\\");
 
                         wcscpy_s(g_plugin.m_szPresetDir, szNewDir);
@@ -1814,7 +1814,7 @@ void milk2_ui_element::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
             case ID_VIS_MENU:
                 POINT pt;
                 GetCursorPos(&pt);
-                SendMessage(WM_CONTEXTMENU, (WPARAM)get_wnd(), (pt.y << 16) | pt.x);
+                SendMessage(WM_CONTEXTMENU, (WPARAM)get_wnd(), ((LPARAM)pt.y << 16) | pt.x);
                 return;
         }
     }

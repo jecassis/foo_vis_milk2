@@ -7,7 +7,7 @@ A step-by-step on how to compile on Windows:
 1. Install [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) and [Git](https://git-scm.com/).
    1. Clone the repository.
    ```powershell
-   git clone https://github.com/jecassis/foo_vis_milk2.git -b master --depth 1 foo_vis_milk2
+   git.exe clone https://github.com/jecassis/foo_vis_milk2.git -b master --depth 1 foo_vis_milk2
    ```
    2. In Visual Studio "_Open a project or solution_" and point it to the [`foo_vis_milk2.sln`](foo_vis_milk2.sln) file in the repository.
    3. Ensure you have all you need for Visual Studio by running the installer using "_Tools > Get Tools and Features..._". In the installer that comes up hit the "_More_" dropdown and select "_Import configuration_". In the file selection dialog, point it to [`.vsconfig`](.vsconfig) in the repository to install things like NuGet, ATL and a few other prerequisites.
@@ -19,10 +19,10 @@ A step-by-step on how to compile on Windows:
 ```powershell
 Set-Location -Path "path\to\repo"
 Set-Location -Path "$(Get-Location)\external"
-git init
-git add foobar2000\ libppui\ pfc\
-git commit -m 'Initial commit'
-git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
+git.exe init
+git.exe add foobar2000\ libppui\ pfc\
+git.exe commit -m 'Initial commit'
+git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\fb2ksdk.patch"
 Remove-Item -Path "$(Get-Location)\.git" -Recurse -Force
 ```
 
@@ -31,9 +31,9 @@ Remove-Item -Path "$(Get-Location)\.git" -Recurse -Force
 ```powershell
 Set-Location -Path "path\to\repo"
 Set-Location -Path "$(Get-Location)\external"
-git clone https://github.com/projectM-visualizer/projectm-eval.git
+git.exe clone https://github.com/projectM-visualizer/projectm-eval.git
 Set-Location -Path "$(Get-Location)\external\projectm-eval"
-git apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
+git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
 ```
 
 4. Then just select your desired build configuration and platform in Visual Studio, for example "_Debug x64_" and do "_Build > Build Solution_" (Ctrl+Shift+B).

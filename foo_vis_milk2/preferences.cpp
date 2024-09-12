@@ -862,7 +862,7 @@ void milk2_preferences_page::OpenToEdit(LPWSTR szDefault, LPCWSTR szFilename)
 
     if (szDefault[0] == L'\0')
         milk2_config::initialize_paths();
-    wchar_t szPath[MAX_PATH], szFile[MAX_PATH];
+    wchar_t szPath[MAX_PATH]{}, szFile[MAX_PATH]{};
     wcscpy_s(szPath, szDefault);
     wchar_t* p = wcsrchr(szPath, L'\\');
     if (p != NULL)
@@ -1237,11 +1237,11 @@ void milk2_config::reset()
 }
 
 // Initializes all font dialog variables.
-void milk2_config::update_fonts()
+void milk2_config::update_fonts() const
 {
     auto v = cfg_stFontInfo.get();
     if (v.is_valid() && v->size() == sizeof(settings.m_fontinfo))
-        memcpy_s(settings.m_fontinfo, sizeof(settings.m_fontinfo), v->get_ptr(), v->size());
+        memcpy_s((void*)settings.m_fontinfo, sizeof(settings.m_fontinfo), v->get_ptr(), v->size());
 }
 
 // Resolves profile directory, taking care of the case where the path contains

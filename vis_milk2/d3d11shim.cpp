@@ -161,8 +161,7 @@ void D3D11Shim::DrawPrimitive(unsigned int primType, unsigned int iPrimCount, co
 {
     if (m_bCBufferIsDirty)
     {
-        D3D11_MAPPED_SUBRESOURCE res;
-        ZeroMemory(&res, sizeof(D3D11_MAPPED_SUBRESOURCE));
+        D3D11_MAPPED_SUBRESOURCE res{};
         if (S_OK == m_pContext->Map(m_pCBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res))
         {
             memcpy(res.pData, &m_transforms, sizeof(cbTransforms));
@@ -324,7 +323,6 @@ void D3D11Shim::SetRenderTarget(ID3D11Texture2D* pTexture, ID3D11DepthStencilVie
 
         CD3D11_RENDER_TARGET_VIEW_DESC rtvDesc(pTexture, D3D11_RTV_DIMENSION_TEXTURE2D);
         m_pDevice->CreateRenderTargetView(pTexture, &rtvDesc, &pRTView);
-
         if (!pRTView)
             return;
         CD3D11_VIEWPORT vp(pTexture, pRTView);

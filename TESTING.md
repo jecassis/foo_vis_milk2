@@ -37,13 +37,13 @@ Enable native static instrumentation by enabling the preview feature "_Code Cove
 To instrument the component DLL (optional):
 
 ```powershell
-Microsoft.CodeCoverage.Console instrument "$Env:LOCALAPPDATA\Programs\foobar2000_x64\profile\user-components-x64\foo_vis_milk2\foo_vis_milk2.dll"
+Microsoft.CodeCoverage.Console.exe instrument "$Env:LOCALAPPDATA\Programs\foobar2000_x64\profile\user-components-x64\foo_vis_milk2\foo_vis_milk2.dll"
 ```
 
 To run coverage collection while foobar2000 is running, launch it like so:
 
 ```powershell
-Microsoft.CodeCoverage.Console collect "$Env:LOCALAPPDATA\Programs\foobar2000_x64\foobar2000.exe" --settings "$(Get-Location)\test\coverage.runsettings" --output "$(Get-Location)\test\CodeCoverage\foo_vis_milk2.coverage"
+Microsoft.CodeCoverage.Console.exe collect "$Env:LOCALAPPDATA\Programs\foobar2000_x64\foobar2000.exe" --settings "$(Get-Location)\test\coverage.runsettings" --output "$(Get-Location)\test\CodeCoverage\foo_vis_milk2.coverage"
 ```
 
 Once foobar2000 is closed, open `foo_vis_milk2.coverage` in Visual Studio.

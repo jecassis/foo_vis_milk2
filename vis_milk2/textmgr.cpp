@@ -208,9 +208,13 @@ TextElement::TextElement() :
     m_boxRect{},
     m_hasBox(false),
     m_hasShadow(false),
-    m_isFadingOut(false),
     m_textExtents{},
-    m_textStyle(nullptr)
+    m_textStyle(nullptr),
+    m_isFadingOut(false),
+    m_isFadingIn(false),
+    m_fadeOutTime(0.0f),
+    m_fadeOutTimeElapsed(0.0f),
+    m_fadeStartingOpacity(0.0f)
 {
 }
 

@@ -1070,6 +1070,7 @@ void CPlugin::CleanUpMilkDropNonDX11()
         m_menuWavecode[i].Finish();
     for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         m_menuShapecode[i].Finish();
+    m_ddsTitle.ReleaseDeviceDependentResources();
 
     SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
 
@@ -5592,6 +5593,7 @@ void CPlugin::FindValidPresetDir()
     wcscpy_s(m_szPresetDir, GetPluginsDirPath());
     if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
+#ifndef _FOOBAR
     wcscpy_s(m_szPresetDir, L"c:\\program files\\winamp\\"); // getting desperate here
     if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
@@ -5599,6 +5601,7 @@ void CPlugin::FindValidPresetDir()
     if (GetFileAttributes(m_szPresetDir) != INVALID_FILE_ATTRIBUTES)
         return;
     wcscpy_s(m_szPresetDir, L"c:\\");
+#endif
 }
 
 char* NextLine(char* p)
