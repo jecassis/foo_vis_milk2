@@ -258,14 +258,14 @@ void D3D11Shim::SetBlendState(bool bEnable, D3D11_BLEND srcBlend, D3D11_BLEND de
     D3D11_BLEND srcAlphaBlend = srcBlend;
     D3D11_BLEND destAlphaBlend = destBlend;
 
-    if (srcBlend == 3 || srcBlend == 4)
+    if (srcBlend == D3D11_BLEND_SRC_COLOR || srcBlend == D3D11_BLEND_INV_SRC_COLOR)
         srcAlphaBlend = static_cast<D3D11_BLEND>(srcAlphaBlend + 2);
-    else if (srcBlend == 9 || srcBlend == 10)
+    else if (srcBlend == D3D11_BLEND_DEST_COLOR || srcBlend == D3D11_BLEND_INV_DEST_COLOR)
         srcAlphaBlend = static_cast<D3D11_BLEND>(srcAlphaBlend - 2);
 
-    if (destBlend == 3 || destBlend == 4)
+    if (destBlend == D3D11_BLEND_SRC_COLOR || destBlend == D3D11_BLEND_INV_SRC_COLOR)
         destAlphaBlend = static_cast<D3D11_BLEND>(destAlphaBlend + 2);
-    else if (destBlend == 9 || destBlend == 10)
+    else if (destBlend == D3D11_BLEND_DEST_COLOR || destBlend == D3D11_BLEND_INV_DEST_COLOR)
         destAlphaBlend = static_cast<D3D11_BLEND>(destAlphaBlend - 2);
 
     desc.RenderTarget[0].SrcBlendAlpha = srcAlphaBlend;
