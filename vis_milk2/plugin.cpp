@@ -3724,7 +3724,8 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
             wchar_t buf4[512] = {0};
             SelectFont(DECORATIVE_FONT);
             GetWinampSongTitle(GetWinampWindow(), buf4, ARRAYSIZE(buf4)); // defined in "support.h/cpp"
-            MilkDropTextOut_Shadow(buf4, m_songTitle, 0xFFFFFFFF, MTO_LOWER_LEFT);
+            if (buf4[0])
+                MilkDropTextOut_Shadow(buf4, m_songTitle, 0xFFFFFFFF, MTO_LOWER_LEFT);
         }
         else
         {
@@ -3738,25 +3739,28 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
         // Render song time and length above that.
         if (m_bShowSongTime || m_bShowSongLen)
         {
-            wchar_t buf2[511] = {0};
-            wchar_t buf3[512] = {0}; // add extra space to end, so italicized fonts do not get clipped
+            wchar_t buf2[64] = {0};
+            wchar_t buf3[64] = {0}; // add extra space to end, so italicized fonts do not get clipped
             GetWinampSongPosAsText(GetWinampWindow(), buf); // defined in "support.h/cpp"
             GetWinampSongLenAsText(GetWinampWindow(), buf2); // defined in "support.h/cpp"
-            if (m_bShowSongTime && m_bShowSongLen)
+            if (buf2[0])
             {
-                // Only show playing position and track length if it is playing (buffer is valid).
-                if (buf[0])
-                    swprintf_s(buf3, L"%s / %s ", buf, buf2);
+                if (m_bShowSongTime && m_bShowSongLen)
+                {
+                    // Only show playing position and track length if it is playing (buffer is valid).
+                    if (buf[0])
+                        swprintf_s(buf3, L"%s / %s ", buf, buf2);
+                    else
+                        wcsncpy_s(buf3, buf2, ARRAYSIZE(buf2));
+                }
+                else if (m_bShowSongTime)
+                    wcsncpy_s(buf3, buf, ARRAYSIZE(buf2));
                 else
                     wcsncpy_s(buf3, buf2, ARRAYSIZE(buf2));
-            }
-            else if (m_bShowSongTime)
-                wcsncpy_s(buf3, buf, ARRAYSIZE(buf2));
-            else
-                wcsncpy_s(buf3, buf2, ARRAYSIZE(buf2));
 
-            SelectFont(DECORATIVE_FONT);
-            MilkDropTextOut_Shadow(buf3, m_songStats, 0xFFFFFFFF, MTO_LOWER_LEFT);
+                SelectFont(DECORATIVE_FONT);
+                MilkDropTextOut_Shadow(buf3, m_songStats, 0xFFFFFFFF, MTO_LOWER_LEFT);
+            }
         }
         else
         {
