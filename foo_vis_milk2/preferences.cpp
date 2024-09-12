@@ -1319,10 +1319,8 @@ void milk2_config::update_paths()
 {
     if (m_version < 2 || cfg_szPresetDir.get().empty())
     {
-        CHAR szPresetDirA[MAX_PATH];
         wcscpy_s(settings.m_szPresetDir, default_szPresetDir);
-        wcstombs_s(nullptr, szPresetDirA, default_szPresetDir, MAX_PATH);
-        cfg_szPresetDir.set(szPresetDirA);
+        cfg_szPresetDir.set(pfc::utf8FromWide(default_szPresetDir));
     }
     else
     {
@@ -1479,9 +1477,7 @@ void milk2_config::build(ui_element_config_builder& builder, const bool full_res
         cfg_szTitleFormat = pfc::utf8FromWide(settings.m_szTitleFormat);
         cfg_szArtworkFormat = pfc::utf8FromWide(settings.m_szArtworkFormat);
 
-        CHAR szPresetDirA[MAX_PATH];
-        wcstombs_s(nullptr, szPresetDirA, settings.m_szPresetDir, MAX_PATH);
-        cfg_szPresetDir.set(szPresetDirA);
+        cfg_szPresetDir.set(pfc::utf8FromWide(settings.m_szPresetDir));
     }
 }
 #pragma endregion
