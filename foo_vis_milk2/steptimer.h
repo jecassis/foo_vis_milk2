@@ -11,6 +11,7 @@
 #include <cmath>
 #include <cstdint>
 #include <exception>
+#include <profileapi.h>
 
 namespace DX
 {

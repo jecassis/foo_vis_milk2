@@ -9,8 +9,8 @@
 #include "supertext.h"
 namespace
 {
-#include "extrusionps.inc"
-#include "extrusionvs.inc"
+#include <extrusionps.inc>
+#include <extrusionvs.inc>
 }
 
 using namespace DirectX;

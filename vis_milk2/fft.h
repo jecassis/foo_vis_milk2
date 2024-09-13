@@ -46,8 +46,8 @@ class FFT
      *
      * \param[in] samplesIn Number of audio waveform samples which will be fed into the FFT.
      * \param[in] samplesOut Number of frequency samples generated; MUST BE A POWER OF 2.
-     * \param[in] equalize Set to **true** to roughly equalize the magnitude of the basses and trebles,
-     *                     **false** to leave them untouched. Defaults to **true**.
+     * \param[in] equalize Set to **true** to roughly equalize the magnitude of the basses and trebles, **false** 
+     *                     to leave them untouched. Defaults to **true**.
      * \param[in] envelopePower Specifies the envelope power. Set to any negative value to disable the envelope.
      *                          Defaults to **-1.0**. See `InitEnvelopeTable()` for more information.
      */

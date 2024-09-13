@@ -688,7 +688,6 @@ class CPlugin : public CPluginShell
     TextElement m_loadPresetInstruction;
     TextElement m_loadPresetDir;
     TextElement m_loadPresetItem[MAX_PRESETS_PER_PAGE];
-    //TextElement m_warningText;
     TextElement m_ddsTitle;
 };
 

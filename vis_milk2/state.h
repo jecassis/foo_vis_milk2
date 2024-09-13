@@ -181,7 +181,7 @@ class CWave
     NSEEL_CODEHANDLE m_pf_codehandle;
     NSEEL_CODEHANDLE m_pp_codehandle;
 
-    // For per-frame expression evaluation:
+    // For per-frame expression evaluation.
     NSEEL_VMCTX m_pf_eel;
     double *var_pf_time, *var_pf_fps;
     double *var_pf_frame;
@@ -194,7 +194,7 @@ class CWave
     double *var_pf_r, *var_pf_g, *var_pf_b, *var_pf_a;
     double *var_pf_samples;
 
-    // For per-point expression evaluation:
+    // For per-point expression evaluation.
     NSEEL_VMCTX m_pp_eel;
     double *var_pp_time, *var_pp_fps;
     double *var_pp_frame;
@@ -263,7 +263,7 @@ class CState
     int m_nWarpPSVersion; // 0 = milkdrop 1 era (no PS), 2 = ps_2_0, 3 = ps_3_0
     int m_nCompPSVersion; // 0 = milkdrop 1 era (no PS), 2 = ps_2_0, 3 = ps_3_0
     float m_fRating;      // 0..5
-    // Post-processing:
+    // Post-processing.
     CBlendableFloat m_fGammaAdj; // +0 -> +1.0 (double), +2.0 (triple)...
     CBlendableFloat m_fVideoEchoZoom;
     CBlendableFloat m_fVideoEchoAlpha;
@@ -271,10 +271,10 @@ class CState
     int m_nVideoEchoOrientation;
     int m_nVideoEchoOrientationOld;
 
-    // FPS-dependent:
+    // FPS-dependent.
     CBlendableFloat m_fDecay; // 1.0 = none, 0.95 = heavy decay
 
-    // Other:
+    // Other.
     int m_nWaveMode;
     int m_nOldWaveMode;
     bool m_bAdditiveWaves;
@@ -357,9 +357,9 @@ class CState
     CShape m_shape[MAX_CUSTOM_SHAPES];
     CWave m_wave[MAX_CUSTOM_WAVES];
 
-    // Some random stuff for driving shaders:
+    // Some random stuff for driving shaders.
     void RandomizePresetVars();
-    XMFLOAT4 m_rand_preset; // 4 random floats (0..1); randomized @ preset load; fed to pixel shaders.  --FIXME (blending)
+    XMFLOAT4 m_rand_preset; // 4 random floats (0..1); randomized at preset load; fed to pixel shaders. TODO: blending
     XMFLOAT4 m_xlate[20];
     XMFLOAT4 m_rot_base[20];
     XMFLOAT4 m_rot_speed[20];
@@ -370,7 +370,7 @@ class CState
     //COscillator m_wavePosX; // 0 = centered
     //COscillator m_wavePosY; // 0 = centered
 
-    // For arbitrary function evaluation:
+    // For arbitrary function evaluation.
     NSEEL_CODEHANDLE m_pf_codehandle;
     NSEEL_CODEHANDLE m_pp_codehandle;
     char m_szPerFrameInit[MAX_BIGSTRING_LEN];
@@ -385,9 +385,9 @@ class CState
     bool m_bBlending;
     float m_fBlendStartTime;
     float m_fBlendDuration;
-    float m_fBlendProgress; // 0..1; updated every frame based on StartTime and Duration.
+    float m_fBlendProgress; // 0..1; updated every frame based on `StartTime` and `Duration`.
 
-    // For once-per-frame expression evaluation [although, these vars are also shared w/preset init expr eval]:
+    // For once-per-frame expression evaluation (although, these variables are also shared with preset initialization expression evaluation).
     NSEEL_VMCTX m_pf_eel;
     double *var_pf_zoom, *var_pf_zoomexp, *var_pf_rot, *var_pf_warp, *var_pf_cx, *var_pf_cy, *var_pf_dx, *var_pf_dy, *var_pf_sx, *var_pf_sy;
     double *var_pf_time, *var_pf_fps;
@@ -425,7 +425,7 @@ class CState
     double *var_pf_blur3max;
     double *var_pf_blur1_edge_darken;
 
-    // For per-vertex expression evaluation:
+    // For per-vertex expression evaluation.
     NSEEL_VMCTX m_pv_eel;
     double *var_pv_zoom, *var_pv_zoomexp, *var_pv_rot, *var_pv_warp, *var_pv_cx, *var_pv_cy, *var_pv_dx, *var_pv_dy, *var_pv_sx, *var_pv_sy;
     double *var_pv_time, *var_pv_fps;
