@@ -71,6 +71,12 @@ std::string GetExtension(const std::string& filename);
 std::wstring GetExtension(const std::wstring& filename);
 char* _WideToUTF8(const wchar_t* WFilename);
 
+#ifdef _FOOBAR
+void DisplayError(LPCWSTR lpszFunction);
+#else
+void ErrorOutput(LPCTSTR lpszFunction);
+#endif
+
 #ifdef _DEBUG
 void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam);
 #endif

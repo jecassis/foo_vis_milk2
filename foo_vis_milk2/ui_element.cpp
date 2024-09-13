@@ -1237,7 +1237,7 @@ std::wstring milk2_ui_element::GetCurrentPreset()
     wchar_t buf[512]{};
     swprintf_s(buf, L"%s", (g_plugin.m_nLoadingPreset != 0) ? g_plugin.m_pNewState->m_szDesc : g_plugin.m_pState->m_szDesc);
     wcscat_s(buf, L".milk");
-    if (g_plugin.m_presets.size() == 0 || g_plugin.m_nCurrentPreset = -1)
+    if (g_plugin.m_presets.size() == 0 || g_plugin.m_nCurrentPreset == -1)
     {
         MILK2_CONSOLE_LOG("No presets found")
     }

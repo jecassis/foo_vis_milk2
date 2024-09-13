@@ -361,6 +361,86 @@ char* _WideToUTF8(const wchar_t* WFilename)
     return utf8Name;
 }
 
+#ifdef _FOOBAR
+// Retrieves and outputs the system error message for the last-error code.
+void DisplayError(LPCWSTR lpszFunction)
+{
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+    DWORD dw = GetLastError();
+
+    // Retrieve the system error message for the last error code.
+    if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                       NULL,
+                       dw,
+                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                       (LPTSTR)&lpMsgBuf,
+                       0,
+                       NULL))
+    {
+        OutputDebugStringW(L"FATAL ERROR: Format message failed.\n"); //with 0x%x.\n", GetLastError());
+        return;
+    }
+
+    // Display the error message.
+    // Buffer size: lpMsgBuf (includes CR+LF) + function_name + format (41) + dw (10) + '\0' (1)
+    if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCWSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 41 + 11 + 1) * sizeof(WCHAR))) == NULL)
+        return;
+
+    if (FAILED(swprintf_s((LPTSTR)lpDisplayBuf,
+                          LocalSize(lpDisplayBuf) / sizeof(WCHAR),
+                          L"[foo_vis_milk2.dll] %s failed with error %d: %s",
+                          lpszFunction,
+                          dw,
+                          (LPCWSTR)lpMsgBuf)))
+    {
+        OutputDebugStringW(L"FATAL ERROR: Unable to output error code.\n");
+    }
+
+    OutputDebugStringW((LPCWSTR)lpDisplayBuf);
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+
+    // Exit the process
+    //ExitProcess(dw);
+}
+#else
+void ErrorOutput(LPCTSTR lpszFunction)
+{
+    // Retrieve the system error message for the last-error code.
+    LPVOID lpMsgBuf = NULL;
+    LPVOID lpDisplayBuf = NULL;
+    DWORD dw = GetLastError();
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL,
+                  dw,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR)&lpMsgBuf,
+                  0,
+                  NULL);
+
+    // Display the error message.
+    // Buffer size: lpMsgBuf (includes CR+LF) + lpszFunction + format (41) + dw (4) + '\0' (1)
+    if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40 + 4 + 1) * sizeof(TCHAR))) == NULL)
+        return;
+    swprintf_s((LPTSTR)lpDisplayBuf,
+               LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+               TEXT("%s failed with error %d: %s"),
+               lpszFunction,
+               dw,
+               (LPCTSTR)lpMsgBuf);
+    OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+
+    // Exit the process
+    //ExitProcess(dw);
+}
+#endif
+
 // clang-format off
 #ifdef _DEBUG
 void OutputDebugMessage(const char* szStartText, const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam)
