@@ -13,7 +13,7 @@
     .EXAMPLE
         PS> .\tools\build-fb2k_component.ps1 -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath Bin -Version 0.0.228.65533 -Verbose
     .EXAMPLE
-        PS> .\tools\build-fb2k_component.ps1 -Build -Clean -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TimeZone '-0800' -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
+        PS> .\tools\build-fb2k_component.ps1 -Build -Clean -Sign SubjectName -Configuration Release -Platforms x86,x64,ARM64,ARM64EC -TimeZone '-0800' -ComponentName foo_vis_milk2 -TargetFileName foo_vis_milk2.dll -OutputPath "$(Get-Location)\Bin" -Version 0.0.251.65533 -SavePDB -Verbose
     .INPUTS
         None.
     .OUTPUTS
@@ -29,6 +29,8 @@ param
     [switch] $Build,
     [parameter(HelpMessage = 'Run Clean Target using MSBuild (before Build target)')]
     [switch] $Clean,
+    [parameter(HelpMessage = 'Sign and Timespamp DLLs')]
+    [string] $Sign = 'notexists',
     [parameter(HelpMessage = 'Build Configuration')]
     [string] $Configuration = 'Release',
     [parameter(HelpMessage = 'Build Platforms')]
@@ -150,6 +152,11 @@ foreach ($platform in $Platforms)
         $versions += (Get-ItemProperty ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${TargetFileName}")).VersionInfo.FileVersionRaw
         Write-Host "INFO: Copying $(${platform}.Replace('x86', 'Win32')) `"$TargetFileName`" to `"$("${PackagePath}\" + ${platform}.Replace('x86', '').ToLower())`"..."
         Copy-Item ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${TargetFileName}") -Destination ("${PackagePath}\" + ${platform}.Replace('x86', '').ToLower()) -Force
+        if ($Sign -ne 'notexists' -and $Sign -ne '')
+        {
+            signtool.exe sign /fd SHA256 /n $Sign ("${PackagePath}\" + ${platform}.Replace('x86', '').ToLower())
+            signtool.exe timestamp /tr http://timestamp.digicert.com /td SHA256 ("${PackagePath}\" + ${platform}.Replace('x86', '').ToLower())
+        }
     }
     else
     {
