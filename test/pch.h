@@ -15,6 +15,7 @@
 #endif
 #include <sdkddkver.h>
 
+#define _USE_MATH_DEFINES
 #define NOSYSMETRICS
 #define NOKEYSTATES
 #define NOSYSCOMMANDS
