@@ -1324,9 +1324,8 @@ void milk2_config::update_paths()
     }
     else
     {
-        size_t convertedChars;
         cfg_szPresetDir.get().end_with_slash();
-        mbstowcs_s(&convertedChars, settings.m_szPresetDir, cfg_szPresetDir.get().c_str(), MAX_PATH);
+        wcscpy_s(settings.m_szPresetDir, pfc::wideFromUTF8(cfg_szPresetDir.get()).c_str());
     }
     wcscpy_s(settings.m_szPluginsDirPath, default_szPluginsDirPath);
     wcscpy_s(settings.m_szConfigIniFile, default_szConfigIniFile);
