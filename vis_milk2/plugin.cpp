@@ -5061,35 +5061,6 @@ void CPlugin::ConsoleMessage(const wchar_t* function_name, int message_id, int t
 #endif
 }
 
-void ErrorOutput(LPCTSTR lpszFunction)
-{
-    // Retrieve the system error message for the last-error code.
-    LPVOID lpMsgBuf = NULL;
-    LPVOID lpDisplayBuf = NULL;
-    DWORD dw = GetLastError();
-
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL,
-                  dw,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                  (LPTSTR)&lpMsgBuf,
-                  0,
-                  NULL);
-
-    // Display the error message.
-    // Buffer size: lpMsgBuf (includes CR+LF) + lpszFunction + format (40) + dw (4) + '\0' (1)
-    if ((lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40 + 4 + 1) * sizeof(TCHAR))) == NULL)
-        return;
-    swprintf_s((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), lpszFunction, dw, (LPCTSTR)lpMsgBuf);
-    OutputDebugString((LPCTSTR)lpDisplayBuf); //MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
-
-    LocalFree(lpMsgBuf);
-    LocalFree(lpDisplayBuf);
-
-    // Exit the process
-    //ExitProcess(dw);
-}
-
 void CPlugin::PrevPreset(float fBlendTime)
 {
     if (m_bSequentialPresetOrder)
