@@ -121,7 +121,7 @@ static CRITICAL_SECTION g_cs;
 #define IsNumericChar(x) (x >= '0' && x <= '9')
 
 // Check if file exists.
-BOOL FileExists(LPCTSTR szPath)
+static BOOL FileExists(LPCTSTR szPath)
 {
     DWORD dwAttrib = GetFileAttributes(szPath);
 
@@ -129,7 +129,7 @@ BOOL FileExists(LPCTSTR szPath)
 }
 
 // Copies the given string to the clipboard.
-void copyStringToClipboardA(const char* source)
+static void copyStringToClipboardA(const char* source)
 {
     int ok = OpenClipboard(NULL);
     if (!ok)
@@ -153,7 +153,7 @@ void copyStringToClipboardA(const char* source)
 }
 
 // Copies the given string to the clipboard.
-void copyStringToClipboardW(const wchar_t* source)
+static void copyStringToClipboardW(const wchar_t* source)
 {
     int ok = OpenClipboard(NULL);
     if (!ok)
@@ -177,7 +177,7 @@ void copyStringToClipboardW(const wchar_t* source)
 }
 
 // Copies a string from the clipboard.
-char* getStringFromClipboardA()
+static char* getStringFromClipboardA()
 {
     int ok = OpenClipboard(NULL);
     if (!ok)
@@ -191,7 +191,7 @@ char* getStringFromClipboardA()
 }
 
 // Copies a string from the clipboard.
-wchar_t* getStringFromClipboardW()
+static wchar_t* getStringFromClipboardW()
 {
     int ok = OpenClipboard(NULL);
     if (!ok)
@@ -204,7 +204,7 @@ wchar_t* getStringFromClipboardW()
     return buffer;
 }
 
-void ConvertCRsToLFCA(const char* src, char* dst)
+static void ConvertCRsToLFCA(const char* src, char* dst)
 {
     while (*src)
     {
@@ -222,7 +222,7 @@ void ConvertCRsToLFCA(const char* src, char* dst)
     *dst = '\0';
 }
 
-void ConvertCRsToLFCW(const wchar_t* src, wchar_t* dst)
+static void ConvertCRsToLFCW(const wchar_t* src, wchar_t* dst)
 {
     while (*src)
     {
@@ -240,7 +240,7 @@ void ConvertCRsToLFCW(const wchar_t* src, wchar_t* dst)
     *dst = L'\0';
 }
 
-void ConvertLFCToCRsA(const char* src, char* dst)
+static void ConvertLFCToCRsA(const char* src, char* dst)
 {
     while (*src)
     {
@@ -259,7 +259,7 @@ void ConvertLFCToCRsA(const char* src, char* dst)
     *dst = '\0';
 }
 
-void ConvertLFCToCRsW(const wchar_t* src, wchar_t* dst)
+static void ConvertLFCToCRsW(const wchar_t* src, wchar_t* dst)
 {
     while (*src)
     {
@@ -281,7 +281,7 @@ void ConvertLFCToCRsW(const wchar_t* src, wchar_t* dst)
 // Read in all characters and replace character combinations
 // {13; 13+10; 10} with `LINEFEED_CONTROL_CHAR`, if
 // `bConvertLFsToSpecialChar` is true.
-bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxBytes, bool bConvertLFsToSpecialChar)
+static bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxBytes, bool bConvertLFsToSpecialChar)
 {
     wchar_t szFile[MAX_PATH];
 #ifndef _FOOBAR
@@ -334,56 +334,56 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
 }
 
 // These callback functions are called by "menu.cpp" whenever the user finishes editing an `eval_` expression.
-void OnUserEditedPerFrame(LPARAM param1, LPARAM param2)
+static void OnUserEditedPerFrame(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_PRESET_CODE, 0);
 }
 
-void OnUserEditedPerPixel(LPARAM param1, LPARAM param2)
+static void OnUserEditedPerPixel(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_PRESET_CODE, 0);
 }
 
-void OnUserEditedPresetInit(LPARAM param1, LPARAM param2)
+static void OnUserEditedPresetInit(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_PRESET_CODE, 1);
 }
 
-void OnUserEditedWavecode(LPARAM param1, LPARAM param2)
+static void OnUserEditedWavecode(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_WAVE_CODE, 0);
 }
 
-void OnUserEditedWavecodeInit(LPARAM param1, LPARAM param2)
+static void OnUserEditedWavecodeInit(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_WAVE_CODE, 1);
 }
 
-void OnUserEditedShapecode(LPARAM param1, LPARAM param2)
+static void OnUserEditedShapecode(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_SHAPE_CODE, 0);
 }
 
-void OnUserEditedShapecodeInit(LPARAM param1, LPARAM param2)
+static void OnUserEditedShapecodeInit(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
     g_plugin.m_pState->RecompileExpressions(RECOMPILE_SHAPE_CODE, 1);
 }
 
-void OnUserEditedWarpShaders(LPARAM param1, LPARAM param2)
+static void OnUserEditedWarpShaders(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
@@ -400,7 +400,7 @@ void OnUserEditedWarpShaders(LPARAM param1, LPARAM param2)
     }
 }
 
-void OnUserEditedCompShaders(LPARAM param1, LPARAM param2)
+static void OnUserEditedCompShaders(LPARAM param1, LPARAM param2)
 {
     UNREFERENCED_PARAMETER(param1);
     UNREFERENCED_PARAMETER(param2);
@@ -923,7 +923,7 @@ bool CPlugin::PanelSettings(plugin_config* settings)
 
 //----------------------------------------------------------------------
 
-void StripComments(char* str)
+static void StripComments(char* str)
 {
     if (!str || !str[0] || !str[1])
         return;
@@ -1027,7 +1027,7 @@ int CPlugin::AllocateMilkDropNonDX11()
     return true;
 }
 
-void CancelThread(int max_wait_time_ms)
+static void CancelThread(int max_wait_time_ms)
 {
     g_bThreadShouldQuit = true;
     int waited = 0;
@@ -1077,7 +1077,7 @@ void CPlugin::CleanUpMilkDropNonDX11()
     //DumpDebugMessage("Finish: cleanup complete.");
 }
 
-float SquishToCenter(float x, float fExp)
+static float SquishToCenter(float x, float fExp)
 {
     if (x > 0.5f)
         return powf(x * 2 - 1, fExp) * 0.5f + 0.5f;
@@ -1085,7 +1085,7 @@ float SquishToCenter(float x, float fExp)
     return (1 - powf(1 - x * 2, fExp)) * 0.5f;
 }
 
-int GetNearestPow2Size(int w, int h)
+static int GetNearestPow2Size(int w, int h)
 {
     float fExp = logf(std::max(w, h) * 0.75f + 0.25f * std::min(w, h)) / logf(2.0f);
     float bias = 0.55f;
@@ -1774,7 +1774,7 @@ int CPlugin::AllocateMilkDropDX11()
     return true;
 }
 
-float fCubicInterpolate(float y0, float y1, float y2, float y3, float t)
+static float fCubicInterpolate(float y0, float y1, float y2, float y3, float t)
 {
     float a0, a1, a2, a3, t2;
 
@@ -1788,7 +1788,7 @@ float fCubicInterpolate(float y0, float y1, float y2, float y3, float t)
 }
 
 // Performs cubic interpolation on a D3DCOLOR value.
-DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
+static DWORD dwCubicInterpolate(DWORD y0, DWORD y1, DWORD y2, DWORD y3, float t)
 {
     DWORD ret = 0;
     DWORD shift = 0;
@@ -2260,7 +2260,7 @@ bool CPlugin::EvictSomeTexture()
 std::wstring texture_exts[] = {L"jpg", L"png", L"dds", L"tga", L"bmp", L"dib"};
 const wchar_t szExtsWithSlashes[] = L"jpg|png|dds|etc.";
 typedef std::vector<std::wstring> StringVec;
-bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // should be MAX_PATH chars
+static bool PickRandomTexture(const wchar_t* prefix, wchar_t* szRetTextureFilename) // should be MAX_PATH chars
 {
     static StringVec texfiles;
     static DWORD texfiles_timestamp = 0; // update this a max of every ~2 seconds or so
@@ -5579,7 +5579,7 @@ void CPlugin::FindValidPresetDir()
 #endif
 }
 
-char* NextLine(char* p)
+static char* NextLine(char* p)
 {
     // `p` points to the beginning of a line.
     // Return a pointer to the first character of the next line
@@ -6069,7 +6069,7 @@ void CPlugin::WaitString_NukeSelection()
     {
         // Nuke selection. Note: Start and end are INCLUSIVE.
         size_t start = (m_waitstring.nCursorPos < static_cast<unsigned int>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos : m_waitstring.nSelAnchorPos;
-        size_t end = (m_waitstring.nCursorPos > static_cast<unsigned int>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos - 1 : m_waitstring.nSelAnchorPos - 1;
+        size_t end = (m_waitstring.nCursorPos > static_cast<unsigned int>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos - 1 : static_cast<size_t>(m_waitstring.nSelAnchorPos) - 1;
         size_t len = (m_waitstring.bDisplayAsCode ? strlen(reinterpret_cast<char*>(m_waitstring.szText)) : wcslen(m_waitstring.szText));
         size_t how_far_to_shift = end - start + 1;
         size_t num_chars_to_shift = len - end; // includes NULL character
@@ -6106,8 +6106,8 @@ void CPlugin::WaitString_Copy()
     if (m_waitstring.bActive && m_waitstring.nSelAnchorPos != -1)
     {
         // Note: Start and end are INCLUSIVE.
-        size_t start = (m_waitstring.nCursorPos < static_cast<unsigned int>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos : m_waitstring.nSelAnchorPos;
-        size_t end = (m_waitstring.nCursorPos > static_cast<unsigned int>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos - 1 : m_waitstring.nSelAnchorPos - 1;
+        size_t start = (m_waitstring.nCursorPos < static_cast<size_t>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos : m_waitstring.nSelAnchorPos;
+        size_t end = (m_waitstring.nCursorPos > static_cast<size_t>(m_waitstring.nSelAnchorPos)) ? m_waitstring.nCursorPos - 1 : static_cast<size_t>(m_waitstring.nSelAnchorPos) - 1;
         size_t chars_to_copy = end - start + 1;
 
         if (m_waitstring.bDisplayAsCode)
@@ -6172,7 +6172,7 @@ void CPlugin::WaitString_Paste()
             chars_to_insert = wcslen(m_waitstring.szClipboard);
         }
 
-        if (static_cast<unsigned int>(len + chars_to_insert + 1) >= m_waitstring.nMaxLen)
+        if ((len + chars_to_insert + 1) >= m_waitstring.nMaxLen)
         {
             chars_to_insert = m_waitstring.nMaxLen - len - 1;
 
@@ -6253,12 +6253,12 @@ void CPlugin::WaitString_SeekRightWord()
     }
 }
 
-size_t CPlugin::WaitString_GetCursorColumn()
+size_t CPlugin::WaitString_GetCursorColumn() const
 {
     if (m_waitstring.bDisplayAsCode)
     {
         int column = 0;
-        char* ptr = reinterpret_cast<char*>(m_waitstring.szText);
+        char* ptr = reinterpret_cast<char*>(const_cast<wchar_t*>(m_waitstring.szText));
         while (/*m_waitstring.nCursorPos - column - 1 >= 0 &&*/ *(ptr + m_waitstring.nCursorPos - column - 1) != LINEFEED_CONTROL_CHAR)
             column++;
 
@@ -6270,14 +6270,14 @@ size_t CPlugin::WaitString_GetCursorColumn()
     }
 }
 
-int CPlugin::WaitString_GetLineLength()
+int CPlugin::WaitString_GetLineLength() const
 {
     size_t line_start = m_waitstring.nCursorPos - WaitString_GetCursorColumn();
     int line_length = 0;
 
     if (m_waitstring.bDisplayAsCode)
     {
-        char* ptr = reinterpret_cast<char*>(m_waitstring.szText);
+        char* ptr = reinterpret_cast<char*>(const_cast<wchar_t*>(m_waitstring.szText));
         while (*(ptr + line_start + line_length) != 0 && *(ptr + line_start + line_length) != LINEFEED_CONTROL_CHAR)
             line_length++;
     }

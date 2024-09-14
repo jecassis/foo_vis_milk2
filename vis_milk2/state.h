@@ -103,7 +103,7 @@ class CShape
 {
   public:
     int Import(FILE* f, const wchar_t* szFile, int i);
-    int Export(FILE* f, const wchar_t* szFile, int i);
+    int Export(FILE* f, const wchar_t* szFile, int i) const;
 
     int enabled;
     int sides;
@@ -162,7 +162,7 @@ class CWave
 {
   public:
     int Import(FILE* f, const wchar_t* szFile, int i);
-    int Export(FILE* f, const wchar_t* szFile, int i);
+    int Export(FILE* f, const wchar_t* szFile, int i) const;
 
     int enabled;
     int samples;

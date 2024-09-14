@@ -890,7 +890,7 @@ static preferences_page_factory_t<preferences_page_milk2> g_preferences_page_mil
 #pragma endregion
 
 #pragma region Font Dialog
-int CALLBACK EnumFontsProc(
+static int CALLBACK EnumFontsProc(
     CONST LOGFONT* lplf, // logical font data
     CONST TEXTMETRIC* lptm, // physical font data
     DWORD dwType, // font type

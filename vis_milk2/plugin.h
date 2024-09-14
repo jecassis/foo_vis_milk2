@@ -422,8 +422,8 @@ class CPlugin : public CPluginShell
     void WaitString_Paste();
     void WaitString_SeekLeftWord();
     void WaitString_SeekRightWord();
-    size_t WaitString_GetCursorColumn();
-    int WaitString_GetLineLength();
+    size_t WaitString_GetCursorColumn() const;
+    int WaitString_GetLineLength() const;
     void WaitString_SeekUpOneLine();
     void WaitString_SeekDownOneLine();
 
@@ -576,14 +576,14 @@ class CPlugin : public CPluginShell
     void LoadPresetTick();
     void SetPresetListPosition(std::wstring search);
     void FindValidPresetDir();
-    wchar_t* GetPresetDir() { return m_szPresetDir; };
-    td_fontinfo* GetFontInfo() { return m_fontinfo; };
+    wchar_t* GetPresetDir() const { return const_cast<wchar_t*>(m_szPresetDir); };
+    td_fontinfo* GetFontInfo() const {return const_cast<td_fontinfo*>(m_fontinfo); };
     void SavePresetAs(wchar_t* szNewFile); // overwrites the file if it was already there.
     void DeletePresetFile(wchar_t* szDelFile);
     void RenamePresetFile(wchar_t* szOldFile, wchar_t* szNewFile);
     void SetCurrentPresetRating(float fNewRating);
     void SeekToPreset(wchar_t cStartChar);
-    bool ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2);
+    bool ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2) const;
     void ClearGraphicsWindow(); // for windowed mode only
     void LaunchCustomMessage(int nMsgNum);
     void ReadCustomMessages();

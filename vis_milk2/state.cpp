@@ -48,13 +48,13 @@ typedef std::vector<std::string> VarNameList;
 typedef std::vector<int> IntList;
 
 FILE* fLastFilePtr = NULL;
-void GetFast_CLEAR() { fLastFilePtr = NULL; }
+static void GetFast_CLEAR() { fLastFilePtr = NULL; }
 
 // Lines in the file look like this: szVarName=szRet
 //                               or: szVarName szRet
 // The part of the line after the '=' sign (or space) goes into `szRet`.
 // `szVarName` cannot have any spaces in it.
-bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChars)
+static bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChars)
 {
     static int MDLineNum = 0;
     static VarNameList line_varName;
@@ -161,7 +161,7 @@ bool _GetLineByName(FILE* f, const char* szVarName, char* szRet, int nMaxRetChar
     return true;
 }
 
-int GetFastInt(const char* szVarName, int def, FILE* f)
+static int GetFastInt(const char* szVarName, int def, FILE* f)
 {
     char buf[256];
     if (!_GetLineByName(f, szVarName, buf, 255))
@@ -172,7 +172,7 @@ int GetFastInt(const char* szVarName, int def, FILE* f)
     return def;
 }
 
-float GetFastFloat(const char* szVarName, float def, FILE* f)
+static float GetFastFloat(const char* szVarName, float def, FILE* f)
 {
     char buf[256];
     if (!_GetLineByName(f, szVarName, buf, 255))
@@ -183,7 +183,7 @@ float GetFastFloat(const char* szVarName, float def, FILE* f)
     return def;
 }
 
-void GetFastString(const char* szVarName, const char* szDef, char* szRetLine, int nMaxChars, FILE* f)
+static void GetFastString(const char* szVarName, const char* szDef, char* szRetLine, int nMaxChars, FILE* f)
 {
     if (_GetLineByName(f, szVarName, szRetLine, nMaxChars - 1))
         return;
@@ -825,7 +825,7 @@ void CState::StartBlendFrom(CState* s_from, float fAnimTime, float fTimespan)
 }
 // clang-format on
 
-void WriteCode(FILE* fOut, const int /* i */, char* pStr, const char* prefix, const bool bPrependApostrophe = false)
+static void WriteCode(FILE* fOut, const int /* i */, char* pStr, const char* prefix, const bool bPrependApostrophe = false)
 {
     char szLineName[32];
     int line = 1;
@@ -967,7 +967,7 @@ bool CState::Export(const wchar_t* szIniFile)
     return true;
 }
 
-int CWave::Export(FILE* fOut, const wchar_t* szFile, int i)
+int CWave::Export(FILE* fOut, const wchar_t* szFile, int i) const
 {
     FILE* f2 = fOut;
     if (!fOut)
@@ -994,11 +994,11 @@ int CWave::Export(FILE* fOut, const wchar_t* szFile, int i)
     // READ THE CODE IN
     char prefix[64];
     sprintf_s(prefix, "wave_%d_init", i);
-    WriteCode(f2, i, m_szInit, prefix);
+    WriteCode(f2, i, const_cast<char*>(m_szInit), prefix);
     sprintf_s(prefix, "wave_%d_per_frame", i);
-    WriteCode(f2, i, m_szPerFrame, prefix);
+    WriteCode(f2, i, const_cast<char*>(m_szPerFrame), prefix);
     sprintf_s(prefix, "wave_%d_per_point", i);
-    WriteCode(f2, i, m_szPerPoint, prefix);
+    WriteCode(f2, i, const_cast<char*>(m_szPerPoint), prefix);
 
     if (!fOut)
         fclose(f2); // [sic]
@@ -1006,7 +1006,7 @@ int CWave::Export(FILE* fOut, const wchar_t* szFile, int i)
     return 1;
 }
 
-int CShape::Export(FILE* fOut, const wchar_t* szFile, int i)
+int CShape::Export(FILE* fOut, const wchar_t* szFile, int i) const
 {
     FILE* f2 = fOut;
     if (!fOut)
@@ -1044,9 +1044,9 @@ int CShape::Export(FILE* fOut, const wchar_t* szFile, int i)
 
     char prefix[64];
     sprintf_s(prefix, "shape_%d_init", i);
-    WriteCode(f2, i, m_szInit, prefix);
+    WriteCode(f2, i, const_cast<char*>(m_szInit), prefix);
     sprintf_s(prefix, "shape_%d_per_frame", i);
-    WriteCode(f2, i, m_szPerFrame, prefix);
+    WriteCode(f2, i, const_cast<char*>(m_szPerFrame), prefix);
     //sprintf_s(prefix, "shape_%d_per_point", i);
     //WriteCode(f2, i, m_szPerPoint, prefix);
 
@@ -1056,7 +1056,7 @@ int CShape::Export(FILE* fOut, const wchar_t* szFile, int i)
     return 1;
 }
 
-void ReadCode(FILE* f, char* pStr, const char* prefix)
+static void ReadCode(FILE* f, char* pStr, const char* prefix)
 {
     if (!pStr)
         return;

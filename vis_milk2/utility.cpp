@@ -365,8 +365,8 @@ char* _WideToUTF8(const wchar_t* WFilename)
 // Retrieves and outputs the system error message for the last-error code.
 void DisplayError(LPCWSTR lpszFunction)
 {
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
+    LPVOID lpMsgBuf = NULL;
+    LPVOID lpDisplayBuf = NULL;
     DWORD dw = GetLastError();
 
     // Retrieve the system error message for the last error code.

@@ -37,7 +37,7 @@
 #define COLOR_NORM(x) (((int)(x * 255) & 0xFF) / 255.0f)
 #define COPY_COLOR(x, y) { x.a = y.a; x.r = y.r; x.g = y.g; x.b = y.b; }
 
-#define VERT_CLIP 0.75f // warning: top/bottom can get clipped if less than 0.65!
+static constexpr float VERT_CLIP = 0.75f; //1.0f, 0.45f - warning: top/bottom can get clipped if less than 0.65/0.4!
 
 // This function evaluates whether the floating-point
 // control word is set to single precision/round to nearest/
@@ -214,7 +214,7 @@ bool CPlugin::RenderStringToTitleTexture()
         lpDevice->SetBlendState(false);
 
         // Set up a quad.
-        MDVERTEX verts[4];
+        MDVERTEX verts[4]{};
         for (int i = 0; i < 4; i++)
         {
             verts[i].x = (i % 2 == 0) ? -1.0f : 1.0f;
@@ -1322,7 +1322,7 @@ void CPlugin::DrawMotionVectors()
     }
 }
 
-bool CPlugin::ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2)
+bool CPlugin::ReversePropagatePoint(float fx, float fy, float* fx2, float* fy2) const
 {
     //float fy = y / (float)nMotionVectorsY;
     int y0 = (int)(fy * m_nGridY);
@@ -1430,7 +1430,7 @@ void CPlugin::BlurPasses()
         lpDevice->SetTexture(i, NULL);
 
     // Set up fullscreen quad.
-    MDVERTEX v[4];
+    MDVERTEX v[4]{};
 
     v[0].x = -1.0f;
     v[0].y = -1.0f;
@@ -1455,12 +1455,9 @@ void CPlugin::BlurPasses()
     float blur_min[3], blur_max[3];
     GetSafeBlurMinMax(m_pState, blur_min, blur_max);
 
-    float fscale[3];
-    float fbias[3];
-
     // Figure out the progressive scale and bias needed, at each step,
     // to go from one [min..max] range to the next.
-    float temp_min, temp_max;
+    float fscale[3], fbias[3], temp_min, temp_max;
     fscale[0] = 1.0f / (blur_max[0] - blur_min[0]);
     fbias[0] = -blur_min[0] * fscale[0];
     temp_min = (blur_min[1] - blur_min[0]) / (blur_max[0] - blur_min[0]);
@@ -4343,7 +4340,7 @@ void CPlugin::ShowSongTitleAnim(int w, int h, float fProgress)
         //if (fSizeX > 0.92f) fSizeX = 0.92f;
         //if (fSizeY > 0.92f) fSizeY = 0.92f;
         int i = 0;
-        float vert_clip = VERT_CLIP; //1.0f;//0.45f; // warning: visible clipping has been observed at 0.4!
+        float vert_clip = VERT_CLIP;
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 16; x++)
