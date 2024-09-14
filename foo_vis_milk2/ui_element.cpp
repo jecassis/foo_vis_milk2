@@ -1241,7 +1241,7 @@ std::wstring milk2_ui_element::GetCurrentPreset()
     {
         MILK2_CONSOLE_LOG("No presets found")
     }
-    else if (buf == g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename)
+    else if (wcscmp(buf, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str()))
     {
         MILK2_CONSOLE_LOG("GetCurrentPreset Mismatch --> ", buf, " != ", g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str())
     }

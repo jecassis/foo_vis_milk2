@@ -35,7 +35,7 @@
 #include "plugin.h"
 #include "utility.h"
 
-texmgr::texmgr()
+texmgr::texmgr() : m_lpDD(nullptr)
 {
 }
 

@@ -1616,10 +1616,10 @@ void milk2_ui_element::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                     if (g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str()[0] == '*') // Change directory.
                     {
                         wchar_t* p = g_plugin.GetPresetDir();
-                        if (wcscmp(g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str(), L"*..") == 0)
+                        if (!wcscmp(g_plugin.m_presets[g_plugin.m_nPresetListCurPos].szFilename.c_str(), L"*.."))
                         {
                             // Prevent full filesystem navigation.
-                            if (wcscmp(s_config.settings.m_szPresetDir, p) == 0)
+                            if (!wcscmp(s_config.settings.m_szPresetDir, p))
                             {
                                 return;
                             }
