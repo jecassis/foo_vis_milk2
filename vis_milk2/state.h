@@ -40,14 +40,14 @@
 #endif
 
 // Flags for `CState::RecompileExpressions()`.
-#define RECOMPILE_PRESET_CODE 1
-#define RECOMPILE_WAVE_CODE 2
-#define RECOMPILE_SHAPE_CODE 4
+static constexpr int RECOMPILE_PRESET_CODE = 1;
+static constexpr int RECOMPILE_WAVE_CODE = 2;
+static constexpr int RECOMPILE_SHAPE_CODE = 4;
 
-#define NUM_Q_VAR 32
-#define NUM_T_VAR 8
+static constexpr int NUM_Q_VAR = 32;
+static constexpr int NUM_T_VAR = 8;
 
-#define MAX_BIGSTRING_LEN 32768
+static constexpr size_t MAX_BIGSTRING_LEN = 32768;
 
 using namespace DirectX;
 

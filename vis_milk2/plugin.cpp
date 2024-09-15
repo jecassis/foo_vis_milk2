@@ -2339,7 +2339,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
     if (!pCT)
         return;
 
-#define MAX_RAND_TEX 16
+    constexpr auto MAX_RAND_TEX = 16u;
     std::wstring RandTexName[MAX_RAND_TEX];
 
     // pass 1: find all the samplers (and texture bindings).
@@ -2373,7 +2373,7 @@ void CShaderParams::CacheParams(CConstantTable* pCT, bool /* bHardErrors */)
                 wchar_t temp[3];
                 temp[0] = szRootName[0];
                 temp[1] = szRootName[1];
-                temp[2] = 0;
+                temp[2] = L'\0';
                 // Convert to uppercase.
                 if (temp[0] >= L'a' && temp[0] <= L'z')
                     temp[0] -= L'a' - L'A';
@@ -4370,13 +4370,10 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     DrawTooltip(buf, xR, *lower_right_corner_y);
                 }
                 
-                D2D1_RECT_F orig_rect = rect;
-
-                D2D1_RECT_F box{};
-                box.top = rect.top;
-                box.left = rect.left;
-                box.right = rect.left;
-                box.bottom = rect.top;
+                D2D1_RECT_F rect_hold = rect;
+                D2D1_RECT_F box = rect;
+                box.right = box.left;
+                box.bottom = box.top;
 
                 int mashNames[MASH_SLOTS] = {
                     IDS_MASHUP_GENERAL_POSTPROC,
@@ -4388,17 +4385,17 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
 
                 for (int pass = 0; pass < 2; pass++)
                 {
-                    box = orig_rect;
+                    box = rect_hold;
                     int width = 0;
                     int height = 0;
 
-                    //int start_y = orig_rect.top;
+                    //int start_y = rect_hold.top;
                     for (int mash = 0; mash < MASH_SLOTS; mash++)
                     {
                         int idx = m_nMashPreset[mash];
 
                         swprintf_s(buf, L"%s%s", WASABI_API_LNGSTRINGW(mashNames[mash]), m_presets[idx].szFilename.c_str());
-                        D2D1_RECT_F r2 = orig_rect;
+                        D2D1_RECT_F r2 = rect_hold;
                         r2.top += height;
                         height += m_text.DrawD2DText(GetFont(SIMPLE_FONT), &m_menuText[mash], buf, &r2, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | (pass == 0 ? DT_CALCRECT : 0), (static_cast<WPARAM>(mash) == m_nMashSlot) ? PLAYLIST_COLOR_HILITE_TRACK : PLAYLIST_COLOR_NORMAL, false);
                         width = std::max(width, static_cast<int>(r2.right - r2.left));
@@ -4410,12 +4407,12 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         DrawDarkTranslucentBox(&box);
                     }
                     else
-                        orig_rect.top += static_cast<FLOAT>(h);
+                        rect_hold.top += static_cast<FLOAT>(h);
                 }
 
-                orig_rect.top += GetFontHeight(SIMPLE_FONT) + PLAYLIST_INNER_MARGIN;
+                rect_hold.top += GetFontHeight(SIMPLE_FONT) + PLAYLIST_INNER_MARGIN;
 
-                box = orig_rect;
+                box = rect_hold;
                 box.right = box.left;
                 box.bottom = box.top;
 
@@ -4425,7 +4422,7 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                     //if (pass == 1)
                     //    GetFont(SIMPLE_FONT)->Begin();
 
-                    rect = orig_rect;
+                    rect = rect_hold;
                     for (int i = first_line; i < last_line; i++)
                     {
                         // Remove the extension before displaying the filename. Also pad with spaces.
@@ -4484,10 +4481,10 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                         *upper_left_corner_y = static_cast<int>(box.bottom + PLAYLIST_INNER_MARGIN);
                     }
                     else
-                        orig_rect.top += box.bottom - box.top;
+                        rect_hold.top += box.bottom - box.top;
                 }
 
-                orig_rect.top += PLAYLIST_INNER_MARGIN;
+                rect_hold.top += PLAYLIST_INNER_MARGIN;
             }
         }
         else if (m_UI_mode == UI_LOAD)
@@ -4575,12 +4572,9 @@ void CPlugin::MilkDropRenderUI(int* upper_left_corner_y, int* upper_right_corner
                 }
 
                 D2D1_RECT_F rect_hold = rect;
-
-                D2D1_RECT_F box;
-                box.top = static_cast<FLOAT>(rect.top);
-                box.left = static_cast<FLOAT>(rect.left);
-                box.right = static_cast<FLOAT>(rect.left);
-                box.bottom = static_cast<FLOAT>(rect.top);
+                D2D1_RECT_F box = rect;
+                box.right = box.left;
+                box.bottom = box.top;
 
                 wchar_t str[512] = {0}, str2[512] = {0};
                 int nFontHeight = GetFontHeight(SIMPLE_FONT);
@@ -5708,7 +5702,7 @@ retry:
         {
             // Skip normal files not ending in ".milk".
             size_t len = wcslen(fd.cFileName);
-            if (len < 5 || wcscmp(fd.cFileName + len - 5, L".milk") != 0)
+            if (len < 5 || wcscmp(fd.cFileName + len - 5, L".milk"))
                 bSkip = true;
 
             // If it is ".milk," make sure to know how to run its pixel shaders -
@@ -5824,7 +5818,7 @@ retry:
             break;
         }
 
-#define PRESET_UPDATE_INTERVAL 64
+        constexpr int PRESET_UPDATE_INTERVAL = 64;
         // Every so often, add some presets...
         if (temp_nPresets == 30 || ((temp_nPresets % PRESET_UPDATE_INTERVAL) == 0))
         {
@@ -5923,7 +5917,7 @@ retry:
 }
 
 // Note: If directory changed, make sure `bForce` is true!
-void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectCurrentPreset)
+void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectCurrentPreset) const
 {
     if (bForce)
     {
@@ -6030,7 +6024,7 @@ void CPlugin::MergeSortPresets(int left, int right)
             {
                 PresetInfo temp = m_presets[b];
                 for (int k = b; k > a; k--)
-                    m_presets[k] = m_presets[k - 1];
+                    m_presets[k] = m_presets[static_cast<size_t>(k) - 1];
                 m_presets[a] = temp;
                 mid++;
                 b++;
@@ -6933,7 +6927,7 @@ void CPlugin::DoCustomSoundAnalysis()
 }
 
 // Finds the pixel shader body and replaces it with custom code.
-void CPlugin::GenWarpPShaderText(char* szShaderText, float decay, bool bWrap)
+void CPlugin::GenWarpPShaderText(char* szShaderText, float decay, bool bWrap) const
 {
     strcpy_s(szShaderText, MAX_BIGSTRING_LEN, m_szDefaultWarpPShaderText);
     char LF = LINEFEED_CONTROL_CHAR;
@@ -6954,7 +6948,7 @@ void CPlugin::GenWarpPShaderText(char* szShaderText, float decay, bool bWrap)
 }
 
 // Finds the pixel shader body and replaces it with custom code.
-void CPlugin::GenCompPShaderText(char* szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert)
+void CPlugin::GenCompPShaderText(char* szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert) const
 {
     strcpy_s(szShaderText, MAX_BIGSTRING_LEN, m_szDefaultCompPShaderText);
     char LF = LINEFEED_CONTROL_CHAR;

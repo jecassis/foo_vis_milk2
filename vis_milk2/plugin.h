@@ -49,6 +49,13 @@ int warand();
 
 #define FRAND ((warand() % 7381) / 7380.0f)
 
+static constexpr int FCGSX = 32; // final composite grid size - number vertices - should be EVEN.
+static constexpr int FCGSY = 24; // final composite grid size - number vertices - should be EVEN.
+                                 // number of grid *cells* is two less,
+                                 // since there are redundant vertices along the center line in X and Y (...for clean 'ang' interp)
+
+static constexpr int PRESET_HIST_LEN = 64 + 2; // this is 2 more than the DESIRED number to be able to go back
+
 // clang-format off
 typedef enum { TEX_DISK, TEX_VS, TEX_BLUR0, TEX_BLUR1, TEX_BLUR2, TEX_BLUR3, TEX_BLUR4, TEX_BLUR5, TEX_BLUR6, TEX_BLUR_LAST } tex_code;
 typedef enum { UI_REGULAR, UI_MENU, UI_LOAD, UI_LOAD_DEL, UI_LOAD_RENAME, UI_SAVEAS, UI_SAVE_OVERWRITE, UI_EDIT_MENU_STRING, UI_CHANGEDIR, UI_IMPORT_WAVE, UI_EXPORT_WAVE, UI_IMPORT_SHAPE, UI_EXPORT_SHAPE, UI_UPGRADE_PIXEL_SHADER, UI_MASHUP } ui_mode;
@@ -435,7 +442,7 @@ class CPlugin : public CPluginShell
                              //   Be careful - this can be -1 if the user changed dir. & a new preset hasn't been loaded yet.
     wchar_t m_szCurrentPresetFile[512]; // w/o path.  this is always valid (unless no presets were found)
     PresetList m_presets;
-    void UpdatePresetList(bool bBackground = false, bool bForce = false, bool bTryReselectCurrentPreset = true);
+    void UpdatePresetList(bool bBackground = false, bool bForce = false, bool bTryReselectCurrentPreset = true) const;
     wchar_t m_szUpdatePresetMask[MAX_PATH];
     volatile bool m_bPresetListReady;
     //void UpdatePresetRatings();
@@ -443,7 +450,6 @@ class CPlugin : public CPluginShell
     bool m_bInitialPresetSelected;
 
     // PRESET HISTORY
-#define PRESET_HIST_LEN (64 + 2) // this is 2 more than the DESIRED number to be able to go back
     std::wstring m_presetHistory[PRESET_HIST_LEN]; // circular
     int m_presetHistoryPos;
     int m_presetHistoryBackFence;
@@ -513,10 +519,6 @@ class CPlugin : public CPluginShell
     int* m_indices_list;
 
     // Final composite grid.
-#define FCGSX 32 // final composite grid size - number vertices - should be EVEN.
-#define FCGSY 24 // final composite grid size - number vertices - should be EVEN.
-                 // number of grid *cells* is two less,
-                 // since we have redundant verts along the center line in X and Y (...for clean 'ang' interp)
     MDVERTEX m_comp_verts[FCGSX * FCGSY];
     int m_comp_indices[(FCGSX - 2) * (FCGSY - 2) * 2 * 3];
 
@@ -551,10 +553,10 @@ class CPlugin : public CPluginShell
     char m_szBlurVS[32768];
     char m_szBlurPSX[32768];
     char m_szBlurPSY[32768];
-    //const char* GetDefaultWarpShadersText() { return m_szDefaultWarpShaderText; }
-    //const char* GetDefaultCompShadersText() { return m_szDefaultCompShaderText; }
-    void GenWarpPShaderText(char* szShaderText, float decay, bool bWrap);
-    void GenCompPShaderText(char* szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert);
+    //const char* GetDefaultWarpShadersText() const { return m_szDefaultWarpShaderText; }
+    //const char* GetDefaultCompShadersText() const { return m_szDefaultCompShaderText; }
+    void GenWarpPShaderText(char* szShaderText, float decay, bool bWrap) const;
+    void GenCompPShaderText(char* szShaderText, float brightness, float ve_alpha, float ve_zoom, int ve_orient, float hue_shader, bool bBrighten, bool bDarken, bool bSolarize, bool bInvert) const;
 
     //====[ 2. Methods added ]=====================================================================================
     void RenderFrame(int bRedraw);
