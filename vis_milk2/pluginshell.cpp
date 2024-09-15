@@ -1417,9 +1417,12 @@ void CPluginShell::RenderPlaylist()
                     if (j < nSongs)
                     {
                         // Clip maximum length of song name to 240 characters, to prevent overflows.
-                        DWORD_PTR szTitle = NULL; SendMessageTimeout(m_hWndWinamp, WM_WA_IPC, j, IPC_GETPLAYLISTTITLEW, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &szTitle);
-                        wcsncpy_s(buf, reinterpret_cast<wchar_t*>(szTitle), 240);
-                        swprintf_s(m_playlist[i], L"%d. %s ", j + 1, buf); // leave an extra space at end, so italicized fonts do not get clipped
+                        DWORD_PTR szTitle = NULL;
+                        if (SendMessageTimeout(m_hWndWinamp, WM_WA_IPC, j, IPC_GETPLAYLISTTITLEW, SMTO_NORMAL | SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT, 100, &szTitle) != 0)
+                        {
+                            wcsncpy_s(buf, reinterpret_cast<wchar_t*>(szTitle), 240);
+                            swprintf_s(m_playlist[i], L"%d. %s ", j + 1, buf); // leave an extra space at end, so italicized fonts do not get clipped
+                        }
                     }
                 }
             }
