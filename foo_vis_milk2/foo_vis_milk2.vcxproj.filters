@@ -86,6 +86,9 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="milkdrop2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
     <Image Include="..\vis_milk2\milkdrop.ico">
       <Filter>Resource Files</Filter>
     </Image>

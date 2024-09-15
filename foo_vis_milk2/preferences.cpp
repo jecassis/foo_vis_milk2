@@ -1007,7 +1007,7 @@ BOOL milk2_preferences_page::PluginShellFontDialogProc(HWND hdlg, UINT msg, WPAR
         case WM_INITDIALOG:
             {
                 // Set the icon.
-                HICON hIcon = ::LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
+                HICON hIcon = ::LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDI_MILK2_ICON));
                 ::SendMessage(hdlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
                 ::SendMessage(hdlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 

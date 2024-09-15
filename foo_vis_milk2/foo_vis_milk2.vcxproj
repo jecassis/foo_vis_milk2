@@ -548,6 +548,7 @@
     <ResourceCompile Include="foo_vis_milk2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="milkdrop2.ico" />
     <Image Include="..\vis_milk2\milkdrop.ico" />
   </ItemGroup>
   <ItemGroup>

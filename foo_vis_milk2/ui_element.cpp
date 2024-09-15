@@ -923,7 +923,7 @@ bool milk2_ui_element::Initialize(HWND window, int width, int height)
         if (FALSE == g_plugin.PluginInitialize(width, height))
             return false;
 
-        HICON hIcon = ::LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDI_PLUGIN_ICON));
+        HICON hIcon = ::LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDI_MILK2_ICON));
         HWND parent = GetRealParent(get_wnd());
         ::SetClassLongPtr(parent, GCLP_HICON, (LONG_PTR)hIcon);
         ::SetClassLongPtr(parent, GCLP_HICONSM, (LONG_PTR)hIcon);

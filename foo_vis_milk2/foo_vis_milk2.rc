@@ -534,7 +534,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_PLUGIN_ICON         ICON                    "..\\vis_milk2\\milkdrop.ico"
+IDI_MILK2_ICON          ICON                    ".\\milkdrop2.ico" //"..\\vis_milk2\\milkdrop.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

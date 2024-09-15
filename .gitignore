@@ -147,6 +147,7 @@ CMakeLists.txt
 /external/columns_ui/
 /external/unused/
 !/external/winamp/data/
+!/external/winamp/docs/
 !/external/winamp/wa_ipc.h
 !/external/eel2/nseel-cfunc.c
 !/external/eel2/nseel-compiler.c

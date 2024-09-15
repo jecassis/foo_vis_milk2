@@ -5,6 +5,7 @@
 // Copyright (c) 2023-2024 Jimmy Cassis
 // SPDX-License-Identifier: MPL-2.0
 //
+#define IDI_MILK2_ICON                  1
 //#define IDS_ABOUT_STRING                1
 #define IDS_SZ_MENU_NAV_TOOLTIP         2
 //#define ID_DOCS                         3
@@ -115,7 +116,6 @@
 #define IDS_MENU_SMOOTH                 117
 #define IDS_MENU_SMOOTH_TT              118
 #define IDS_MENU_MYSTERY_PARAMETER      119
-#define IDI_PLUGIN_ICON                 120
 #define IDS_MENU_MYSTERY_PARAMETER_TT   120
 #define IDD_FONTDIALOG                  121
 #define IDS_MENU_POSITION_X             121
