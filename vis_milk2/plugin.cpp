@@ -1070,7 +1070,6 @@ void CPlugin::CleanUpMilkDropNonDX11()
         m_menuWavecode[i].Finish();
     for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
         m_menuShapecode[i].Finish();
-    m_ddsTitle.ReleaseDeviceDependentResources();
 
     SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
 
@@ -3221,6 +3220,7 @@ void CPlugin::CleanUpMilkDropDX11(int /* final_cleanup */)
     SafeRelease(m_lpVS[0]);
     SafeRelease(m_lpVS[1]);
     SafeRelease(m_lpDDSTitle);
+    m_ddsTitle.ReleaseDeviceDependentResources();
 #ifdef _SUPERTEXT
     m_superTitle.reset();
 #endif

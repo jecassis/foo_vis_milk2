@@ -48,6 +48,19 @@ Microsoft.CodeCoverage.Console.exe collect "$Env:LOCALAPPDATA\Programs\foobar200
 
 Once foobar2000 is closed, open `foo_vis_milk2.coverage` in Visual Studio.
 
+## DirectX "Device Lost" Testing
+
+A "device lost" will not happen often. In Direct3D 9, a 'device lost' would routinely appear from `ALT + TAB` because the GPU used to be an 'exclusive' rather than 'shared' resource.
+
+`DXGI_ERROR_DEVICE_RESET` occurs if the driver crashes or the video hardware hangs.
+`DXGI_ERROR_DEVICE_REMOVED` occurs if a new driver is installed while the component is running or if you are running on a 'GPU is in the dock' style laptop and the laptop is undocked. This event can be triggered from the Developer Command Prompt for Visual Studio as 'administrator':
+
+```pwsh
+dxcap -forcetdr
+```
+
+> It will immediately cause all currently running Direct3D apps to get a `DXGI_ERROR_DEVICE_REMOVED` event.
+
 #### References
 
 - [Customize Code Coverage Analysis](https://learn.microsoft.com/en-us/visualstudio/test/customizing-code-coverage-analysis?view=vs-2022#static-and-dynamic-native-instrumentation)

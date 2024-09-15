@@ -63,7 +63,7 @@ typedef struct
     std::array<std::vector<float>, 2> fSpectrum; // NUM_FREQUENCIES samples for each channel
 } td_soundinfo; // ...range is 0 Hz to 22050 Hz, evenly spaced.
 
-class CPluginShell
+class CPluginShell : public DX::IDeviceNotify
 {
   public:
     CPluginShell();
@@ -281,7 +281,9 @@ class CPluginShell
     void EnforceMaxFPS();
 
   private:
-    // CHANGES
+    void OnDeviceLost() override;
+    void OnDeviceRestored() override;
+
     friend class CShaderParams;
 };
 

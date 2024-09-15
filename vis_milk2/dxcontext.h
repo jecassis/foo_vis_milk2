@@ -65,7 +65,7 @@ typedef struct _DXCONTEXT_PARAMS
     HWND parent_window;
 } DXCONTEXT_PARAMS;
 
-class DXContext final : public DX::IDeviceNotify
+class DXContext final
 {
   public:
     DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false);
@@ -82,8 +82,9 @@ class DXContext final : public DX::IDeviceNotify
     void RestoreTarget();
     int GetBitDepth() const { return m_bpp; };
 
-    void OnDeviceLost() override;
-    void OnDeviceRestored() override;
+    void CreateDeviceIndependentResources();
+    void CreateDeviceDependentResources();
+    void CreateWindowSizeDependentResources();
 
     ID3D11Device1* GetD3DDevice() const noexcept { return m_deviceResources->GetD3DDevice(); }
     DXGI_FORMAT GetBackBufferFormat() const noexcept { return m_deviceResources->GetBackBufferFormat(); }
@@ -108,11 +109,6 @@ class DXContext final : public DX::IDeviceNotify
 
     BOOL Internal_Init(DXCONTEXT_PARAMS* pParams, BOOL bFirstInit);
     void Internal_CleanUp();
-
-  private:
-    void CreateDeviceIndependentResources();
-    void CreateDeviceDependentResources();
-    void CreateWindowSizeDependentResources();
 
     std::unique_ptr<DX::DeviceResources> m_deviceResources;
 };

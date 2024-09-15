@@ -332,6 +332,8 @@ int CPluginShell::InitDirectX()
         return FALSE;
     }
 
+    m_lpDX->GetDeviceResources()->RegisterDeviceNotify(this);
+
     // Initialize graphics.
     if (!m_lpDX->StartOrRestartDevice(&params))
     {
@@ -1660,4 +1662,26 @@ void CPluginShell::AlignWaves()
             // Zero the rest out, so it is visually evident that these samples are now bogus.
             memset(&m_sound.fWaveform[ch][nSamples], 0, (NUM_AUDIO_BUFFER_SAMPLES - nSamples) * sizeof(float));
         }
+}
+
+// Notifies renderers that device resources need to be released.
+void CPluginShell::OnDeviceLost()
+{
+    CleanUpDX11(TRUE);
+
+    m_lpDX->m_lpDevice.reset();
+}
+
+// Notifies renderers that device resources may now be re-created.
+void CPluginShell::OnDeviceRestored()
+{
+    m_lpDX->CreateDeviceDependentResources();
+
+    m_lpDX->CreateWindowSizeDependentResources();
+
+    if (!AllocateDX11())
+    {
+        m_lpDX->m_ready = false;
+        return;
+    }
 }

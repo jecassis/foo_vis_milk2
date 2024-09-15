@@ -56,7 +56,6 @@ DXContext::DXContext(HWND hWndWinamp, DXCONTEXT_PARAMS* pParams) noexcept(false)
         DX::DeviceResources::c_FlipPresent | ((m_current_mode.allow_page_tearing << 1) & DX::DeviceResources::c_AllowTearing) |
             ((m_current_mode.enable_hdr << 2) & DX::DeviceResources::c_EnableHDR) // flags (default: flip, noTearing, noHDR)
     );
-    m_deviceResources->RegisterDeviceNotify(this);
 }
 
 DXContext::~DXContext()
@@ -242,15 +241,4 @@ void DXContext::CreateWindowSizeDependentResources()
 {
 }
 
-void DXContext::OnDeviceLost()
-{
-    m_lpDevice.reset();
-}
-
-void DXContext::OnDeviceRestored()
-{
-    CreateDeviceDependentResources();
-
-    CreateWindowSizeDependentResources();
-}
 #pragma endregion

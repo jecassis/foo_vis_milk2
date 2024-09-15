@@ -290,12 +290,12 @@ void DeviceResources::CreateWindowSizeDependentResources()
 
     // Clear the previous window size specific context.
     m_d3dContext->OMSetRenderTargets(0, nullptr, nullptr);
+    m_d2dContext->SetTarget(nullptr);
+    m_d2dTargetBitmap.Reset();
     m_d3dRenderTargetView.Reset();
     m_d3dDepthStencilView.Reset();
     m_renderTarget.Reset();
     m_depthStencil.Reset();
-    m_d2dContext->SetTarget(nullptr);
-    m_d2dTargetBitmap.Reset();
     m_d3dContext->Flush();
 
     // Determine the render target size in pixels.
@@ -479,6 +479,9 @@ void DeviceResources::HandleDeviceLost()
         m_deviceNotify->OnDeviceLost();
     }
 
+    m_d2dTargetBitmap.Reset();
+    m_d2dContext.Reset();
+    m_d3dContext->OMSetRenderTargets(0, nullptr, nullptr);
     m_d3dDepthStencilView.Reset();
     m_d3dRenderTargetView.Reset();
     m_renderTarget.Reset();
@@ -486,10 +489,6 @@ void DeviceResources::HandleDeviceLost()
     m_swapChain.Reset();
     m_d3dContext.Reset();
     m_d3dAnnotation.Reset();
-
-    m_d2dContext->SetTarget(nullptr);
-    m_d2dTargetBitmap.Reset();
-    m_d2dContext.Reset();
 
 #ifdef _DEBUG
     {
@@ -501,13 +500,12 @@ void DeviceResources::HandleDeviceLost()
     }
 #endif
 
+    m_d2dDevice.Reset();
     m_d3dDevice.Reset();
     m_dxgiFactory.Reset();
 
-    //m_d2dFactory.Reset();
-    //m_dwriteFactory.Reset();
-
     CreateDeviceResources();
+    m_d2dContext->SetDpi(m_dpiX, m_dpiY);
     CreateWindowSizeDependentResources();
 
     if (m_deviceNotify)
