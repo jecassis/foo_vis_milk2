@@ -21,17 +21,19 @@ index 193b1b5..6545f82 100644
  }
  
 diff --git a/ns-eel2-shim/ns-eel.h b/ns-eel2-shim/ns-eel.h
-index 8a556a5..5814c9a 100644
+index 8a556a5..278efcc 100644
 --- a/ns-eel2-shim/ns-eel.h
 +++ b/ns-eel2-shim/ns-eel.h
-@@ -12,8 +12,9 @@
+@@ -12,8 +12,11 @@
  #include <stdio.h>
  
  #ifdef _MSC_VER
 -#define strcasecmp stricmp
 +#define strcasecmp _stricmp
  #define strncasecmp _strnicmp
++#ifndef _CRTDBG_MAP_ALLOC
 +#define strdup _strdup
++#endif
  #endif
  
  /* Must be defined to the same value as PRJM_F_SIZE */
@@ -49,21 +51,23 @@ index 54fbd56..a4c36c2 100644
          last_func = func;
      }
 diff --git a/projectm-eval/CompilerFunctions.c b/projectm-eval/CompilerFunctions.c
-index 41be59e..75ca69b 100644
+index 41be59e..bdc2080 100644
 --- a/projectm-eval/CompilerFunctions.c
 +++ b/projectm-eval/CompilerFunctions.c
-@@ -8,8 +8,9 @@
+@@ -8,8 +8,11 @@
  #include <stdlib.h>
  
  #ifdef _MSC_VER
 -#define strcasecmp stricmp
 +#define strcasecmp _stricmp
  #define strncasecmp _strnicmp
++#ifndef _CRTDBG_MAP_ALLOC
 +#define strdup _strdup
++#endif
  #endif
  
  /* Called by yyparse on error. */
-@@ -19,6 +20,8 @@ void prjm_eval_error(PRJM_EVAL_LTYPE* loc, prjm_eval_compiler_context_t* cctx, y
+@@ -19,6 +22,8 @@ void prjm_eval_error(PRJM_EVAL_LTYPE* loc, prjm_eval_compiler_context_t* cctx, y
      cctx->error.line = loc->first_line;
      cctx->error.column_start = loc->first_column;
      cctx->error.column_end = loc->last_column;
@@ -147,26 +151,28 @@ index 883c55b..8efb2bd 100644
                      }
  
 diff --git a/projectm-eval/TreeVariables.c b/projectm-eval/TreeVariables.c
-index ce1e511..80aeeac 100644
+index ce1e511..c3c53dc 100644
 --- a/projectm-eval/TreeVariables.c
 +++ b/projectm-eval/TreeVariables.c
-@@ -5,8 +5,9 @@
+@@ -5,8 +5,11 @@
  #include <string.h>
  
  #ifdef _MSC_VER
 -#define strcasecmp stricmp
 +#define strcasecmp _stricmp
  #define strncasecmp _strnicmp
++#ifndef _CRTDBG_MAP_ALLOC
 +#define strdup _strdup
++#endif
  #endif
  
  static PRJM_EVAL_F static_global_variables[100];
 diff --git a/projectm_eval.vcxproj b/projectm_eval.vcxproj
 new file mode 100644
-index 0000000..52ddf0d
+index 0000000..8bd0e25
 --- /dev/null
 +++ b/projectm_eval.vcxproj
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,442 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 +  <ItemGroup Label="ProjectConfigurations">
@@ -178,12 +184,20 @@ index 0000000..52ddf0d
 +      <Configuration>Release</Configuration>
 +      <Platform>Win32</Platform>
 +    </ProjectConfiguration>
++    <ProjectConfiguration Include="Sanitize|Win32">
++      <Configuration>Sanitize</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
 +    <ProjectConfiguration Include="Debug|x64">
 +      <Configuration>Debug</Configuration>
 +      <Platform>x64</Platform>
 +    </ProjectConfiguration>
 +    <ProjectConfiguration Include="Release|x64">
 +      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Sanitize|x64">
++      <Configuration>Sanitize</Configuration>
 +      <Platform>x64</Platform>
 +    </ProjectConfiguration>
 +    <ProjectConfiguration Include="Debug|ARM64">
@@ -194,12 +208,20 @@ index 0000000..52ddf0d
 +      <Configuration>Release</Configuration>
 +      <Platform>ARM64</Platform>
 +    </ProjectConfiguration>
++    <ProjectConfiguration Include="Sanitize|ARM64">
++      <Configuration>Sanitize</Configuration>
++      <Platform>ARM64</Platform>
++    </ProjectConfiguration>
 +    <ProjectConfiguration Include="Debug|ARM64EC">
 +      <Configuration>Debug</Configuration>
 +      <Platform>ARM64EC</Platform>
 +    </ProjectConfiguration>
 +    <ProjectConfiguration Include="Release|ARM64EC">
 +      <Configuration>Release</Configuration>
++      <Platform>ARM64EC</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Sanitize|ARM64EC">
++      <Configuration>Sanitize</Configuration>
 +      <Platform>ARM64EC</Platform>
 +    </ProjectConfiguration>
 +  </ItemGroup>
@@ -240,55 +262,83 @@ index 0000000..52ddf0d
 +  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>true</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>false</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
-+    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <UseDebugLibraries>false</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <CharacterSet>Unicode</CharacterSet>
++    <EnableASAN>true</EnableASAN>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>true</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>false</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
-+    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <UseDebugLibraries>false</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|x64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <CharacterSet>Unicode</CharacterSet>
++    <EnableASAN>true</EnableASAN>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>true</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>false</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
-+    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <UseDebugLibraries>false</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <CharacterSet>Unicode</CharacterSet>
++    <EnableASAN>true</EnableASAN>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>true</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="Configuration">
 +    <ConfigurationType>StaticLibrary</ConfigurationType>
-+    <UseDebugLibraries>false</UseDebugLibraries>
 +    <PlatformToolset>v143</PlatformToolset>
-+    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <UseDebugLibraries>false</UseDebugLibraries>
 +    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64EC'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v143</PlatformToolset>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <CharacterSet>Unicode</CharacterSet>
++    <EnableASAN>true</EnableASAN>
 +  </PropertyGroup>
 +  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 +  <ImportGroup Label="ExtensionSettings">
@@ -299,10 +349,16 @@ index 0000000..52ddf0d
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
 +    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 +  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
 +    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 +  </ImportGroup>
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|x64'" Label="PropertySheets">
 +    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 +  </ImportGroup>
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="PropertySheets">
@@ -311,10 +367,16 @@ index 0000000..52ddf0d
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="PropertySheets">
 +    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 +  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'" Label="PropertySheets">
 +    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 +  </ImportGroup>
 +  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64EC'" Label="PropertySheets">
 +    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 +  </ImportGroup>
 +  <PropertyGroup Label="UserMacros" />
@@ -326,11 +388,19 @@ index 0000000..52ddf0d
 +    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 +    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|Win32'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 +    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 +    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|x64'">
 +    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 +    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +  </PropertyGroup>
@@ -342,11 +412,19 @@ index 0000000..52ddf0d
 +    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 +    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
 +    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 +    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">
++    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
++    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64EC'">
 +    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 +    <IntDir>$(SolutionDir)Obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
 +  </PropertyGroup>
@@ -359,9 +437,9 @@ index 0000000..52ddf0d
 +      <MultiProcessorCompilation>true</MultiProcessorCompilation>
 +      <Optimization>Disabled</Optimization>
 +      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <LanguageStandard>stdcpp14</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
-+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
@@ -381,6 +459,21 @@ index 0000000..52ddf0d
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|Win32'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
 +  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 +    <ClCompile>
 +      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -390,9 +483,9 @@ index 0000000..52ddf0d
 +      <MultiProcessorCompilation>true</MultiProcessorCompilation>
 +      <Optimization>Disabled</Optimization>
 +      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <LanguageStandard>stdcpp14</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
-+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
@@ -412,6 +505,21 @@ index 0000000..52ddf0d
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|x64'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
 +  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
 +    <ClCompile>
 +      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -421,9 +529,9 @@ index 0000000..52ddf0d
 +      <MultiProcessorCompilation>true</MultiProcessorCompilation>
 +      <Optimization>Disabled</Optimization>
 +      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <LanguageStandard>stdcpp14</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
-+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
@@ -443,6 +551,21 @@ index 0000000..52ddf0d
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
 +  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">
 +    <ClCompile>
 +      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -452,9 +575,9 @@ index 0000000..52ddf0d
 +      <MultiProcessorCompilation>true</MultiProcessorCompilation>
 +      <Optimization>Disabled</Optimization>
 +      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <LanguageStandard>stdcpp14</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
-+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
 +    </ClCompile>
 +  </ItemDefinitionGroup>
@@ -469,6 +592,21 @@ index 0000000..52ddf0d
 +      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
 +      <PreprocessorDefinitions>NDEBUG;EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <FloatingPointModel>Fast</FloatingPointModel>
++      <LanguageStandard>stdcpp14</LanguageStandard>
++      <LanguageStandard_C>stdc17</LanguageStandard_C>
++      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Sanitize|ARM64EC'">
++    <ClCompile>
++      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++      <WarningLevel>Level4</WarningLevel>
++      <TreatWarningAsError>true</TreatWarningAsError>
++      <MultiProcessorCompilation>true</MultiProcessorCompilation>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>EEL_F_SIZE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
 +      <LanguageStandard>stdcpp14</LanguageStandard>
 +      <LanguageStandard_C>stdc17</LanguageStandard_C>
 +      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
@@ -574,17 +712,19 @@ index 0000000..84c6edc
 +</Project>
 \ No newline at end of file
 diff --git a/tests/TreeFunctionsTest.cpp b/tests/TreeFunctionsTest.cpp
-index 56fa450..72d7606 100644
+index 56fa450..56e2654 100644
 --- a/tests/TreeFunctionsTest.cpp
 +++ b/tests/TreeFunctionsTest.cpp
-@@ -1,8 +1,9 @@
+@@ -1,8 +1,11 @@
  #include "TreeFunctionsTest.hpp"
  
  #ifdef _MSC_VER
 -#define strcasecmp stricmp
 +#define strcasecmp _stricmp
  #define strncasecmp _strnicmp
++#ifndef _CRTDBG_MAP_ALLOC
 +#define strdup _strdup
++#endif
  #endif
  
  prjm_eval_variable_def_t* TreeFunctions::FindVariable(const char* name)

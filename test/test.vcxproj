@@ -401,7 +401,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foo_vis_milk2\foo_vis_milk2.vcxproj">
-      <Project>{85fbfd09-0099-4fe9-9db6-78db6f60f817}</Project>
+      <Project>{85FBFD09-0099-4FE9-9DB6-78DB6F60F817}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

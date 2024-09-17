@@ -18,7 +18,7 @@ VSTest.Console.exe /Platform:x64 "$(Get-Location)\test\test.dll"
 
 ## Using VSTest in GUI
 
-Use Test Explorer via _Test > Test Explorer_ (Ctrl+E, T).
+Use Test Explorer via **Test > Test Explorer** (Ctrl+E, T).
 
 ## Coverage Collection
 
@@ -26,7 +26,7 @@ Use Test Explorer via _Test > Test Explorer_ (Ctrl+E, T).
 
 As of Visual Studio 2022 version 17.2, the native DLL binary can be instrumented statically (on disk). Consequently, the Debug configurations link with the `/PROFILE` option. This enables coverage collection.
 
-Enable native static instrumentation by enabling the preview feature "_Code Coverage experience improvements_" in _Tools > Options > Environment > Preview Features_. Alternatively, the [`coverage.runsettings`](test/coverage.runsettings) file sets:
+Enable native static instrumentation by enabling the preview feature "_Code Coverage experience improvements_" in **Tools > Options > Environment > Preview Features**. Alternatively, the [`coverage.runsettings`](test/coverage.runsettings) file sets:
 
 ```xml
 <CodeCoverage>

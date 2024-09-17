@@ -10,7 +10,8 @@ A step-by-step on how to compile on Windows:
    git.exe clone https://github.com/jecassis/foo_vis_milk2.git -b master --depth 1 foo_vis_milk2
    ```
    2. In Visual Studio "_Open a project or solution_" and point it to the [`foo_vis_milk2.sln`](foo_vis_milk2.sln) file in the repository.
-   3. Ensure you have all you need for Visual Studio by running the installer using "_Tools > Get Tools and Features..._". In the installer that comes up hit the "_More_" dropdown and select "_Import configuration_". In the file selection dialog, point it to [`.vsconfig`](.vsconfig) in the repository to install things like NuGet, ATL and a few other prerequisites.
+   3. Ensure all additional tools for Visual Studio are installed by running the installer using **Tools > Get Tools and Features...**. In the installer that comes up hit the "_More_" dropdown and select "_Import configuration_". In the file selection dialog, point it to [`.vsconfig`](.vsconfig) in the repository to install things like NuGet, ATL and a few other prerequisites.
+      > Note: Additional debug tools such as those for graphics and memory debugging are not included in this `.vsconfig`, however they might be useful for development.
    4. In Solution Explorer, if the "*foo_vis_milk2*" project is not bold font, right click on it and select "_Set as Starter Project_".
    5. In Solution Explorer again, right click on the "*Solution 'foo_vis_milk2'*" tree root at the top and select "_Manage NuGet Packages for Solution_". Use the tab that comes up to install DirectXTK and WTL for the various projects; they should be pre-populated but you can search if not.
       > Note: It is possible to ignore dependencies, but installing XAudio2 might be simpler than tinkering with the options.
@@ -36,7 +37,7 @@ Set-Location -Path "$(Get-Location)\external\projectm-eval"
 git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
 ```
 
-4. Then just select your desired build configuration and platform in Visual Studio, for example "_Debug x64_" and do "_Build > Build Solution_" (Ctrl+Shift+B).
+4. Then just select your desired build configuration and platform in Visual Studio, for example "_Debug x64_" and do **Build > Build Solution** (Ctrl+Shift+B).
 5. For quick debugging here is a suggestion for `foo_vis_milk2/foo_vis_milk2.vcxproj.user` (only showing Debug x64 for brevity and your install locations may be different). It includes how to attach foobar2000 to the debugger and update the version of the component DLL with the most recent build:
 
 ```xml
@@ -58,7 +59,7 @@ git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)
 </Project>
 ```
 
-6. To launch foobar2000 while attaching the Visual Studio debugger do "_Debug > Start Debugging_" (F5).
+6. To launch foobar2000 while attaching the Visual Studio debugger do **Debug > Start Debugging** (F5).
 
 ## Using the CLI
 
