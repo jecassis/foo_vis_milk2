@@ -718,10 +718,9 @@ LRESULT milk2_ui_element::OnMilk2Message(UINT uMsg, WPARAM wParam, LPARAM lParam
         //MILK2_CONSOLE_LOG("IPC_GETLISTPOS")
         if (m_playback_control->is_playing())
         {
-            size_t playing_index;
-            size_t playing_playlist;
-            api->get_playing_item_location(&playing_playlist, &playing_index);
-            if (playing_playlist == api->get_active_playlist())
+            size_t playing_index = NULL, playing_playlist = NULL;
+            bool valid = api->get_playing_item_location(&playing_playlist, &playing_index);
+            if (valid && playing_playlist == api->get_active_playlist())
                 return static_cast<LRESULT>(playing_index);
         }
         return -1;
