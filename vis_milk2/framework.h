@@ -33,6 +33,12 @@
 #define NOSERVICE // All Service Controller routines, `SERVICE_*` equates, etc... --> From "winsvc.h"
 #define NOHELP // Help engine interface (WinHelp) --> [deprecated]
 
+#if defined(_DEBUG) && !defined(__SANITIZE_ADDRESS__)
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

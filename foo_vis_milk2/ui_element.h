@@ -41,8 +41,10 @@ class milk2_ui_element : public ui_element_instance, public CWindowImpl<milk2_ui
     void initialize_window(HWND parent)
     {
 #ifdef _DEBUG
-        //int debug_flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-        //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#ifndef __SANITIZE_ADDRESS__
+        /*int debug_flags = */_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
         WCHAR szParent[19]{}, szWnd[19]{};
         swprintf_s(szParent, TEXT("0x%p"), parent);
         swprintf_s(szWnd, TEXT("0x%p"), get_wnd());

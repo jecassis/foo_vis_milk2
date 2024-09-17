@@ -18,6 +18,12 @@
 #endif
 #include <sdkddkver.h>
 
+#if defined(_DEBUG) && !defined(__SANITIZE_ADDRESS__)
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 //#define NODRAWTEXT // `DrawText()` and `DT_*` definitions --> From "WinUser.h"
 //#define NOGDI // All GDI defines and routines --> From "wingdi.h"
 #define NOBITMAP // Extended bitmap info header definition --> From "mmreg.h
