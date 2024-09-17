@@ -82,7 +82,12 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
       - name: Restore NuGet packages (DirectXTK and WTL)
         if: ${{ steps.nuget.outputs.cache-hit != 'true' }}
-        run: nuget.exe restore foo_vis_milk2.sln
+        run: |
+          nuget.exe restore foo_vis_milk2.sln
+          #Set-Location -Path "$(Get-Location)\external\directxtk_desktop_2019.2024.9.5.1\build\native"
+          #patch -p1 -F 0 -s --binary --no-backup-if-mismatch <"${{ github.workspace }}\external\dxtkwin10.patch"
+          #Set-Location -Path "$(Get-Location)\external\directxtk_desktop_win10.2024.9.5.1\build\native"
+          #patch -p1 -F 0 -s --binary --no-backup-if-mismatch <"${{ github.workspace }}\external\dxtkwin10.patch"
       - name: Prepare build
         id: prepare
         run: |

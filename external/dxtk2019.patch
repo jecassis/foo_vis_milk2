@@ -1,0 +1,12 @@
+--- a/directxtk_desktop_2019.targets	2024-09-16 16:25:05.484688200 +0000
++++ b/directxtk_desktop_2019.targets	2024-09-16 16:25:05.484688200 +0000
+@@ -4,6 +4,9 @@
+   <PropertyGroup Label="Debug" Condition="'$(Configuration.ToLower())' == 'debug'">
+     <NuGetConfiguration>Debug</NuGetConfiguration>
+   </PropertyGroup>
++  <PropertyGroup Label="ASan" Condition="'$(Configuration.ToLower())' == 'sanitize'">
++    <NuGetConfiguration>Debug</NuGetConfiguration>
++  </PropertyGroup>
+   <PropertyGroup Label="Non_Debug" Condition="'$(Configuration.ToLower())' == 'profile'">
+     <NuGetConfiguration>Release</NuGetConfiguration>
+   </PropertyGroup>
