@@ -219,13 +219,18 @@ CState::CState()
     for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
     {
         m_shape[i].m_pf_codehandle = NULL;
-        m_shape[i].m_pf_eel = NSEEL_VM_alloc();
         //m_shape[i].m_pp_codehandle = NULL;
+        m_shape[i].m_pf_eel = NSEEL_VM_alloc();
     }
     //RegisterBuiltInVariables();
 }
 
 CState::~CState()
+{
+    // Move clean up to `Finish()` for controlled deallocation.
+}
+
+void CState::Finish()
 {
     FreeVarsAndCode();
     NSEEL_VM_free(m_pf_eel);

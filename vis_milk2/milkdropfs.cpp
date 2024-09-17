@@ -269,8 +269,7 @@ bool CPlugin::RenderStringToTitleTexture()
         //    hi--;
 
         D2D1_RECT_F temp{};
-        Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
-        while (1) //(lo < hi-1)
+        while (true) //(lo < hi-1)
         {
             int mid = (lo + hi) / 2;
 
@@ -286,9 +285,6 @@ bool CPlugin::RenderStringToTitleTexture()
 
             if (gdi_font)
             {
-                if (lo == hi - 1)
-                    break; // DONE; but the 'lo'-size font is ready for use!
-
                 temp = rect;
                 if (!m_ddsTitle.IsVisible())
                 {
@@ -306,21 +302,24 @@ bool CPlugin::RenderStringToTitleTexture()
                 temp = m_ddsTitle.GetBounds(m_lpDX->GetDWriteFactory());
                 float h = temp.bottom - temp.top;
 
+                if (lo == hi - 1)
+                    break; // DONE; but the 'lo'-size font is ready for use!
+
                 // Adjust and prepare to reiterate.
                 if (temp.right >= rect.right || h > rect.bottom - rect.top)
                     hi = mid;
                 else
                     lo = mid;
-
-                gdi_font.reset();
             }
+
+            gdi_font.reset();
         }
 
         if (gdi_font)
         {
             // Do actual drawing and set `m_supertext.nFontSizeUsed`; use 'lo' size.
             int h = m_text.DrawD2DText(gdi_font.get(), &m_ddsTitle, szTextToDraw, &temp, /*DT_NOPREFIX |*/ DT_SINGLELINE | DT_CENTER | DT_CALCRECT, textColor, false);
-            temp.left = static_cast<FLOAT>(0);
+            temp.left = 0.0f;
             temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
             temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
             temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
@@ -345,7 +344,6 @@ bool CPlugin::RenderStringToTitleTexture()
     {
         D2D1_RECT_F temp{};
         std::unique_ptr<TextStyle> m_gdi_title_font_doublesize;
-        Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
         wchar_t* str = m_supertext.szText;
 
         // Create `m_gdi_title_font_doublesize`.
@@ -409,7 +407,7 @@ bool CPlugin::RenderStringToTitleTexture()
         }
 
         // Now actually draw it.
-        temp.left = static_cast<FLOAT>(0);
+        temp.left = 0.0f;
         temp.right = static_cast<FLOAT>(m_nTitleTexSizeX); // now allow text to go all the way over, since actually drawing!
         temp.top = static_cast<FLOAT>(m_nTitleTexSizeY / 2 - h / 2);
         temp.bottom = static_cast<FLOAT>(m_nTitleTexSizeY / 2 + h / 2);
@@ -2506,11 +2504,11 @@ void CPlugin::DrawCustomWaves()
 
                     // 3. Smooth it.
                     WFVERTEX* pVerts = v;
+                    WFVERTEX v3[2048];
                     if (!pState->m_wave[i].bUseDots)
                     {
-                        WFVERTEX v2[2048];
-                        nSamples = SmoothWave(v, nSamples, v2);
-                        pVerts = v2;
+                        nSamples = SmoothWave(v, nSamples, v3);
+                        pVerts = v3;
                     }
 
                     // 4. Draw it.

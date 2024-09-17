@@ -1073,6 +1073,11 @@ void CPlugin::CleanUpMilkDropNonDX11()
 
     SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
 
+    m_state_DO_NOT_USE[0].Finish();
+    m_state_DO_NOT_USE[1].Finish();
+    m_state_DO_NOT_USE[2].Finish();
+    NSEEL_quit();
+
     //DumpDebugMessage("Finish: cleanup complete.");
 }
 

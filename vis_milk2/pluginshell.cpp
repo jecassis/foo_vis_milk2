@@ -86,13 +86,14 @@ int CPluginShell::AllocateFonts()
     // Create system fonts.
     for (int i = 0; i < NUM_BASIC_FONTS + NUM_EXTRA_FONTS; i++)
     {
-        m_dwrite_font[i] = std::make_unique<TextStyle>(
-            m_fontinfo[i].szFace,
-            static_cast<float>(m_fontinfo[i].nSize), //* 4 / 10),
-            m_fontinfo[i].bBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_REGULAR,
-            m_fontinfo[i].bItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
-            DWRITE_TEXT_ALIGNMENT_LEADING
-        );
+        if (!m_dwrite_font[i])
+            m_dwrite_font[i] = std::make_unique<TextStyle>(
+                m_fontinfo[i].szFace,
+                static_cast<float>(m_fontinfo[i].nSize), //* 4 / 10),
+                m_fontinfo[i].bBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_REGULAR,
+                m_fontinfo[i].bItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_TEXT_ALIGNMENT_LEADING
+            );
     }
 
 #if 0

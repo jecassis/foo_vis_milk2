@@ -56,10 +56,11 @@ void texmgr::Finish()
             m_tex[i].pSurface->Release();
             m_tex[i].pSurface = NULL;
         }
+        */
 
         FreeCode(i);
         FreeVars(i);
-        */
+        RegisterBuiltInVariables(i);
         NSEEL_VM_free(m_tex[i].tex_eel_ctx);
     }
 
@@ -73,10 +74,11 @@ void texmgr::Init(D3D11Shim* lpDD)
     for (int i = 0; i < NUM_TEX; i++)
     {
         m_tex[i].pSurface = NULL;
-        m_tex[i].szFileName[0] = 0;
+        m_tex[i].szFileName[0] = '\0';
         m_tex[i].m_codehandle = NULL;
-        m_tex[i].m_szExpr[0] = 0;
-        m_tex[i].tex_eel_ctx = NSEEL_VM_alloc();
+        m_tex[i].m_szExpr[0] = '\0';
+        if (!m_tex[i].tex_eel_ctx)
+            m_tex[i].tex_eel_ctx = NSEEL_VM_alloc();
     }
 }
 

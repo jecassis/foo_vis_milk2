@@ -248,6 +248,7 @@ class CState
     ~CState();
 
     void Default(DWORD ApplyFlags = STATE_ALL);
+    void Finish();
     void StartBlendFrom(CState* s_from, float fAnimTime, float fTimespan);
     bool Import(const wchar_t* szIniFile, float fTime, CState* pOldState, DWORD ApplyFlags = STATE_ALL);
     bool Export(const wchar_t* szIniFile);
