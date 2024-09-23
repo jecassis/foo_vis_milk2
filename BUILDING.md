@@ -37,7 +37,7 @@ Set-Location -Path "$(Get-Location)\external\projectm-eval"
 git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)\..\pmeel.patch"
 ```
 
-4. Then just select your desired build configuration and platform in Visual Studio, for example "_Debug x64_" and do **Build > Build Solution** (Ctrl+Shift+B).
+4. Then just select your desired build configuration and platform in Visual Studio, for example "_Debug x64_" and do **Build > Build Solution** (**Ctrl+Shift+B**).
 5. For quick debugging here is a suggestion for `foo_vis_milk2/foo_vis_milk2.vcxproj.user` (only showing Debug x64 for brevity and your install locations may be different). It includes how to attach foobar2000 to the debugger and update the version of the component DLL with the most recent build:
 
 ```xml
@@ -59,7 +59,7 @@ git.exe apply --ignore-whitespace --whitespace=nowarn --verbose "$(Get-Location)
 </Project>
 ```
 
-6. To launch foobar2000 while attaching the Visual Studio debugger do **Debug > Start Debugging** (F5).
+6. To launch foobar2000 while attaching the Visual Studio debugger do **Debug > Start Debugging** (**F5**).
 
 ## Using the CLI
 

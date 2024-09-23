@@ -25,7 +25,7 @@
 
 #define APPLICATION_VERSION_MAJOR 0
 #define APPLICATION_VERSION_MINOR 1
-#define APPLICATION_VERSION_BUILD 0
+#define APPLICATION_VERSION_BUILD 8
 #define APPLICATION_VERSION_REVISION -2 // -3: alpha, -2: beta, -1: release candidate, >= 0 && < 32768: not development version
 
 #define LIBRARY_VERSION_MAJOR 2 // INT_VERSION / 100

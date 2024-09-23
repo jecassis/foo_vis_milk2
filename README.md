@@ -34,14 +34,14 @@ See [LICENSES](LICENSES.md) to become thoroughly confused.
 - Updated all library dependencies to their latest available releases.
 - Deprecated or insecure functions have been rewritten and most unused functionality removed.
 - `vis_milk2` has been upgraded to use more modern C++ alongside the move to DirectX 11.
-- Tested on foobar2000 v2.1.5 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 22631).
+- Tested on foobar2000 v2.1.6 (x86 32-bit and x86 64-bit) and Microsoft Windows 11 (Build 26100).
 - Intel architecture versions support Windows 7 SP1 or later and ARM architecture versions support Windows 10 or later.
   - However, some features such as hybrid graphics, high DPI displays and HDR might not work if the DXGI version required to support them is not on the system.
 
 ## Run Requirements and Installation
 
 - Download [foobar2000](https://www.foobar2000.org/download) and install.
-- Import `foo_vis_milk2.fbk2-component` into foobar2000 using the "_File > Preferences > Components > Install..._" menu item.
+- Import `foo_vis_milk2.fbk2-component` into foobar2000 using the **File > Preferences > Components > Install...** menu item.
 - Download and extract presets into this component's directory of foobar2000. This should be `<foobar2000 profile folder>\milkdrop2\presets`.
 - Textures can also be added to `<foobar2000 profile folder>\milkdrop2\textures` and referenced in their accompanying configuration file `<foobar2000 profile folder>\milkdrop2\milk2_img.ini`.
 - Custom messages can be entered into `<foobar2000 profile folder>\milkdrop2\milk2_msg.ini`.
