@@ -1018,9 +1018,9 @@ int CPlugin::AllocateMilkDropNonDX11()
 
     BuildMenus();
 
-    m_pState->Default();
-    m_pOldState->Default();
-    m_pNewState->Default();
+    m_pState->Initialize();
+    m_pOldState->Initialize();
+    m_pNewState->Initialize();
 
     //LoadRandomPreset(0.0f); // avoid this here; causes some DX9 stuff to happen
 
@@ -1073,9 +1073,9 @@ void CPlugin::CleanUpMilkDropNonDX11()
 
     SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
 
-    m_state_DO_NOT_USE[0].Finish();
-    m_state_DO_NOT_USE[1].Finish();
-    m_state_DO_NOT_USE[2].Finish();
+    m_pState->Finish();
+    m_pOldState->Finish();
+    m_pNewState->Finish();
     NSEEL_quit();
 
     //DumpDebugMessage("Finish: cleanup complete.");
@@ -5622,7 +5622,7 @@ retry:
         g_plugin.FindValidPresetDir();
     }
 
-    // If Mask (dir) changed, do a full re-scan.
+    // If mask (directory) changed, do a full re-scan.
     // If not, just finish the old scan.
     wchar_t szMask[MAX_PATH] = {0};
     swprintf_s(szMask, L"%s*.*", g_plugin.m_szPresetDir); // because directory names could have extensions, etc.
@@ -5640,7 +5640,7 @@ retry:
         g_plugin.m_nDirs = 0;
         g_plugin.m_presets.clear();
 
-        // Find first .MILK file
+        // Find first `.milk` file.
         if ((h = FindFirstFile(g_plugin.m_szUpdatePresetMask, &fd)) == INVALID_HANDLE_VALUE) // note: returns filename -without- path
         {
             // Revert back to plugins directory.
@@ -5685,7 +5685,7 @@ retry:
     int temp_nDirs = 0;
     int temp_nPresets = 0;
 
-    // scan for the desired # of presets, this call...
+    // Scan for the desired number of presets, this call...
     while (!g_bThreadShouldQuit && h != INVALID_HANDLE_VALUE)
     {
         bool bSkip = false;
@@ -5710,7 +5710,7 @@ retry:
             if (len < 5 || wcscmp(fd.cFileName + len - 5, L".milk"))
                 bSkip = true;
 
-            // If it is ".milk," make sure to know how to run its pixel shaders -
+            // If it is `.milk`, make sure to know how to run its pixel shaders -
             // otherwise do not show it in the preset list!
             if (!bSkip)
             {
@@ -5841,7 +5841,7 @@ retry:
 
     if (g_bThreadShouldQuit)
     {
-        // just abort... we are exiting the program or restarting the scan.
+        // Just abort...either exiting the program or restarting the scan.
         g_bThreadAlive = false;
         _endthreadex(0);
         return 0;

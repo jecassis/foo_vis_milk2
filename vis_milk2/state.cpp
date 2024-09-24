@@ -201,8 +201,11 @@ static void GetFastString(const char* szVarName, const char* szDef, char* szRetL
 
 CState::CState()
 {
-    //Default();
+    // Move to `Initialize()` for controlled allocation.
+}
 
+void CState::Initialize()
+{
     // List of variables that can be used for a PER-FRAME calculation;
     // it is a SUBSET of the per-vertex calculation variable list.
     m_pf_codehandle = NULL;
@@ -219,15 +222,16 @@ CState::CState()
     for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
     {
         m_shape[i].m_pf_codehandle = NULL;
-        //m_shape[i].m_pp_codehandle = NULL;
         m_shape[i].m_pf_eel = NSEEL_VM_alloc();
     }
     //RegisterBuiltInVariables();
+
+    Default();
 }
 
 CState::~CState()
 {
-    // Move clean up to `Finish()` for controlled deallocation.
+    // Move to `Finish()` for controlled deallocation.
 }
 
 void CState::Finish()
@@ -235,14 +239,19 @@ void CState::Finish()
     FreeVarsAndCode();
     NSEEL_VM_free(m_pf_eel);
     NSEEL_VM_free(m_pv_eel);
+    m_pf_eel = NULL;
+    m_pv_eel = NULL;
     for (int i = 0; i < MAX_CUSTOM_WAVES; i++)
     {
         NSEEL_VM_free(m_wave[i].m_pf_eel);
         NSEEL_VM_free(m_wave[i].m_pp_eel);
+        m_wave[i].m_pf_eel = NULL;
+        m_wave[i].m_pp_eel = NULL;
     }
     for (int i = 0; i < MAX_CUSTOM_SHAPES; i++)
     {
         NSEEL_VM_free(m_shape[i].m_pf_eel);
+        m_shape[i].m_pf_eel = NULL;
     }
 }
 
@@ -1519,11 +1528,6 @@ void CState::FreeVarsAndCode(bool bFree)
                 NSEEL_code_free(m_shape[i].m_pf_codehandle);
             m_shape[i].m_pf_codehandle = NULL;
         }
-        /*if (m_shape[i].m_pp_codehandle)
-        {
-            freeCode(m_shape[i].m_pp_codehandle);
-            m_shape[i].m_pp_codehandle = NULL;
-        }*/
     }
 
     // Free text version of the expressions? - no!
@@ -1532,7 +1536,7 @@ void CState::FreeVarsAndCode(bool bFree)
 
     // Free the old variable names and reregister
     //   the built-in variables (since they got nuked too).
-    RegisterBuiltInVariables(0xFFFFFFFF);
+    RegisterBuiltInVariables(-1);
 }
 
 // Replaces all `LINEFEED_CONTROL_CHAR` characters in `src` with a space in `dest`;

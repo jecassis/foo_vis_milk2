@@ -573,14 +573,12 @@ int CPluginShell::PluginInitialize(int iWidth, int iHeight)
     m_lpDX->m_client_height = iHeight;
     if (!InitNonDX11()) return FALSE;
     if (!AllocateDX11()) return FALSE;
-    //if (!InitVJ()) return FALSE;
 
     return TRUE;
 }
 
 void CPluginShell::PluginQuit()
 {
-    //CleanUpVJ();
     CleanUpDX11(1);
     CleanUpNonDX11();
     CleanUpDirectX();
