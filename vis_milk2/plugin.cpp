@@ -5606,7 +5606,7 @@ static unsigned int WINAPI __UpdatePresetList(void* lpVoid)
     bool bForce = (flags & 1) ? true : false;
     bool bTryReselectCurrentPreset = (flags & 2) ? true : false;
 
-    WIN32_FIND_DATAW fd;
+    WIN32_FIND_DATA fd;
     ZeroMemory(&fd, sizeof(fd));
     HANDLE h = INVALID_HANDLE_VALUE;
 
@@ -5629,7 +5629,7 @@ retry:
     if (bForce || !g_plugin.m_szUpdatePresetMask[0] || wcscmp(szMask, g_plugin.m_szUpdatePresetMask))
     {
         // If old directory was "" or the directory changed, reset the search.
-        if (h != INVALID_HANDLE_VALUE)
+        if (h && h != INVALID_HANDLE_VALUE)
             FindClose(h);
         h = INVALID_HANDLE_VALUE;
         g_plugin.m_bPresetListReady = false;
@@ -5815,7 +5815,7 @@ retry:
                 temp_nDirs++;
         }
 
-        if (!FindNextFile(h, &fd))
+        if (h && !FindNextFile(h, &fd))
         {
             FindClose(h);
             h = INVALID_HANDLE_VALUE;
@@ -5927,7 +5927,7 @@ void CPlugin::UpdatePresetList(bool bBackground, bool bForce, bool bTryReselectC
     if (bForce)
     {
         if (g_bThreadAlive)
-            CancelThread(3000); // flags it to exit; the param is the # of ms to wait before forcefully killing it
+            CancelThread(3000); // flags it to exit; the param is the number of milliseconds to wait before forcefully killing it
     }
     else
     {
@@ -6028,7 +6028,7 @@ void CPlugin::MergeSortPresets(int left, int right)
             if (bSwap)
             {
                 PresetInfo temp = m_presets[b];
-                for (int k = b; k > a; k--)
+                for (int k = b; k > a; --k)
                     m_presets[k] = m_presets[static_cast<size_t>(k) - 1];
                 m_presets[a] = temp;
                 mid++;

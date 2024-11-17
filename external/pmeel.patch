@@ -9,22 +9,33 @@ index 0000000..d1a2c20
 +/out/
 +/CMakeSettings.json
 diff --git a/ns-eel2-shim/ns-eel.c b/ns-eel2-shim/ns-eel.c
-index 193b1b5..6545f82 100644
+index 193b1b5..d6f76e3 100644
 --- a/ns-eel2-shim/ns-eel.c
 +++ b/ns-eel2-shim/ns-eel.c
-@@ -59,6 +59,7 @@ void NSEEL_VM_FreeGRAM(void **ufd)
+@@ -58,7 +58,7 @@ void NSEEL_VM_FreeGRAM(void **ufd)
+ 
  NSEEL_CODEHANDLE NSEEL_code_compile(NSEEL_VMCTX ctx, char *code, int lineoffs)
  {
-     // ToDo: Forward passed pointer to skip "lineoffs" \n chars for compatibility
-+    (lineoffs);
+-    // ToDo: Forward passed pointer to skip "lineoffs" \n chars for compatibility
++    (lineoffs); // ToDo: Forward passed pointer to skip "lineoffs" \n chars for compatibility
      return (NSEEL_CODEHANDLE) projectm_eval_code_compile((struct projectm_eval_context*) ctx, code);
  }
  
 diff --git a/ns-eel2-shim/ns-eel.h b/ns-eel2-shim/ns-eel.h
-index 8a556a5..278efcc 100644
+index 8a556a5..973e17d 100644
 --- a/ns-eel2-shim/ns-eel.h
 +++ b/ns-eel2-shim/ns-eel.h
-@@ -12,8 +12,11 @@
+@@ -7,13 +7,21 @@
+  */
+ #pragma once
+ 
++#if defined(_DEBUG) && !defined(__SANITIZE_ADDRESS__)
++#define _CRTDBG_MAP_ALLOC
++#include <crtdbg.h>
++#endif
++
+ /* Includes and defines in case code including this header expects these. */
+ #include <stdlib.h>
  #include <stdio.h>
  
  #ifdef _MSC_VER
@@ -77,10 +88,18 @@ index 41be59e..bdc2080 100644
  
  void prjm_eval_compiler_destroy_arglist(prjm_eval_compiler_arg_list_t* arglist)
 diff --git a/projectm-eval/MemoryBuffer.c b/projectm-eval/MemoryBuffer.c
-index 7e21609..e6c5bd9 100644
+index 7e21609..07b667e 100644
 --- a/projectm-eval/MemoryBuffer.c
 +++ b/projectm-eval/MemoryBuffer.c
-@@ -63,6 +63,8 @@ void prjm_eval_memory_free(projectm_eval_mem_buffer buffer)
+@@ -11,6 +11,7 @@ static projectm_eval_mem_buffer static_global_memory;
+ void prjm_eval_memory_destroy_global()
+ {
+     prjm_eval_memory_destroy_buffer(static_global_memory);
++    static_global_memory = NULL;
+ }
+ 
+ projectm_eval_mem_buffer prjm_eval_memory_global()
+@@ -63,6 +64,8 @@ void prjm_eval_memory_free(projectm_eval_mem_buffer buffer)
  
  void prjm_eval_memory_free_block(projectm_eval_mem_buffer buffer, int block)
  {
@@ -89,7 +108,7 @@ index 7e21609..e6c5bd9 100644
      if (block < 0)
      {
          block = 0;
-@@ -89,7 +91,7 @@ PRJM_EVAL_F* prjm_eval_memory_allocate(projectm_eval_mem_buffer buffer, int inde
+@@ -89,7 +92,7 @@ PRJM_EVAL_F* prjm_eval_memory_allocate(projectm_eval_mem_buffer buffer, int inde
          {
              projectm_eval_memory_host_lock_mutex();
  
@@ -167,6 +186,23 @@ index ce1e511..c3c53dc 100644
  #endif
  
  static PRJM_EVAL_F static_global_variables[100];
+diff --git a/projectm-eval/api/projectm-eval.h b/projectm-eval/api/projectm-eval.h
+index ab90e51..5ab1bff 100644
+--- a/projectm-eval/api/projectm-eval.h
++++ b/projectm-eval/api/projectm-eval.h
+@@ -6,6 +6,12 @@
+  */
+ #pragma once
+ 
++#if defined(_DEBUG) && !defined(_CRTDBG_MAP_ALLOC) && !defined(__SANITIZE_ADDRESS__)
++#define _CRTDBG_MAP_ALLOC
++#include <stdlib.h>
++#include <crtdbg.h>
++#endif
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
 diff --git a/projectm_eval.vcxproj b/projectm_eval.vcxproj
 new file mode 100644
 index 0000000..8bd0e25

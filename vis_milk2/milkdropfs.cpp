@@ -3051,8 +3051,8 @@ void CPlugin::DrawWave(float* fL, float* fR)
 
     // v1[] is for the current waveform
     // v2[] is for the old waveform (from prev. preset - only used if blending)
-    // nVerts1 is the # of vertices in v1
-    // nVerts2 is the # of vertices in v2
+    // nVerts1 is the number of vertices in v1
+    // nVerts2 is the number of vertices in v2
     // nBreak1 is the index of the point at which to break the solid line in v1[] (-1 if no break)
     // nBreak2 is the index of the point at which to break the solid line in v2[] (-1 if no break)
 

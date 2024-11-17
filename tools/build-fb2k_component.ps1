@@ -41,6 +41,8 @@ param
     [string] $ComponentName = 'foo_vis_milk2',
     [parameter(HelpMessage = 'Target DLL File Name with Extension')]
     [string] $TargetFileName,
+    [parameter(HelpMessage = 'Package Test Collateral')]
+    [switch] $TestFiles,
     [parameter(HelpMessage = 'Build Output Path')]
     [string] $OutputPath = "$(Get-Location)\Bin",
     [parameter(HelpMessage = 'Component Version')]
@@ -94,7 +96,7 @@ $x86Version = $null
 $x64Version = $null
 $arm64Version = $null
 $arm64ecVersion = $null
-$SolutionPath = "$(Get-Location)\foo_vis_milk2.sln"
+$SolutionPath = "$(Get-Location)\${ComponentName}.sln"
 
 if (-not ($TimeZone -or ($TimeZone -eq '')))
 {
@@ -143,9 +145,9 @@ foreach ($platform in $Platforms)
             #$vcversion = (Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\VC\Tools\MSVC\" | Where-Object { $_.PSIsContainer } | Sort-Object -Property Name -Descending | Select-Object -First 1).Name
             #$toolhost = ($platform -ireplace 'ARM64(?:EC)?', 'X86').ToUpper()
             #$tooltarget = ($platform -ireplace 'ARM64EC', 'arm64').ToLower()
-            link.exe /dump /exports /nologo ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\foo_vis_milk2.dll")
+            link.exe /dump /exports /nologo ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${TargetFileName}")
             Write-Host "`nDEBUG: Dumping $(${platform}.Replace('x86', 'Win32')) `"$TargetFileName`" manifest..."
-            mt.exe -nologo -inputresource:("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\foo_vis_milk2.dll;#2") -out:("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest")
+            mt.exe -nologo -inputresource:("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${TargetFileName};#2") -out:("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest")
             Get-Content ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest") | Format-Xml
             Remove-Item ("${OutputPath}\" + (${platform}.Replace('x86', 'Win32')) + "\${Configuration}\${ComponentName}.manifest") -Force
         }
@@ -166,15 +168,34 @@ foreach ($platform in $Platforms)
 }
 
 # Copy shaders.
-if (Test-Path -Path "${WinampPath}\data\*")
+if ($ComponentName -eq 'foo_vis_milk2')
 {
-    Write-Host "INFO: Copying shaders to `"${PackagePath}\data`"..."
-    Copy-Item "${WinampPath}\data\*" -Destination "${PackagePath}\data" -Force
+    if (Test-Path -Path "${WinampPath}\data\*")
+    {
+        Write-Host "INFO: Copying shaders to `"${PackagePath}\data`"..."
+        Copy-Item "${WinampPath}\data\*" -Destination "${PackagePath}\data" -Force
+    }
+    else
+    {
+        Write-Host "FATAL: Missing or empty shader data."
+        exit 1
+    }
 }
-else
+elseif ($componentName -eq 'foo_vis_vumeter')
 {
-    Write-Host "FATAL: Missing or empty shader data."
-    exit 1
+    $WinampPath = "$(Get-Location)\Ext\test"
+    if ($TestFiles -and (Test-Path -Path "${WinampPath}\*"))
+    {
+        Write-Host "INFO: Copying files to `"${PackagePath}\data`"..."
+        Copy-Item "${WinampPath}\*" -Destination "${PackagePath}\data" -Force
+        Rename-Item -Path "${PackagePath}\data" -NewName vumeter
+    }
+    else
+    {
+        Write-Host "WARNING: Missing or empty test data."
+        Remove-Item -Path "${PackagePath}\data" -Recurse -Force
+        #exit 1
+    }
 }
 
 # Check versions.
@@ -220,6 +241,10 @@ Compress-Archive -Path "${PackagePath}\*" -DestinationPath $ArchivePath -Compres
 if ($SavePDB -and $Version -and ($Version -ne ''))
 {
     $BackupPath = "$(Get-Location)\data"
+    if ($componentName -eq 'foo_vis_vumeter')
+    {
+        $BackupPath = "$(Get-Location)\Dat"
+    }
     $PdbPath = "${BackupPath}\pdbs\${Version}"
     Write-Host "INFO: Copying PDBs to `"${PdbPath}`"..."
     

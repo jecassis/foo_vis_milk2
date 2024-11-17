@@ -579,7 +579,7 @@
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\external\directxtk_desktop_win10.2024.9.5.1\native\lib\x64\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\external\directxtk_desktop_win10.2024.9.5.1\native\lib\x64\Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>..\external\foobar2000\shared\shared-$(Platform).lib;d3d11.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <Profile>true</Profile>

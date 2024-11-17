@@ -1663,8 +1663,100 @@ class milk2_initquit : public initquit
         MILK2_CONSOLE_LOG("on_init")
         if (core_api::is_quiet_mode_enabled())
             return;
+        //create_first_run();
     }
-    void on_quit() { MILK2_CONSOLE_LOG("on_quit") }
+
+    void on_quit()
+    {
+        MILK2_CONSOLE_LOG("on_quit")
+        //NSEEL_quit();
+        if (core_api::is_quiet_mode_enabled())
+            return;
+        //delete_first_run();
+    }
+
+    void create_first_run()
+    {
+        pfc::string8 milkdrop2_path = filesystem::g_get_native_path(core_api::get_profile_path());
+        milkdrop2_path.end_with_slash();
+        milkdrop2_path.add_string("milkdrop2\\", 10);
+        if (!filesystem::g_exists(milkdrop2_path, fb2k::noAbort))
+        {
+            filesystem::g_create_directory(milkdrop2_path, fb2k::noAbort);
+        }
+        pfc::string8 presets_path = milkdrop2_path;
+        presets_path.add_string("presets\\", 8);
+        if (!filesystem::g_exists(presets_path, fb2k::noAbort))
+        {
+            filesystem::g_create_directory(presets_path, fb2k::noAbort);
+        }
+        if (filesystem::g_is_empty_directory(presets_path, fb2k::noAbort))
+        {
+            pfc::string8 preset_file = presets_path;
+            preset_file.add_string("!.milk", 6);
+            wchar_t szPresetFile[MAX_PATH];
+            pfc::stringcvt::convert_utf8_to_wide(szPresetFile, MAX_PATH, preset_file, preset_file.length());
+            char data_buffer[] =
+                "MILKDROP_PRESET_VERSION=201\r\nPSVERSION=3\r\nPSVERSION_WARP=3\r\nPSVERSION_COMP=3\r\n[preset00]\r\nfRating=1.000\r\n";
+            WriteMilkDropFile(szPresetFile, data_buffer, 106);
+        }
+    }
+
+    void delete_first_run()
+    {
+        pfc::string8 preset_file = filesystem::g_get_native_path(core_api::get_profile_path());
+        preset_file.end_with_slash();
+        preset_file.add_string("milkdrop2\\presets\\!.milk", 24);
+        if (filesystem::g_exists(preset_file, fb2k::noAbort))
+        {
+            filesystem::g_remove(preset_file, fb2k::noAbort);
+        }
+    }
+
+    void WriteMilkDropFile(LPCWSTR szFile, LPCSTR szDataBuffer, CONST SIZE_T nDataSize)
+    {
+        HANDLE hFile;
+        DWORD dwBytesToWrite = (DWORD)strnlen_s(szDataBuffer, nDataSize);
+        DWORD dwBytesWritten = 0;
+        BOOL bErrorFlag = FALSE;
+        hFile = CreateFile(szFile, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
+            DisplayError(TEXT("CreateFile"));
+            wprintf_s(TEXT("Terminal failure: Unable to open file \"%s\" for write.\n"), szFile);
+            wchar_t buf[512] = {0}, title[64] = {0};
+            swprintf_s(buf, L"Unable to open `%ls` for writing.", szFile);
+            MessageBox(NULL, buf, WASABI_API_LNGSTRINGW_BUF(IDS_MILKDROP_ERROR, title, 64), MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+            return;
+        }
+
+        wprintf_s(TEXT("Writing %d bytes to %s.\n"), dwBytesToWrite, szFile);
+
+        bErrorFlag = WriteFile(hFile, szDataBuffer, dwBytesToWrite, &dwBytesWritten, NULL);
+
+        if (FALSE == bErrorFlag)
+        {
+            DisplayError(TEXT("WriteFile"));
+            wprintf_s(TEXT("Terminal failure: Unable to write to file.\n"));
+        }
+        else
+        {
+            // This is an error because a synchronous write that results in
+            // success (`WriteFile()` returns `TRUE`) should write all data as
+            // requested. This would not necessarily be the case for
+            // asynchronous writes.
+            if (dwBytesWritten != dwBytesToWrite)
+            {
+                wprintf_s(TEXT("Error: dwBytesWritten != dwBytesToWrite.\n"));
+            }
+            else
+            {
+                wprintf_s(TEXT("Wrote %d bytes to %s successfully.\n"), dwBytesWritten, szFile);
+            }
+        }
+
+        CloseHandle(hFile);
+    }
 };
 
 FB2K_SERVICE_FACTORY(milk2_initquit);
